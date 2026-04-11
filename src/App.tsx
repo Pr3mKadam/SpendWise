@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import OnboardingModal, { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
 
 // ── Components ──────────────────────────────────────────────────────────────────
 import Header          from './components/Header';
@@ -34,10 +35,12 @@ function DashboardView({
   financeState,
   onDelete,
   onAdd,
+  currency,
 }: {
   financeState: ReturnType<typeof useFinanceState>;
   onDelete: (id: string) => void;
   onAdd: Parameters<typeof MagicInput>[0]['onAddTransaction'];
+  currency: string;
 }) {
   const {
     transactions,
@@ -59,6 +62,7 @@ function DashboardView({
         predictedEndOfMonth={predictedEndOfMonth}
         topCategory={topCategory}
         monthlyStats={monthlyStats}
+        currency={currency}
       />
 
       {/* Main grid: charts left, transactions right */}
@@ -66,10 +70,10 @@ function DashboardView({
 
         {/* Left Column — Charts & Tools */}
         <div className="space-y-6">
-          <BalanceChart data={balanceTrend} />
+          <BalanceChart data={balanceTrend} currency={currency} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SpendingDonut data={categorySpending} totalSpent={totalSpent} />
+            <SpendingDonut data={categorySpending} totalSpent={totalSpent} currency={currency} />
             <div className="flex flex-col gap-6">
               <MagicInput onAddTransaction={onAdd} />
               <AICoach
@@ -83,7 +87,7 @@ function DashboardView({
 
         {/* Right Column — Transactions */}
         <div className="space-y-6">
-          <TransactionList transactions={transactions} onDelete={onDelete} />
+          <TransactionList transactions={transactions} onDelete={onDelete} currency={currency} />
         </div>
       </div>
     </div>
@@ -96,8 +100,16 @@ export default function App() {
   const [activeView, setActiveView]         = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
 
+  // ── Onboarding gate ─────────────────────────────────────────────────────────
+  const [config, setConfig] = useState<SpendWiseConfig | null>(() => loadConfig());
+  const isOnboarded = config?.onboardingComplete === true;
+
+  const handleOnboardingComplete = useCallback((cfg: SpendWiseConfig) => {
+    setConfig(cfg);
+  }, []);
+
   // ── Core Finance State ──────────────────────────────────────────────────────
-  const financeState = useFinanceState();
+  const financeState = useFinanceState(config?.initialBalance ?? 5200);
   const {
     transactions,
     addTransaction,
@@ -122,6 +134,8 @@ export default function App() {
   const notifState      = useNotifications(alertState.alerts, recurringData, goalsState.goals);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
+  const currency = config?.currency ?? '$';
+
   const handleViewChange = useCallback((v: AppView) => {
     setActiveView(v);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -133,6 +147,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#090e17] text-slate-50 font-sans relative overflow-x-hidden">
+
+      {/* ── Onboarding Modal — blocks the app until complete ── */}
+      {!isOnboarded && (
+        <OnboardingModal onComplete={handleOnboardingComplete} />
+      )}
 
       {/* ── Background glow ── */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
@@ -177,6 +196,7 @@ export default function App() {
               financeState={financeState}
               onDelete={deleteTransaction}
               onAdd={addTransaction}
+              currency={currency}
             />
           )}
 

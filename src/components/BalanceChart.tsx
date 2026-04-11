@@ -12,9 +12,10 @@ import { BalanceDataPoint } from '../types';
 
 interface BalanceChartProps {
   data: BalanceDataPoint[];
+  currency?: string;
 }
 
-export default function BalanceChart({ data }: BalanceChartProps) {
+export default function BalanceChart({ data, currency = '$' }: BalanceChartProps) {
   // Find the split point between actual and projected
   const splitIndex = useMemo(() => {
     const idx = data.findIndex(d => d.projected);
@@ -114,7 +115,7 @@ export default function BalanceChart({ data }: BalanceChartProps) {
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fill: '#475569' }}
-              tickFormatter={(val) => `$${(val / 1000).toFixed(1)}k`}
+              tickFormatter={(val) => `${currency}${(val / 1000).toFixed(1)}k`}
               dx={-5}
             />
 
@@ -144,7 +145,7 @@ export default function BalanceChart({ data }: BalanceChartProps) {
                   <div className="bg-[#151a23] border border-white/10 rounded-xl p-3 shadow-2xl">
                     <p className="text-[10px] text-slate-500 font-semibold mb-1.5 uppercase tracking-wider">{label}</p>
                     <p className={`text-lg font-bold tabular-nums ${isProjected ? 'text-rose-400' : 'text-blue-400'}`}>
-                      ${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {currency}{Number(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                     <div className="mt-2 flex items-center gap-1.5">
                       <div className={`h-1.5 w-1.5 rounded-full ${isProjected ? 'bg-rose-500' : 'bg-blue-500'}`} />

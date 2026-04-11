@@ -129,3 +129,9 @@
 .tabular-nums {
   font-variant-numeric: tabular-nums;
 }
+
+/* ── Onboarding modal — balance input placeholder ── */
+#balance-input::placeholder {
+  color: #3a4255;
+}
+

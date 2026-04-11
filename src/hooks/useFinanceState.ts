@@ -11,8 +11,9 @@ import { initialTransactions, CATEGORY_COLORS } from '../data/mockData';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY     = 'spendwise_transactions_v2';
-const INITIAL_BALANCE = 5200; // Starting balance before any recorded transactions
+const STORAGE_KEY          = 'spendwise_transactions_v2';
+const ONBOARDING_KEY       = 'spendwise_config_v1';
+const DEFAULT_BALANCE      = 5200;
 
 // ─── Stable seeded random (for consistent projection line across renders) ──────
 // Uses a simple LCG (Linear Congruential Generator) — deterministic given same seed.
@@ -47,7 +48,7 @@ function saveTransactions(txs: Transaction[]): void {
 
 // ─── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useFinanceState() {
+export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   const [transactions, setTransactions] = useState<Transaction[]>(loadTransactions);
 
   // Persist to localStorage whenever transactions change
@@ -77,6 +78,7 @@ export function useFinanceState() {
 
   const resetData = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(ONBOARDING_KEY);
     setTransactions(initialTransactions.map(tx => ({ ...tx, isNew: false })));
   }, []);
 
@@ -87,12 +89,19 @@ export function useFinanceState() {
   // ── Derived: balance ────────────────────────────────────────────────────────
 
   const currentBalance = useMemo(() => {
+    // The user's onboarding input IS the current balance including the mock data.
+    // We reverse out the mock transactions so the math perfectly matches their input.
+    const mockNet = initialTransactions.reduce((acc, tx) => {
+      return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
+    }, 0);
+    const startingPoint = initialBalance - mockNet;
+
     return Math.round(
       transactions.reduce((acc, tx) => {
         return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
-      }, INITIAL_BALANCE) * 100
+      }, startingPoint) * 100
     ) / 100;
-  }, [transactions]);
+  }, [transactions, initialBalance]);
 
   // ── Derived: category spending (debits only) ───────────────────────────────
 
@@ -223,13 +232,19 @@ export function useFinanceState() {
     const points: BalanceDataPoint[] = [];
     const today = new Date();
 
+    // Use the same starting point reverse-calc for the trend lines
+    const mockNet = initialTransactions.reduce((acc, tx) => {
+      return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
+    }, 0);
+    const startingPoint = initialBalance - mockNet;
+
     // --- Historical: last 14 days ---
     for (let i = 13; i >= 0; i--) {
       const d       = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
 
-      let bal = INITIAL_BALANCE;
+      let bal = startingPoint;
       transactions.forEach(tx => {
         if (tx.date <= dateStr) {
           bal += tx.type === 'credit' ? tx.amount : -tx.amount;

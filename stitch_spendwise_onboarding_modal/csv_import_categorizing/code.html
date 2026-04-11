@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SpendWise - AI Categorization</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-container": "#8691aa",
+                        "surface-dim": "#0e131d",
+                        "primary-fixed-dim": "#b1c6ff",
+                        "primary-fixed": "#d9e2ff",
+                        "secondary-fixed-dim": "#bcc7de",
+                        "on-tertiary-fixed-variant": "#3c475d",
+                        "on-tertiary-fixed": "#101b2f",
+                        "outline-variant": "#424654",
+                        "secondary-fixed": "#d8e3fb",
+                        "on-secondary-fixed": "#111c2d",
+                        "on-primary-container": "#002662",
+                        "tertiary-fixed": "#d8e2fe",
+                        "inverse-on-surface": "#2c303b",
+                        "inverse-primary": "#0057cd",
+                        "surface-container": "#1b2029",
+                        "outline": "#8c90a0",
+                        "on-error": "#690005",
+                        "surface-variant": "#30353f",
+                        "background": "#0e131d",
+                        "surface-container-low": "#171c25",
+                        "on-primary": "#002c70",
+                        "on-tertiary-container": "#1f2a3e",
+                        "on-background": "#dee2f0",
+                        "primary-container": "#578cff",
+                        "surface": "#0e131d",
+                        "on-primary-fixed": "#001946",
+                        "on-secondary": "#263143",
+                        "surface-container-highest": "#30353f",
+                        "surface-bright": "#343944",
+                        "tertiary-fixed-dim": "#bcc6e1",
+                        "secondary-container": "#3e495d",
+                        "error-container": "#93000a",
+                        "tertiary": "#bcc6e1",
+                        "on-primary-fixed-variant": "#00419d",
+                        "surface-container-lowest": "#090e17",
+                        "secondary": "#bcc7de",
+                        "on-error-container": "#ffdad6",
+                        "error": "#ffb4ab",
+                        "on-surface": "#dee2f0",
+                        "on-secondary-fixed-variant": "#3c475a",
+                        "surface-tint": "#b1c6ff",
+                        "on-secondary-container": "#aeb9d0",
+                        "primary": "#b1c6ff",
+                        "on-tertiary": "#263045",
+                        "on-surface-variant": "#c2c6d7",
+                        "surface-container-high": "#252a34",
+                        "inverse-surface": "#dee2f0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "1rem",
+                        "lg": "2rem",
+                        "xl": "3rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .glass-effect {
+            background: rgba(48, 53, 63, 0.6);
+            backdrop-filter: blur(20px);
+            border: 0.5px solid rgba(177, 198, 255, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-surface-container-lowest font-body text-on-surface min-h-screen selection:bg-primary/30">
+<!-- Top Navigation Anchor -->
+<nav class="fixed top-0 w-full z-50 bg-[#0e131d] bg-gradient-to-b from-[#1a1f2b]/10 to-transparent">
+<div class="flex justify-between items-center w-full px-6 py-4 max-w-[1440px] mx-auto">
+<div class="text-xl font-bold tracking-tight text-white font-headline">SpendWise</div>
+<div class="hidden md:flex items-center gap-8">
+<span class="text-[#c2c6d7] font-medium hover:text-white transition-colors cursor-pointer">Dashboard</span>
+<span class="text-[#c2c6d7] font-medium hover:text-white transition-colors cursor-pointer">Accounts</span>
+<span class="text-[#c2c6d7] font-medium hover:text-white transition-colors cursor-pointer">Transactions</span>
+<span class="text-[#c2c6d7] font-medium hover:text-white transition-colors cursor-pointer">Analytics</span>
+<span class="text-[#c2c6d7] font-medium hover:text-white transition-colors cursor-pointer">Budgets</span>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-[#c2c6d7] cursor-pointer hover:text-white">notifications</span>
+<span class="material-symbols-outlined text-[#c2c6d7] cursor-pointer hover:text-white">settings</span>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="Close up portrait of a professional woman in corporate attire, soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrvMtnt5SUeqlKAt8JWUQ61xugWIuzjqcTgCuUQVLHGA5F0E3ICNJ4qnguTfNcoJ-5qXpyYad014_hzaZIELRtJRSJliRCYx9GDqt1aL6dnus-UmOfPQxvgzS2y7I826qNjZrGVof_k-R95j7vzekhHHkZtn9vcq6vUo-PF6DnovE5QwO9cVg-PczumtwaDe3t6nbGxWyr7w0BnoxxHHyrsRnFy-86kX10sxb7AtUPhYtKBvGieTXDw-4UBT5hxegmi3mpqDkVgW0"/>
+</div>
+</div>
+</div>
+</nav>
+<main class="pt-24 pb-32 px-4 flex flex-col items-center">
+<!-- 5-Step Progress Indicator -->
+<div class="w-full max-w-4xl mb-12">
+<div class="flex justify-between items-center relative">
+<!-- Progress Line Background -->
+<div class="absolute top-1/2 left-0 w-full h-[2px] bg-surface-container-highest -translate-y-1/2 z-0"></div>
+<!-- Active Progress Line -->
+<div class="absolute top-1/2 left-0 w-1/2 h-[2px] bg-primary-container -translate-y-1/2 z-0"></div>
+<!-- Steps -->
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary">Upload</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'wght' 700;">check</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-primary">Map columns</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-primary ring-4 ring-primary/20 flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-sm animate-spin">sync</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-white">Categorizing</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-on-surface-variant">
+<span class="text-xs font-bold">4</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Review</span>
+</div>
+<div class="relative z-10 flex flex-col items-center gap-2">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest border border-outline-variant flex items-center justify-center text-on-surface-variant">
+<span class="text-xs font-bold">5</span>
+</div>
+<span class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Done</span>
+</div>
+</div>
+</div>
+<!-- Center Content Card -->
+<div class="w-full max-w-[600px]">
+<div class="bg-surface-container-low rounded-lg p-8 shadow-2xl relative overflow-hidden">
+<!-- Background Subtle Glow -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 blur-[100px] rounded-full"></div>
+<div class="text-center mb-10">
+<h1 class="text-white text-2xl font-bold font-headline mb-2">Categorizing your transactions</h1>
+<p class="text-on-surface-variant">AI is analyzing 47 unique merchants</p>
+</div>
+<!-- Animated Progress Area -->
+<div class="flex flex-col items-center mb-12">
+<div class="relative w-40 h-40 mb-6">
+<!-- Background Circle -->
+<svg class="w-full h-full" viewbox="0 0 100 100">
+<circle class="text-surface-container-highest" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" stroke-width="6"></circle>
+<!-- Progress Circle -->
+<circle class="text-primary-container progress-ring-circle" cx="50" cy="50" fill="transparent" r="42" stroke="currentColor" stroke-dasharray="263.89" stroke-dashoffset="72.5" stroke-linecap="round" stroke-width="6"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-3xl font-extrabold text-white font-headline">72%</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter text-on-surface-variant">Complete</span>
+</div>
+</div>
+<div class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container-highest border border-outline-variant/30">
+<div class="flex -space-x-2">
+<img alt="N" class="w-5 h-5 rounded-full ring-2 ring-surface-container-low" data-alt="Netflix company logo placeholder" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-6hTuJwf581rXOfWEvKcjlVs_hou8JHbTKDTWhPBakUikCZjoIjT6ZVzJukMSPOubdPn5WNyMNAXAwnhi-TbFIHNZSJqvQnWDpmOjw4levGXzwIrqccPX0CSJK_wq7rDU_LMXTBFBI_Tln_nnOHZD_asBVATrynXgeI83wVT95dlT0ElgAObGE-zTqGNS_qmBmuyySKnlmFrOyY7M1dhtq1OkuwQ_Z0CcgJ856iO1cmxBnTHeM-TPdayrotdelXWzeWmIIyV3ZhY"/>
+<img alt="A" class="w-5 h-5 rounded-full ring-2 ring-surface-container-low" data-alt="Amazon company logo icon" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBThswDMc_YUUZfm3R9md2bDUd7_lpiD8Pf3aAXpIQJVZO53Xma9Ius3YFplU2tWLjigCRTg1kBNnjBH-a1-13lYkvf2RilT-fWCUj7SZXeNbyZxZ7lDvlU2Y4VnRFOH9P5waTWU8m_FWGSFI0LEHT40huEFA0fL20TRh5oWzTSPT3vT6ODLJjHJzwQJWlnypUjddNjnAGqAR0bJNZxiEpiBYENA11RyIqdZRYJdCyEf9aUkx80B6bhScBHzTEoWrYyOXIJwfVxrKs"/>
+<img alt="U" class="w-5 h-5 rounded-full ring-2 ring-surface-container-low" data-alt="Uber corporate branding logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAys7P6WCcJ9ZU7041DYVVmv7FSMTd9uw061xAsX46hMpVNex7_5VgYDtwhw5KzgdwqYb3q7b7Rl9vozzOTWKeZjiWtO26bpnigvKcPHmM5gHOqZV9OIcDQ9Lss3xVulNG_KGjykvQY-f3QHdH5Q6IHCT1tAwsBVh2T6MvRfdW97m0Y14mYQPAH-fRU97pPMa9T9fJA4o1sNKOwnLZBFkl2yJ6V-hVV8UP1rtlHBrvHoh9SnWNiYh0LLTG734Qp-iVYtGli73Obb1Q"/>
+</div>
+<span class="text-sm font-medium text-white">34 of 47 merchants categorized…</span>
+</div>
+</div>
+<!-- Merchant Grid -->
+<div class="grid grid-cols-2 gap-3">
+<!-- Pill 1: Subscriptions -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#ff4b4b] hover:translate-x-1 transition-transform duration-200 cursor-default">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Netflix</span>
+<span class="text-[10px] text-on-surface-variant">Subscriptions 📺</span>
+</div>
+<span class="material-symbols-outlined text-green-400 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Pill 2: Transport -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#ffcc00] hover:translate-x-1 transition-transform duration-200 cursor-default">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Shell Oil</span>
+<span class="text-[10px] text-on-surface-variant">Transport 🚗</span>
+</div>
+<span class="material-symbols-outlined text-green-400 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Pill 3: Food -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#4ade80] hover:translate-x-1 transition-transform duration-200 cursor-default">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Whole Foods</span>
+<span class="text-[10px] text-on-surface-variant">Food 🍔</span>
+</div>
+<span class="material-symbols-outlined text-green-400 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Pill 4: Shopping -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#a855f7] hover:translate-x-1 transition-transform duration-200 cursor-default">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Amazon</span>
+<span class="text-[10px] text-on-surface-variant">Shopping 🛍️</span>
+</div>
+<span class="material-symbols-outlined text-green-400 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Pill 5: Transport -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#ffcc00] hover:translate-x-1 transition-transform duration-200 cursor-default">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Uber</span>
+<span class="text-[10px] text-on-surface-variant">Transport 🚗</span>
+</div>
+<span class="material-symbols-outlined text-green-400 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Pill 6: Shopping -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#a855f7] hover:translate-x-1 transition-transform duration-200 cursor-default">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Apple</span>
+<span class="text-[10px] text-on-surface-variant">Shopping 🛍️</span>
+</div>
+<span class="material-symbols-outlined text-green-400 text-sm" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<!-- Pill 7: Food -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#4ade80] hover:translate-x-1 transition-transform duration-200 cursor-default opacity-50 animate-pulse">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Starbucks</span>
+<span class="text-[10px] text-on-surface-variant">Food 🍔</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm animate-spin">refresh</span>
+</div>
+<!-- Pill 8: Health -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-highest border-l-4 border-[#22d3ee] hover:translate-x-1 transition-transform duration-200 cursor-default opacity-50 animate-pulse">
+<div class="flex flex-col">
+<span class="text-xs font-bold text-white leading-tight">Gym</span>
+<span class="text-[10px] text-on-surface-variant">Health 🏥</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant text-sm animate-spin">refresh</span>
+</div>
+</div>
+</div>
+<div class="mt-12 text-center">
+<p class="text-on-surface-variant text-sm italic mb-4">Our AI models are processing complex merchant identifiers for maximum accuracy.</p>
+<button class="w-full max-w-xs py-4 rounded-xl bg-surface-container-highest text-on-surface-variant font-bold text-sm tracking-wide opacity-50 cursor-not-allowed" disabled="">
+                    Please wait...
+                </button>
+</div>
+</div>
+</main>
+<!-- Side Navigation Anchor (Hidden on Mobile) -->
+<aside class="hidden lg:flex fixed left-0 top-0 h-full w-64 bg-[#0e131d] border-r border-[#c2c6d7]/10 flex-col p-4">
+<div class="mb-12 px-2">
+<h2 class="text-lg font-black text-white font-headline">SpendWise</h2>
+<p class="text-xs text-on-surface-variant font-label">Financial Atelier</p>
+</div>
+<nav class="flex-1 space-y-2">
+<a class="flex items-center gap-3 px-4 py-3 text-[#c2c6d7] hover:bg-[#c2c6d7]/5 hover:text-white transition-all rounded-full group" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="text-sm font-medium">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#c2c6d7] hover:bg-[#c2c6d7]/5 hover:text-white transition-all rounded-full group" href="#">
+<span class="material-symbols-outlined">account_balance</span>
+<span class="text-sm font-medium">Accounts</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#c2c6d7] hover:bg-[#c2c6d7]/5 hover:text-white transition-all rounded-full group" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span class="text-sm font-medium">Transactions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-[#3b7eff]/10 text-[#b1c6ff] rounded-full group" href="#">
+<span class="material-symbols-outlined">leaderboard</span>
+<span class="text-sm font-medium">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#c2c6d7] hover:bg-[#c2c6d7]/5 hover:text-white transition-all rounded-full group" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="text-sm font-medium">Budgets</span>
+</a>
+</nav>
+<div class="mt-auto space-y-2">
+<button class="w-full py-3 bg-primary-container text-on-primary-container rounded-full font-bold text-sm mb-6 active:translate-x-1 duration-200">
+                Import CSV
+            </button>
+<a class="flex items-center gap-3 px-4 py-2 text-[#c2c6d7] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="text-sm">Support</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-[#c2c6d7] hover:text-white transition-all" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm">Sign Out</span>
+</a>
+</div>
+</aside>
+<!-- Bottom Navigation for Mobile -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-2 bg-[#1a1f2b]/80 backdrop-blur-xl border-t border-white/5 shadow-[0_-10px_40px_rgba(0,0,0,0.4)] rounded-t-[2rem]">
+<div class="flex flex-col items-center justify-center text-[#c2c6d7] px-6 py-2 hover:text-white transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined">home</span>
+<span class="text-[10px] font-medium font-inter">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#b1c6ff] bg-[#3b7eff]/20 rounded-2xl px-6 py-2 active:scale-90 duration-150">
+<span class="material-symbols-outlined">history</span>
+<span class="text-[10px] font-medium font-inter">Activity</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#c2c6d7] px-6 py-2 hover:text-white transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined">pie_chart</span>
+<span class="text-[10px] font-medium font-inter">Reports</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#c2c6d7] px-6 py-2 hover:text-white transition-colors active:scale-90 duration-150">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-[10px] font-medium font-inter">Settings</span>
+</div>
+</nav>
+</body></html>

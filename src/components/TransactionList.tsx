@@ -6,11 +6,12 @@ import { CATEGORY_ICONS } from '../data/mockData';
 interface TransactionListProps {
   transactions: Transaction[];
   onDelete: (id: string) => void;
+  currency?: string;
 }
 
 type TabFilter = 'all' | 'credit' | 'debit';
 
-export default function TransactionList({ transactions, onDelete }: TransactionListProps) {
+export default function TransactionList({ transactions, onDelete, currency = '$' }: TransactionListProps) {
   const [tab, setTab] = useState<TabFilter>('all');
 
   const filtered = useMemo(() => {
@@ -111,7 +112,7 @@ export default function TransactionList({ transactions, onDelete }: TransactionL
                 {/* Right: Amount */}
                 <div className="flex items-center gap-2 shrink-0 ml-3">
                   <span className={`text-sm font-bold tabular-nums ${isCredit ? 'text-blue-400' : 'text-slate-200'}`}>
-                    {isCredit ? '+' : '-'}${tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    {isCredit ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                   </span>
 
                   {/* Delete button - appears on hover */}

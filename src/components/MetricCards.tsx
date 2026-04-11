@@ -8,6 +8,7 @@ interface MetricCardsProps {
   predictedEndOfMonth: number;
   topCategory:         CategorySpend | null;
   monthlyStats:        MonthlyStats;
+  currency?:           string;
 }
 
 export default function MetricCards({
@@ -15,6 +16,7 @@ export default function MetricCards({
   predictedEndOfMonth,
   topCategory,
   monthlyStats,
+  currency = '$',
 }: MetricCardsProps) {
   const displayBalance   = useCountUp(currentBalance, 600);
   const displayPredicted = useCountUp(predictedEndOfMonth, 600);
@@ -37,7 +39,7 @@ export default function MetricCards({
           <div>
             <p className="text-slate-500 font-medium text-xs mb-1.5 uppercase tracking-widest">Total Balance</p>
             <h2 className="text-4xl sm:text-5xl font-bold text-white tracking-tight flex items-baseline gap-1 tabular-nums">
-              <span className="text-blue-500/70 text-3xl sm:text-4xl font-semibold">$</span>
+              <span className="text-blue-500/70 text-3xl sm:text-4xl font-semibold">{currency}</span>
               {displayBalance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </h2>
           </div>
@@ -55,7 +57,7 @@ export default function MetricCards({
             <div>
               <p className="text-slate-500 text-[10px] uppercase tracking-wider font-medium">Income</p>
               <p className="text-blue-400 font-bold text-sm tabular-nums">
-                +${displayIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                +{currency}{displayIncome.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
           </div>
@@ -66,7 +68,7 @@ export default function MetricCards({
             <div>
               <p className="text-slate-500 text-[10px] uppercase tracking-wider font-medium">Expenses</p>
               <p className="text-rose-400 font-bold text-sm tabular-nums">
-                -${displayExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                -{currency}{displayExpenses.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
           </div>
@@ -98,7 +100,7 @@ export default function MetricCards({
 
           <div className="mt-2">
             <div className="flex items-end gap-1.5 mb-1">
-              <span className="text-slate-500 text-lg">$</span>
+              <span className="text-slate-500 text-lg">{currency}</span>
               <span className={`text-3xl font-bold tracking-tight tabular-nums ${isPositiveTrend ? 'text-blue-400' : 'text-rose-400'}`}>
                 {displayPredicted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
@@ -127,7 +129,7 @@ export default function MetricCards({
                   </div>
                   <span className="text-sm font-semibold text-slate-300">{topCategory.name}</span>
                   <span className="text-sm font-bold text-slate-100 ml-auto tabular-nums">
-                    ${Math.round(topCategory.value).toLocaleString()}
+                    {currency}{Math.round(topCategory.value).toLocaleString()}
                   </span>
                 </div>
               </div>
