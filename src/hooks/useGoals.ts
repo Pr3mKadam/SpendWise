@@ -1,9 +1,8 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { SavingsGoal, GoalStatus } from '../types';
+import { deleteGoalRemote, fetchGoals, upsertGoalRemote } from '../lib/supabaseData';
 
 const STORAGE_KEY = 'spendwise_goals_v1';
-
-// ─── Default sample goals so the page looks alive on first load ────────────────
 
 function makeDefaultGoals(): SavingsGoal[] {
   const today   = new Date();
@@ -45,7 +44,7 @@ function makeDefaultGoals(): SavingsGoal[] {
       emoji:               '💻',
       targetAmount:        2499,
       savedAmount:         2499,
-      targetDate:          inMonths(-1), // already achieved
+      targetDate:          inMonths(-1),
       monthlyContribution: 0,
       status:              'achieved',
       color:               '#a855f7',
@@ -53,8 +52,6 @@ function makeDefaultGoals(): SavingsGoal[] {
     },
   ];
 }
-
-// ─── Persistence helpers ──────────────────────────────────────────────────────
 
 function loadGoals(): SavingsGoal[] {
   try {
@@ -69,8 +66,6 @@ function saveGoals(goals: SavingsGoal[]) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(goals));
   } catch { /* ignore */ }
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function computeStatus(goal: SavingsGoal): GoalStatus {
   if (goal.savedAmount >= goal.targetAmount) return 'achieved';
@@ -91,68 +86,100 @@ function uid(): string {
   return `goal-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+export function useGoals(userId?: string | null, refreshKey = 0) {
+  const [goals, setGoals] = useState<SavingsGoal[]>(() => (userId ? [] : loadGoals()));
+  const [goalsHydrated, setGoalsHydrated] = useState(!userId);
 
-export function useGoals() {
-  const [goals, setGoals] = useState<SavingsGoal[]>(loadGoals);
+  useEffect(() => {
+    if (!userId) {
+      setGoals(loadGoals());
+      setGoalsHydrated(true);
+      return;
+    }
 
+    setGoalsHydrated(false);
+    fetchGoals(userId)
+      .then(rows => {
+        setGoals(rows.length ? rows : []);
+      })
+      .catch(() => setGoals([]))
+      .finally(() => setGoalsHydrated(true));
+  }, [userId, refreshKey]);
 
+  useEffect(() => {
+    if (userId || !goalsHydrated) return;
+    saveGoals(goals);
+  }, [goals, userId, goalsHydrated]);
 
-  // ── CRUD ───────────────────────────────────────────────────────────────────
-
-  const addGoal = useCallback((
-    partial: Omit<SavingsGoal, 'id' | 'status' | 'createdAt'>,
-  ) => {
-    const draft: SavingsGoal = {
-      ...partial,
-      id:        uid(),
-      status:    'on-track',
-      createdAt: new Date().toISOString().split('T')[0],
-    };
-    draft.status = computeStatus(draft);
-    setGoals(prev => {
-      const next = [...prev, draft];
-      saveGoals(next);
-      return next;
-    });
-  }, []);
-
-  const updateGoal = useCallback((id: string, updates: Partial<SavingsGoal>) => {
-    setGoals(prev => {
-      const next = prev.map(g => {
-        if (g.id !== id) return g;
-        const updated = { ...g, ...updates };
-        updated.status = computeStatus(updated);
-        return updated;
+  const addGoal = useCallback(
+    (partial: Omit<SavingsGoal, 'id' | 'status' | 'createdAt'>) => {
+      const draft: SavingsGoal = {
+        ...partial,
+        id:        uid(),
+        status:    'on-track',
+        createdAt: new Date().toISOString().split('T')[0],
+      };
+      draft.status = computeStatus(draft);
+      setGoals(prev => {
+        const next = [...prev, draft];
+        if (userId) void upsertGoalRemote(userId, draft);
+        else saveGoals(next);
+        return next;
       });
-      saveGoals(next);
-      return next;
-    });
-  }, []);
+    },
+    [userId]
+  );
 
-  const deleteGoal = useCallback((id: string) => {
-    setGoals(prev => {
-      const next = prev.filter(g => g.id !== id);
-      saveGoals(next);
-      return next;
-    });
-  }, []);
-
-  const addContribution = useCallback((id: string, amount: number) => {
-    setGoals(prev => {
-      const next = prev.map(g => {
-        if (g.id !== id) return g;
-        const newSaved = Math.min(g.savedAmount + amount, g.targetAmount);
-        const updated  = { ...g, savedAmount: Math.round(newSaved * 100) / 100 };
-        updated.status = computeStatus(updated);
-        return updated;
+  const updateGoal = useCallback(
+    (id: string, updates: Partial<SavingsGoal>) => {
+      setGoals(prev => {
+        const next = prev.map(g => {
+          if (g.id !== id) return g;
+          const updated = { ...g, ...updates };
+          updated.status = computeStatus(updated);
+          return updated;
+        });
+        const updated = next.find(g => g.id === id);
+        if (userId) {
+          if (updated) void upsertGoalRemote(userId, updated);
+        } else saveGoals(next);
+        return next;
       });
-      saveGoals(next);
-      return next;
-    });
-  }, []);
+    },
+    [userId]
+  );
 
-  // ── Summary stats ──────────────────────────────────────────────────────────
+  const deleteGoal = useCallback(
+    (id: string) => {
+      setGoals(prev => {
+        const next = prev.filter(g => g.id !== id);
+        if (userId) void deleteGoalRemote(userId, id);
+        else saveGoals(next);
+        return next;
+      });
+    },
+    [userId]
+  );
+
+  const addContribution = useCallback(
+    (id: string, amount: number) => {
+      setGoals(prev => {
+        const next = prev.map(g => {
+          if (g.id !== id) return g;
+          const newSaved = Math.min(g.savedAmount + amount, g.targetAmount);
+          const updated  = { ...g, savedAmount: Math.round(newSaved * 100) / 100 };
+          updated.status = computeStatus(updated);
+          return updated;
+        });
+        const updated = next.find(g => g.id === id);
+        if (userId) {
+          if (updated) void upsertGoalRemote(userId, updated);
+        } else saveGoals(next);
+        return next;
+      });
+    },
+    [userId]
+  );
 
   const stats = useMemo(() => {
     const active   = goals.filter(g => g.status !== 'achieved');
@@ -173,6 +200,7 @@ export function useGoals() {
 
   return {
     goals,
+    goalsHydrated,
     addGoal,
     updateGoal,
     deleteGoal,

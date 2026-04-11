@@ -1,5 +1,6 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Budget, Category, CategorySpend } from '../types';
+import { fetchBudgetLimits, saveBudgetLimits } from '../lib/supabaseData';
 
 // ─── Default budget limits ─────────────────────────────────────────────────────
 
@@ -35,10 +36,34 @@ function getStatus(percent: number): Budget['status'] {
 
 // ─── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useBudgets(categorySpending: CategorySpend[]) {
-  const [limits, setLimits] = useState<Partial<Record<Category, number>>>(loadLimits);
+export function useBudgets(
+  categorySpending: CategorySpend[],
+  userId?: string | null,
+  refreshKey = 0
+) {
+  const [limits, setLimits] = useState<Partial<Record<Category, number>>>(() =>
+    userId ? DEFAULT_LIMITS : loadLimits()
+  );
+  const [budgetsHydrated, setBudgetsHydrated] = useState(!userId);
 
-  // Derive full Budget objects from limits + current spending
+  useEffect(() => {
+    if (!userId) {
+      setLimits(loadLimits());
+      setBudgetsHydrated(true);
+      return;
+    }
+
+    setBudgetsHydrated(false);
+    fetchBudgetLimits(userId)
+      .then(bl => {
+        setLimits({ ...DEFAULT_LIMITS, ...(bl ?? {}) });
+      })
+      .catch(() => {
+        setLimits({ ...DEFAULT_LIMITS });
+      })
+      .finally(() => setBudgetsHydrated(true));
+  }, [userId, refreshKey]);
+
   const budgets = useMemo((): Budget[] => {
     const spendMap = new Map<string, number>();
     categorySpending.forEach(c => {
@@ -60,20 +85,24 @@ export function useBudgets(categorySpending: CategorySpend[]) {
     });
   }, [limits, categorySpending]);
 
-  const updateLimit = useCallback((category: Category, newLimit: number) => {
-    setLimits(prev => {
-      const next = { ...prev, [category]: Math.max(0, newLimit) };
-      saveLimits(next);
-      return next;
-    });
-  }, []);
+  const updateLimit = useCallback(
+    (category: Category, newLimit: number) => {
+      setLimits(prev => {
+        const next = { ...prev, [category]: Math.max(0, newLimit) };
+        if (userId) void saveBudgetLimits(userId, next);
+        else saveLimits(next);
+        return next;
+      });
+    },
+    [userId]
+  );
 
   const resetLimits = useCallback(() => {
-    saveLimits(DEFAULT_LIMITS);
     setLimits(DEFAULT_LIMITS);
-  }, []);
+    if (userId) void saveBudgetLimits(userId, DEFAULT_LIMITS);
+    else saveLimits(DEFAULT_LIMITS);
+  }, [userId]);
 
-  // Summary stats
   const totalBudgeted = useMemo(
     () => budgets.reduce((a, b) => a + b.limit, 0),
     [budgets]
@@ -89,6 +118,7 @@ export function useBudgets(categorySpending: CategorySpend[]) {
 
   return {
     budgets,
+    budgetsHydrated,
     updateLimit,
     resetLimits,
     totalBudgeted,

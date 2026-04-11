@@ -1,13 +1,21 @@
 import { useState } from 'react';
-import { RotateCcw, Check, X, Bell, Zap } from 'lucide-react';
+import { RotateCcw, Check, X, Bell, Zap, LogOut } from 'lucide-react';
 
 interface HeaderProps {
-  onReset:           () => void;
-  unreadCount:       number;
+  onReset:               () => void;
+  unreadCount:           number;
   onToggleNotifications: () => void;
+  onSignOut?:            () => void;
+  userEmail?:            string | null;
 }
 
-export default function Header({ onReset, unreadCount, onToggleNotifications }: HeaderProps) {
+export default function Header({
+  onReset,
+  unreadCount,
+  onToggleNotifications,
+  onSignOut,
+  userEmail,
+}: HeaderProps) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleConfirmReset = () => {
@@ -36,6 +44,22 @@ export default function Header({ onReset, unreadCount, onToggleNotifications }: 
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2">
+          {userEmail && (
+            <span className="hidden sm:block max-w-[140px] truncate text-[10px] text-slate-600 mr-1" title={userEmail}>
+              {userEmail}
+            </span>
+          )}
+          {onSignOut && (
+            <button
+              type="button"
+              onClick={() => void onSignOut()}
+              className="flex items-center justify-center h-9 px-2.5 rounded-xl border border-slate-800/80 bg-slate-900/50 text-slate-500 transition-all hover:bg-slate-800 hover:text-white hover:border-slate-700 gap-1.5"
+              title="Sign out"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span className="text-[10px] font-semibold hidden sm:inline">Out</span>
+            </button>
+          )}
           {/* Reset */}
           {!showConfirm ? (
             <button

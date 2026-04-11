@@ -66,6 +66,12 @@ export const initialTransactions: Transaction[] = [
   { id: '18', date: daysAgo(13), amount: 45.00,  category: 'Transport',     merchant: 'Lyft',            type: 'debit'  },
 ];
 
+/** Net effect of bundled demo transactions (for balance anchor when using sample data). */
+export const INITIAL_TRANSACTIONS_NET = initialTransactions.reduce(
+  (acc, tx) => (tx.type === 'credit' ? acc + tx.amount : acc - tx.amount),
+  0
+);
+
 // ─── Parser Helpers ────────────────────────────────────────────────────────────
 
 export const DEBIT_CATEGORIES: Category[] = [

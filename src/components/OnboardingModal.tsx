@@ -5,6 +5,8 @@ import { Lock } from 'lucide-react';
 
 export interface SpendWiseConfig {
   initialBalance:     number;
+  /** Sum(credits) − sum(debits) for transactions included when the user stated `initialBalance`. */
+  balanceAnchorNet?:  number;
   currency:           CurrencySymbol;
   onboardingComplete: boolean;
   createdAt:          string;
@@ -22,7 +24,8 @@ export function loadConfig(): SpendWiseConfig | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as SpendWiseConfig;
+    const c = JSON.parse(raw) as SpendWiseConfig;
+    return c;
   } catch {
     return null;
   }
@@ -32,13 +35,26 @@ function saveConfig(config: SpendWiseConfig): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
 }
 
+/** Persist onboarding settings for offline / non-Supabase mode. */
+export function persistLocalSpendWiseConfig(config: SpendWiseConfig): void {
+  saveConfig(config);
+}
+
 // ─── Component ─────────────────────────────────────────────────────────────────
 
 interface OnboardingModalProps {
-  onComplete: (config: SpendWiseConfig) => void;
+  onComplete: (config: SpendWiseConfig) => void | Promise<void>;
+  /** Net ledger of transactions on screen when the user submits (credits − debits). */
+  transactionLedgerNet: number;
+  /** When true, privacy copy reflects cloud sync. */
+  cloudMode?: boolean;
 }
 
-export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
+export default function OnboardingModal({
+  onComplete,
+  transactionLedgerNet,
+  cloudMode = false,
+}: OnboardingModalProps) {
   const [currency, setCurrency]     = useState<CurrencySymbol>('$');
   const [rawValue, setRawValue]     = useState('');
   const [focused, setFocused]       = useState(false);
@@ -67,12 +83,13 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
     if (!isValid) return;
     const config: SpendWiseConfig = {
       initialBalance:     numericValue,
+      balanceAnchorNet:   transactionLedgerNet,
       currency,
       onboardingComplete: true,
       createdAt:          new Date().toISOString(),
     };
-    saveConfig(config);
-    onComplete(config);
+    if (!cloudMode) saveConfig(config);
+    void Promise.resolve(onComplete(config));
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -298,7 +315,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
               color:       '#3a4255',
             }}
           >
-            Your data never leaves this device
+            {cloudMode ? 'Synced securely to your account' : 'Your data stays on this device'}
           </span>
         </div>
 

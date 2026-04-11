@@ -10,6 +10,7 @@ interface NotificationCenterProps {
   onMarkRead:    (id: string) => void;
   onMarkAllRead: () => void;
   onNavigate:    (view: AppView) => void;
+  cloudMode?:    boolean;
 }
 
 // ─── Severity accent ──────────────────────────────────────────────────────────
@@ -106,6 +107,7 @@ export default function NotificationCenter({
   onMarkRead,
   onMarkAllRead,
   onNavigate,
+  cloudMode = false,
 }: NotificationCenterProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -244,7 +246,9 @@ export default function NotificationCenter({
         {/* Footer */}
         <div className="flex-shrink-0 border-t border-slate-800/60 px-4 py-3 text-center">
           <p className="text-[10px] text-slate-600">
-            Alerts reset when you reload · Stored on this device only
+            {cloudMode
+              ? 'Alerts reset when you reload · Synced with your account'
+              : 'Alerts reset when you reload · Stored on this device only'}
           </p>
         </div>
       </div>
