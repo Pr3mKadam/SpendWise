@@ -15,13 +15,16 @@ interface HeaderProps {
 }
 
 const VIEW_TITLES: Partial<Record<AppView, string>> = {
-  dashboard: 'Overview',
-  analytics: 'Statistics',
-  budget:    'Budget',
-  goals:     'Goals',
-  history:   'Transactions',
-  sync:      'Bank & UPI Sync',
-  profile:   'Profile & Settings',
+  dashboard:     'Overview',
+  analytics:     'Statistics',
+  budget:        'Budget',
+  goals:         'Goals',
+  shared:        'Shared money',
+  history:       'Transactions',
+  sync:          'Bank & UPI Sync',
+  profile:       'Profile & Settings',
+  portfolio:     'Net worth',
+  subscriptions: 'Subscriptions',
 };
 
 function getGreeting() {

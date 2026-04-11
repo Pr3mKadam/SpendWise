@@ -1,4 +1,4 @@
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw } from 'lucide-react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users } from 'lucide-react';
 import { AppView } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { id: 'analytics'     as AppView, label: 'Statistics',       icon: PieChart },
   { id: 'budget'        as AppView, label: 'Budget',           icon: Target },
   { id: 'goals'         as AppView, label: 'Goals',            icon: CreditCard },
+  { id: 'shared'        as AppView, label: 'Shared',           icon: Users },
   { id: 'portfolio'     as AppView, label: 'Net Worth',        icon: TrendingUp },
   { id: 'subscriptions' as AppView, label: 'Subscriptions',    icon: RefreshCw },
   { id: 'sync'          as AppView, label: 'Bank Sync',        icon: Landmark },

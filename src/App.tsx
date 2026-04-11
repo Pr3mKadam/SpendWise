@@ -19,6 +19,7 @@ import AlertBanner      from './components/AlertBanner';
 import NotificationCenter from './components/NotificationCenter';
 import RecurringView    from './components/RecurringView';
 import GoalsView        from './components/GoalsView';
+import SharedView       from './components/SharedView';
 import ImportCSVModal   from './components/ImportCSVModal';
 import CustomCategoriesModal from './components/CustomCategoriesModal';
 import BankSyncView       from './components/BankSyncView';
@@ -334,6 +335,10 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
                 currency={currency}
               />
             </div>
+          )}
+
+          {activeView === 'shared' && (
+            <SharedView currency={currency} />
           )}
 
           {activeView === 'history' && (

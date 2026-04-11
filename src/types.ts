@@ -78,7 +78,86 @@ export interface CustomCategoryDef {
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
-export type AppView = 'dashboard' | 'budget' | 'analytics' | 'history' | 'goals' | 'sync' | 'profile' | 'portfolio' | 'subscriptions';
+export type AppView =
+  | 'dashboard'
+  | 'budget'
+  | 'analytics'
+  | 'history'
+  | 'goals'
+  | 'shared'
+  | 'sync'
+  | 'profile'
+  | 'portfolio'
+  | 'subscriptions';
+
+// ─── Shared household (roommates, friends, family) — local-first ─────────────
+
+export type HouseholdPurpose = 'roommates' | 'friends' | 'family' | 'other';
+
+export interface HouseholdMember {
+  id:   string;
+  name: string;
+  emoji: string;
+  /** Optional label, e.g. "Mom", "Flatmate" */
+  relation?: string;
+}
+
+export interface HouseholdSettings {
+  name:    string;
+  purpose: HouseholdPurpose;
+  members: HouseholdMember[];
+}
+
+export type SharedWalletEntryKind = 'contribution' | 'spend_from_pot' | 'withdrawal';
+
+/** Joint cash pot: contributions in, spends/withdrawals out */
+export interface SharedWalletEntry {
+  id:        string;
+  date:      string;
+  kind:      SharedWalletEntryKind;
+  amount:    number;
+  memberId:  string;
+  label:     string;
+  createdAt: string;
+}
+
+export interface SharedExpenseSplit {
+  memberId:     string;
+  sharePercent: number;
+}
+
+/** Split bill: who paid and each person’s fair share (%) */
+export interface SharedExpense {
+  id:              string;
+  date:            string;
+  label:           string;
+  category:        string;
+  amount:          number;
+  paidByMemberId:  string;
+  splits:          SharedExpenseSplit[];
+  createdAt:       string;
+}
+
+export interface SharedGoalContribution {
+  id:       string;
+  date:     string;
+  memberId: string;
+  amount:   number;
+  note?:    string;
+}
+
+/** Group savings target (trip, furniture, emergency jar, etc.) */
+export interface SharedSavingsGoal {
+  id:           string;
+  name:         string;
+  emoji:        string;
+  targetAmount: number;
+  targetDate:   string;
+  color:        string;
+  memberIds:    string[];
+  contributions: SharedGoalContribution[];
+  createdAt:    string;
+}
 
 // ─── Phase 6.1: Bank / UPI Integration ──────────────────────────────────────────
 
