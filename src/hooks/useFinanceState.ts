@@ -7,7 +7,8 @@ import {
   MonthlyStats,
   MonthlyHistoryPoint,
 } from '../types';
-import { initialTransactions, CATEGORY_COLORS } from '../data/mockData';
+import { initialTransactions } from '../data/mockData';
+import { useCategories } from './useCategories';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ function saveTransactions(txs: Transaction[]): void {
 // ─── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
+  const { mergedColors } = useCategories();
   const [transactions, setTransactions] = useState<Transaction[]>(loadTransactions);
 
   // Persist to localStorage whenever transactions change
@@ -111,11 +113,11 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
       .map(([name, value]) => ({
         name,
         value:   Math.round(value * 100) / 100,
-        color:   CATEGORY_COLORS[name],
+        color:   mergedColors[name] || '#14b8a6', // fallback for unknown custom
         percent: 0,
       }))
       .sort((a, b) => b.value - a.value);
-  }, [transactions]);
+  }, [transactions, mergedColors]);
 
   const totalSpent = useMemo(
     () => Math.round(categorySpending.reduce((acc, c) => acc + c.value, 0) * 100) / 100,

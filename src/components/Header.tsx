@@ -1,22 +1,27 @@
-import { Bell, Search, ChevronRight, Moon, Sun } from 'lucide-react';
+import { Bell, ChevronRight, Moon, Sun, User } from 'lucide-react';
 import { AppView } from '../types';
+import { SpendWiseConfig } from './OnboardingModal';
 
 interface HeaderProps {
   activeView:            AppView;
   unreadCount:           number;
   onToggleNotifications: () => void;
+  onNavigate:            (view: AppView) => void;
   currency:              string;
   currentBalance:        number;
   theme:                 'light' | 'dark';
   onToggleTheme:         () => void;
+  config?:               SpendWiseConfig | null;
 }
 
-const VIEW_TITLES: Record<AppView, string> = {
+const VIEW_TITLES: Partial<Record<AppView, string>> = {
   dashboard: 'Overview',
   analytics: 'Statistics',
   budget:    'Budget',
   goals:     'Goals',
   history:   'Transactions',
+  sync:      'Bank & UPI Sync',
+  profile:   'Profile & Settings',
 };
 
 function getGreeting() {
@@ -26,9 +31,25 @@ function getGreeting() {
   return 'Good evening';
 }
 
-export default function Header({ activeView, unreadCount, onToggleNotifications, theme, onToggleTheme }: HeaderProps) {
+export default function Header({
+  activeView,
+  unreadCount,
+  onToggleNotifications,
+  onNavigate,
+  theme,
+  onToggleTheme,
+  config,
+}: HeaderProps) {
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const displayName = config?.name?.trim() || 'User';
+  const initials = displayName
+    .split(' ')
+    .map(n => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <header
@@ -39,20 +60,32 @@ export default function Header({ activeView, unreadCount, onToggleNotifications,
         boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
       }}
     >
-      {/* Left — Greeting */}
-      <div className="flex items-center gap-3">
-        {/* Breadcrumb for non-dashboard pages */}
+      {/* Left — Greeting / Page Title */}
+      <div className="flex items-center gap-2">
         {activeView !== 'dashboard' && (
           <>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}>
-              Dashboard
-            </span>
+            <button
+              onClick={() => onNavigate('dashboard')}
+              style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 500, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              Home
+            </button>
             <ChevronRight size={14} style={{ color: 'var(--text-dim)' }} />
           </>
         )}
         <div>
-          <div style={{ fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '18px', color: 'var(--text-primary)', lineHeight: 1.2 }}>
-            {activeView === 'dashboard' ? `${getGreeting()}, User` : VIEW_TITLES[activeView]}
+          <div
+            style={{
+              fontFamily: 'var(--font-manrope)',
+              fontWeight: 700,
+              fontSize: '18px',
+              color: 'var(--text-primary)',
+              lineHeight: 1.2,
+            }}
+          >
+            {activeView === 'dashboard'
+              ? `${getGreeting()}, ${displayName} 👋`
+              : VIEW_TITLES[activeView] ?? activeView}
           </div>
           {activeView === 'dashboard' && (
             <div style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400 }}>
@@ -62,38 +95,31 @@ export default function Header({ activeView, unreadCount, onToggleNotifications,
         </div>
       </div>
 
-      {/* Right — Search & Bell */}
-      <div className="flex items-center gap-3">
-        {/* Search box */}
-        <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'var(--surface-input)', minWidth: '180px' }}>
-          <Search size={15} style={{ color: 'var(--text-muted)' }} />
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 400 }}>
-            Search here
-          </span>
-        </div>
+      {/* Right — Actions */}
+      <div className="flex items-center gap-2">
 
         {/* Theme toggle */}
         <button
           onClick={onToggleTheme}
-          className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-colors"
-          style={{ background: 'var(--surface-input)' }}
+          className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+          style={{ background: 'var(--surface-input)', border: 'none', cursor: 'pointer' }}
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
           {theme === 'dark' ? (
-            <Sun size={17} style={{ color: 'var(--text-secondary)' }} />
+            <Sun size={16} style={{ color: 'var(--text-secondary)' }} />
           ) : (
-            <Moon size={17} style={{ color: 'var(--text-secondary)' }} />
+            <Moon size={16} style={{ color: 'var(--text-secondary)' }} />
           )}
         </button>
 
         {/* Notification bell */}
         <button
           onClick={onToggleNotifications}
-          className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-colors"
-          style={{ background: 'var(--surface-input)' }}
+          className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+          style={{ background: 'var(--surface-input)', border: 'none', cursor: 'pointer' }}
           title="Notifications"
         >
-          <Bell size={17} style={{ color: 'var(--text-secondary)' }} />
+          <Bell size={16} style={{ color: 'var(--text-secondary)' }} />
           {unreadCount > 0 && (
             <span
               className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold text-white px-1"
@@ -104,13 +130,32 @@ export default function Header({ activeView, unreadCount, onToggleNotifications,
           )}
         </button>
 
-        {/* User avatar */}
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-full text-white font-bold text-sm shrink-0"
-          style={{ background: 'var(--teal)', fontFamily: 'var(--font-manrope)' }}
+        {/* User Avatar — opens Profile */}
+        <button
+          onClick={() => onNavigate('profile')}
+          title="Profile & Settings"
+          className="group relative flex h-9 w-9 items-center justify-center rounded-full text-white font-bold text-sm shrink-0 transition-all hover:scale-105 hover:ring-2 hover:ring-offset-1"
+          style={{
+            background: activeView === 'profile'
+              ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)'
+              : 'var(--teal)',
+            fontFamily: 'var(--font-manrope)',
+            boxShadow: activeView === 'profile' ? '0 0 0 3px rgba(20,184,166,0.3)' : 'none',
+            border: 'none',
+            cursor: 'pointer',
+          }}
         >
-          U
-        </div>
+          {initials || <User size={16} />}
+
+          {/* Tooltip */}
+          <span
+            className="absolute right-0 top-full mt-2 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50"
+            style={{ background: 'rgba(15,23,42,0.85)', backdropFilter: 'blur(4px)' }}
+          >
+            {displayName} · Settings
+          </span>
+        </button>
+
       </div>
     </header>
   );

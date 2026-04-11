@@ -2,7 +2,9 @@ import { useState, useRef } from 'react';
 import { Loader2, Zap, AlertTriangle, CheckCircle2, X, Bot } from 'lucide-react';
 import { Transaction } from '../types';
 import { parseTransaction as aiParseTransaction, AIServiceError } from '../services/ai';
-import { parseTransaction as regexParseTransaction, CATEGORY_ICONS } from '../data/mockData';
+import { parseTransaction as regexParseTransaction } from '../data/mockData';
+import { parseUPISMS } from '../utils/upiParser';
+import { useCategories } from '../hooks/useCategories';
 
 interface MagicInputProps {
   onAddTransaction: (tx: Transaction) => void;
@@ -12,20 +14,21 @@ interface MagicInputProps {
 type Status = 'idle' | 'processing' | 'success' | 'error';
 
 export default function MagicInput({ onAddTransaction, currency = '$' }: MagicInputProps) {
+  const { mergedIcons } = useCategories();
   const EXAMPLE_PROMPTS = [
     `Spent ${currency}45 on Uber`,
     `Netflix ${currency}15.99 monthly`,
-    `Received ${currency}500 freelance`,
+    `Rs. 200.00 debited from a/c to UPI/Swiggy`,
   ];
 
   const MAX_CHARS = 280;
-  const [text, setText]             = useState('');
-  const [status, setStatus]         = useState<Status>('idle');
+  const [text, setText] = useState('');
+  const [status, setStatus] = useState<Status>('idle');
   const [lastParsed, setLastParsed] = useState<Transaction | null>(null);
-  const [errorMsg, setErrorMsg]     = useState('');
+  const [errorMsg, setErrorMsg] = useState('');
   const [lowConfidence, setLowConfidence] = useState(false);
-  const successTimer                = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const textareaRef                 = useRef<HTMLTextAreaElement>(null);
+  const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const charCount = text.length;
   const isOverLimit = charCount > MAX_CHARS;
@@ -38,14 +41,35 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
     try {
       const today = new Date().toISOString().split('T')[0];
       let tx: Transaction;
-      try {
-        const parsed = await aiParseTransaction(text, today);
-        tx = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, date: parsed.date, amount: parsed.amount, category: parsed.category, merchant: parsed.merchant, type: parsed.type, description: text.trim(), isNew: true, confidence: parsed.confidence, aiParsed: true };
-        if (parsed.confidence < 0.7) setLowConfidence(true);
-      } catch (aiErr) {
-        if (aiErr instanceof AIServiceError) { tx = { ...regexParseTransaction(text), aiParsed: false }; }
-        else throw aiErr;
+      const tags = text.match(/#[a-zA-Z0-9_-]+/g)?.map(t => t.slice(1).toLowerCase());
+      
+      const upiAttempt = parseUPISMS(text);
+
+      if (upiAttempt && upiAttempt.amount) {
+        tx = {
+          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          date: today,
+          amount: upiAttempt.amount,
+          category: upiAttempt.category as any,
+          merchant: upiAttempt.merchant || 'UPI Transfer',
+          type: upiAttempt.type as any,
+          description: text.trim(),
+          isNew: true,
+          confidence: 0.9,
+          aiParsed: true,
+          tags: tags?.length ? [...tags, 'upi-sms'] : ['upi-sms']
+        };
+      } else {
+        try {
+          const parsed = await aiParseTransaction(text, today);
+          tx = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, date: parsed.date, amount: parsed.amount, category: parsed.category, merchant: parsed.merchant, type: parsed.type, description: text.trim(), isNew: true, confidence: parsed.confidence, aiParsed: true, tags: tags?.length ? tags : undefined };
+          if (parsed.confidence < 0.7) setLowConfidence(true);
+        } catch (aiErr) {
+          if (aiErr instanceof AIServiceError) { tx = { ...regexParseTransaction(text), aiParsed: false, tags: tags?.length ? tags : undefined }; }
+          else throw aiErr;
+        }
       }
+
       if (tx.amount <= 0 || tx.amount > 1_000_000) throw new Error('Amount looks unusual — please double-check.');
       onAddTransaction(tx);
       setLastParsed(tx); setStatus('success'); setText('');
@@ -161,7 +185,7 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
               <p style={{ fontSize: '11px', color: 'var(--amber)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>⚠ Low confidence — please verify</p>
             )}
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>
-              {CATEGORY_ICONS[lastParsed.category]} {lastParsed.category} · {lastParsed.type === 'credit' ? '+' : '-'}{currency}{lastParsed.amount.toFixed(2)} · {lastParsed.merchant}
+              {mergedIcons[lastParsed.category] || '📦'} {lastParsed.category} · {lastParsed.type === 'credit' ? '+' : '-'}{currency}{lastParsed.amount.toFixed(2)} · {lastParsed.merchant}
             </p>
           </div>
           <button onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>

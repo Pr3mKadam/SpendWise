@@ -1,0 +1,6 @@
+- Custom Category
+- UPI Integration
+- 2FA 
+- Parental Control 
+- Shared Wallet
+- CSV file and pdf download

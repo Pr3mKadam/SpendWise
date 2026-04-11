@@ -1,0 +1,211 @@
+import { useState } from 'react';
+import { X, Plus, Trash2, Edit3, Tag as TagIcon, Check } from 'lucide-react';
+import { CustomCategoryDef } from '../types';
+
+interface CustomCategoriesModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  customCategories: CustomCategoryDef[];
+  onAdd: (def: Omit<CustomCategoryDef, 'id'>) => void;
+  onUpdate: (id: string, def: Partial<CustomCategoryDef>) => void;
+  onDelete: (id: string) => void;
+}
+
+const EMOJI_OPTIONS = ['🛍️', '🍔', '✈️', '🎮', '🚗', '💡', '🏥', '💰', '🐶', '📚', '☕', '🎫', '🍷', '🛠️', '🎓'];
+const COLOR_OPTIONS = [
+  '#f43f5e', // Rose
+  '#ec4899', // Pink
+  '#a855f7', // Purple
+  '#6366f1', // Indigo
+  '#3b82f6', // Blue
+  '#0ea5e9', // Sky
+  '#06b6d4', // Cyan
+  '#14b8a6', // Teal
+  '#10b981', // Emerald
+  '#22c55e', // Green
+  '#eab308', // Yellow
+  '#f59e0b', // Amber
+  '#f97316', // Orange
+  '#ef4444', // Red
+  '#64748b', // Slate
+];
+
+export default function CustomCategoriesModal({
+  isOpen, onClose, customCategories, onAdd, onUpdate, onDelete
+}: CustomCategoriesModalProps) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
+  // Form state
+  const [name, setName] = useState('');
+  const [icon, setIcon] = useState('🛍️');
+  const [color, setColor] = useState(COLOR_OPTIONS[0]);
+
+  if (!isOpen) return null;
+
+  const handleStartAdd = () => {
+    setEditingId('new');
+    setName('');
+    setIcon(EMOJI_OPTIONS[0]);
+    setColor(COLOR_OPTIONS[0]);
+  };
+
+  const handleStartEdit = (cat: CustomCategoryDef) => {
+    setEditingId(cat.id);
+    setName(cat.name);
+    setIcon(cat.icon);
+    setColor(cat.color);
+  };
+
+  const handleSave = () => {
+    if (!name.trim()) return;
+    
+    if (editingId === 'new') {
+      onAdd({ name: name.trim(), icon, color });
+    } else if (editingId) {
+      onUpdate(editingId, { name: name.trim(), icon, color });
+    }
+    setEditingId(null);
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      style={{ background: 'rgba(15,23,42,0.65)', backdropFilter: 'blur(8px)' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div
+        className="animate-scale-in w-full flex flex-col"
+        style={{ maxWidth: '440px', background: 'var(--surface-card)', borderRadius: '20px', boxShadow: 'var(--shadow-modal)', maxHeight: '90vh' }}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1.5px solid #f0f2f5', flexShrink: 0 }}>
+          <div className="flex items-center gap-2">
+            <TagIcon size={18} style={{ color: 'var(--teal)' }} />
+            <h2 style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              Custom Categories
+            </h2>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}>
+            <X size={20} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-6">
+          {!editingId ? (
+            // LIST VIEW
+            <div>
+              {customCategories.length === 0 ? (
+                <div className="text-center py-6">
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
+                    You haven't added any custom categories yet.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3 mb-6">
+                  {customCategories.map(cat => (
+                    <div key={cat.id} className="flex items-center justify-between p-3 rounded-xl card-hover" style={{ border: '1.5px solid #edf2f7' }}>
+                      <div className="flex items-center gap-3">
+                        <span className="flex w-10 h-10 items-center justify-center rounded-xl text-lg shrink-0" style={{ background: `${cat.color}15` }}>
+                          {cat.icon}
+                        </span>
+                        <span style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          {cat.name}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button onClick={() => handleStartEdit(cat)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: '#f5f7fa', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>
+                          <Edit3 size={14} />
+                        </button>
+                        <button onClick={() => onDelete(cat.id)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}>
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <button onClick={handleStartAdd} className="w-full h-12 flex items-center justify-center gap-2 rounded-xl font-semibold text-sm transition-all" style={{ background: 'var(--teal-dim)', color: 'var(--teal)', border: '1.5px dashed var(--teal-glow)', cursor: 'pointer' }}>
+                <Plus size={16} /> Create New Category
+              </button>
+            </div>
+          ) : (
+            // EDIT VIEW
+            <div className="space-y-5 animate-fade-in-up">
+              <div>
+                <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                  Category Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="e.g. Travel, Pets..."
+                  autoFocus
+                  className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                  style={{ background: 'var(--surface-input)', border: '2px solid transparent', fontFamily: 'var(--font-inter)', color: 'var(--text-primary)' }}
+                  onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
+                  onBlur={e => { e.target.style.border = '2px solid transparent'; }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                  Choose Emoji
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {EMOJI_OPTIONS.map(em => (
+                    <button
+                      key={em}
+                      onClick={() => setIcon(em)}
+                      className="w-10 h-10 text-lg flex items-center justify-center rounded-xl transition-all"
+                      style={{
+                        background: icon === em ? 'var(--teal-dim)' : 'var(--surface-input)',
+                        border: icon === em ? '2px solid var(--teal)' : '2px solid transparent',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      {em}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                  Choose Color
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {COLOR_OPTIONS.map(col => (
+                    <button
+                      key={col}
+                      onClick={() => setColor(col)}
+                      className="w-8 h-8 rounded-full flex items-center justify-center transition-transform"
+                      style={{
+                        background: col,
+                        border: 'none',
+                        cursor: 'pointer',
+                        transform: color === col ? 'scale(1.15)' : 'scale(1)',
+                        boxShadow: color === col ? `0 0 0 2px var(--surface-card), 0 0 0 4px ${col}` : 'none'
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button onClick={() => setEditingId(null)} className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors" style={{ background: '#f5f7fa', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>
+                  Cancel
+                </button>
+                <button onClick={handleSave} disabled={!name.trim()} className="flex-1 py-3 rounded-xl font-semibold text-sm text-white transition-all disabled:opacity-50" style={{ background: 'var(--teal)', border: 'none', cursor: name.trim() ? 'pointer' : 'not-allowed' }}>
+                  {editingId === 'new' ? 'Add Category' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

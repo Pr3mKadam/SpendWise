@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Trash2, Bot } from 'lucide-react';
 import { Transaction } from '../types';
-import { CATEGORY_ICONS } from '../data/mockData';
+import { useCategories } from '../hooks/useCategories';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -12,6 +12,7 @@ interface TransactionListProps {
 type TabFilter = 'all' | 'credit' | 'debit';
 
 export default function TransactionList({ transactions, onDelete, currency = '$' }: TransactionListProps) {
+  const { mergedIcons } = useCategories();
   const [tab, setTab] = useState<TabFilter>('all');
 
   const filtered = useMemo(() => {
@@ -99,7 +100,7 @@ export default function TransactionList({ transactions, onDelete, currency = '$'
                   className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 text-base"
                   style={{ background: '#f5f7fa' }}
                 >
-                  {CATEGORY_ICONS[tx.category] || '💸'}
+                  {mergedIcons[tx.category] || '📦'}
                 </div>
 
                 {/* Info */}
@@ -117,9 +118,14 @@ export default function TransactionList({ transactions, onDelete, currency = '$'
                       </span>
                     )}
                   </div>
-                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
-                    {tx.category} · {formatDate(tx.date)}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-0.5" style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                    <span>{tx.category} · {formatDate(tx.date)}</span>
+                    {tx.tags?.map(t => (
+                      <span key={t} className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: '#f1f5f9', color: 'var(--text-secondary)' }}>
+                        #{t}
+                      </span>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Amount */}

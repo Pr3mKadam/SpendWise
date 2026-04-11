@@ -17,6 +17,13 @@ import AlertBanner      from './components/AlertBanner';
 import NotificationCenter from './components/NotificationCenter';
 import RecurringView    from './components/RecurringView';
 import GoalsView        from './components/GoalsView';
+import ImportCSVModal   from './components/ImportCSVModal';
+import CustomCategoriesModal from './components/CustomCategoriesModal';
+import BankSyncView       from './components/BankSyncView';
+import ProfileView        from './components/ProfileView';
+import PortfolioView      from './components/PortfolioView';
+import SubscriptionManager from './components/SubscriptionManager';
+import { generatePDFReport } from './utils/exportPDF';
 
 // ── Hooks ────────────────────────────────────────────────────────
 import { useFinanceState }  from './hooks/useFinanceState';
@@ -26,6 +33,8 @@ import { useRecurring }     from './hooks/useRecurring';
 import { useNotifications } from './hooks/useNotifications';
 import { useGoals }         from './hooks/useGoals';
 import { useAuth }          from './hooks/useAuth';
+import { useCategories }    from './hooks/useCategories';
+import { usePortfolio }     from './hooks/usePortfolio';
 import AuthView             from './components/AuthView';
 // ── Types ────────────────────────────────────────────────────────
 import { AppView } from './types';
@@ -100,6 +109,10 @@ export default function App() {
   const { session, loading } = useAuth();
   const [activeView, setActiveView]               = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showImportCSV, setShowImportCSV]         = useState(false);
+  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+
+  const { customCategories, addCustomCategory, updateCustomCategory, deleteCustomCategory } = useCategories();
 
   // ── Theme ───────────────────────────────────────────────────
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -143,16 +156,35 @@ export default function App() {
   } = financeState;
 
   // ── Budgets ─────────────────────────────────────────────────
-  const budgetState = useBudgets(categorySpending);
-  const { budgets, updateLimit, resetLimits, totalBudgeted, totalSpentAgainstBudget, overBudgetCount } = budgetState;
+  const budgetState = useBudgets(transactions);
+  const {
+    budgets, updateLimit, resetLimits, totalBudgeted, totalSpentAgainstBudget, overBudgetCount,
+    period, periodLabel, rolloverEnabled, updatePeriod, toggleRollover,
+  } = budgetState;
+
 
   // ── Phase 3 Hooks ───────────────────────────────────────────
   const alertState      = useAlerts(transactions, currentBalance, budgets, dailySpendRate);
   const recurringData   = useRecurring(transactions);
   const goalsState      = useGoals();
   const notifState      = useNotifications(alertState.alerts, recurringData, goalsState.goals);
+  const portfolioState  = usePortfolio();
 
   const currency = config?.currency ?? '$';
+
+  // ── PDF Report ──────────────────────────────────────────────────
+  const handlePDFReport = useCallback(() => {
+    const now = new Date();
+    const month = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    generatePDFReport({
+      transactions,
+      monthlyStats,
+      budgets,
+      goals: goalsState.goals,
+      currency,
+      month,
+    });
+  }, [transactions, monthlyStats, budgets, goalsState.goals, currency]);
 
   const handleViewChange = useCallback((v: AppView) => {
     setActiveView(v);
@@ -199,10 +231,12 @@ export default function App() {
           activeView={activeView}
           unreadCount={notifState.unreadCount}
           onToggleNotifications={toggleNotifications}
+          onNavigate={handleViewChange}
           currency={currency}
           currentBalance={currentBalance}
           theme={theme}
           onToggleTheme={toggleTheme}
+          config={config}
         />
 
         {/* Page Content */}
@@ -235,8 +269,14 @@ export default function App() {
                 totalBudgeted={totalBudgeted}
                 totalSpentAgainstBudget={totalSpentAgainstBudget}
                 overBudgetCount={overBudgetCount}
+                period={period}
+                periodLabel={periodLabel}
+                rolloverEnabled={rolloverEnabled}
                 onUpdateLimit={updateLimit}
                 onResetLimits={resetLimits}
+                onChangePeriod={updatePeriod}
+                onToggleRollover={toggleRollover}
+                onManageCategories={() => setShowCategoriesModal(true)}
                 currency={currency}
               />
             </div>
@@ -287,8 +327,48 @@ export default function App() {
               <HistoryView
                 transactions={transactions}
                 onDelete={deleteTransaction}
+                onImportClick={() => setShowImportCSV(true)}
+                onPDFReport={handlePDFReport}
                 currency={currency}
               />
+            </div>
+          )}
+
+          {/* ── Bank Sync ── */}
+          {activeView === 'sync' && (
+            <div className="view-enter">
+              <BankSyncView
+                onAutoAddTransactions={(txs) => {
+                  txs.forEach(addTransaction);
+                }}
+                currency={currency}
+              />
+            </div>
+          )}
+
+          {/* ── Profile ── */}
+          {activeView === 'profile' && (
+            <div className="view-enter">
+              <ProfileView
+                config={config}
+                onUpdateConfig={setConfig}
+                onResetData={resetData}
+                transactions={transactions}
+              />
+            </div>
+          )}
+
+          {/* ── Portfolio (Net Worth) ── */}
+          {activeView === 'portfolio' && (
+            <div className="view-enter">
+              <PortfolioView currency={currency} />
+            </div>
+          )}
+
+          {/* ── Subscription Manager ── */}
+          {activeView === 'subscriptions' && (
+            <div className="view-enter">
+              <SubscriptionManager patterns={recurringData} currency={currency} />
             </div>
           )}
 
@@ -317,6 +397,25 @@ export default function App() {
           handleViewChange(view);
           setShowNotifications(false);
         }}
+      />
+
+      {/* ── Import CSV Modal ── */}
+      <ImportCSVModal
+        isOpen={showImportCSV}
+        onClose={() => setShowImportCSV(false)}
+        onImport={(tx) => {
+          addTransaction(tx);
+        }}
+      />
+
+      {/* ── Custom Categories Modal ── */}
+      <CustomCategoriesModal
+        isOpen={showCategoriesModal}
+        onClose={() => setShowCategoriesModal(false)}
+        customCategories={customCategories}
+        onAdd={addCustomCategory}
+        onUpdate={updateCustomCategory}
+        onDelete={deleteCustomCategory}
       />
     </div>
   );

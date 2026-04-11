@@ -4,7 +4,7 @@ import {
 } from 'recharts';
 import { TrendingUp, Wallet, PiggyBank, ArrowUpRight } from 'lucide-react';
 import { MonthlyHistoryPoint, MonthlyStats, CategorySpend } from '../types';
-import { CATEGORY_COLORS, CATEGORY_ICONS } from '../data/mockData';
+import { useCategories } from '../hooks/useCategories';
 
 interface AnalyticsViewProps {
   monthlyHistory:   MonthlyHistoryPoint[];
@@ -64,6 +64,7 @@ function StatCard({ label, value, sub, color, icon: Icon }: { label: string; val
 }
 
 export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySpending, totalSpent, currency = '$' }: AnalyticsViewProps) {
+  const { mergedColors, mergedIcons } = useCategories();
   const latestMonth = monthlyHistory[monthlyHistory.length - 1];
   const avgSavings  = monthlyHistory.length > 0
     ? Math.round(monthlyHistory.reduce((a, m) => a + m.savings, 0) / monthlyHistory.length) : 0;
@@ -164,8 +165,8 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
             <div className="space-y-3">
               {categorySpending.map((cat, i) => (
                 <div key={cat.name} className="flex items-center gap-3 py-2 rounded-xl px-2 -mx-2 hover:bg-gray-50 transition-colors cursor-pointer">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style={{ background: `${CATEGORY_COLORS[cat.name]}15` }}>
-                    <span className="text-base">{CATEGORY_ICONS[cat.name as keyof typeof CATEGORY_ICONS]}</span>
+                  <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style={{ background: `${mergedColors[cat.name] || '#14b8a6'}15` }}>
+                    <span className="text-base">{mergedIcons[cat.name] || '📦'}</span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between mb-1">
@@ -176,7 +177,7 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#f0f2f5' }}>
-                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${cat.percent}%`, background: CATEGORY_COLORS[cat.name] || 'var(--teal)' }} />
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${cat.percent}%`, background: mergedColors[cat.name] || 'var(--teal)' }} />
                       </div>
                       <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', minWidth: '30px', textAlign: 'right' }}>{cat.percent}%</span>
                     </div>

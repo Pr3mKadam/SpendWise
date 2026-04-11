@@ -5,7 +5,8 @@ import { Shield, TrendingUp, Target, Zap, ArrowRight, Check } from 'lucide-react
 
 export interface SpendWiseConfig {
   initialBalance:     number;
-  currency:           CurrencySymbol;
+  currency:           string;
+  name?:              string;
   onboardingComplete: boolean;
   createdAt:          string;
 }

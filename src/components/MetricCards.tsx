@@ -3,11 +3,11 @@ import { useCountUp } from '../hooks/useCountUp';
 import { CategorySpend, MonthlyStats } from '../types';
 
 interface MetricCardsProps {
-  currentBalance:      number;
+  currentBalance: number;
   predictedEndOfMonth: number;
-  topCategory:         CategorySpend | null;
-  monthlyStats:        MonthlyStats;
-  currency?:           string;
+  topCategory: CategorySpend | null;
+  monthlyStats: MonthlyStats;
+  currency?: string;
 }
 
 export default function MetricCards({
@@ -17,9 +17,9 @@ export default function MetricCards({
   monthlyStats,
   currency = '$',
 }: MetricCardsProps) {
-  const displayBalance   = useCountUp(currentBalance, 600);
-  const displayIncome    = useCountUp(monthlyStats.totalIncome, 500);
-  const displayExpenses  = useCountUp(monthlyStats.totalExpenses, 500);
+  const displayBalance = useCountUp(currentBalance, 600);
+  const displayIncome = useCountUp(monthlyStats.totalIncome, 500);
+  const displayExpenses = useCountUp(monthlyStats.totalExpenses, 500);
   const displayPredicted = useCountUp(predictedEndOfMonth, 600);
 
   const isPositive = predictedEndOfMonth >= currentBalance;
