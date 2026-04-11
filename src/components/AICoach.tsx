@@ -34,7 +34,7 @@ export default function AICoach({ topCategory, totalSpent, categorySpending, cur
   }, [isRoastMode, clearTimer]);
 
   const insight = useMemo(() => {
-    if (!topCategory) return 'Add your first transaction to get personalized AI insights!';
+    if (!topCategory) return 'Add your first transaction to get personalized insights!';
     const pool     = isRoastMode ? savageInsights : professionalInsights;
     const template = pool[insightIndex % pool.length];
     const percent    = totalSpent > 0 ? Math.round((topCategory.value / totalSpent) * 100) : 0;
@@ -57,7 +57,7 @@ export default function AICoach({ topCategory, totalSpent, categorySpending, cur
             {isRoastMode ? <Flame size={15} style={{ color: accentColor }} /> : <BriefcaseBusiness size={15} style={{ color: accentColor }} />}
           </div>
           <div>
-            <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>AI Coach</p>
+            <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Smart Coach</p>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
               {isRoastMode ? '🔥 Savage Mode' : '💡 Professional Mode'}
             </p>

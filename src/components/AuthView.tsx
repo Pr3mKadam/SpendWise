@@ -66,7 +66,7 @@ export default function AuthView() {
             <Wallet className="w-7 h-7" />
           </div>
           <h1 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
-            SpendWise <span className="text-[var(--accent)] text-shadow-glow">AI</span>
+            SpendWise
           </h1>
           <p className="text-[var(--text-secondary)]">
             {isLogin ? 'Welcome back, sign in to your dashboard.' : 'Create an account to start managing your finances.'}

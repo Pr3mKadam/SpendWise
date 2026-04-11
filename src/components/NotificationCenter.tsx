@@ -149,7 +149,7 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
             <div className="m-4 p-3 rounded-xl" style={{ background: 'var(--surface-input)', border: '1px solid var(--teal-glow)' }}>
               <div className="flex items-center gap-2 mb-2">
                 <Sparkles size={14} style={{ color: 'var(--teal)' }} />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600, color: 'var(--teal)' }}>SpendWise AI Summary</span>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600, color: 'var(--teal)' }}>SpendWise Summary</span>
               </div>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                 You have {unreadCount} new alert{unreadCount === 1 ? '' : 's'}. Priority attention is needed on your active budgets over limit.
@@ -193,7 +193,7 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
 
         {/* Footer */}
         <div className="shrink-0 px-5 py-3 text-center" style={{ borderTop: '1.5px solid #f0f2f5' }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>Powered by SpendWise AI · Data stored locally</p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>Powered by SpendWise · Data stored locally</p>
         </div>
       </div>
     </>

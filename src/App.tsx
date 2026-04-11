@@ -295,7 +295,7 @@ export default function App() {
           {/* Footer */}
           <footer className="mt-12 pb-6 text-center">
             <p className="text-caption">
-              SpendWise AI v3.0 · All data stored locally · No data leaves your device 🔒
+              SpendWise v3.0 · All data stored locally · No data leaves your device 🔒
             </p>
           </footer>
 

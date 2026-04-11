@@ -39,7 +39,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
               color: '#ffffff',
               letterSpacing: '-0.5px'
             }}>
-              <span style={{ fontWeight: 400 }}>SPEND</span>wise<span style={{ color: 'var(--teal)' }}>.</span>AI
+              <span style={{ fontWeight: 400 }}>SPEND</span>wise
             </span>
           </div>
         </div>
