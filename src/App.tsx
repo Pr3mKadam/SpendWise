@@ -1,5 +1,7 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
 import OnboardingModal, { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
+import { supabase } from './services/supabaseClient';
+import { fetchProfile, profileRowToConfig, saveProfileFromConfig } from './lib/supabaseData';
 
 // ── Components ──────────────────────────────────────────────────
 import Sidebar          from './components/Sidebar';
@@ -34,7 +36,6 @@ import { useNotifications } from './hooks/useNotifications';
 import { useGoals }         from './hooks/useGoals';
 import { useAuth }          from './hooks/useAuth';
 import { useCategories }    from './hooks/useCategories';
-import { usePortfolio }     from './hooks/usePortfolio';
 import AuthView             from './components/AuthView';
 // ── Types ────────────────────────────────────────────────────────
 import { AppView } from './types';
@@ -56,11 +57,13 @@ function DashboardView({
     transactions,
     currentBalance,
     predictedEndOfMonth,
+    projectionMeta,
     topCategory,
     categorySpending,
     totalSpent,
     balanceTrend,
     monthlyStats,
+    dailySpendRate,
   } = financeState;
 
   return (
@@ -70,7 +73,7 @@ function DashboardView({
       <MetricCards
         currentBalance={currentBalance}
         predictedEndOfMonth={predictedEndOfMonth}
-        topCategory={topCategory}
+        projectionMeta={projectionMeta}
         monthlyStats={monthlyStats}
         currency={currency}
       />
@@ -83,7 +86,7 @@ function DashboardView({
           <BalanceChart data={balanceTrend} currency={currency} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <SpendingDonut data={categorySpending} totalSpent={totalSpent} />
+            <SpendingDonut data={categorySpending} totalSpent={totalSpent} currency={currency} />
             <div className="flex flex-col gap-6">
               <MagicInput onAddTransaction={onAdd} currency={currency} />
               <AICoach
@@ -91,6 +94,11 @@ function DashboardView({
                 totalSpent={totalSpent}
                 categorySpending={categorySpending}
                 currency={currency}
+                currentBalance={currentBalance}
+                predictedEndOfMonth={predictedEndOfMonth}
+                dailySpendRate={dailySpendRate}
+                monthlyStats={monthlyStats}
+                projectionMeta={projectionMeta}
               />
             </div>
           </div>
@@ -103,18 +111,25 @@ function DashboardView({
   );
 }
 
-// ── App Root ────────────────────────────────────────────────────
+// ── Shell types & loading ─────────────────────────────────────
 
-export default function App() {
-  const { session, loading } = useAuth();
-  const [activeView, setActiveView]               = useState<AppView>('dashboard');
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showImportCSV, setShowImportCSV]         = useState(false);
-  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+interface MainShellProps {
+  config:     SpendWiseConfig | null;
+  setConfig:  Dispatch<SetStateAction<SpendWiseConfig | null>>;
+  userId:     string | null;
+}
 
+function LoadingScreen() {
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+      <div className="text-[var(--accent)] animate-pulse font-medium text-lg">Loading SpendWise...</div>
+    </div>
+  );
+}
+
+function MainShell({ config, setConfig, userId }: MainShellProps) {
   const { customCategories, addCustomCategory, updateCustomCategory, deleteCustomCategory } = useCategories();
 
-  // ── Theme ───────────────────────────────────────────────────
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     return (localStorage.getItem('spendwise_theme') as 'light' | 'dark') || 'light';
   });
@@ -132,26 +147,17 @@ export default function App() {
     setTheme(t => (t === 'light' ? 'dark' : 'light'));
   }, []);
 
-  // ── Onboarding gate ─────────────────────────────────────────
-  const [config, setConfig] = useState<SpendWiseConfig | null>(() => loadConfig());
-  const isOnboarded = config?.onboardingComplete === true;
+  const [showImportCSV, setShowImportCSV]         = useState(false);
+  const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+  const [activeView, setActiveView]               = useState<AppView>('dashboard');
+  const [showNotifications, setShowNotifications] = useState(false);
 
-function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellProps) {
-  const initialBal = config?.initialBalance ?? 5200;
-  const anchor       = config?.balanceAnchorNet ?? INITIAL_TRANSACTIONS_NET;
+  const toggleNotifications = useCallback(() => {
+    setShowNotifications(v => !v);
+  }, []);
 
-  const [dataRefreshKey, setDataRefreshKey] = useState(0);
+  const currency = config?.currency ?? '$';
 
-  const financeState = useFinanceState(initialBal, {
-    userId,
-    balanceAnchorNet: anchor,
-    onResetConfig:    () => {
-      setConfig(null);
-      setDataRefreshKey(k => k + 1);
-    },
-  });
-
-  // ── Core Finance State ──────────────────────────────────────
   const financeState = useFinanceState(config?.initialBalance ?? 5200);
   const {
     transactions,
@@ -164,40 +170,39 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
     dailySpendRate,
     monthlyStats,
     monthlyHistory,
-    remoteHydrated,
+    predictedEndOfMonth,
+    projectionMeta,
   } = financeState;
 
-  // ── Budgets ─────────────────────────────────────────────────
   const budgetState = useBudgets(transactions);
   const {
     budgets, updateLimit, resetLimits, totalBudgeted, totalSpentAgainstBudget, overBudgetCount,
     period, periodLabel, rolloverEnabled, updatePeriod, toggleRollover,
   } = budgetState;
 
-
-  // ── Phase 3 Hooks ───────────────────────────────────────────
-  const alertState      = useAlerts(transactions, currentBalance, budgets, dailySpendRate);
-  const recurringData   = useRecurring(transactions);
-  const goalsState      = useGoals();
-  const notifState      = useNotifications(alertState.alerts, recurringData, goalsState.goals);
-  const portfolioState  = usePortfolio();
-
-  const currency = config?.currency ?? '$';
+  const alertState    = useAlerts(transactions, currentBalance, budgets, dailySpendRate, {
+    currency,
+    predictedEndOfMonth,
+    daysLeftInMonth: projectionMeta.daysLeftInMonth,
+  });
+  const recurringData = useRecurring(transactions);
+  const goalsState    = useGoals(userId);
+  const notifState    = useNotifications(alertState.alerts, recurringData, goalsState.goals);
   const isOnboarded = config?.onboardingComplete === true;
 
-  const [activeView, setActiveView] = useState<AppView>('dashboard');
-  const [showNotifications, setShowNotifications] = useState(false);
-
-  const transactionLedgerNet = transactions.reduce(
-    (acc, tx) => (tx.type === 'credit' ? acc + tx.amount : acc - tx.amount),
-    0
-  );
+  const { goals, addGoal } = goalsState;
 
   const handleOnboardingComplete = useCallback(
-    async (cfg: SpendWiseConfig) => {
-      if (userId) await saveProfileFromConfig(userId, cfg);
-      else persistLocalSpendWiseConfig(cfg);
+    (cfg: SpendWiseConfig) => {
+      // Apply config immediately so the modal closes. OnboardingModal already
+      // persisted to localStorage; cloud save must not block UI (network/RLS errors
+      // or slow requests previously left users stuck on this step).
       setConfig(cfg);
+      if (userId) {
+        void saveProfileFromConfig(userId, cfg).catch((err) => {
+          console.error('Failed to save profile to cloud:', err);
+        });
+      }
     },
     [userId, setConfig]
   );
@@ -221,34 +226,12 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const dataReady =
-    !userId || (remoteHydrated && budgetsHydrated && goalsHydrated);
-
-  const { user } = useAuth();
-  const userEmail = user?.email ?? null;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-        <div className="text-[var(--accent)] animate-pulse font-medium text-lg">Loading SpendWise...</div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return <AuthView />;
-  }
-
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
 
       {/* ── Onboarding Modal ── */}
       {!isOnboarded && (
-        <OnboardingModal
-          onComplete={handleOnboardingComplete}
-          transactionLedgerNet={transactionLedgerNet}
-          cloudMode={Boolean(userId)}
-        />
+        <OnboardingModal onComplete={handleOnboardingComplete} />
       )}
 
       {/* ── Sidebar ── */}
@@ -454,7 +437,8 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
 }
 
 function AppAuthenticated() {
-  const { user, isCloud, signOut } = useAuth();
+  const { user } = useAuth();
+  const isCloud = Boolean(supabase);
   const userId = isCloud && user ? user.id : null;
 
   const [config, setConfig] = useState<SpendWiseConfig | null>(() => (userId ? null : loadConfig()));
@@ -506,23 +490,16 @@ function AppAuthenticated() {
   if (profileLoading) return <LoadingScreen />;
 
   return (
-    <MainShell
-      config={config}
-      setConfig={setConfig}
-      userId={userId}
-      isCloud={isCloud}
-      onSignOut={signOut}
-    />
+    <MainShell config={config} setConfig={setConfig} userId={userId} />
   );
 }
 
-// ── App Root ────────────────────────────────────────────────────────────────────
-
 export default function App() {
-  const { authReady, isCloud, user } = useAuth();
+  const { session, loading } = useAuth();
+  const isCloud = Boolean(supabase);
 
-  if (isCloud && !authReady) return <LoadingScreen />;
-  if (isCloud && !user) return <AuthScreen />;
+  if (loading) return <LoadingScreen />;
+  if (isCloud && !session) return <AuthView />;
 
   return <AppAuthenticated />;
 }

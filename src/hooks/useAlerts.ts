@@ -34,6 +34,19 @@ function alert(
   return { id, severity, title, message, category, actionLabel, createdAt: Date.now(), dismissed: false };
 }
 
+function median(nums: number[]): number {
+  if (nums.length === 0) return 0;
+  const s = [...nums].sort((a, b) => a - b);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+
+export interface UseAlertsExtras {
+  currency?:             string;
+  predictedEndOfMonth?:  number;
+  daysLeftInMonth?:      number;
+}
+
 // ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useAlerts(
@@ -41,8 +54,15 @@ export function useAlerts(
   currentBalance: number,
   budgets: Budget[],
   dailySpendRate: number,
+  extras?: UseAlertsExtras,
 ) {
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed);
+
+  const sym = extras?.currency ?? '$';
+  const fmt = (n: number, fractionDigits = 2) =>
+    `${sym}${n.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}`;
+  const fmt0 = (n: number) =>
+    `${sym}${Math.round(n).toLocaleString('en-US')}`;
 
   // ── Generate all alerts from current state ─────────────────────────────────
 
@@ -51,13 +71,46 @@ export function useAlerts(
     const now   = new Date();
     const today = now.toISOString().split('T')[0];
 
+    const pred      = extras?.predictedEndOfMonth;
+    const daysLeftM = extras?.daysLeftInMonth ?? 0;
+
+    // 0. Predictive: month-end balance trajectory
+    if (pred !== undefined && daysLeftM >= 1 && dailySpendRate > 0) {
+      if (pred < 0) {
+        alerts.push(alert(
+          makeId('proj-negative'),
+          'danger',
+          '📉 Projected shortfall',
+          `At your recent pace (~${fmt0(dailySpendRate)}/day), month-end balance could slip below zero (${fmt0(pred)}). Pause discretionary spend or plan a top-up.`,
+          undefined,
+          'View Budget',
+        ));
+      } else if (currentBalance >= 300 && pred < 150 && pred < currentBalance * 0.35) {
+        alerts.push(alert(
+          makeId('proj-low', Math.floor(pred)),
+          'warning',
+          '📊 Tight month-end outlook',
+          `Projection: about ${fmt0(pred)} left by month-end vs ${fmt0(currentBalance)} now. Overspending and subscriptions are the usual culprits.`,
+          undefined,
+          'Review Spending',
+        ));
+      } else if (daysLeftM >= 5 && pred < currentBalance - 600 && dailySpendRate > 12) {
+        alerts.push(alert(
+          makeId('proj-trajectory', daysLeftM),
+          'warning',
+          '📉 Spending trajectory',
+          `Keeping ~${fmt0(dailySpendRate)}/day suggests roughly ${fmt0(pred)} by month-end — a steep draw from today. Worth checking dining and shopping.`,
+        ));
+      }
+    }
+
     // 1. Low balance warning
     if (currentBalance < 500 && currentBalance >= 0) {
       alerts.push(alert(
         makeId('low-balance', Math.floor(currentBalance / 100)),
         'warning',
-        '⚠️ Low Balance Warning',
-        `Your balance is $${currentBalance.toFixed(2)}. Consider reducing discretionary spending this week.`,
+        '⚠️ Low balance',
+        `Your balance is ${fmt(currentBalance)}. Consider easing discretionary spending this week.`,
         undefined,
         'View Budget',
       ));
@@ -68,8 +121,8 @@ export function useAlerts(
       alerts.push(alert(
         makeId('critical-balance'),
         'danger',
-        '🚨 Critical: Balance Under $100',
-        `You have only $${currentBalance.toFixed(2)} remaining. Avoid non-essential purchases immediately.`,
+        '🚨 Critical: very low balance',
+        `Only ${fmt(currentBalance)} left. Pause non-essential purchases until income lands.`,
         undefined,
         'Review Transactions',
       ));
@@ -80,18 +133,18 @@ export function useAlerts(
       alerts.push(alert(
         makeId('negative-balance'),
         'danger',
-        '🔴 Account Overdrawn',
-        `Your balance is -$${Math.abs(currentBalance).toFixed(2)}. This may incur overdraft fees.`,
+        '🔴 Account overdrawn',
+        `Balance is about -${sym}${Math.abs(currentBalance).toFixed(2)}. Watch for fees and fund the account as soon as you can.`,
       ));
     }
 
-    // 4. High daily spend rate (velocity alert)
+    // 4. High daily spend rate (velocity)
     if (dailySpendRate > 80) {
       alerts.push(alert(
         makeId('velocity', Math.floor(dailySpendRate / 10)),
         'warning',
-        '🔥 High Spending Velocity',
-        `You're spending $${dailySpendRate.toFixed(0)}/day over the last 30 days. At this rate you'll spend $${(dailySpendRate * 30).toFixed(0)} this month.`,
+        '🔥 High spending velocity',
+        `About ${fmt0(dailySpendRate)}/day over the last 30 days — roughly ${fmt0(dailySpendRate * 30)} if that pace held a full month.`,
         undefined,
         'Set Budget Limits',
       ));
@@ -103,8 +156,8 @@ export function useAlerts(
         alerts.push(alert(
           makeId('budget-danger', b.category),
           'danger',
-          `💸 Over Budget: ${b.category}`,
-          `You've spent $${b.spent.toFixed(0)} of your $${b.limit} limit (${b.percent}%). You're $${Math.abs(b.remaining).toFixed(0)} over.`,
+          `💸 Over budget: ${b.category}`,
+          `${fmt0(b.spent)} of ${fmt0(b.limit)} (${b.percent}%). About ${fmt0(Math.abs(b.remaining))} over limit.`,
           b.category,
           'Adjust Limit',
         ));
@@ -112,14 +165,14 @@ export function useAlerts(
         alerts.push(alert(
           makeId('budget-warning', b.category, Math.floor(b.percent / 5)),
           'warning',
-          `⚡ Approaching Limit: ${b.category}`,
-          `${b.percent}% of your ${b.category} budget used ($${b.spent.toFixed(0)} / $${b.limit}). $${b.remaining.toFixed(0)} remaining.`,
+          `⚡ Approaching limit: ${b.category}`,
+          `${b.percent}% used (${fmt0(b.spent)} / ${fmt0(b.limit)}). ${fmt0(b.remaining)} remaining.`,
           b.category,
         ));
       }
     });
 
-    // 6. Spending spike — today vs daily average (velocity spike)
+    // 6. Spending spike — today vs daily average
     const todayDebits = transactions
       .filter(tx => tx.type === 'debit' && tx.date === today)
       .reduce((a, tx) => a + tx.amount, 0);
@@ -128,38 +181,71 @@ export function useAlerts(
       alerts.push(alert(
         makeId('spike', today),
         'warning',
-        '📈 Spending Spike Today',
-        `You've spent $${todayDebits.toFixed(0)} today — ${Math.round(todayDebits / dailySpendRate)}× your daily average of $${dailySpendRate.toFixed(0)}.`,
+        '📈 Spending spike today',
+        `${fmt0(todayDebits)} so far today — about ${Math.round(todayDebits / dailySpendRate)}× your recent daily average (${fmt0(dailySpendRate)}).`,
       ));
     }
 
-    // 7. Large single transaction (> $300)
-    const recentLarge = transactions
-      .filter(tx => tx.type === 'debit' && tx.amount >= 300)
-      .slice(0, 1)[0];
+    // 7. Large single transaction (absolute + relative threshold)
+    const largeCandidates = transactions.filter(tx => tx.type === 'debit' && tx.amount >= 200);
+    const recentLarge = largeCandidates.sort((a, b) => b.date.localeCompare(a.date))[0];
     if (recentLarge) {
       alerts.push(alert(
         makeId('large-tx', recentLarge.id),
         'info',
-        `💰 Large Transaction Detected`,
-        `$${recentLarge.amount.toFixed(2)} at ${recentLarge.merchant} (${recentLarge.category}) was your biggest recent spend.`,
+        '💰 Large transaction',
+        `${fmt(recentLarge.amount)} at ${recentLarge.merchant} (${recentLarge.category}) — one of your bigger recent debits.`,
         recentLarge.category,
       ));
     }
 
-    // 8. Weekend binge detection (Sat/Sun spike)
+    // 8. Unusual vs your median in that category (30d)
+    const cutoff30 = new Date(now);
+    cutoff30.setDate(cutoff30.getDate() - 30);
+    const cutoff30Str = cutoff30.toISOString().split('T')[0];
+    const debits30 = transactions.filter(tx => tx.type === 'debit' && tx.date >= cutoff30Str);
+    const byCat = new Map<Category, number[]>();
+    for (const tx of debits30) {
+      const arr = byCat.get(tx.category as Category) ?? [];
+      arr.push(tx.amount);
+      byCat.set(tx.category as Category, arr);
+    }
+    const threeDaysAgo = new Date(now);
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    const threeStr = threeDaysAgo.toISOString().split('T')[0];
+    const recentDebits = debits30.filter(tx => tx.date >= threeStr);
+    let unusual: Transaction | null = null;
+    for (const tx of recentDebits) {
+      const arr = byCat.get(tx.category as Category) ?? [];
+      const med = median(arr);
+      if (arr.length >= 4 && med > 0 && tx.amount >= Math.max(med * 2.8, 45) && tx.amount > med * 2) {
+        if (!unusual || tx.amount > unusual.amount) unusual = tx;
+      }
+    }
+    if (unusual) {
+      const catMed = median(byCat.get(unusual.category as Category) ?? []);
+      alerts.push(alert(
+        makeId('unusual', unusual.id),
+        'warning',
+        '⚡ Unusual purchase size',
+        `${fmt(unusual.amount)} at ${unusual.merchant} (${unusual.category}) is much larger than your typical ${unusual.category} debits (median ~${fmt0(catMed)}).`,
+        unusual.category as Category,
+      ));
+    }
+
+    // 9. Weekend note
     const dayOfWeek = now.getDay();
     if ((dayOfWeek === 0 || dayOfWeek === 6) && todayDebits > 50) {
       alerts.push(alert(
         makeId('weekend', today),
         'info',
-        '🎉 Weekend Spending Active',
-        `You've spent $${todayDebits.toFixed(0)} so far this ${dayOfWeek === 6 ? 'Saturday' : 'Sunday'}. Weekends account for ~35% of most people's discretionary spend.`,
+        '🎉 Weekend spending',
+        `${fmt0(todayDebits)} so far this ${dayOfWeek === 6 ? 'Saturday' : 'Sunday'} — weekends often carry extra discretionary spend.`,
       ));
     }
 
     return alerts;
-  }, [transactions, currentBalance, budgets, dailySpendRate]);
+  }, [transactions, currentBalance, budgets, dailySpendRate, extras?.currency, extras?.predictedEndOfMonth, extras?.daysLeftInMonth]);
 
   // ── Filter out dismissed alerts ────────────────────────────────────────────
 

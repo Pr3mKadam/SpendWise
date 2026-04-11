@@ -1,11 +1,15 @@
 import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft, Sparkles } from 'lucide-react';
 import { useCountUp } from '../hooks/useCountUp';
-import { CategorySpend, MonthlyStats } from '../types';
+import { MonthlyStats } from '../types';
 
 interface MetricCardsProps {
   currentBalance: number;
   predictedEndOfMonth: number;
-  topCategory: CategorySpend | null;
+  projectionMeta: {
+    daysLeftInMonth: number;
+    dataQuality:     'low' | 'medium' | 'high';
+    expectedChange:  number;
+  };
   monthlyStats: MonthlyStats;
   currency?: string;
 }
@@ -13,7 +17,7 @@ interface MetricCardsProps {
 export default function MetricCards({
   currentBalance,
   predictedEndOfMonth,
-  topCategory,
+  projectionMeta,
   monthlyStats,
   currency = '$',
 }: MetricCardsProps) {
@@ -23,6 +27,10 @@ export default function MetricCards({
   const displayPredicted = useCountUp(predictedEndOfMonth, 600);
 
   const isPositive = predictedEndOfMonth >= currentBalance;
+  const projectionSub =
+    projectionMeta.daysLeftInMonth > 0
+      ? `${projectionMeta.daysLeftInMonth}d left · ${projectionMeta.dataQuality} confidence · 30-day burn × days left`
+      : 'Month ending — snapshot';
 
   const cards = [
     {
@@ -55,9 +63,9 @@ export default function MetricCards({
       trendUp: false,
     },
     {
-      label: 'AI Projection',
+      label: 'Predicted month-end',
       value: `${currency}${displayPredicted.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
-      sub: 'End of month',
+      sub: projectionSub,
       icon: isPositive ? TrendingUp : TrendingDown,
       color: isPositive ? 'var(--teal)' : 'var(--amber)',
       dimColor: isPositive ? 'var(--teal-dim)' : 'var(--amber-dim)',
@@ -93,7 +101,7 @@ export default function MetricCards({
                   <div className="flex items-center gap-1 mt-1">
                     <Sparkles size={10} style={{ color: 'var(--teal)' }} />
                     <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 600, fontFamily: 'var(--font-inter)' }}>
-                      AI Powered
+                      Predictive
                     </span>
                   </div>
                 )}

@@ -7,6 +7,7 @@ export interface SpendWiseConfig {
   initialBalance:     number;
   currency:           string;
   name?:              string;
+  balanceAnchorNet?:  number;
   onboardingComplete: boolean;
   createdAt:          string;
 }

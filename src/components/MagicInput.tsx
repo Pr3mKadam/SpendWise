@@ -1,8 +1,6 @@
-import { useState, useRef } from 'react';
-import { Loader2, Zap, AlertTriangle, CheckCircle2, X, Bot } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Plus, CheckCircle2, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Transaction } from '../types';
-import { parseTransaction as aiParseTransaction, AIServiceError } from '../services/ai';
-import { parseTransaction as regexParseTransaction } from '../data/mockData';
 import { parseUPISMS } from '../utils/upiParser';
 import { useCategories } from '../hooks/useCategories';
 
@@ -11,198 +9,405 @@ interface MagicInputProps {
   currency?: string;
 }
 
-type Status = 'idle' | 'processing' | 'success' | 'error';
+type Status = 'idle' | 'success' | 'error';
+
+function parseAmountInput(raw: string): number {
+  const n = parseFloat(raw.replace(/,/g, '').trim());
+  return Number.isFinite(n) ? n : NaN;
+}
 
 export default function MagicInput({ onAddTransaction, currency = '$' }: MagicInputProps) {
-  const { mergedIcons } = useCategories();
-  const EXAMPLE_PROMPTS = [
-    `Spent ${currency}45 on Uber`,
-    `Netflix ${currency}15.99 monthly`,
-    `Rs. 200.00 debited from a/c to UPI/Swiggy`,
-  ];
+  const { mergedIcons, allCategories } = useCategories();
 
-  const MAX_CHARS = 280;
-  const [text, setText] = useState('');
-  const [status, setStatus] = useState<Status>('idle');
-  const [lastParsed, setLastParsed] = useState<Transaction | null>(null);
-  const [errorMsg, setErrorMsg] = useState('');
-  const [lowConfidence, setLowConfidence] = useState(false);
+  const [amountStr, setAmountStr]   = useState('');
+  const [merchant, setMerchant]     = useState('');
+  const [category, setCategory]     = useState('Food');
+  const [type, setType]             = useState<'debit' | 'credit'>('debit');
+  const [date, setDate]             = useState(() => new Date().toISOString().split('T')[0]);
+  const [note, setNote]             = useState('');
+
+  const [pasteOpen, setPasteOpen]   = useState(false);
+  const [pasteText, setPasteText]   = useState('');
+  const [pasteHint, setPasteHint]   = useState<string | null>(null);
+
+  const [status, setStatus]         = useState<Status>('idle');
+  const [lastAdded, setLastAdded]   = useState<Transaction | null>(null);
+  const [errorMsg, setErrorMsg]     = useState('');
   const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const charCount = text.length;
-  const isOverLimit = charCount > MAX_CHARS;
+  useEffect(() => {
+    if (!allCategories.length) return;
+    if (!allCategories.includes(category)) {
+      setCategory(allCategories.includes('Food') ? 'Food' : allCategories[0]);
+    }
+  }, [allCategories, category]);
 
-  const handleSubmit = async () => {
-    if (!text.trim() || status === 'processing' || isOverLimit) return;
-    if (successTimer.current) clearTimeout(successTimer.current);
-    setStatus('processing'); setErrorMsg(''); setLowConfidence(false);
-
-    try {
-      const today = new Date().toISOString().split('T')[0];
-      let tx: Transaction;
-      const tags = text.match(/#[a-zA-Z0-9_-]+/g)?.map(t => t.slice(1).toLowerCase());
-      
-      const upiAttempt = parseUPISMS(text);
-
-      if (upiAttempt && upiAttempt.amount) {
-        tx = {
-          id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-          date: today,
-          amount: upiAttempt.amount,
-          category: upiAttempt.category as any,
-          merchant: upiAttempt.merchant || 'UPI Transfer',
-          type: upiAttempt.type as any,
-          description: text.trim(),
-          isNew: true,
-          confidence: 0.9,
-          aiParsed: true,
-          tags: tags?.length ? [...tags, 'upi-sms'] : ['upi-sms']
-        };
-      } else {
-        try {
-          const parsed = await aiParseTransaction(text, today);
-          tx = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, date: parsed.date, amount: parsed.amount, category: parsed.category, merchant: parsed.merchant, type: parsed.type, description: text.trim(), isNew: true, confidence: parsed.confidence, aiParsed: true, tags: tags?.length ? tags : undefined };
-          if (parsed.confidence < 0.7) setLowConfidence(true);
-        } catch (aiErr) {
-          if (aiErr instanceof AIServiceError) { tx = { ...regexParseTransaction(text), aiParsed: false, tags: tags?.length ? tags : undefined }; }
-          else throw aiErr;
-        }
-      }
-
-      if (tx.amount <= 0 || tx.amount > 1_000_000) throw new Error('Amount looks unusual — please double-check.');
-      onAddTransaction(tx);
-      setLastParsed(tx); setStatus('success'); setText('');
-      successTimer.current = setTimeout(() => setStatus('idle'), 4000);
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Could not parse the transaction. Try rephrasing.');
-      setStatus('error');
-      setTimeout(() => setStatus('idle'), 4000);
+  const setExpenseMode = () => {
+    setType('debit');
+    if (category === 'Income') {
+      setCategory(allCategories.includes('Food') ? 'Food' : allCategories[0]);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleSubmit(); }
+  const setIncomeMode = () => {
+    setType('credit');
+    if (allCategories.includes('Income')) setCategory('Income');
   };
 
-  const isProcessing = status === 'processing';
+  const resetForm = () => {
+    setAmountStr('');
+    setMerchant('');
+    setNote('');
+    setDate(new Date().toISOString().split('T')[0]);
+    setPasteHint(null);
+  };
+
+  const handleSubmit = () => {
+    if (successTimer.current) clearTimeout(successTimer.current);
+    setErrorMsg('');
+
+    const amount = parseAmountInput(amountStr);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      setErrorMsg('Enter a valid amount greater than zero.');
+      setStatus('error');
+      successTimer.current = setTimeout(() => setStatus('idle'), 3500);
+      return;
+    }
+    if (amount > 1_000_000) {
+      setErrorMsg('Amount is too large — please double-check.');
+      setStatus('error');
+      successTimer.current = setTimeout(() => setStatus('idle'), 3500);
+      return;
+    }
+
+    const merchantTrim = merchant.trim() || (type === 'credit' ? 'Income' : 'Expense');
+    const noteTrim = note.trim();
+    const tags = noteTrim.match(/#[a-zA-Z0-9_-]+/g)?.map(t => t.slice(1).toLowerCase());
+
+    const tx: Transaction = {
+      id:          `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      date,
+      amount,
+      category:    category as Transaction['category'],
+      merchant:    merchantTrim,
+      type,
+      description: noteTrim || undefined,
+      isNew:       true,
+      aiParsed:    false,
+      tags:        tags?.length ? tags : undefined,
+    };
+
+    onAddTransaction(tx);
+    setLastAdded(tx);
+    setStatus('success');
+    resetForm();
+    successTimer.current = setTimeout(() => setStatus('idle'), 4000);
+  };
+
+  const handleApplyPaste = () => {
+    setPasteHint(null);
+    const raw = pasteText.trim();
+    if (!raw) {
+      setPasteHint('Paste an SMS or message first.');
+      return;
+    }
+
+    const upi = parseUPISMS(raw);
+    if (upi?.amount != null && Number.isFinite(upi.amount) && upi.amount > 0) {
+      setAmountStr(String(upi.amount));
+      setMerchant((upi.merchant || '').trim() || '');
+      const t = upi.type === 'credit' ? 'credit' : 'debit';
+      setType(t);
+      const cat = typeof upi.category === 'string' ? upi.category : t === 'credit' ? 'Income' : 'Food';
+      setCategory(allCategories.includes(cat) ? cat : (t === 'credit' && allCategories.includes('Income') ? 'Income' : allCategories[0]));
+      setNote(raw);
+      setPasteHint('Fields updated from message. Review and tap Add.');
+      return;
+    }
+
+    setPasteHint('No Rs/INR amount found. Enter amount and details manually above.');
+  };
+
+  const amountNum = parseAmountInput(amountStr);
+  const canSubmit = Number.isFinite(amountNum) && amountNum > 0 && amountNum <= 1_000_000;
 
   return (
     <div className="card px-5 py-5">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
-          Magic Input
+          Add transaction
         </h3>
         <span
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
-          style={{ background: 'var(--teal-dim)', color: 'var(--teal)', fontFamily: 'var(--font-inter)' }}
+          className="px-2.5 py-1 rounded-full text-xs font-semibold"
+          style={{ background: '#f0f2f5', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
         >
-          <Zap size={11} />
-          AI Powered
+          Manual
         </span>
       </div>
 
-      {/* Example pills */}
-      <div className="flex flex-wrap gap-2 mb-3">
-        {EXAMPLE_PROMPTS.map(p => (
-          <button
-            key={p}
-            onClick={() => { setText(p); textareaRef.current?.focus(); }}
-            disabled={isProcessing}
-            className="rounded-full px-3 py-1 text-xs font-medium transition-colors disabled:opacity-50"
-            style={{ background: '#f5f7fa', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}
-          >
-            {p}
-          </button>
-        ))}
+      {/* Expense / Income */}
+      <div className="flex rounded-xl p-1 mb-4" style={{ background: '#f5f7fa' }}>
+        <button
+          type="button"
+          onClick={setExpenseMode}
+          className="flex flex-1 items-center justify-center py-2.5 rounded-xl text-xs font-semibold transition-all"
+          style={{
+            fontFamily: 'var(--font-inter)',
+            background: type === 'debit' ? 'var(--surface-card)' : 'transparent',
+            color: type === 'debit' ? 'var(--red)' : 'var(--text-muted)',
+            boxShadow: type === 'debit' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Expense
+        </button>
+        <button
+          type="button"
+          onClick={setIncomeMode}
+          className="flex flex-1 items-center justify-center py-2.5 rounded-xl text-xs font-semibold transition-all"
+          style={{
+            fontFamily: 'var(--font-inter)',
+            background: type === 'credit' ? 'var(--surface-card)' : 'transparent',
+            color: type === 'credit' ? 'var(--green)' : 'var(--text-muted)',
+            boxShadow: type === 'credit' ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+            border: 'none',
+            cursor: 'pointer',
+          }}
+        >
+          Income
+        </button>
       </div>
 
-      {/* Textarea */}
-      <div className="relative mb-3">
-        <textarea
-          ref={textareaRef}
-          value={text}
-          onChange={e => setText(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={'Describe a transaction…\n\n"Spent $45 on Uber" or "Netflix $15.99"'}
-          rows={4}
-          disabled={isProcessing}
-          className="w-full resize-none rounded-xl text-sm transition-all focus:outline-none"
-          style={{
-            background: '#f8fafc',
-            border: isOverLimit ? '2px solid var(--red)' : '2px solid transparent',
-            padding: '12px 14px 28px 14px',
-            fontFamily: 'var(--font-inter)',
-            fontSize: '13px',
-            color: 'var(--text-primary)',
-            boxShadow: 'none',
-          }}
-          onFocus={e => { if (!isOverLimit) e.target.style.border = '2px solid var(--teal)'; }}
-          onBlur={e => { if (!isOverLimit) e.target.style.border = '2px solid transparent'; }}
-        />
-        <div
-          className="absolute bottom-2 right-3 text-xs"
-          style={{ color: isOverLimit ? 'var(--red)' : charCount > MAX_CHARS * 0.8 ? 'var(--amber)' : 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
-        >
-          {charCount}/{MAX_CHARS}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div>
+          <label
+            htmlFor="tx-amount"
+            style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}
+          >
+            Amount ({currency})
+          </label>
+          <input
+            id="tx-amount"
+            type="text"
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="0.00"
+            value={amountStr}
+            onChange={e => setAmountStr(e.target.value.replace(/[^\d.,]/g, ''))}
+            className="w-full rounded-xl text-sm focus:outline-none"
+            style={{
+              background:   '#f8fafc',
+              border:       '2px solid transparent',
+              padding:      '12px 14px',
+              fontFamily:   'var(--font-manrope)',
+              fontSize:     '18px',
+              fontWeight:   700,
+              color:        'var(--text-primary)',
+            }}
+            onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
+            onBlur={e => { e.target.style.border = '2px solid transparent'; }}
+          />
+        </div>
+        <div>
+          <label
+            htmlFor="tx-date"
+            style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}
+          >
+            Date
+          </label>
+          <input
+            id="tx-date"
+            type="date"
+            value={date}
+            onChange={e => setDate(e.target.value)}
+            className="w-full rounded-xl text-sm focus:outline-none"
+            style={{
+              background: '#f8fafc',
+              border:     '2px solid transparent',
+              padding:    '12px 14px',
+              fontFamily: 'var(--font-inter)',
+              color:      'var(--text-primary)',
+            }}
+            onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
+            onBlur={e => { e.target.style.border = '2px solid transparent'; }}
+          />
         </div>
       </div>
 
-      {/* Submit */}
+      <div className="mb-3">
+        <label
+          htmlFor="tx-merchant"
+          style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}
+        >
+          Merchant / label
+        </label>
+        <input
+          id="tx-merchant"
+          type="text"
+          placeholder={type === 'credit' ? 'e.g. Salary, Refund' : 'e.g. Starbucks, Rent'}
+          value={merchant}
+          onChange={e => setMerchant(e.target.value)}
+          className="w-full rounded-xl text-sm focus:outline-none"
+          style={{
+            background: '#f8fafc',
+            border:     '2px solid transparent',
+            padding:    '12px 14px',
+            fontFamily: 'var(--font-inter)',
+            color:      'var(--text-primary)',
+          }}
+          onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
+          onBlur={e => { e.target.style.border = '2px solid transparent'; }}
+        />
+      </div>
+
+      <div className="mb-3">
+        <label
+          htmlFor="tx-category"
+          style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}
+        >
+          Category
+        </label>
+        <select
+          id="tx-category"
+          value={category}
+          onChange={e => setCategory(e.target.value)}
+          className="w-full rounded-xl text-sm focus:outline-none appearance-none cursor-pointer"
+          style={{
+            background: '#f8fafc',
+            border:     '2px solid transparent',
+            padding:    '12px 14px',
+            fontFamily: 'var(--font-inter)',
+            color:      'var(--text-primary)',
+          }}
+        >
+          {allCategories.map(c => (
+            <option key={c} value={c}>
+              {(mergedIcons[c] ? `${mergedIcons[c]} ` : '') + c}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mb-4">
+        <label
+          htmlFor="tx-note"
+          style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}
+        >
+          Note (optional)
+        </label>
+        <input
+          id="tx-note"
+          type="text"
+          placeholder="#tags supported · e.g. #work lunch"
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          className="w-full rounded-xl text-sm focus:outline-none"
+          style={{
+            background: '#f8fafc',
+            border:     '2px solid transparent',
+            padding:    '10px 14px',
+            fontFamily: 'var(--font-inter)',
+            color:      'var(--text-primary)',
+          }}
+          onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
+          onBlur={e => { e.target.style.border = '2px solid transparent'; }}
+        />
+      </div>
+
       <button
+        type="button"
         onClick={handleSubmit}
-        disabled={!text.trim() || isProcessing || isOverLimit}
+        disabled={!canSubmit}
         className="w-full h-11 flex items-center justify-center gap-2 rounded-xl font-semibold text-sm text-white transition-all"
         style={{
-          background: isProcessing || !text.trim() || isOverLimit ? '#a0aec0' : 'var(--teal)',
-          cursor: isProcessing || !text.trim() || isOverLimit ? 'not-allowed' : 'pointer',
+          background: !canSubmit ? '#a0aec0' : 'var(--teal)',
+          cursor:     !canSubmit ? 'not-allowed' : 'pointer',
           fontFamily: 'var(--font-inter)',
-          border: 'none',
+          border:     'none',
         }}
       >
-        {isProcessing ? (
-          <><Loader2 size={16} className="animate-spin" /> Parsing…</>
-        ) : (
-          <><Zap size={15} /> Parse & Add Transaction</>
-        )}
+        <Plus size={16} strokeWidth={2.5} />
+        Add transaction
       </button>
 
-      {/* Success feedback */}
-      {status === 'success' && lastParsed && (
+      {/* Optional UPI paste — no AI */}
+      <div className="mt-4 border-t border-[var(--border-subtle,#e2e8f0)] pt-4">
+        <button
+          type="button"
+          onClick={() => setPasteOpen(o => !o)}
+          className="flex w-full items-center justify-between text-left"
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontFamily: 'var(--font-inter)',
+            fontSize: '12px',
+            fontWeight: 600,
+            color: 'var(--text-muted)',
+          }}
+        >
+          <span>Paste UPI / bank SMS (auto-fill)</span>
+          {pasteOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+        {pasteOpen && (
+          <div className="mt-3 space-y-2">
+            <textarea
+              value={pasteText}
+              onChange={e => setPasteText(e.target.value)}
+              placeholder="Paste message containing Rs. or INR amount…"
+              rows={3}
+              className="w-full resize-none rounded-xl text-sm focus:outline-none"
+              style={{
+                background: '#f8fafc',
+                border: '2px solid #edf2f7',
+                padding: '10px 12px',
+                fontFamily: 'var(--font-inter)',
+                color: 'var(--text-primary)',
+              }}
+            />
+            <button
+              type="button"
+              onClick={handleApplyPaste}
+              className="w-full py-2 rounded-xl text-xs font-semibold"
+              style={{
+                background: '#edf2f7',
+                color: 'var(--text-secondary)',
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-inter)',
+              }}
+            >
+              Apply to form
+            </button>
+            {pasteHint && (
+              <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', margin: 0 }}>
+                {pasteHint}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {status === 'success' && lastAdded && (
         <div className="mt-3 rounded-xl px-4 py-3 flex items-start gap-3 animate-fade-in-up" style={{ background: 'var(--green-dim)' }}>
           <CheckCircle2 size={16} style={{ color: 'var(--green)', marginTop: '2px', flexShrink: 0 }} />
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--green)' }}>✓ Added!</p>
-              {lastParsed.aiParsed && (
-                <span className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold" style={{ background: 'var(--teal-dim)', color: 'var(--teal)' }}>
-                  <Bot size={8} /> AI
-                </span>
-              )}
-            </div>
-            {lowConfidence && (
-              <p style={{ fontSize: '11px', color: 'var(--amber)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>⚠ Low confidence — please verify</p>
-            )}
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--green)' }}>Added</p>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>
-              {mergedIcons[lastParsed.category] || '📦'} {lastParsed.category} · {lastParsed.type === 'credit' ? '+' : '-'}{currency}{lastParsed.amount.toFixed(2)} · {lastParsed.merchant}
+              {mergedIcons[lastAdded.category] || '📦'} {lastAdded.category} · {lastAdded.type === 'credit' ? '+' : '-'}{currency}{lastAdded.amount.toFixed(2)} · {lastAdded.merchant}
             </p>
           </div>
-          <button onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+          <button type="button" onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
             <X size={14} />
           </button>
         </div>
       )}
 
-      {/* Error feedback */}
-      {status === 'error' && (
-        <div className="mt-3 rounded-xl px-4 py-3 flex items-start gap-3 animate-fade-in-up" style={{ background: 'var(--red-dim)' }}>
-          <AlertTriangle size={16} style={{ color: 'var(--red)', marginTop: '2px', flexShrink: 0 }} />
-          <div className="flex-1">
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--red)' }}>Parse failed</p>
-            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>{errorMsg}</p>
-          </div>
-          <button onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+      {status === 'error' && errorMsg && (
+        <div className="mt-3 rounded-xl px-4 py-3 flex items-start gap-3" style={{ background: 'var(--red-dim)' }}>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--red)', margin: 0 }}>{errorMsg}</p>
+          <button type="button" onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', marginLeft: 'auto', flexShrink: 0 }}>
             <X size={14} />
           </button>
         </div>

@@ -157,6 +157,29 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     return Math.round((currentBalance - dailySpendRate * daysLeft) * 100) / 100;
   }, [currentBalance, dailySpendRate]);
 
+  /** Extra context for metrics, alerts, and AI coach (30-day burn × days left in month). */
+  const projectionMeta = useMemo(() => {
+    const today    = new Date();
+    const lastDay  = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const daysLeft = Math.max(0, lastDay - today.getDate());
+    const cutoff   = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    const debitCount = transactions.filter(
+      tx => tx.type === 'debit' && tx.date >= cutoffStr
+    ).length;
+    let dataQuality: 'low' | 'medium' | 'high' = 'low';
+    if (debitCount >= 12) dataQuality = 'high';
+    else if (debitCount >= 4) dataQuality = 'medium';
+    const expectedChange = Math.round((predictedEndOfMonth - currentBalance) * 100) / 100;
+    return {
+      daysLeftInMonth: daysLeft,
+      dataQuality,
+      expectedChange,
+      debitCount30d: debitCount,
+    };
+  }, [transactions, predictedEndOfMonth, currentBalance]);
+
   // ── Derived: monthly stats ─────────────────────────────────────────────────
 
   const monthlyStats = useMemo((): MonthlyStats => {
@@ -278,6 +301,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     resetData,
     currentBalance,
     predictedEndOfMonth,
+    projectionMeta,
     topCategory,
     categorySpending: categorySpendingWithPercent,
     totalSpent,

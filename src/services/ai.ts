@@ -164,6 +164,75 @@ export async function parseTransaction(
   return validated;
 }
 
+// ─── Financial coach (Gemini) ─────────────────────────────────────────────────
+
+export interface CoachContext {
+  currency:              string;
+  currentBalance:        number;
+  predictedEndOfMonth:   number;
+  totalSpentMonth:       number;
+  totalIncomeMonth:      number;
+  dailySpendRate:        number;
+  daysLeftInMonth:       number;
+  dataQuality:           'low' | 'medium' | 'high';
+  topCategories:         { name: string; amount: number; percent: number }[];
+}
+
+const COACH_SYSTEM = `You are a concise, supportive financial coach. You receive numeric spending summaries only.
+Write exactly 2–3 short sentences (under 400 characters total). Be specific with numbers and the user's currency symbol.
+Focus on: spending patterns, whether month-end balance looks healthy, one concrete habit to try.
+No markdown, no bullet characters, no JSON, no preamble — output only the coaching sentences.`;
+
+/**
+ * Returns a short coaching paragraph, or null if the API key is missing or the call fails.
+ */
+export async function generateCoachInsight(ctx: CoachContext): Promise<string | null> {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+  if (!apiKey) return null;
+
+  const userPayload = [
+    `Currency: ${ctx.currency}`,
+    `Current balance: ${ctx.currentBalance}`,
+    `Predicted balance at month-end (from 30-day daily spend × days left): ${ctx.predictedEndOfMonth}`,
+    `This month income: ${ctx.totalIncomeMonth}, expenses: ${ctx.totalSpentMonth}`,
+    `30-day average daily debit rate: ${ctx.dailySpendRate}`,
+    `Days left in month: ${ctx.daysLeftInMonth}`,
+    `Projection data quality (debit sample): ${ctx.dataQuality}`,
+    `Top spending categories: ${JSON.stringify(ctx.topCategories)}`,
+  ].join('\n');
+
+  let response: Response;
+  try {
+    response = await fetch(API_URL(apiKey), {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: COACH_SYSTEM }] },
+        contents:           [{ role: 'user', parts: [{ text: userPayload }] }],
+        generationConfig: {
+          temperature:     0.45,
+          maxOutputTokens: 256,
+        },
+      }),
+    });
+  } catch {
+    return null;
+  }
+
+  if (!response.ok) return null;
+
+  let envelope: GeminiResponse;
+  try {
+    envelope = (await response.json()) as GeminiResponse;
+  } catch {
+    return null;
+  }
+
+  const rawText = envelope?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const cleaned = rawText.trim().replace(/^["']|["']$/g, '').trim();
+  return cleaned.length > 0 ? cleaned.slice(0, 600) : null;
+}
+
 // ─── Gemini Response Types (minimal) ──────────────────────────────────────────
 
 interface GeminiPart     { text: string }
