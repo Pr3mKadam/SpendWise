@@ -276,7 +276,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
   ];
 
   return (
-    <div className="view-enter space-y-6 max-w-[900px]">
+    <div className="view-enter space-y-6 w-full min-w-0">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <p className="text-caption uppercase tracking-wide font-semibold" style={{ color: 'var(--teal)' }}>Shared</p>

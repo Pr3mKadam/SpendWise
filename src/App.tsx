@@ -244,7 +244,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
       />
 
       {/* ── Main Content ── */}
-      <div className="flex-1 flex flex-col min-w-0 md:ml-[240px]">
+      <div className="flex-1 flex flex-col min-w-0">
 
         {/* Top Header Bar */}
         <Header
