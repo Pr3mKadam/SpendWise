@@ -216,9 +216,8 @@ export default function BankSyncView({ onAutoAddTransactions, currency = '₹' }
       <ImportCSVModal
         isOpen={isCSVModalOpen}
         onClose={() => setIsCSVModalOpen(false)}
-        onImport={(tx) => {
-          // Send individual transaction directly to the auto adder
-          onAutoAddTransactions([tx]);
+        onImport={(txs) => {
+          onAutoAddTransactions(txs);
         }}
       />
     </div>

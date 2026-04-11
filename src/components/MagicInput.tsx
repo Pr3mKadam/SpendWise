@@ -3,6 +3,7 @@ import { Plus, CheckCircle2, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { Transaction } from '../types';
 import { parseUPISMS } from '../utils/upiParser';
 import { useCategories } from '../hooks/useCategories';
+import { useParentalControl } from '../contexts/ParentalControlContext';
 
 interface MagicInputProps {
   onAddTransaction: (tx: Transaction) => void;
@@ -18,6 +19,7 @@ function parseAmountInput(raw: string): number {
 
 export default function MagicInput({ onAddTransaction, currency = '$' }: MagicInputProps) {
   const { mergedIcons, allCategories } = useCategories();
+  const { canAddTransaction } = useParentalControl();
 
   const [amountStr, setAmountStr]   = useState('');
   const [merchant, setMerchant]     = useState('');
@@ -75,6 +77,14 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
     }
     if (amount > 1_000_000) {
       setErrorMsg('Amount is too large — please double-check.');
+      setStatus('error');
+      successTimer.current = setTimeout(() => setStatus('idle'), 3500);
+      return;
+    }
+
+    const check = canAddTransaction(amount, category);
+    if (!check.allowed) {
+      setErrorMsg(check.reason || 'Not allowed by Parental Controls.');
       setStatus('error');
       successTimer.current = setTimeout(() => setStatus('idle'), 3500);
       return;

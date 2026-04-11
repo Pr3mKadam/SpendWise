@@ -3,6 +3,7 @@ import { BriefcaseBusiness, Flame, ChevronRight, Sparkles, RefreshCw, Loader2 } 
 import { CategorySpend, MonthlyStats } from '../types';
 import { professionalInsights, savageInsights, applyTemplate, CATEGORY_ICONS } from '../data/mockData';
 import { generateCoachInsight, type CoachContext } from '../services/ai';
+import { useParentalControl } from '../contexts/ParentalControlContext';
 
 type ProjectionQuality = 'low' | 'medium' | 'high';
 
@@ -43,6 +44,9 @@ export default function AICoach({
   const [aiLoading, setAiLoading]   = useState(false);
   const [aiRefresh, setAiRefresh]   = useState(0);
 
+  const { settings, isKidMode } = useParentalControl();
+  const shouldHideBalances = isKidMode && settings.hideBalances;
+
   const clearTimer = useCallback(() => {
     if (animTimer.current) { clearTimeout(animTimer.current); animTimer.current = null; }
   }, []);
@@ -65,7 +69,7 @@ export default function AICoach({
       categorySpending.slice(0, 5).map(c => ({
         name:    c.name,
         amount:  c.value,
-        percent: c.percent,
+        percent: c.percent || 0,
       })),
     [categorySpending],
   );
@@ -241,7 +245,15 @@ export default function AICoach({
         className="rounded-xl px-4 py-3 mb-4 transition-opacity"
         style={{ background: accentDim, opacity: isAnimating ? 0 : 1, transition: 'opacity 200ms' }}
       >
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+        <p style={{
+          fontFamily: 'var(--font-inter)',
+          fontSize: '13px',
+          color: 'var(--text-secondary)',
+          lineHeight: 1.6,
+          filter: shouldHideBalances ? 'blur(5px)' : 'none',
+          opacity: shouldHideBalances ? 0.8 : 1,
+          transition: 'filter 0.3s'
+        }}>
           {templateInsight}
         </p>
       </div>

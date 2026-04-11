@@ -4,13 +4,16 @@ import "./index.css";
 import App from "./App";
 import { AuthProvider } from "./hooks/useAuth";
 import { CategoryProvider } from "./hooks/useCategories";
+import { ParentalControlProvider } from "./contexts/ParentalControlContext";
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
-      <CategoryProvider>
-        <App />
-      </CategoryProvider>
+      <ParentalControlProvider>
+        <CategoryProvider>
+          <App />
+        </CategoryProvider>
+      </ParentalControlProvider>
     </AuthProvider>
   </StrictMode>
 );

@@ -3,6 +3,7 @@ import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid,
 } from 'recharts';
 import { BalanceDataPoint } from '../types';
+import { useParentalControl } from '../contexts/ParentalControlContext';
 
 interface BalanceChartProps {
   data: BalanceDataPoint[];
@@ -41,6 +42,9 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
     );
   }
 
+  const { settings, isKidMode } = useParentalControl();
+  const shouldHideBalances = isKidMode && settings.hideBalances;
+
   return (
     <div className="card px-6 py-5">
       {/* Header */}
@@ -62,7 +66,12 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
         </div>
       </div>
 
-      <div style={{ height: 260 }}>
+      <div style={{
+        height: 260,
+        filter: shouldHideBalances ? 'blur(8px)' : 'none',
+        opacity: shouldHideBalances ? 0.7 : 1,
+        transition: 'filter 0.3s'
+      }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
             <defs>

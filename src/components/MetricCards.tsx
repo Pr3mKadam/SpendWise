@@ -1,6 +1,7 @@
 import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft, Sparkles } from 'lucide-react';
 import { useCountUp } from '../hooks/useCountUp';
 import { MonthlyStats } from '../types';
+import { useParentalControl } from '../contexts/ParentalControlContext';
 
 interface MetricCardsProps {
   currentBalance: number;
@@ -74,6 +75,9 @@ export default function MetricCards({
     },
   ];
 
+  const { settings, isKidMode } = useParentalControl();
+  const shouldHideBalances = isKidMode && settings.hideBalances;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
       {cards.map((card, i) => {
@@ -123,9 +127,12 @@ export default function MetricCards({
                 color: 'var(--text-primary)',
                 lineHeight: 1,
                 marginBottom: '8px',
+                filter: shouldHideBalances ? 'blur(8px)' : 'none',
+                opacity: shouldHideBalances ? 0.7 : 1,
+                transition: 'filter 0.3s'
               }}
             >
-              {card.value}
+              {shouldHideBalances ? '******' : card.value}
             </div>
 
             <div className="flex items-center justify-between">

@@ -27,6 +27,9 @@ import ProfileView        from './components/ProfileView';
 import PortfolioView      from './components/PortfolioView';
 import SubscriptionManager from './components/SubscriptionManager';
 import { generatePDFReport } from './utils/exportPDF';
+import { useParentalControl } from './contexts/ParentalControlContext';
+import { ParentalPinGate, KidModeBanner } from './components/ParentalControlGate';
+import ParentalControlModal from './components/ParentalControlModal';
 
 // ── Hooks ────────────────────────────────────────────────────────
 import { useFinanceState }  from './hooks/useFinanceState';
@@ -150,8 +153,13 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
 
   const [showImportCSV, setShowImportCSV]         = useState(false);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
+  const [showParentalModal, setShowParentalModal]   = useState(false);
+  const [showParentalGate, setShowParentalGate]     = useState(false);
   const [activeView, setActiveView]               = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
+
+  const parentalControl = useParentalControl();
+  const { settings: pcSettings, isKidMode } = parentalControl;
 
   const toggleNotifications = useCallback(() => {
     setShowNotifications(v => !v);
@@ -227,8 +235,33 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  useEffect(() => {
+    if (isKidMode) {
+      if (activeView === 'sync' || (activeView === 'analytics' && pcSettings.hideAnalytics)) {
+        setActiveView('dashboard');
+      }
+    }
+  }, [isKidMode, activeView, pcSettings.hideAnalytics]);
+
   return (
-    <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
+    <div className="flex min-h-screen flex-col" style={{ background: 'var(--bg)' }}>
+
+      {/* ── Parental PIN Gate (slides over app on kid-mode session) ── */}
+      {pcSettings.enabled && !pcSettings.sessionUnlocked && !isKidMode && (
+        <ParentalPinGate onContinueAsKid={() => parentalControl.updateSettings({ kidMode: true })} />
+      )}
+
+      {/* ── Kid Mode Banner ── */}
+      {isKidMode && (
+        <KidModeBanner onParentLogin={() => setShowParentalGate(true)} />
+      )}
+
+      {/* ── Parent PIN unlock overlay (triggered from banner) ── */}
+      {showParentalGate && (
+        <ParentalPinGate onContinueAsKid={() => setShowParentalGate(false)} />
+      )}
+
+      <div className="flex flex-1 min-h-0">
 
       {/* ── Onboarding Modal ── */}
       {!isOnboarded && (
@@ -241,6 +274,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         onViewChange={handleViewChange}
         overBudgetCount={overBudgetCount}
         onReset={resetData}
+        onOpenParentalSettings={() => setShowParentalModal(true)}
       />
 
       {/* ── Main Content ── */}
@@ -404,6 +438,8 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         <div className="mobile-nav-spacer md:hidden" />
       </div>
 
+      </div>{/* end flex-1 inner row */}
+
       {/* ── Notification Center ── */}
       <NotificationCenter
         notifications={notifState.notifications}
@@ -423,9 +459,15 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
       <ImportCSVModal
         isOpen={showImportCSV}
         onClose={() => setShowImportCSV(false)}
-        onImport={(tx) => {
-          addTransaction(tx);
+        onImport={(txs) => {
+          txs.forEach(addTransaction);
         }}
+      />
+
+      {/* ── Parental Control Modal ── */}
+      <ParentalControlModal
+        isOpen={showParentalModal}
+        onClose={() => setShowParentalModal(false)}
       />
 
       {/* ── Custom Categories Modal ── */}

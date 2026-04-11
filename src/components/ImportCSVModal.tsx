@@ -194,7 +194,7 @@ export default function ImportCSVModal({ isOpen, onClose, onImport }: ImportCSVM
   // ── Confirm import ──────────────────────────────────────────────────────────
 
   const confirmImport = () => {
-    parsed.forEach(tx => onImport(tx));
+    onImport(parsed);
     setStep('done');
   };
 

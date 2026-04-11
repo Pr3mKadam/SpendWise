@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Trash2, Bot } from 'lucide-react';
 import { Transaction } from '../types';
 import { useCategories } from '../hooks/useCategories';
+import { useParentalControl } from '../contexts/ParentalControlContext';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -13,6 +14,8 @@ type TabFilter = 'all' | 'credit' | 'debit';
 
 export default function TransactionList({ transactions, onDelete, currency = '$' }: TransactionListProps) {
   const { mergedIcons } = useCategories();
+  const { settings, isKidMode } = useParentalControl();
+  const shouldHideBalances = isKidMode && settings.hideBalances;
   const [tab, setTab] = useState<TabFilter>('all');
 
   const filtered = useMemo(() => {
@@ -137,10 +140,13 @@ export default function TransactionList({ transactions, onDelete, currency = '$'
                         fontSize: '14px',
                         fontWeight: 700,
                         color: isCredit ? 'var(--green)' : 'var(--text-primary)',
+                        filter: shouldHideBalances ? 'blur(6px)' : 'none',
+                        opacity: shouldHideBalances ? 0.7 : 1,
+                        transition: 'filter 0.3s'
                       }}
                       className="tabular-nums"
                     >
-                      {isCredit ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      {shouldHideBalances ? '****' : (isCredit ? '+' : '-') + currency + tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
                     <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
                       {formatDate(tx.date)}

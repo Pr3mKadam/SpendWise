@@ -1,15 +1,18 @@
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users } from 'lucide-react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield } from 'lucide-react';
 import { AppView } from '../types';
 import { useAuth } from '../hooks/useAuth';
+
+import { useParentalControl } from '../contexts/ParentalControlContext';
 
 interface SidebarProps {
   activeView:      AppView;
   onViewChange:    (view: AppView) => void;
   overBudgetCount: number;
   onReset:         () => void;
+  onOpenParentalSettings?: () => void;
 }
 
-const NAV_ITEMS = [
+const ALL_NAV_ITEMS = [
   { id: 'dashboard'     as AppView, label: 'Overview',         icon: LayoutDashboard },
   { id: 'analytics'     as AppView, label: 'Statistics',       icon: PieChart },
   { id: 'budget'        as AppView, label: 'Budget',           icon: Target },
@@ -21,8 +24,18 @@ const NAV_ITEMS = [
   { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
 ];
 
-export default function Sidebar({ activeView, onViewChange, overBudgetCount, onReset }: SidebarProps) {
+export default function Sidebar({ activeView, onViewChange, overBudgetCount, onReset, onOpenParentalSettings }: SidebarProps) {
   const { signOut } = useAuth();
+  const { isKidMode, settings } = useParentalControl();
+
+  const navItems = ALL_NAV_ITEMS.filter(item => {
+    if (isKidMode) {
+      if (item.id === 'sync') return false; // Bank sync always hidden
+      if (item.id === 'analytics' && settings.hideAnalytics) return false;
+    }
+    return true;
+  });
+
   return (
     <>
       {/* ── Desktop Sidebar ── */}
@@ -50,7 +63,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
 
         {/* Navigation */}
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
 
@@ -108,6 +121,18 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
           </button>
 
           <button
+            onClick={onOpenParentalSettings}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
+            style={{ color: 'var(--sidebar-text)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+            title="Parental Controls"
+          >
+            <Shield size={18} strokeWidth={2} />
+            <span>Parental Controls</span>
+          </button>
+
+          <button
             onClick={onReset}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
             style={{ color: 'rgba(239,68,68,0.7)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
@@ -138,7 +163,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
         className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 py-2"
         style={{ background: 'var(--sidebar-bg)', borderTop: '1px solid rgba(255,255,255,0.08)' }}
       >
-        {NAV_ITEMS.map((item) => {
+        {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeView === item.id;
 
