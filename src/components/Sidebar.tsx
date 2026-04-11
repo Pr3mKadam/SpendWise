@@ -1,5 +1,6 @@
 import { LayoutDashboard, CreditCard, ArrowLeftRight, Receipt, Target, Settings, LogOut, PieChart } from 'lucide-react';
 import { AppView } from '../types';
+import { useAuth } from '../hooks/useAuth';
 
 interface SidebarProps {
   activeView:      AppView;
@@ -17,6 +18,7 @@ const NAV_ITEMS = [
 ];
 
 export default function Sidebar({ activeView, onViewChange, overBudgetCount, onReset }: SidebarProps) {
+  const { signOut } = useAuth();
   return (
     <>
       {/* ── Desktop Sidebar ── */}
@@ -37,7 +39,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
               color: '#ffffff',
               letterSpacing: '-0.5px'
             }}>
-              <span style={{ fontWeight: 400 }}>FINE</span>bank<span style={{ color: 'var(--teal)' }}>.</span>IO
+              <span style={{ fontWeight: 400 }}>SPEND</span>wise<span style={{ color: 'var(--teal)' }}>.</span>AI
             </span>
           </div>
         </div>
@@ -104,6 +106,18 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
           >
             <LogOut size={18} strokeWidth={2} />
             <span>Reset Data</span>
+          </button>
+          
+          <button
+            onClick={signOut}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors mt-4 border border-teal-500/10"
+            style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(45,212,191,0.1)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+            title="Sign Out"
+          >
+            <LogOut size={18} strokeWidth={2} />
+            <span>Sign Out</span>
           </button>
         </div>
       </aside>

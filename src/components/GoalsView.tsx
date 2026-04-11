@@ -101,6 +101,7 @@ function GoalModal({
   initial,
   onSave,
   onClose,
+  currency,
 }: {
   initial?: Partial<GoalFormData>;
   onSave:   (data: GoalFormData) => void;
@@ -274,6 +275,7 @@ function ContributeModal({
   goal,
   onContribute,
   onClose,
+  currency,
 }: {
   goal:         SavingsGoal;
   onContribute: (amount: number) => void;
@@ -357,6 +359,7 @@ function GoalCard({
   onContribute,
   onEdit,
   onDelete,
+  currency,
 }: {
   goal:         SavingsGoal;
   onContribute: (amount: number) => void;
@@ -482,6 +485,7 @@ function GoalCard({
 
 function GoalsSummary({
   stats,
+  currency,
 }: {
   stats: {
     activeCount: number; achievedCount: number;

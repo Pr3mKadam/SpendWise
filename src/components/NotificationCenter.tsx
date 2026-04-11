@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { X, Bell, CheckCheck, ExternalLink } from 'lucide-react';
+import { X, Bell, CheckCheck, ExternalLink, Sparkles } from 'lucide-react';
 import { AppNotification, AlertSeverity, AppView } from '../types';
 
 interface NotificationCenterProps {
@@ -143,6 +143,20 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto">
+          
+          {/* AI Insights Summary */}
+          {unreadCount > 0 && (
+            <div className="m-4 p-3 rounded-xl" style={{ background: 'var(--surface-input)', border: '1px solid var(--teal-glow)' }}>
+              <div className="flex items-center gap-2 mb-2">
+                <Sparkles size={14} style={{ color: 'var(--teal)' }} />
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600, color: 'var(--teal)' }}>SpendWise AI Summary</span>
+              </div>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                You have {unreadCount} new alert{unreadCount === 1 ? '' : 's'}. Priority attention is needed on your active budgets over limit.
+              </p>
+            </div>
+          )}
+
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-14 text-center">
               <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ background: '#f5f7fa' }}>

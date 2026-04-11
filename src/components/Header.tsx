@@ -1,4 +1,4 @@
-import { Bell, Search, ChevronRight } from 'lucide-react';
+import { Bell, Search, ChevronRight, Moon, Sun } from 'lucide-react';
 import { AppView } from '../types';
 
 interface HeaderProps {
@@ -7,6 +7,8 @@ interface HeaderProps {
   onToggleNotifications: () => void;
   currency:              string;
   currentBalance:        number;
+  theme:                 'light' | 'dark';
+  onToggleTheme:         () => void;
 }
 
 const VIEW_TITLES: Record<AppView, string> = {
@@ -24,7 +26,7 @@ function getGreeting() {
   return 'Good evening';
 }
 
-export default function Header({ activeView, unreadCount, onToggleNotifications }: HeaderProps) {
+export default function Header({ activeView, unreadCount, onToggleNotifications, theme, onToggleTheme }: HeaderProps) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
@@ -69,6 +71,20 @@ export default function Header({ activeView, unreadCount, onToggleNotifications 
             Search here
           </span>
         </div>
+
+        {/* Theme toggle */}
+        <button
+          onClick={onToggleTheme}
+          className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-colors"
+          style={{ background: 'var(--surface-input)' }}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            <Sun size={17} style={{ color: 'var(--text-secondary)' }} />
+          ) : (
+            <Moon size={17} style={{ color: 'var(--text-secondary)' }} />
+          )}
+        </button>
 
         {/* Notification bell */}
         <button

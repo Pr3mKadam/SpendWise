@@ -1,0 +1,9 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
+
+// Prevent crashing if env variables are missing during dev/build without them setup yet
+export const supabase = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey) 
+  : null;

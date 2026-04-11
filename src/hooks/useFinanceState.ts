@@ -36,7 +36,7 @@ function loadTransactions(): Transaction[] {
       return parsed.map(tx => ({ ...tx, isNew: false }));
     }
   } catch { /* ignore parse errors */ }
-  return initialTransactions;
+  return [];
 }
 
 function saveTransactions(txs: Transaction[]): void {
@@ -79,7 +79,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   const resetData = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(ONBOARDING_KEY);
-    setTransactions(initialTransactions.map(tx => ({ ...tx, isNew: false })));
+    setTransactions([]);
   }, []);
 
   const deleteTransaction = useCallback((id: string) => {
@@ -89,12 +89,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   // ── Derived: balance ────────────────────────────────────────────────────────
 
   const currentBalance = useMemo(() => {
-    // The user's onboarding input IS the current balance including the mock data.
-    // We reverse out the mock transactions so the math perfectly matches their input.
-    const mockNet = initialTransactions.reduce((acc, tx) => {
-      return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
-    }, 0);
-    const startingPoint = initialBalance - mockNet;
+    const startingPoint = initialBalance;
 
     return Math.round(
       transactions.reduce((acc, tx) => {
@@ -211,14 +206,11 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
           savings:  Math.round(income - expenses),
         });
       } else {
-        // Simulated prior months — realistic ranges using seeded rand
-        const income   = Math.round(2200 + rand() * 1200);
-        const expenses = Math.round(1100 + rand() * 900);
         points.push({
           month:    label,
-          income,
-          expenses,
-          savings:  income - expenses,
+          income:   0,
+          expenses: 0,
+          savings:  0,
         });
       }
     }
@@ -233,10 +225,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     const today = new Date();
 
     // Use the same starting point reverse-calc for the trend lines
-    const mockNet = initialTransactions.reduce((acc, tx) => {
-      return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
-    }, 0);
-    const startingPoint = initialBalance - mockNet;
+    const startingPoint = initialBalance;
 
     // --- Historical: last 14 days ---
     for (let i = 13; i >= 0; i--) {

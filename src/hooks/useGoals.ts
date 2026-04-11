@@ -61,7 +61,7 @@ function loadGoals(): SavingsGoal[] {
     const s = localStorage.getItem(STORAGE_KEY);
     if (s) return JSON.parse(s) as SavingsGoal[];
   } catch { /* ignore */ }
-  return makeDefaultGoals();
+  return [];
 }
 
 function saveGoals(goals: SavingsGoal[]) {

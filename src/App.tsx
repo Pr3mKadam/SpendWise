@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import OnboardingModal, { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
 
 // ── Components ──────────────────────────────────────────────────
@@ -25,7 +25,8 @@ import { useAlerts }        from './hooks/useAlerts';
 import { useRecurring }     from './hooks/useRecurring';
 import { useNotifications } from './hooks/useNotifications';
 import { useGoals }         from './hooks/useGoals';
-
+import { useAuth }          from './hooks/useAuth';
+import AuthView             from './components/AuthView';
 // ── Types ────────────────────────────────────────────────────────
 import { AppView } from './types';
 
@@ -96,8 +97,27 @@ function DashboardView({
 // ── App Root ────────────────────────────────────────────────────
 
 export default function App() {
-  const [activeView, setActiveView]         = useState<AppView>('dashboard');
+  const { session, loading } = useAuth();
+  const [activeView, setActiveView]               = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
+
+  // ── Theme ───────────────────────────────────────────────────
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('spendwise_theme') as 'light' | 'dark') || 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('spendwise_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(t => (t === 'light' ? 'dark' : 'light'));
+  }, []);
 
   // ── Onboarding gate ─────────────────────────────────────────
   const [config, setConfig] = useState<SpendWiseConfig | null>(() => loadConfig());
@@ -143,6 +163,18 @@ export default function App() {
     setShowNotifications(prev => !prev);
   }, []);
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="text-[var(--accent)] animate-pulse font-medium text-lg">Loading SpendWise...</div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return <AuthView />;
+  }
+
   return (
     <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
 
@@ -169,6 +201,8 @@ export default function App() {
           onToggleNotifications={toggleNotifications}
           currency={currency}
           currentBalance={currentBalance}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
         {/* Page Content */}

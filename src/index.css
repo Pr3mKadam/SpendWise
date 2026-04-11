@@ -66,6 +66,41 @@
     --font-manrope: 'Manrope', sans-serif;
   }
 
+  .dark {
+    /* ── Sidebar ── */
+    --sidebar-bg:       #0e131d;
+    --sidebar-hover:    #151c2c;
+    --sidebar-active:   var(--teal);
+    --sidebar-text:     rgba(255,255,255,0.5);
+    --sidebar-text-active: #ffffff;
+
+    /* ── Main Content Area ── */
+    --bg:            #121826;
+    --surface-0:     #121826;
+    --surface-card:  #1e2536;
+    --surface-input: #273043;
+    --surface-hover: #232c40;
+
+    /* ── Text ── */
+    --text-primary:   #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted:     #94a3b8;
+    --text-dim:       #64748b;
+
+    /* ── Shadow tweaks for dark mode ── */
+    --shadow-card:   0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.4);
+    --shadow-md:     0 4px 20px rgba(0,0,0,0.5);
+    --shadow-lg:     0 8px 40px rgba(0,0,0,0.6);
+    --shadow-modal:  0 20px 60px rgba(0,0,0,0.7);
+
+    /* Dim semantic colors for darker BG */
+    --green-dim:     rgba(16, 185, 129, 0.15);
+    --red-dim:       rgba(239, 68, 68, 0.15);
+    --amber-dim:     rgba(245, 158, 11, 0.15);
+    --blue-dim:      rgba(59, 130, 246, 0.15);
+    --purple-dim:    rgba(139, 92, 246, 0.15);
+  }
+
   *, *::before, *::after {
     box-sizing: border-box;
   }
