@@ -4,54 +4,6 @@ import { deleteGoalRemote, fetchGoals, upsertGoalRemote } from '../lib/supabaseD
 
 const STORAGE_KEY = 'spendwise_goals_v1';
 
-function makeDefaultGoals(): SavingsGoal[] {
-  const today   = new Date();
-  const fmt     = (d: Date) => d.toISOString().split('T')[0];
-  const inMonths = (n: number) => {
-    const d = new Date(today);
-    d.setMonth(d.getMonth() + n);
-    return fmt(d);
-  };
-
-  return [
-    {
-      id:                  'goal-1',
-      name:                'Emergency Fund',
-      emoji:               '🛡️',
-      targetAmount:        10000,
-      savedAmount:         4200,
-      targetDate:          inMonths(8),
-      monthlyContribution: 600,
-      status:              'on-track',
-      color:               '#10b981',
-      createdAt:           fmt(today),
-    },
-    {
-      id:                  'goal-2',
-      name:                'Dream Vacation',
-      emoji:               '✈️',
-      targetAmount:        3500,
-      savedAmount:         1800,
-      targetDate:          inMonths(5),
-      monthlyContribution: 350,
-      status:              'at-risk',
-      color:               '#3b82f6',
-      createdAt:           fmt(today),
-    },
-    {
-      id:                  'goal-3',
-      name:                'New MacBook Pro',
-      emoji:               '💻',
-      targetAmount:        2499,
-      savedAmount:         2499,
-      targetDate:          inMonths(-1),
-      monthlyContribution: 0,
-      status:              'achieved',
-      color:               '#a855f7',
-      createdAt:           fmt(today),
-    },
-  ];
-}
 
 function loadGoals(): SavingsGoal[] {
   try {

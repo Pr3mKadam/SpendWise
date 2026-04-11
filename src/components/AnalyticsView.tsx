@@ -163,7 +163,7 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
             </div>
           ) : (
             <div className="space-y-3">
-              {categorySpending.map((cat, i) => (
+              {categorySpending.map((cat) => (
                 <div key={cat.name} className="flex items-center gap-3 py-2 rounded-xl px-2 -mx-2 hover:bg-gray-50 transition-colors cursor-pointer">
                   <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style={{ background: `${mergedColors[cat.name] || '#14b8a6'}15` }}>
                     <span className="text-base">{mergedIcons[cat.name] || '📦'}</span>

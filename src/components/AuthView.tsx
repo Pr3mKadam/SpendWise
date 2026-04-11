@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Mail, Lock, Wallet, ArrowRight, Loader2, User, Phone } from 'lucide-react';
 import { supabase } from '../services/supabaseClient';
 
-export default function AuthView() {
+export default function AuthView({ mfaRequired = false }: { mfaRequired?: boolean }) {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +42,7 @@ export default function AuthView() {
 
     try {
       if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase!.auth.signInWithPassword({
           email,
           password,
         });
@@ -76,7 +76,7 @@ export default function AuthView() {
     setError(null);
     setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { error } = await supabase!.auth.signUp({
         email,
         password,
         options: {
@@ -93,6 +93,34 @@ export default function AuthView() {
       setIsLogin(true);
     } catch (err: any) {
       setError(err.message || 'An error occurred during registration.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMfaSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    try {
+      const { data: factors, error: factorsError } = await supabase!.auth.mfa.listFactors();
+      if (factorsError) throw factorsError;
+      const totpFactor = factors?.totp?.[0];
+      if (!totpFactor) throw new Error("No TOTP factor found on your account.");
+
+      const challenge = await supabase!.auth.mfa.challenge({ factorId: totpFactor.id });
+      if (challenge.error) throw challenge.error;
+
+      const verify = await supabase!.auth.mfa.verify({
+        factorId: totpFactor.id,
+        challengeId: challenge.data.id,
+        code: otpCode.join('')
+      });
+      if (verify.error) throw verify.error;
+      
+      // Verification successful, AuthContext will catch the session update.
+    } catch (err: any) {
+      setError(err.message || 'Verification failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -136,7 +164,60 @@ export default function AuthView() {
         </div>
 
         <div className="card p-8 shadow-2xl shadow-black/40">
-          {isOtpMode ? (
+          {mfaRequired ? (
+            <form onSubmit={handleMfaSubmit} className="space-y-6">
+              <div className="text-center mb-6">
+                <div className="inline-flex w-12 h-12 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] items-center justify-center mb-3">
+                  <Lock className="w-6 h-6" />
+                </div>
+                <h3 className="text-lg font-bold text-[var(--text-primary)]">Two-Factor Authentication</h3>
+                <p className="text-sm text-[var(--text-secondary)] mt-1">
+                  Enter the 6-digit code from your authenticator app
+                </p>
+              </div>
+
+              <div className="flex justify-center gap-2">
+                {otpCode.map((digit, index) => (
+                  <input
+                    key={index}
+                    id={`otp-${index}`}
+                    type="text"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/[^0-9]/g, '');
+                      const newOtp = [...otpCode];
+                      newOtp[index] = value;
+                      setOtpCode(newOtp);
+                      if (value && index < 5) {
+                        document.getElementById(`otp-${index + 1}`)?.focus();
+                      }
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
+                        document.getElementById(`otp-${index - 1}`)?.focus();
+                      }
+                    }}
+                    className="w-12 h-14 text-center text-xl font-bold bg-[var(--bg)] border border-[var(--border)] rounded-xl outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] transition-all text-[var(--text-primary)]"
+                  />
+                ))}
+              </div>
+
+              {error && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm text-center">
+                  {error}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading || otpCode.some((d) => !d)}
+                className="w-full py-3 px-4 bg-[var(--accent)] text-teal-950 font-semibold rounded-xl transition-all hover:bg-teal-300 hover:shadow-[0_0_20px_rgba(45,212,191,0.3)] flex items-center justify-center gap-2 group disabled:opacity-70 disabled:pointer-events-none"
+              >
+                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Verify Code'}
+              </button>
+            </form>
+          ) : isOtpMode ? (
             <form onSubmit={handleOtpSubmit} className="space-y-6">
               <div className="text-center mb-6">
                 <div className="inline-flex w-12 h-12 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] items-center justify-center mb-3">

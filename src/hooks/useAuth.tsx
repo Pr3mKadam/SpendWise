@@ -1,72 +1,82 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { supabase } from '../services/supabaseClient';
 import type { User, Session } from '@supabase/supabase-js';
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   session: Session | null;
-  loading: boolean;
+  loading: boolean;      // legacy alias for !authReady
+  authReady: boolean;
+  mfaRequired: boolean;
   signOut: () => Promise<void>;
-  // We don't necessarily need to expose signIn and signUp here if we handle them directly in AuthView,
-  // but it's good practice for an Auth context. 
-  // However, for simplicity and clear error handling, we'll expose just the state and signOut.
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   session: null,
   loading: true,
+  authReady: false,
+  mfaRequired: false,
   signOut: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [authReady, setAuthReady] = useState(false);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   useEffect(() => {
-    // If supabase client isn't configured, we just stop loading and assume no auth.
-    // This allows the app to show a helpful error message instead of infinite loading.
     if (!supabase) {
-      setLoading(false);
+      setAuthReady(true);
       return;
     }
 
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
+    const checkMFA = async (s: Session | null) => {
+      if (!s) { setMfaRequired(false); return; }
+      try {
+        const { data, error } = await supabase!.auth.mfa.getAuthenticatorAssuranceLevel();
+        setMfaRequired(!error && data?.nextLevel === 'aal2' && data?.currentLevel === 'aal1');
+      } catch { /* ignore */ }
+    };
+
+    supabase.auth.getSession().then(({ data: { session: s } }) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+      setAuthReady(true);
+      void checkMFA(s);
+    }).catch(() => setAuthReady(true));
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+      setUser(s?.user ?? null);
+      void checkMFA(s);
     });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        setLoading(false);
-      }
-    );
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    return () => { subscription.unsubscribe(); };
   }, []);
 
-  const signOut = async () => {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
-  };
+  const signOut = useCallback(async () => {
+    if (supabase) await supabase.auth.signOut();
+  }, []);
+
+  const value = useMemo<AuthContextType>(() => ({
+    user,
+    session,
+    loading: !authReady,
+    authReady,
+    mfaRequired,
+    signOut,
+  }), [user, session, authReady, mfaRequired, signOut]);
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error('useAuth must be used within an AuthProvider');

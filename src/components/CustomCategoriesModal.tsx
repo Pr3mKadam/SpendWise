@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Plus, Trash2, Edit3, Tag as TagIcon, Check } from 'lucide-react';
+import { X, Plus, Trash2, Edit3, Tag as TagIcon } from 'lucide-react';
 import { CustomCategoryDef } from '../types';
 
 interface CustomCategoriesModalProps {

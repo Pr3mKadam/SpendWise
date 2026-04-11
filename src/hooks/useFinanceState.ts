@@ -7,7 +7,6 @@ import {
   MonthlyStats,
   MonthlyHistoryPoint,
 } from '../types';
-import { initialTransactions } from '../data/mockData';
 import { useCategories } from './useCategories';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
@@ -86,6 +85,10 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
 
   const deleteTransaction = useCallback((id: string) => {
     setTransactions(prev => prev.filter(tx => tx.id !== id));
+  }, []);
+
+  const updateTransactionCategory = useCallback((id: string, newCategory: Category) => {
+    setTransactions(prev => prev.map(tx => tx.id === id ? { ...tx, category: newCategory } : tx));
   }, []);
 
   // ── Derived: balance ────────────────────────────────────────────────────────
@@ -209,8 +212,6 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     const points: MonthlyHistoryPoint[] = [];
 
     // Seeded fake data for past 5 months so the chart looks alive
-    const seed = 42;
-    const rand = seededRandom(seed);
 
     for (let m = 5; m >= 0; m--) {
       const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
@@ -298,6 +299,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     transactions,
     addTransaction,
     deleteTransaction,
+    updateTransactionCategory,
     resetData,
     currentBalance,
     predictedEndOfMonth,

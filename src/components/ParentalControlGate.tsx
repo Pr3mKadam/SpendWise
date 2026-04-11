@@ -186,7 +186,7 @@ export function ParentalPinGate({ onContinueAsKid }: { onContinueAsKid: () => vo
 // Shown at the top of the main shell when kid mode is active
 
 export function KidModeBanner({ onParentLogin }: { onParentLogin: () => void }) {
-  const { settings, lockSession } = useParentalControl();
+  const { settings, lockSession: _lockSession } = useParentalControl();
 
   const ageLabel = {
     child: '🧒 Child Mode',

@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
-import { Search, Filter, ArrowUpRight, ArrowDownLeft, Trash2, Download, X, ChevronUp, ChevronDown, Upload, FileText, Calendar } from 'lucide-react';
+import { Search, Filter, ArrowUpRight, ArrowDownLeft, Download, X, ChevronUp, ChevronDown, Upload, FileText, Calendar } from 'lucide-react';
 import { Transaction, Category } from '../types';
 import { useCategories } from '../hooks/useCategories';
 
 interface HistoryViewProps {
   transactions: Transaction[];
-  onDelete?:    (id: string) => void;
+  onCategoryChange?: (id: string, newCategory: Category) => void;
   onImportClick?: () => void;
   onPDFReport?:   () => void;
   currency?:    string;
@@ -15,9 +15,6 @@ type SortKey    = 'date' | 'amount' | 'merchant' | 'category';
 type SortDir    = 'asc'  | 'desc';
 type TypeFilter = 'all'  | 'credit' | 'debit';
 
-const CATEGORIES: (Category | 'All')[] = [
-  'All', 'Food', 'Subscriptions', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Health', 'Income',
-];
 const PAGE_SIZE = 12;
 
 function exportCSV(transactions: Transaction[]) {
@@ -54,7 +51,7 @@ function SortBtn({ label, field, sortKey, sortDir, onSort }: { label: string; fi
   );
 }
 
-export default function HistoryView({ transactions, onDelete, onImportClick, onPDFReport, currency = '$' }: HistoryViewProps) {
+export default function HistoryView({ transactions, onCategoryChange, onImportClick, onPDFReport, currency = '$' }: HistoryViewProps) {
   const { allCategories, mergedIcons, mergedColors } = useCategories();
   const [search, setSearch]               = useState('');
   const [categoryFilter, setCategoryFilter] = useState<Category | 'All'>('All');
@@ -259,9 +256,9 @@ export default function HistoryView({ transactions, onDelete, onImportClick, onP
           <div className="w-10" />
           <div className="w-24"><SortBtn label="Date" field="date" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
           <div className="flex-1"><SortBtn label="Merchant" field="merchant" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
-          <div className="hidden md:block w-28"><SortBtn label="Category" field="category" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
+          <div className="hidden md:block w-32"><SortBtn label="Category" field="category" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
           <div className="w-28 text-right"><SortBtn label="Amount" field="amount" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
-          {onDelete && <div className="w-8" />}
+          {onCategoryChange && <div className="w-32" />}
         </div>
 
         {/* Rows */}
@@ -331,13 +328,20 @@ export default function HistoryView({ transactions, onDelete, onImportClick, onP
                   </div>
                   {isCredit ? <ArrowDownLeft size={12} style={{ color: 'var(--teal)' }} /> : <ArrowUpRight size={12} style={{ color: 'var(--red)' }} />}
                 </div>
-                {onDelete && (
-                  <button onClick={() => onDelete(tx.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity flex w-7 h-7 items-center justify-center rounded-lg"
-                    style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer', flexShrink: 0 }}
-                    title="Delete">
-                    <Trash2 size={13} />
-                  </button>
+                {onCategoryChange && (
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity w-32 shrink-0">
+                    <select
+                      value={tx.category}
+                      onChange={(e) => onCategoryChange(tx.id, e.target.value as Category)}
+                      className="w-full bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)] rounded-md text-[10px] p-1 font-inter cursor-pointer hover:border-[var(--teal)] transition-colors focus:outline-none"
+                    >
+                      {allCategories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {mergedIcons[cat]} {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
               </div>
             );

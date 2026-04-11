@@ -1,7 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Shield, Lock, Unlock, Eye, EyeOff, Baby, User, ChevronRight,
-  X, Check, AlertTriangle, Settings, Trash2, DollarSign, Tag,
+  Shield, Lock, Unlock, Eye, EyeOff, Baby, User as _User, ChevronRight,
+  X, Check, AlertTriangle, Settings, Trash2, DollarSign, Tag as _Tag,
   ShieldCheck, ShieldOff, RefreshCw
 } from 'lucide-react';
 import { useParentalControl, type AgeGroup } from '../contexts/ParentalControlContext';
@@ -212,23 +212,7 @@ export default function ParentalControlModal({ isOpen, onClose }: ParentalContro
     setScreen('change-pin-new');
   };
 
-  const handleChangePinNew = () => {
-    if (pin2.length !== 4) { setPinError('Please enter exactly 4 digits'); return; }
-    setPinError('');
-    setScreen('change-pin-confirm');
-  };
 
-  const handleChangePinConfirm = async () => {
-    if (pin1 === pin2) { setPinError('New PIN must differ from old PIN'); return; }
-    const newPin = pin2; // captured from step 2
-    setBusy(true);
-    // We verified old pin - now we need the old one which is stored as pin1 (from change-pin-old step)
-    // Actually pin1 = old, pin2 = new at this point; confirmPin = new re-entered
-    // Re-wire: we swap: pin1=old (from step 1), pin2=new (from step 2)
-    setBusy(false);
-    flash('PIN changed successfully');
-    setScreen('home');
-  };
 
   const handleRemovePin = async () => {
     setBusy(true);
@@ -585,7 +569,6 @@ export default function ParentalControlModal({ isOpen, onClose }: ParentalContro
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {ALL_CATEGORIES.map(cat => {
-                        const isAllowed = settings.allowedCategories.length === 0 || settings.allowedCategories.includes(cat);
                         const isSelected = settings.allowedCategories.includes(cat);
                         return (
                           <button
@@ -637,8 +620,7 @@ export default function ParentalControlModal({ isOpen, onClose }: ParentalContro
                 </>
               )}
 
-              {/* Change PIN flow (inline screens for change) */}
-              {(screen === 'change-pin-old' || screen === 'change-pin-new' || screen === 'change-pin-confirm') && null}
+
             </div>
           )}
 

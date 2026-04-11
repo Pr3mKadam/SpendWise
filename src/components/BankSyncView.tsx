@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Landmark, Link2, DownloadCloud, UploadCloud, SmartphoneNfc, MoreHorizontal, ShieldCheck, ArrowUpRight, Activity } from 'lucide-react';
+import { Landmark, Link2, DownloadCloud, UploadCloud, SmartphoneNfc, MoreHorizontal, ShieldCheck, Activity } from 'lucide-react';
 import { Transaction, UPIAccount } from '../types';
 import UPILinkModal from './UPILinkModal';
 import ImportCSVModal from './ImportCSVModal';
@@ -10,7 +10,7 @@ interface BankSyncViewProps {
   currency?: string;
 }
 
-export default function BankSyncView({ onAutoAddTransactions, currency = '₹' }: BankSyncViewProps) {
+export default function BankSyncView({ onAutoAddTransactions, currency: _currency = '₹' }: BankSyncViewProps) {
   const [accounts, setAccounts] = useState<UPIAccount[]>([
     // Mock existing connected account for demo purposes
     // {

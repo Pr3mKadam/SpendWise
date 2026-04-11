@@ -282,7 +282,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           <p className="text-caption uppercase tracking-wide font-semibold" style={{ color: 'var(--teal)' }}>Shared</p>
           <h2 className="text-headline mt-0.5" style={{ fontFamily: 'var(--font-manrope)' }}>{sh.settings.name}</h2>
           <p className="text-caption mt-1">
-            {PURPOSE_META.find(p => p.id === sh.settings.purpose)?.label ?? 'Group'} · {members.length} people · stored locally on this device
+            {PURPOSE_META.find(p => p.id === sh.settings!.purpose)?.label ?? 'Group'} · {members.length} people · stored locally on this device
           </p>
         </div>
       </div>
@@ -326,7 +326,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
                 <input
                   value={localGroupName}
                   onChange={e => setLocalGroupName(e.target.value)}
-                  onBlur={() => sh.updateHouseholdMeta(localGroupName || sh.settings.name, sh.settings.purpose)}
+                  onBlur={() => sh.updateHouseholdMeta(localGroupName || sh.settings!.name, sh.settings!.purpose)}
                   className="w-full rounded-xl px-3 py-2 text-sm"
                   style={{ border: '2px solid #edf2f7' }}
                 />
@@ -335,7 +335,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
                 <label className="text-[11px] font-semibold text-muted block mb-1">Type</label>
                 <select
                   value={sh.settings.purpose}
-                  onChange={e => sh.updateHouseholdMeta(sh.settings.name, e.target.value as HouseholdPurpose)}
+                  onChange={e => sh.updateHouseholdMeta(sh.settings!.name, e.target.value as HouseholdPurpose)}
                   className="rounded-xl px-3 py-2 text-sm"
                   style={{ border: '2px solid #edf2f7' }}
                 >

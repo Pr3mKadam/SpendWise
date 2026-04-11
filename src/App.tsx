@@ -1,7 +1,10 @@
 import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
 import OnboardingModal, { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
 import { supabase } from './services/supabaseClient';
-import { fetchProfile, profileRowToConfig, saveProfileFromConfig } from './lib/supabaseData';
+import { fetchProfile, profileRowToConfig, saveProfileFromConfig, insertTransactionRemote } from './lib/supabaseData';
+import { AppView, Transaction, Category } from './types';
+import { useAuth } from './hooks/useAuth';
+import AuthView from './components/AuthView';
 
 // ── Components ──────────────────────────────────────────────────
 import Sidebar          from './components/Sidebar';
@@ -38,22 +41,18 @@ import { useAlerts }        from './hooks/useAlerts';
 import { useRecurring }     from './hooks/useRecurring';
 import { useNotifications } from './hooks/useNotifications';
 import { useGoals }         from './hooks/useGoals';
-import { useAuth }          from './hooks/useAuth';
 import { useCategories }    from './hooks/useCategories';
-import AuthView             from './components/AuthView';
-// ── Types ────────────────────────────────────────────────────────
-import { AppView } from './types';
 
 // ── Dashboard Sub-View ──────────────────────────────────────────
 
 function DashboardView({
   financeState,
-  onDelete,
+  onCategoryChange,
   onAdd,
   currency,
 }: {
   financeState: ReturnType<typeof useFinanceState>;
-  onDelete: (id: string) => void;
+  onCategoryChange: (id: string, newCategory: string) => void;
   onAdd: Parameters<typeof MagicInput>[0]['onAddTransaction'];
   currency: string;
 }) {
@@ -109,7 +108,7 @@ function DashboardView({
         </div>
 
         {/* Right Column — Transactions */}
-        <TransactionList transactions={transactions} onDelete={onDelete} currency={currency} />
+        <TransactionList transactions={transactions} onCategoryChange={onCategoryChange} currency={currency} />
       </div>
     </div>
   );
@@ -171,7 +170,8 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
   const {
     transactions,
     addTransaction,
-    deleteTransaction,
+    deleteTransaction: _deleteTransaction,
+    updateTransactionCategory,
     resetData,
     categorySpending,
     totalSpent,
@@ -216,7 +216,34 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
     [userId, setConfig]
   );
 
+  const onAdd = useCallback((tx: Transaction) => {
+    addTransaction(tx);
+    if (userId) {
+      insertTransactionRemote(userId, tx).catch(err => console.error("Cloud insert failed:", err));
+    }
+  }, [addTransaction, userId]);
+
   // ── PDF Report ──────────────────────────────────────────────────
+  const handleCategoryChange = useCallback(
+    async (id: string, newCategory: string) => {
+      // 1. Update local state
+      updateTransactionCategory(id, newCategory as Category);
+
+      // 2. Sync to cloud if user is logged in
+      if (userId) {
+        const tx = transactions.find((t) => t.id === id);
+        if (tx) {
+          try {
+            await insertTransactionRemote(userId, { ...tx, category: newCategory as Category });
+          } catch (err) {
+            console.error('Failed to sync category update to cloud:', err);
+          }
+        }
+      }
+    },
+    [userId, transactions, updateTransactionCategory]
+  );
+
   const handlePDFReport = useCallback(() => {
     const now = new Date();
     const month = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -308,8 +335,8 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
           {activeView === 'dashboard' && (
             <DashboardView
               financeState={financeState}
-              onDelete={deleteTransaction}
-              onAdd={addTransaction}
+              onCategoryChange={handleCategoryChange}
+              onAdd={onAdd}
               currency={currency}
             />
           )}
@@ -379,7 +406,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
             <div className="view-enter">
               <HistoryView
                 transactions={transactions}
-                onDelete={deleteTransaction}
+                onCategoryChange={handleCategoryChange}
                 onImportClick={() => setShowImportCSV(true)}
                 onPDFReport={handlePDFReport}
                 currency={currency}
@@ -392,7 +419,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
             <div className="view-enter">
               <BankSyncView
                 onAutoAddTransactions={(txs) => {
-                  txs.forEach(addTransaction);
+                  txs.forEach(onAdd);
                 }}
                 currency={currency}
               />
@@ -506,7 +533,7 @@ function AppAuthenticated() {
         setConfig(
           row
             ? profileRowToConfig(row)
-            : {
+            : loadConfig() || {
                 initialBalance:     5200,
                 balanceAnchorNet:   0,
                 currency:           '$',
@@ -517,13 +544,15 @@ function AppAuthenticated() {
       })
       .catch(() => {
         if (cancelled) return;
-        setConfig({
-          initialBalance:     5200,
-          balanceAnchorNet:   0,
-          currency:           '$',
-          onboardingComplete: false,
-          createdAt:          new Date().toISOString(),
-        });
+        setConfig(
+          loadConfig() || {
+            initialBalance:     5200,
+            balanceAnchorNet:   0,
+            currency:           '$',
+            onboardingComplete: false,
+            createdAt:          new Date().toISOString(),
+          }
+        );
       })
       .finally(() => {
         if (!cancelled) setProfileLoading(false);
@@ -542,11 +571,11 @@ function AppAuthenticated() {
 }
 
 export default function App() {
-  const { session, loading } = useAuth();
+  const { session, authReady, mfaRequired } = useAuth();
   const isCloud = Boolean(supabase);
 
-  if (loading) return <LoadingScreen />;
-  if (isCloud && !session) return <AuthView />;
+  if (!authReady) return <LoadingScreen />;
+  if (isCloud && (!session || mfaRequired)) return <AuthView mfaRequired={mfaRequired} />;
 
   return <AppAuthenticated />;
 }

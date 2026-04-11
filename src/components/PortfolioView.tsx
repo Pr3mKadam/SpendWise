@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { TrendingUp, Plus, Trash2, X, Check, Landmark, Bitcoin, Home, BarChart2, Wallet, ShieldAlert } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, X, Landmark, BarChart2, ShieldAlert } from 'lucide-react';
 import { AssetType, LiabilityType } from '../types';
 import { usePortfolio } from '../hooks/usePortfolio';
 

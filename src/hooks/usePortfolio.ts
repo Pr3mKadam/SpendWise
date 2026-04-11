@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { AssetEntry, AssetType, LiabilityEntry, LiabilityType } from '../types';
+import { AssetEntry, AssetType, LiabilityEntry } from '../types';
 
 const ASSETS_KEY = 'spendwise_assets_v1';
 const LIABILITIES_KEY = 'spendwise_liabilities_v1';

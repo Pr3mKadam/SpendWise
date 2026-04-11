@@ -1,18 +1,18 @@
 import { useState, useMemo } from 'react';
-import { ArrowDownLeft, ArrowUpRight, Trash2, Bot } from 'lucide-react';
+import { Bot } from 'lucide-react';
 import { Transaction } from '../types';
 import { useCategories } from '../hooks/useCategories';
 import { useParentalControl } from '../contexts/ParentalControlContext';
 
 interface TransactionListProps {
   transactions: Transaction[];
-  onDelete: (id: string) => void;
+  onCategoryChange?: (id: string, newCategory: string) => void;
   currency?: string;
 }
 
 type TabFilter = 'all' | 'credit' | 'debit';
 
-export default function TransactionList({ transactions, onDelete, currency = '$' }: TransactionListProps) {
+export default function TransactionList({ transactions, onCategoryChange, currency = '$' }: TransactionListProps) {
   const { mergedIcons } = useCategories();
   const { settings, isKidMode } = useParentalControl();
   const shouldHideBalances = isKidMode && settings.hideBalances;
@@ -153,15 +153,21 @@ export default function TransactionList({ transactions, onDelete, currency = '$'
                     </p>
                   </div>
 
-                  {/* Delete */}
-                  <button
-                    onClick={() => onDelete(tx.id)}
-                    className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-7 h-7 rounded-lg"
-                    style={{ background: 'var(--red-dim)', color: 'var(--red)' }}
-                    title="Delete"
-                  >
-                    <Trash2 size={13} />
-                  </button>
+                  {/* Edit Category */}
+                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <select
+                      value={tx.category}
+                      onChange={(e) => onCategoryChange?.(tx.id, e.target.value)}
+                      className="bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)] rounded-md text-[10px] p-1 font-inter cursor-pointer hover:border-[var(--teal)] transition-colors focus:outline-none"
+                    >
+                      <option disabled value="">Change Category...</option>
+                      {Object.keys(mergedIcons).map((cat) => (
+                        <option key={cat} value={cat}>
+                          {mergedIcons[cat]} {cat}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
             );

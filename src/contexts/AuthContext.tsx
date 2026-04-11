@@ -15,6 +15,7 @@ type AuthContextValue = {
   session: Session | null;
   authReady: boolean;
   isCloud: boolean;
+  mfaRequired: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string) => Promise<{ error: Error | null; needsEmailConfirm?: boolean }>;
   signOut: () => Promise<void>;
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isCloud = isSupabaseConfigured();
   const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(!isCloud);
+  const [mfaRequired, setMfaRequired] = useState(false);
 
   useEffect(() => {
     if (!supabase) {
@@ -36,19 +38,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     let cancelled = false;
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    const checkMFA = async (s: Session | null) => {
+      if (!s) {
+        if (!cancelled) setMfaRequired(false);
+        return;
+      }
+      try {
+        const { data, error } = await supabase!.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (!error && data && data.nextLevel === 'aal2' && data.currentLevel === 'aal1') {
+          if (!cancelled) setMfaRequired(true);
+        } else {
+          if (!cancelled) setMfaRequired(false);
+        }
+      } catch (err) {
+        console.error('MFA Check error', err);
+      }
+    };
+
+    supabase.auth.getSession().then(({ data, error }) => {
       if (cancelled) return;
+      if (error) console.error('Error getting session:', error.message);
+      const s = data?.session ?? null;
       setSession(s);
+      setAuthReady(true);
+      void checkMFA(s);
+    }).catch(err => {
+      if (cancelled) return;
+      console.error('Unexpected error in getSession:', err);
       setAuthReady(true);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: authChangeData } = supabase.auth.onAuthStateChange((_event, s) => {
+      if (cancelled) return;
       setSession(s);
+      void checkMFA(s);
     });
+
+    const subscription = authChangeData?.subscription;
 
     return () => {
       cancelled = true;
-      subscription.unsubscribe();
+      subscription?.unsubscribe();
     };
   }, [isCloud]);
 
@@ -77,11 +107,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       authReady,
       isCloud,
+      mfaRequired,
       signIn,
       signUp,
       signOut,
     }),
-    [session, authReady, isCloud, signIn, signUp, signOut]
+    [session, authReady, isCloud, mfaRequired, signIn, signUp, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

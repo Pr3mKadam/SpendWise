@@ -1,8 +1,10 @@
-import { useState, useCallback } from 'react';
-import { User, Globe, Download, Trash2, CheckCircle2 } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { User, Globe, Download, Trash2, CheckCircle2, ShieldCheck } from 'lucide-react';
 import { SpendWiseConfig } from './OnboardingModal';
 import { exportTransactionsToCSV } from '../utils/exportCSV';
 import { Transaction } from '../types';
+import TwoFactorModal from './TwoFactorModal';
+import { supabase } from '../services/supabaseClient';
 
 interface ProfileViewProps {
   config: SpendWiseConfig | null;
@@ -29,6 +31,27 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
   const [currency, setCurrency] = useState(config?.currency ?? '$');
   const [showSavedMsg, setShowSavedMsg] = useState(false);
 
+  const [mfaEnrolled, setMfaEnrolled] = useState(false);
+  const [showTwoFactorModal, setShowTwoFactorModal] = useState(false);
+  const [unenrolling, setUnenrolling] = useState(false);
+
+  const fetchMfaStatus = useCallback(async () => {
+    if (!supabase) return;
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (!error && data?.totp && data.totp.length > 0) {
+        const hasVerified = data.totp.some(f => f.status === 'verified');
+        setMfaEnrolled(hasVerified);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    void fetchMfaStatus();
+  }, [fetchMfaStatus]);
+
   const handleSave = useCallback(() => {
     if (!config) return;
     const updated: SpendWiseConfig = { ...config, name, currency };
@@ -38,6 +61,23 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
     setShowSavedMsg(true);
     setTimeout(() => setShowSavedMsg(false), 3000);
   }, [config, name, currency, onUpdateConfig]);
+
+  const handleUnenrollMfa = async () => {
+    if (!supabase || !window.confirm('Are you sure you want to disable Two-Factor Authentication?')) return;
+    setUnenrolling(true);
+    try {
+      const { data } = await supabase.auth.mfa.listFactors();
+      const verifiedFactor = data?.totp?.find(f => f.status === 'verified');
+      if (verifiedFactor) {
+        await supabase.auth.mfa.unenroll({ factorId: verifiedFactor.id });
+        setMfaEnrolled(false);
+      }
+    } catch {
+      alert('Failed to disable 2FA.');
+    } finally {
+      setUnenrolling(false);
+    }
+  };
 
   const handleExportCSV = () => exportTransactionsToCSV(transactions);
 
@@ -126,6 +166,52 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
         </div>
       </div>
 
+      {/* Security Settings */}
+      {supabase && (
+        <div className="card">
+          <div className="px-6 py-5" style={{ borderBottom: '1.5px solid var(--border)' }}>
+            <h3 className="font-manrope font-bold text-lg" style={{ color: 'var(--text-primary)' }}>
+              Security
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="flex items-center justify-between p-5 rounded-xl border border-[var(--border)] bg-[var(--surface-input)]">
+              <div className="flex gap-4 items-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-[var(--teal-dim)]">
+                  <ShieldCheck size={18} className="text-[var(--teal)]" />
+                </div>
+                <div>
+                  <h4 className="font-inter font-bold text-[15px] mb-1" style={{ color: 'var(--text-primary)' }}>
+                    Two-Factor Authentication
+                  </h4>
+                  <p className="font-inter text-xs" style={{ color: 'var(--text-muted)' }}>
+                    Protect your account with an additional layer of security using an authenticator app.
+                  </p>
+                </div>
+              </div>
+              <div>
+                {mfaEnrolled ? (
+                  <button
+                    onClick={handleUnenrollMfa}
+                    disabled={unenrolling}
+                    className="px-4 py-2 font-inter font-semibold text-xs rounded-lg transition-colors border border-[rgba(239,68,68,0.5)] text-red-500 hover:bg-[rgba(239,68,68,0.1)] disabled:opacity-50"
+                  >
+                    {unenrolling ? 'Disabling...' : 'Disable 2FA'}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowTwoFactorModal(true)}
+                    className="px-4 py-2 font-inter font-semibold text-xs rounded-lg transition-colors bg-[var(--teal)] text-white hover:opacity-90"
+                  >
+                    Enable 2FA
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Data Management */}
       <div className="card">
         <div className="px-6 py-5" style={{ borderBottom: '1.5px solid var(--border)' }}>
@@ -199,6 +285,17 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
         </div>
         <span className="text-2xl">🔒</span>
       </div>
+
+      {showTwoFactorModal && (
+        <TwoFactorModal
+          onClose={() => setShowTwoFactorModal(false)}
+          onSuccess={() => {
+            setShowTwoFactorModal(false);
+            setMfaEnrolled(true);
+            alert('Two-Factor Authentication is now enabled!');
+          }}
+        />
+      )}
     </div>
   );
 }
