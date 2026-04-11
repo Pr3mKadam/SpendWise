@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { ArrowDownLeft, ArrowUpRight, Trash2 } from 'lucide-react';
+import { ArrowDownLeft, ArrowUpRight, Trash2, Bot } from 'lucide-react';
 import { Transaction } from '../types';
 import { CATEGORY_ICONS } from '../data/mockData';
 
@@ -16,50 +16,53 @@ export default function TransactionList({ transactions, onDelete, currency = '$'
 
   const filtered = useMemo(() => {
     const base = tab === 'all' ? transactions : transactions.filter(tx => tx.type === tab);
-    return base.slice(0, 10);
+    return base.slice(0, 12);
   }, [transactions, tab]);
 
-  const formatDate = (isoString: string) => {
-    // Append T00:00:00 to avoid UTC timezone shift issue
-    const d = new Date(isoString + 'T00:00:00');
-    return new Intl.DateTimeFormat('en-US', {
-      month: 'short',
-      day: 'numeric',
-    }).format(d);
+  const formatDate = (iso: string) => {
+    const d = new Date(iso + 'T00:00:00');
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: '2-digit' }).format(d);
   };
 
   const tabs: { key: TabFilter; label: string }[] = [
     { key: 'all',    label: 'All' },
-    { key: 'credit', label: 'Income' },
-    { key: 'debit',  label: 'Expense' },
+    { key: 'credit', label: 'Revenue' },
+    { key: 'debit',  label: 'Expenses' },
   ];
 
   return (
-    <div className="glass-card flex flex-col h-full overflow-hidden">
+    <div className="card flex flex-col overflow-hidden" style={{ maxHeight: '700px' }}>
 
       {/* Header */}
-      <div className="flex items-center justify-between p-5 pb-0">
-        <h3 className="text-base font-bold text-white">Transactions</h3>
-        <span className="text-[10px] text-slate-500 font-medium">
-          {filtered.length} shown
-        </span>
+      <div className="flex items-center justify-between px-5 pt-5 pb-0 shrink-0">
+        <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          Recent Transaction
+        </h3>
+        <button style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600, color: 'var(--teal)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          View All ›
+        </button>
       </div>
 
-      {/* Functional Tab Filters */}
-      <div className="flex p-4 gap-2">
+      {/* Tabs — Finebank style: underline tabs */}
+      <div className="flex px-5 pt-4 gap-5 shrink-0" style={{ borderBottom: '1.5px solid #f0f2f5' }}>
         {tabs.map(t => (
           <button
             key={t.key}
             onClick={() => setTab(t.key)}
-            className={`flex-1 rounded-full text-xs font-semibold py-2 transition-all duration-200 ${
-              tab === t.key
-                ? t.key === 'credit'
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                  : t.key === 'debit'
-                  ? 'bg-rose-600 text-white shadow-lg shadow-rose-600/20'
-                  : 'bg-blue-600 text-white shadow-lg shadow-blue-600/20'
-                : 'bg-[#1c2230] border border-white/5 text-slate-400 hover:text-white hover:bg-[#1e2738]'
-            }`}
+            style={{
+              fontFamily: 'var(--font-inter)',
+              fontSize: '13px',
+              fontWeight: 600,
+              paddingBottom: '10px',
+              color: tab === t.key ? 'var(--teal)' : 'var(--text-muted)',
+              borderBottom: tab === t.key ? '2px solid var(--teal)' : '2px solid transparent',
+              marginBottom: '-1.5px',
+              background: 'none',
+              border: 'none',
+              borderBottomStyle: 'solid',
+              cursor: 'pointer',
+              transition: 'color 150ms',
+            }}
           >
             {t.label}
           </button>
@@ -67,61 +70,85 @@ export default function TransactionList({ transactions, onDelete, currency = '$'
       </div>
 
       {/* Transaction List */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 space-y-2">
+      <div className="flex-1 overflow-y-auto px-5 py-3">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-40 text-center">
             <span className="text-3xl mb-2 opacity-30">
               {tab === 'credit' ? '💰' : tab === 'debit' ? '💸' : '📋'}
             </span>
-            <p className="text-sm font-medium text-slate-500">
-              No {tab === 'all' ? '' : tab === 'credit' ? 'income ' : 'expense '}transactions yet
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', color: 'var(--text-muted)' }}>
+              No transactions yet
             </p>
           </div>
         ) : (
           filtered.map((tx, index) => {
             const isCredit = tx.type === 'credit';
-
             return (
               <div
                 key={tx.id}
-                className={`group relative flex items-center justify-between rounded-2xl bg-[#0d131f] border border-white/[0.03] p-3.5 transition-all hover:bg-[#131926] hover:border-white/10 ${
-                  tx.isNew ? 'animate-fade-in-up border-blue-500/20 bg-blue-500/5' : ''
+                className={`group flex items-center gap-3 py-3 transition-colors rounded-xl px-2 -mx-2 ${
+                  tx.isNew ? 'animate-fade-in-up' : ''
                 }`}
-                style={{ animationDelay: `${index * 0.03}s` }}
+                style={{
+                  animationDelay: `${index * 0.03}s`,
+                  borderBottom: index < filtered.length - 1 ? '1px solid #f7f8fa' : 'none',
+                }}
               >
-                {/* Left: Icon + Info */}
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className={`h-10 w-10 flex items-center justify-center rounded-full shrink-0 ${
-                    isCredit ? 'bg-blue-500/15 text-blue-400' : 'bg-rose-500/15 text-rose-400'
-                  }`}>
-                    {isCredit ? <ArrowDownLeft className="h-5 w-5" /> : <ArrowUpRight className="h-5 w-5" />}
-                  </div>
-
-                  <div className="flex flex-col min-w-0">
-                    <p className="text-sm font-semibold text-slate-100 truncate">{tx.merchant}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <p className="text-[10px] text-slate-600">{formatDate(tx.date)}</p>
-                      <span className="h-0.5 w-0.5 rounded-full bg-slate-700" />
-                      <p className="text-[10px] text-slate-500 font-medium flex items-center gap-0.5">
-                        {CATEGORY_ICONS[tx.category] || '💸'} {tx.category}
-                      </p>
-                    </div>
-                  </div>
+                {/* Category Icon */}
+                <div
+                  className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 text-base"
+                  style={{ background: '#f5f7fa' }}
+                >
+                  {CATEGORY_ICONS[tx.category] || '💸'}
                 </div>
 
-                {/* Right: Amount */}
-                <div className="flex items-center gap-2 shrink-0 ml-3">
-                  <span className={`text-sm font-bold tabular-nums ${isCredit ? 'text-blue-400' : 'text-slate-200'}`}>
-                    {isCredit ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                  </span>
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }} className="truncate">
+                      {tx.merchant}
+                    </p>
+                    {tx.aiParsed && (
+                      <span
+                        className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold shrink-0"
+                        style={{ background: 'var(--teal-dim)', color: 'var(--teal)' }}
+                      >
+                        <Bot size={8} />AI
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                    {tx.category} · {formatDate(tx.date)}
+                  </p>
+                </div>
 
-                  {/* Delete button - appears on hover */}
+                {/* Amount */}
+                <div className="flex items-center gap-2 shrink-0">
+                  <div className="text-right">
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-manrope)',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: isCredit ? 'var(--green)' : 'var(--text-primary)',
+                      }}
+                      className="tabular-nums"
+                    >
+                      {isCredit ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                    <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+                      {formatDate(tx.date)}
+                    </p>
+                  </div>
+
+                  {/* Delete */}
                   <button
-                    onClick={(e) => { e.stopPropagation(); onDelete(tx.id); }}
-                    className="flex h-7 w-7 items-center justify-center rounded-lg text-slate-700 opacity-0 transition-all group-hover:opacity-100 hover:bg-red-500/15 hover:text-red-400"
+                    onClick={() => onDelete(tx.id)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center w-7 h-7 rounded-lg"
+                    style={{ background: 'var(--red-dim)', color: 'var(--red)' }}
                     title="Delete"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 size={13} />
                   </button>
                 </div>
               </div>

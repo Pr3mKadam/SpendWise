@@ -1,4 +1,3 @@
-import { Home, BarChart2, PieChart, Clock, Target } from 'lucide-react';
 import { AppView } from '../types';
 
 interface NavTabsProps {
@@ -8,39 +7,37 @@ interface NavTabsProps {
 }
 
 export default function NavTabs({ activeView, onViewChange, overBudgetCount }: NavTabsProps) {
+  // Mobile responsive hiding is maintained, desktop matches the new layout rules
   const tabs = [
-    { id: 'dashboard'  as AppView, label: 'Home',       icon: Home,      badge: 0 },
-    { id: 'analytics'  as AppView, label: 'Statistics', icon: BarChart2, badge: 0 },
-    { id: 'budget'     as AppView, label: 'Budget',     icon: PieChart,  badge: overBudgetCount },
-    { id: 'goals'      as AppView, label: 'Goals',      icon: Target,    badge: 0 },
-    { id: 'history'    as AppView, label: 'History',    icon: Clock,     badge: 0 },
+    { id: 'dashboard'  as AppView, label: 'Home',       badge: 0 },
+    { id: 'analytics'  as AppView, label: 'Statistics', badge: 0 },
+    { id: 'budget'     as AppView, label: 'Budget',     badge: overBudgetCount },
+    { id: 'goals'      as AppView, label: 'Goals',      badge: 0 },
+    { id: 'history'    as AppView, label: 'History',    badge: 0 },
   ];
 
   return (
     <>
       {/* Desktop Tabs */}
-      <div className="hidden sm:block mx-auto max-w-[1440px] px-6 lg:px-8 mb-6">
-        <nav className="flex space-x-1 rounded-2xl bg-[#0d131f] p-1 shadow-lg border border-white/[0.04]">
+      <div className="hidden sm:block px-[32px]">
+        <nav className="flex space-x-[24px] border-b border-[var(--surface-3)]">
           {tabs.map((tab) => {
-            const Icon = tab.icon;
             const isActive = activeView === tab.id;
 
             return (
               <button
                 key={tab.id}
                 onClick={() => onViewChange(tab.id)}
-                className={`relative flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium transition-all duration-200
+                className={`flex items-center gap-[8px] py-[12px] font-[500] text-[14px] transition-all duration-200 border-b-2 relative -mb-[1px]
                   ${isActive
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/25'
-                    : 'text-slate-500 hover:text-white hover:bg-white/[0.04]'
+                    ? 'border-[var(--blue)] text-[var(--text-primary)]'
+                    : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
                   }`}
+                style={{ fontFamily: 'var(--font-inter)' }}
               >
-                <Icon className="h-4 w-4" />
                 {tab.label}
                 {tab.badge > 0 && (
-                  <span className={`ml-1 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[10px] font-bold ${
-                    isActive ? 'bg-white/25 text-white' : 'bg-red-500 text-white'
-                  }`}>
+                  <span className="badge-pill px-[6px] py-[2px] bg-[var(--red-dim)] text-[var(--red)]">
                     {tab.badge}
                   </span>
                 )}
@@ -51,31 +48,29 @@ export default function NavTabs({ activeView, onViewChange, overBudgetCount }: N
       </div>
 
       {/* Mobile Bottom Nav */}
-      <div className="fixed bottom-0 left-0 z-50 w-full border-t border-white/[0.04] bg-[#0a0f18]/95 pb-safe pt-2 backdrop-blur-xl sm:hidden">
-        <nav className="flex items-center justify-around px-2 pb-2">
+      <div className="fixed bottom-0 left-0 z-50 w-full bg-[var(--surface-1)] border-t border-[var(--surface-3)] sm:hidden">
+        <nav className="flex items-center justify-around px-2 pb-safe pt-2">
           {tabs.map((tab) => {
-            const Icon = tab.icon;
             const isActive = activeView === tab.id;
 
             return (
               <button
                 key={tab.id}
                 onClick={() => onViewChange(tab.id)}
-                className="relative flex flex-col items-center justify-center w-14 h-12 gap-0.5 transition-colors"
+                className="relative flex flex-col items-center justify-center w-[60px] h-[50px]"
               >
-                <div className={`flex items-center justify-center p-1.5 rounded-xl transition-all duration-300 ${
-                  isActive ? 'bg-blue-600/20 text-blue-400' : 'text-slate-600'
-                }`}>
-                  <Icon className={`h-5 w-5 transition-transform ${isActive ? 'scale-110' : ''}`} />
-                </div>
-                <span className={`text-[9px] font-semibold transition-colors ${
-                  isActive ? 'text-blue-400' : 'text-slate-600'
-                }`}>
+                <div className={`text-[12px] font-[500] transition-colors ${
+                  isActive ? 'text-[var(--blue)]' : 'text-[var(--text-muted)]'
+                }`} style={{ fontFamily: 'var(--font-inter)' }}>
                   {tab.label}
-                </span>
+                </div>
+                {/* Active Indicator on Mobile */}
+                {isActive && (
+                  <div className="absolute top-0 w-1/2 h-[2px] bg-[var(--blue)] rounded-b-md" />
+                )}
 
                 {tab.badge > 0 && (
-                  <span className="absolute right-1 top-0 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[7px] font-bold text-white shadow-sm ring-2 ring-[#0a0f18]">
+                  <span className="absolute right-0 top-0 badge-pill flex items-center justify-center h-[14px] min-w-[14px] bg-[var(--red)] text-white text-[9px] px-1">
                     {tab.badge}
                   </span>
                 )}

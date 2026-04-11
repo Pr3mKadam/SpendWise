@@ -1,24 +1,24 @@
 import { useState, useCallback } from 'react';
 import OnboardingModal, { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
 
-// ── Components ──────────────────────────────────────────────────────────────────
-import Header          from './components/Header';
-import NavTabs         from './components/NavTabs';
-import MetricCards     from './components/MetricCards';
-import BalanceChart    from './components/BalanceChart';
-import SpendingDonut   from './components/SpendingDonut';
-import TransactionList from './components/TransactionList';
-import MagicInput      from './components/MagicInput';
-import AICoach         from './components/AICoach';
-import BudgetManager   from './components/BudgetManager';
-import AnalyticsView   from './components/AnalyticsView';
-import HistoryView     from './components/HistoryView';
-import AlertBanner     from './components/AlertBanner';
+// ── Components ──────────────────────────────────────────────────
+import Sidebar          from './components/Sidebar';
+import Header           from './components/Header';
+import MetricCards      from './components/MetricCards';
+import BalanceChart     from './components/BalanceChart';
+import SpendingDonut    from './components/SpendingDonut';
+import TransactionList  from './components/TransactionList';
+import MagicInput       from './components/MagicInput';
+import AICoach          from './components/AICoach';
+import BudgetManager    from './components/BudgetManager';
+import AnalyticsView    from './components/AnalyticsView';
+import HistoryView      from './components/HistoryView';
+import AlertBanner      from './components/AlertBanner';
 import NotificationCenter from './components/NotificationCenter';
-import RecurringView   from './components/RecurringView';
-import GoalsView       from './components/GoalsView';
+import RecurringView    from './components/RecurringView';
+import GoalsView        from './components/GoalsView';
 
-// ── Hooks ───────────────────────────────────────────────────────────────────────
+// ── Hooks ────────────────────────────────────────────────────────
 import { useFinanceState }  from './hooks/useFinanceState';
 import { useBudgets }       from './hooks/useBudgets';
 import { useAlerts }        from './hooks/useAlerts';
@@ -26,10 +26,10 @@ import { useRecurring }     from './hooks/useRecurring';
 import { useNotifications } from './hooks/useNotifications';
 import { useGoals }         from './hooks/useGoals';
 
-// ── Types ───────────────────────────────────────────────────────────────────────
+// ── Types ────────────────────────────────────────────────────────
 import { AppView } from './types';
 
-// ── Dashboard Sub-View ──────────────────────────────────────────────────────────
+// ── Dashboard Sub-View ──────────────────────────────────────────
 
 function DashboardView({
   financeState,
@@ -54,9 +54,9 @@ function DashboardView({
   } = financeState;
 
   return (
-    <div className="view-enter space-y-6">
+    <div className="view-enter">
 
-      {/* Top Metrics */}
+      {/* Top Metrics Row */}
       <MetricCards
         currentBalance={currentBalance}
         predictedEndOfMonth={predictedEndOfMonth}
@@ -65,42 +65,41 @@ function DashboardView({
         currency={currency}
       />
 
-      {/* Main grid: charts left, transactions right */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+      {/* Main grid */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
 
-        {/* Left Column — Charts & Tools */}
+        {/* Left Column */}
         <div className="space-y-6">
           <BalanceChart data={balanceTrend} currency={currency} />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SpendingDonut data={categorySpending} totalSpent={totalSpent} currency={currency} />
             <div className="flex flex-col gap-6">
-              <MagicInput onAddTransaction={onAdd} />
+              <MagicInput onAddTransaction={onAdd} currency={currency} />
               <AICoach
                 topCategory={topCategory}
                 totalSpent={totalSpent}
                 categorySpending={categorySpending}
+                currency={currency}
               />
             </div>
           </div>
         </div>
 
         {/* Right Column — Transactions */}
-        <div className="space-y-6">
-          <TransactionList transactions={transactions} onDelete={onDelete} currency={currency} />
-        </div>
+        <TransactionList transactions={transactions} onDelete={onDelete} currency={currency} />
       </div>
     </div>
   );
 }
 
-// ── App Root ────────────────────────────────────────────────────────────────────
+// ── App Root ────────────────────────────────────────────────────
 
 export default function App() {
   const [activeView, setActiveView]         = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
 
-  // ── Onboarding gate ─────────────────────────────────────────────────────────
+  // ── Onboarding gate ─────────────────────────────────────────
   const [config, setConfig] = useState<SpendWiseConfig | null>(() => loadConfig());
   const isOnboarded = config?.onboardingComplete === true;
 
@@ -108,7 +107,7 @@ export default function App() {
     setConfig(cfg);
   }, []);
 
-  // ── Core Finance State ──────────────────────────────────────────────────────
+  // ── Core Finance State ──────────────────────────────────────
   const financeState = useFinanceState(config?.initialBalance ?? 5200);
   const {
     transactions,
@@ -123,17 +122,16 @@ export default function App() {
     monthlyHistory,
   } = financeState;
 
-  // ── Budgets ─────────────────────────────────────────────────────────────────
+  // ── Budgets ─────────────────────────────────────────────────
   const budgetState = useBudgets(categorySpending);
   const { budgets, updateLimit, resetLimits, totalBudgeted, totalSpentAgainstBudget, overBudgetCount } = budgetState;
 
-  // ── Phase 3 Hooks — all wired ──────────────────────────────────────────────
+  // ── Phase 3 Hooks ───────────────────────────────────────────
   const alertState      = useAlerts(transactions, currentBalance, budgets, dailySpendRate);
   const recurringData   = useRecurring(transactions);
   const goalsState      = useGoals();
   const notifState      = useNotifications(alertState.alerts, recurringData, goalsState.goals);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
   const currency = config?.currency ?? '$';
 
   const handleViewChange = useCallback((v: AppView) => {
@@ -146,42 +144,37 @@ export default function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#090e17] text-slate-50 font-sans relative overflow-x-hidden">
+    <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
 
-      {/* ── Onboarding Modal — blocks the app until complete ── */}
+      {/* ── Onboarding Modal ── */}
       {!isOnboarded && (
         <OnboardingModal onComplete={handleOnboardingComplete} />
       )}
 
-      {/* ── Background glow ── */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/[0.06] blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-rose-600/[0.04] blur-[120px] rounded-full" />
-      </div>
+      {/* ── Sidebar ── */}
+      <Sidebar
+        activeView={activeView}
+        onViewChange={handleViewChange}
+        overBudgetCount={overBudgetCount}
+        onReset={resetData}
+      />
 
-      {/* ── Content ── */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      {/* ── Main Content ── */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-[240px]">
 
-        {/* Header — wired with notifications */}
+        {/* Top Header Bar */}
         <Header
-          onReset={resetData}
+          activeView={activeView}
           unreadCount={notifState.unreadCount}
           onToggleNotifications={toggleNotifications}
+          currency={currency}
+          currentBalance={currentBalance}
         />
 
-        {/* Desktop nav tabs */}
-        <div className="pt-4 sm:pt-5">
-          <NavTabs
-            activeView={activeView}
-            onViewChange={handleViewChange}
-            overBudgetCount={overBudgetCount}
-          />
-        </div>
+        {/* Page Content */}
+        <main className="flex-1 px-6 lg:px-8 py-6 lg:py-8 max-w-[1400px] w-full">
 
-        {/* Main Content */}
-        <main className="mx-auto max-w-[1440px] w-full px-4 pb-6 sm:px-6 lg:pb-8">
-
-          {/* Alert Banner — shown on dashboard */}
+          {/* Alert Banner */}
           {activeView === 'dashboard' && alertState.alerts.length > 0 && (
             <AlertBanner
               alerts={alertState.alerts}
@@ -210,6 +203,7 @@ export default function App() {
                 overBudgetCount={overBudgetCount}
                 onUpdateLimit={updateLimit}
                 onResetLimits={resetLimits}
+                currency={currency}
               />
             </div>
           )}
@@ -222,9 +216,9 @@ export default function App() {
                 monthlyStats={monthlyStats}
                 categorySpending={categorySpending}
                 totalSpent={totalSpent}
+                currency={currency}
               />
-              {/* Recurring charges section */}
-              <RecurringView patterns={recurringData} />
+              <RecurringView patterns={recurringData} currency={currency} />
             </div>
           )}
 
@@ -248,6 +242,7 @@ export default function App() {
                 onUpdate={goalsState.updateGoal}
                 onDelete={goalsState.deleteGoal}
                 onContribute={goalsState.addContribution}
+                currency={currency}
               />
             </div>
           )}
@@ -258,25 +253,25 @@ export default function App() {
               <HistoryView
                 transactions={transactions}
                 onDelete={deleteTransaction}
+                currency={currency}
               />
             </div>
           )}
 
           {/* Footer */}
-          <footer className="mt-10 border-t border-slate-800/30 pb-6 pt-6 text-center">
-            <p className="text-[10px] text-slate-700">
-              Built with ⚡ for the 24-hour hackathon ·{' '}
-              <span className="font-semibold text-slate-600">SpendWise AI v3.0</span>{' '}
-              · All data stored locally · No data leaves your device 🔒
+          <footer className="mt-12 pb-6 text-center">
+            <p className="text-caption">
+              SpendWise AI v3.0 · All data stored locally · No data leaves your device 🔒
             </p>
           </footer>
+
         </main>
 
         {/* Mobile bottom nav spacer */}
-        <div className="mobile-nav-spacer" />
+        <div className="mobile-nav-spacer md:hidden" />
       </div>
 
-      {/* ── Notification Center Overlay ── */}
+      {/* ── Notification Center ── */}
       <NotificationCenter
         notifications={notifState.notifications}
         unreadCount={notifState.unreadCount}

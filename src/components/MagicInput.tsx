@@ -1,265 +1,188 @@
 import { useState, useRef } from 'react';
-import { Sparkles, Loader2, Zap, AlertTriangle, CheckCircle2, X, Bot } from 'lucide-react';
+import { Loader2, Zap, AlertTriangle, CheckCircle2, X, Bot } from 'lucide-react';
 import { Transaction } from '../types';
 import { parseTransaction as aiParseTransaction, AIServiceError } from '../services/ai';
-import { parseTransaction as regexParseTransaction, CATEGORY_ICONS, CATEGORY_COLORS } from '../data/mockData';
+import { parseTransaction as regexParseTransaction, CATEGORY_ICONS } from '../data/mockData';
 
 interface MagicInputProps {
   onAddTransaction: (tx: Transaction) => void;
+  currency?: string;
 }
 
 type Status = 'idle' | 'processing' | 'success' | 'error';
 
-const EXAMPLE_PROMPTS = [
-  'Spent $45 on Uber ride home',
-  'Netflix charged $15.99 monthly',
-  'Received $500 freelance payment',
-  'Bought groceries at Whole Foods $78.43',
-  'Starbucks coffee $6.75',
-];
+export default function MagicInput({ onAddTransaction, currency = '$' }: MagicInputProps) {
+  const EXAMPLE_PROMPTS = [
+    `Spent ${currency}45 on Uber`,
+    `Netflix ${currency}15.99 monthly`,
+    `Received ${currency}500 freelance`,
+  ];
 
-const MAX_CHARS = 280;
-
-export default function MagicInput({ onAddTransaction }: MagicInputProps) {
-  const [text, setText]               = useState('');
-  const [status, setStatus]           = useState<Status>('idle');
-  const [lastParsed, setLastParsed]   = useState<Transaction | null>(null);
-  const [errorMsg, setErrorMsg]       = useState('');
+  const MAX_CHARS = 280;
+  const [text, setText]             = useState('');
+  const [status, setStatus]         = useState<Status>('idle');
+  const [lastParsed, setLastParsed] = useState<Transaction | null>(null);
+  const [errorMsg, setErrorMsg]     = useState('');
   const [lowConfidence, setLowConfidence] = useState(false);
-  const successTimer                  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const textareaRef                   = useRef<HTMLTextAreaElement>(null);
+  const successTimer                = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef                 = useRef<HTMLTextAreaElement>(null);
 
   const charCount = text.length;
   const isOverLimit = charCount > MAX_CHARS;
 
-  const clearSuccess = () => {
-    if (successTimer.current) clearTimeout(successTimer.current);
-  };
-
   const handleSubmit = async () => {
     if (!text.trim() || status === 'processing' || isOverLimit) return;
-
-    clearSuccess();
-    setStatus('processing');
-    setErrorMsg('');
-    setLowConfidence(false);
+    if (successTimer.current) clearTimeout(successTimer.current);
+    setStatus('processing'); setErrorMsg(''); setLowConfidence(false);
 
     try {
       const today = new Date().toISOString().split('T')[0];
       let tx: Transaction;
-
       try {
-        // ── AI parse (Anthropic) ──────────────────────────────────────────────
         const parsed = await aiParseTransaction(text, today);
-        tx = {
-          id:          `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-          date:        parsed.date,
-          amount:      parsed.amount,
-          category:    parsed.category,
-          merchant:    parsed.merchant,
-          type:        parsed.type,
-          description: text.trim(),
-          isNew:       true,
-          confidence:  parsed.confidence,
-          aiParsed:    true,
-        };
+        tx = { id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, date: parsed.date, amount: parsed.amount, category: parsed.category, merchant: parsed.merchant, type: parsed.type, description: text.trim(), isNew: true, confidence: parsed.confidence, aiParsed: true };
         if (parsed.confidence < 0.7) setLowConfidence(true);
       } catch (aiErr) {
-        if (aiErr instanceof AIServiceError) {
-          // ── Regex fallback ────────────────────────────────────────────────
-          tx = { ...regexParseTransaction(text), aiParsed: false };
-        } else {
-          throw aiErr; // unexpected — let outer catch handle it
-        }
+        if (aiErr instanceof AIServiceError) { tx = { ...regexParseTransaction(text), aiParsed: false }; }
+        else throw aiErr;
       }
-
-      // Basic sanity checks
-      if (tx.amount <= 0 || tx.amount > 1_000_000) {
-        throw new Error('Amount looks unusual — please double-check and try again.');
-      }
-
+      if (tx.amount <= 0 || tx.amount > 1_000_000) throw new Error('Amount looks unusual — please double-check.');
       onAddTransaction(tx);
-      setLastParsed(tx);
-      setStatus('success');
-      setText('');
-
+      setLastParsed(tx); setStatus('success'); setText('');
       successTimer.current = setTimeout(() => setStatus('idle'), 4000);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Could not parse the transaction. Try rephrasing.';
-      setErrorMsg(message);
+      setErrorMsg(err instanceof Error ? err.message : 'Could not parse the transaction. Try rephrasing.');
       setStatus('error');
       setTimeout(() => setStatus('idle'), 4000);
     }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
-
-  const handleExampleClick = (prompt: string) => {
-    setText(prompt);
-    textareaRef.current?.focus();
+    if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { e.preventDefault(); handleSubmit(); }
   };
 
   const isProcessing = status === 'processing';
 
   return (
-    <div className="glass-card animate-fade-in-up rounded-2xl p-4 sm:p-5" style={{ animationDelay: '0.4s' }}>
+    <div className="card px-5 py-5">
       {/* Header */}
-      <div className="mb-3 flex items-center justify-between">
-        <h2 className="flex items-center gap-2 text-base font-bold text-white">
-          <Zap className="h-5 w-5 text-amber-400" />
+      <div className="flex items-center justify-between mb-4">
+        <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
           Magic Input
-        </h2>
-        <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-400 ring-1 ring-amber-500/20">
-          AI-Powered
+        </h3>
+        <span
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+          style={{ background: 'var(--teal-dim)', color: 'var(--teal)', fontFamily: 'var(--font-inter)' }}
+        >
+          <Zap size={11} />
+          AI Powered
         </span>
       </div>
 
-      {/* Example prompt pills */}
-      <div className="mb-3 flex flex-wrap gap-1.5">
-        {EXAMPLE_PROMPTS.slice(0, 3).map(prompt => (
+      {/* Example pills */}
+      <div className="flex flex-wrap gap-2 mb-3">
+        {EXAMPLE_PROMPTS.map(p => (
           <button
-            key={prompt}
-            onClick={() => handleExampleClick(prompt)}
+            key={p}
+            onClick={() => { setText(p); textareaRef.current?.focus(); }}
             disabled={isProcessing}
-            className="rounded-full border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-[10px] font-medium text-slate-500 transition-all hover:border-slate-600 hover:text-slate-400 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-full px-3 py-1 text-xs font-medium transition-colors disabled:opacity-50"
+            style={{ background: '#f5f7fa', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}
           >
-            {prompt.length > 28 ? prompt.slice(0, 28) + '…' : prompt}
+            {p}
           </button>
         ))}
       </div>
 
       {/* Textarea */}
-      <div className="relative">
+      <div className="relative mb-3">
         <textarea
           ref={textareaRef}
           value={text}
           onChange={e => setText(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={'Paste bank SMS or describe your expense…\n\nE.g. "Spent $45 on Uber" or "Netflix $15.99"'}
+          placeholder={'Describe a transaction…\n\n"Spent $45 on Uber" or "Netflix $15.99"'}
           rows={4}
-            className={`w-full resize-none rounded-xl border bg-slate-800/40 px-4 py-3 text-sm text-white placeholder-slate-600 transition-all focus:outline-none focus:ring-2 sm:rows-5 ${
-            isOverLimit
-              ? 'border-red-500/60 focus:border-red-500/60 focus:ring-red-500/20'
-              : 'border-slate-700/60 focus:border-blue-500/50 focus:ring-blue-500/20'
-          }`}
           disabled={isProcessing}
+          className="w-full resize-none rounded-xl text-sm transition-all focus:outline-none"
+          style={{
+            background: '#f8fafc',
+            border: isOverLimit ? '2px solid var(--red)' : '2px solid transparent',
+            padding: '12px 14px 28px 14px',
+            fontFamily: 'var(--font-inter)',
+            fontSize: '13px',
+            color: 'var(--text-primary)',
+            boxShadow: 'none',
+          }}
+          onFocus={e => { if (!isOverLimit) e.target.style.border = '2px solid var(--teal)'; }}
+          onBlur={e => { if (!isOverLimit) e.target.style.border = '2px solid transparent'; }}
         />
-
-        {/* Character counter */}
         <div
-          className={`absolute bottom-3 right-3 text-[10px] font-medium transition-colors ${
-            isOverLimit ? 'text-red-400' : charCount > MAX_CHARS * 0.8 ? 'text-amber-400' : 'text-slate-600'
-          }`}
+          className="absolute bottom-2 right-3 text-xs"
+          style={{ color: isOverLimit ? 'var(--red)' : charCount > MAX_CHARS * 0.8 ? 'var(--amber)' : 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
         >
           {charCount}/{MAX_CHARS}
         </div>
       </div>
 
-      {/* Submit button */}
+      {/* Submit */}
       <button
         onClick={handleSubmit}
         disabled={!text.trim() || isProcessing || isOverLimit}
-        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition-all hover:from-blue-500 hover:to-blue-400 hover:shadow-blue-500/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+        className="w-full h-11 flex items-center justify-center gap-2 rounded-xl font-semibold text-sm text-white transition-all"
+        style={{
+          background: isProcessing || !text.trim() || isOverLimit ? '#a0aec0' : 'var(--teal)',
+          cursor: isProcessing || !text.trim() || isOverLimit ? 'not-allowed' : 'pointer',
+          fontFamily: 'var(--font-inter)',
+          border: 'none',
+        }}
       >
         {isProcessing ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>AI is parsing…</span>
-          </>
+          <><Loader2 size={16} className="animate-spin" /> Parsing…</>
         ) : (
-          <>
-            <Sparkles className="h-4 w-4" />
-            <span>Parse & Add Transaction</span>
-          </>
+          <><Zap size={15} /> Parse & Add Transaction</>
         )}
       </button>
 
-      {/* ── Status Feedback ── */}
+      {/* Success feedback */}
       {status === 'success' && lastParsed && (
-        <div className="mt-3 animate-fade-in-up overflow-hidden rounded-xl border border-blue-500/25 bg-blue-500/10">
-          <div className="flex items-start gap-3 px-3.5 py-3">
-            <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-400" />
-            <div className="min-w-0 flex-1">
-              {/* Title row — "Transaction added!" + optional AI badge */}
-              <div className="flex items-center gap-2">
-                <p className="text-xs font-semibold text-blue-400">Transaction added!</p>
-                {lastParsed.aiParsed && (
-                  <span className="flex items-center gap-0.5 rounded-full bg-blue-600/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-blue-300 ring-1 ring-blue-500/30">
-                    <Bot className="h-2.5 w-2.5" />
-                    AI
-                  </span>
-                )}
-              </div>
-
-              {/* Low-confidence warning */}
-              {lowConfidence && (
-                <div className="mt-1 flex items-center gap-1 text-[10px] text-amber-400">
-                  <AlertTriangle className="h-3 w-3 flex-shrink-0" />
-                  Low confidence — please verify
-                </div>
+        <div className="mt-3 rounded-xl px-4 py-3 flex items-start gap-3 animate-fade-in-up" style={{ background: 'var(--green-dim)' }}>
+          <CheckCircle2 size={16} style={{ color: 'var(--green)', marginTop: '2px', flexShrink: 0 }} />
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--green)' }}>✓ Added!</p>
+              {lastParsed.aiParsed && (
+                <span className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold" style={{ background: 'var(--teal-dim)', color: 'var(--teal)' }}>
+                  <Bot size={8} /> AI
+                </span>
               )}
-
-              {/* Transaction details */}
-              <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                <span
-                  className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
-                  style={{
-                    backgroundColor: `${CATEGORY_COLORS[lastParsed.category]}20`,
-                    color:           CATEGORY_COLORS[lastParsed.category],
-                  }}
-                >
-                  {CATEGORY_ICONS[lastParsed.category]} {lastParsed.category}
-                </span>
-                <span className="text-[11px] font-bold text-slate-300">
-                  {lastParsed.type === 'credit' ? '+' : '-'}$
-                  {lastParsed.amount.toFixed(2)}
-                </span>
-                <span className="text-[11px] text-slate-500">{lastParsed.merchant}</span>
-              </div>
             </div>
-            <button
-              onClick={() => setStatus('idle')}
-              className="flex-shrink-0 text-slate-600 hover:text-slate-400"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+            {lowConfidence && (
+              <p style={{ fontSize: '11px', color: 'var(--amber)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>⚠ Low confidence — please verify</p>
+            )}
+            <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>
+              {CATEGORY_ICONS[lastParsed.category]} {lastParsed.category} · {lastParsed.type === 'credit' ? '+' : '-'}{currency}{lastParsed.amount.toFixed(2)} · {lastParsed.merchant}
+            </p>
           </div>
+          <button onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            <X size={14} />
+          </button>
         </div>
       )}
 
+      {/* Error feedback */}
       {status === 'error' && (
-        <div className="mt-3 animate-fade-in-up overflow-hidden rounded-xl border border-red-500/25 bg-red-500/10">
-          <div className="flex items-start gap-3 px-3.5 py-3">
-            <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0 text-red-400" />
-            <div className="flex-1">
-              <p className="text-xs font-semibold text-red-400">Parse failed</p>
-              <p className="mt-0.5 text-[11px] text-red-300/70">{errorMsg}</p>
-            </div>
-            <button
-              onClick={() => setStatus('idle')}
-              className="flex-shrink-0 text-slate-600 hover:text-slate-400"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
+        <div className="mt-3 rounded-xl px-4 py-3 flex items-start gap-3 animate-fade-in-up" style={{ background: 'var(--red-dim)' }}>
+          <AlertTriangle size={16} style={{ color: 'var(--red)', marginTop: '2px', flexShrink: 0 }} />
+          <div className="flex-1">
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--red)' }}>Parse failed</p>
+            <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>{errorMsg}</p>
           </div>
+          <button onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            <X size={14} />
+          </button>
         </div>
       )}
-
-      {/* Keyboard hint */}
-      <p className="mt-3 text-[10px] text-slate-600">
-        Press{' '}
-        <kbd className="rounded bg-slate-800/80 px-1 py-0.5 font-mono text-slate-500">
-          {navigator.platform.includes('Mac') ? '⌘' : 'Ctrl'}
-        </kbd>{' '}
-        +{' '}
-        <kbd className="rounded bg-slate-800/80 px-1 py-0.5 font-mono text-slate-500">↵</kbd>{' '}
-        to submit quickly
-      </p>
     </div>
   );
 }

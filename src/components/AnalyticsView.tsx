@@ -1,17 +1,8 @@
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  LineChart,
-  Line,
-  ReferenceLine,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
+  LineChart, Line, ReferenceLine, CartesianGrid,
 } from 'recharts';
-import { BarChart2, TrendingUp, Wallet, PiggyBank, ArrowUpRight } from 'lucide-react';
+import { TrendingUp, Wallet, PiggyBank, ArrowUpRight } from 'lucide-react';
 import { MonthlyHistoryPoint, MonthlyStats, CategorySpend } from '../types';
 import { CATEGORY_COLORS, CATEGORY_ICONS } from '../data/mockData';
 
@@ -20,27 +11,22 @@ interface AnalyticsViewProps {
   monthlyStats:     MonthlyStats;
   categorySpending: CategorySpend[];
   totalSpent:       number;
+  currency?:        string;
 }
 
-// ── Custom tooltip for bar chart ────────────────────────────────────────────────
-
-function BarTooltip({ active, payload, label }: {
-  active?: boolean;
-  payload?: Array<{ name: string; value: number; color: string }>;
-  label?: string;
-}) {
+function ChartTooltip({ active, payload, label, currency = '$' }: { active?: boolean; payload?: any[]; label?: string; currency?: string }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-slate-700/60 bg-slate-900/98 px-4 py-3 shadow-2xl">
-      <p className="mb-2 text-xs font-bold text-slate-400">{label}</p>
-      {payload.map(p => (
-        <div key={p.name} className="flex items-center justify-between gap-6">
-          <span className="flex items-center gap-1.5 text-xs text-slate-400">
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: p.color }} />
+    <div className="card px-4 py-3 shadow-lg">
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '6px', fontWeight: 600 }}>{label}</p>
+      {payload.map((p: any) => (
+        <div key={p.name} className="flex items-center justify-between gap-8 mb-1">
+          <span className="flex items-center gap-1.5 text-xs" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)' }}>
+            <span className="w-2 h-2 rounded-full" style={{ background: p.color }} />
             {p.name}
           </span>
-          <span className="text-sm font-bold text-white">
-            ${p.value.toLocaleString('en-US')}
+          <span style={{ fontFamily: 'var(--font-manrope)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>
+            {currency}{Number(p.value).toLocaleString('en-US')}
           </span>
         </div>
       ))}
@@ -48,269 +34,166 @@ function BarTooltip({ active, payload, label }: {
   );
 }
 
-// ── Custom tooltip for savings line ────────────────────────────────────────────
-
-function SavingsTooltip({ active, payload, label }: {
-  active?: boolean;
-  payload?: Array<{ value: number }>;
-  label?: string;
-}) {
+function SavingsTooltip({ active, payload, label, currency = '$' }: { active?: boolean; payload?: any[]; label?: string; currency?: string }) {
   if (!active || !payload?.length) return null;
   const val = payload[0].value;
   return (
-    <div className="rounded-xl border border-slate-700/60 bg-slate-900/98 px-4 py-3 shadow-2xl">
-      <p className="mb-1 text-xs font-semibold text-slate-400">{label}</p>
-      <p className={`text-lg font-bold ${val >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-        {val >= 0 ? '+' : ''}${val.toLocaleString('en-US')}
+    <div className="card px-4 py-3 shadow-lg">
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px', fontWeight: 600 }}>{label}</p>
+      <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px', fontWeight: 800, color: val >= 0 ? 'var(--teal)' : 'var(--red)' }}>
+        {val >= 0 ? '+' : ''}{currency}{Number(val).toLocaleString('en-US')}
       </p>
-      <p className="text-[10px] text-slate-500">Net savings</p>
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>Net savings</p>
     </div>
   );
 }
 
-// ── Stat mini-card ──────────────────────────────────────────────────────────────
-
-function MiniStat({
-  label,
-  value,
-  sub,
-  color,
-  icon: Icon,
-}: {
-  label: string;
-  value: string;
-  sub:   string;
-  color: string;
-  icon:  React.ElementType;
-}) {
+function StatCard({ label, value, sub, color, icon: Icon }: { label: string; value: string; sub: string; color: string; icon: React.ElementType }) {
   return (
-    <div className="glass-card rounded-xl p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{label}</span>
-        <div className={`flex h-7 w-7 items-center justify-center rounded-lg`} style={{ backgroundColor: `${color}18` }}>
-          <Icon className="h-3.5 w-3.5" style={{ color }} />
+    <div className="card px-5 py-4 transition-shadow hover:shadow-md">
+      <div className="flex items-center justify-between mb-3">
+        <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${color}18` }}>
+          <Icon size={15} style={{ color }} />
         </div>
       </div>
-      <p className="text-xl font-bold text-white">{value}</p>
-      <p className="mt-0.5 text-xs text-slate-500">{sub}</p>
+      <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }} className="tabular-nums">{value}</p>
+      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{sub}</p>
     </div>
   );
 }
 
-// ── Main Component ──────────────────────────────────────────────────────────────
+export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySpending, totalSpent, currency = '$' }: AnalyticsViewProps) {
+  const latestMonth = monthlyHistory[monthlyHistory.length - 1];
+  const avgSavings  = monthlyHistory.length > 0
+    ? Math.round(monthlyHistory.reduce((a, m) => a + m.savings, 0) / monthlyHistory.length) : 0;
+  const bestMonth   = [...monthlyHistory].sort((a, b) => b.savings - a.savings)[0];
 
-export default function AnalyticsView({
-  monthlyHistory,
-  monthlyStats,
-  categorySpending,
-  totalSpent,
-}: AnalyticsViewProps) {
-  const latestMonth   = monthlyHistory[monthlyHistory.length - 1];
-  const avgSavings    = monthlyHistory.length > 0
-    ? Math.round(monthlyHistory.reduce((a, m) => a + m.savings, 0) / monthlyHistory.length)
-    : 0;
-  const bestMonth     = [...monthlyHistory].sort((a, b) => b.savings - a.savings)[0];
+  const axisStyle = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
 
   return (
-    <div className="animate-fade-in-up space-y-5">
+    <div className="animate-fade-in-up space-y-6">
 
-      {/* ── Page Header ── */}
+      {/* Page Header */}
       <div>
-        <h2 className="flex items-center gap-2 text-xl font-bold text-white">
-          <BarChart2 className="h-5 w-5 text-emerald-400" />
-          Analytics
-        </h2>
-        <p className="mt-0.5 text-sm text-slate-500">
-          6-month overview · Income, expenses & savings trends
-        </p>
+        <h2 className="text-headline">Expenses Comparison</h2>
+        <p className="text-caption mt-1">6-month overview · Income, expenses & savings trends</p>
       </div>
 
-      {/* ── Summary mini-stats ── */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <MiniStat
-          label="This Month Income"
-          value={`$${monthlyStats.totalIncome.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
-          sub="Total credits received"
-          color="#10b981"
-          icon={TrendingUp}
-        />
-        <MiniStat
-          label="This Month Spent"
-          value={`$${monthlyStats.totalExpenses.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
-          sub="Total debits recorded"
-          color="#ef4444"
-          icon={Wallet}
-        />
-        <MiniStat
-          label="Avg Monthly Savings"
-          value={`${avgSavings >= 0 ? '+' : ''}$${Math.abs(avgSavings).toLocaleString('en-US')}`}
-          sub="Last 6 months average"
-          color={avgSavings >= 0 ? '#10b981' : '#ef4444'}
-          icon={PiggyBank}
-        />
-        <MiniStat
-          label="Best Month"
-          value={bestMonth ? bestMonth.month : '—'}
-          sub={bestMonth ? `$${bestMonth.savings.toLocaleString('en-US')} saved` : 'No data'}
-          color="#f59e0b"
-          icon={ArrowUpRight}
-        />
+      {/* Mini Stats */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatCard label="This Month Income"    value={`${currency}${monthlyStats.totalIncome.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}      sub="Total credits"         color="#14b8a6" icon={TrendingUp} />
+        <StatCard label="This Month Spent"     value={`${currency}${monthlyStats.totalExpenses.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}    sub="Total debits"          color="#ef4444" icon={Wallet} />
+        <StatCard label="Avg Monthly Savings"  value={`${avgSavings >= 0 ? '+' : ''}${currency}${Math.abs(avgSavings).toLocaleString('en-US')}`}            sub="Last 6 months avg"     color={avgSavings >= 0 ? '#14b8a6' : '#ef4444'} icon={PiggyBank} />
+        <StatCard label="Best Month"           value={bestMonth ? bestMonth.month : '—'}                                                                    sub={bestMonth ? `${currency}${bestMonth.savings.toLocaleString()} saved` : 'No data'} color="#f59e0b" icon={ArrowUpRight} />
       </div>
 
-      {/* ── Income vs Expenses Bar Chart ── */}
-      <div className="glass-card rounded-2xl p-4 sm:p-6">
-        <div className="mb-5">
-          <h3 className="text-base font-bold text-white">Income vs Expenses</h3>
-          <p className="mt-0.5 text-xs text-slate-500">6-month comparison · Current month uses live data</p>
+      {/* Income vs Expenses Bar Chart */}
+      <div className="card px-6 py-5">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Monthly Comparison</h3>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>6-month income vs expenses</p>
+          </div>
+          {/* This week / Last week legend */}
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ background: 'var(--teal)' }} /><span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>This Week</span></div>
+            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ background: '#cbd5e0' }} /><span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Last Week</span></div>
+          </div>
         </div>
-        <div className="h-64">
+        <div style={{ height: 260 }}>
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={monthlyHistory} barGap={6} barCategoryGap="28%">
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.3)" vertical={false} />
-              <XAxis
-                dataKey="month"
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: '#64748b', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={v => `$${(v / 1000).toFixed(1)}k`}
-                width={48}
-              />
-              <Tooltip content={<BarTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-              <Legend
-                formatter={(value) => (
-                  <span style={{ color: '#94a3b8', fontSize: 11, fontWeight: 600 }}>{value}</span>
-                )}
-              />
-              <Bar dataKey="income"   name="Income"   fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={40} />
-              <Bar dataKey="expenses" name="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={40} fillOpacity={0.75} />
+            <BarChart data={monthlyHistory} barGap={4} barCategoryGap="30%">
+              <CartesianGrid stroke="#f0f2f5" vertical={false} />
+              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={axisStyle} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={axisStyle} tickFormatter={v => `${currency}${(v / 1000).toFixed(0)}k`} width={44} />
+              <Tooltip content={<ChartTooltip currency={currency} />} cursor={{ fill: '#f8fafc' }} />
+              <Legend formatter={(value) => <span style={{ color: 'var(--text-muted)', fontSize: 12, fontFamily: 'var(--font-inter)', fontWeight: 500 }}>{value}</span>} wrapperStyle={{ paddingTop: '16px' }} />
+              <Bar dataKey="income"   name="Income"   fill="#14b8a6" radius={[4, 4, 0, 0]} maxBarSize={36} />
+              <Bar dataKey="expenses" name="Expenses" fill="#e2e8f0" radius={[4, 4, 0, 0]} maxBarSize={36} />
             </BarChart>
           </ResponsiveContainer>
         </div>
       </div>
 
-      {/* ── Net Savings Trend Line ── */}
-      <div className="glass-card rounded-2xl p-4 sm:p-6">
-        <div className="mb-5 flex items-start justify-between">
-          <div>
-            <h3 className="text-base font-bold text-white">Net Savings Trend</h3>
-            <p className="mt-0.5 text-xs text-slate-500">
-              Monthly surplus or deficit after all expenses
-            </p>
+      {/* Two column: Savings trend + Category breakdown */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+        {/* Net Savings Line */}
+        <div className="card px-6 py-5">
+          <div className="flex items-start justify-between mb-5">
+            <div>
+              <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Net Savings Trend</h3>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Monthly surplus / deficit</p>
+            </div>
+            {latestMonth && (
+              <div className="text-right">
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>This Month</p>
+                <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px', fontWeight: 800, color: latestMonth.savings >= 0 ? 'var(--teal)' : 'var(--red)' }} className="tabular-nums">
+                  {latestMonth.savings >= 0 ? '+' : ''}{currency}{latestMonth.savings.toLocaleString('en-US')}
+                </p>
+              </div>
+            )}
           </div>
-          {latestMonth && (
-            <div className="text-right">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-                This Month
-              </p>
-              <p className={`text-lg font-bold ${latestMonth.savings >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                {latestMonth.savings >= 0 ? '+' : ''}${latestMonth.savings.toLocaleString('en-US')}
-              </p>
+          <div style={{ height: 200 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={monthlyHistory}>
+                <CartesianGrid stroke="#f0f2f5" vertical={false} />
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={axisStyle} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={axisStyle} tickFormatter={v => `${currency}${v >= 0 ? '' : '-'}${Math.abs(v / 1000).toFixed(1)}k`} width={48} />
+                <Tooltip content={<SavingsTooltip currency={currency} />} />
+                <ReferenceLine y={0} stroke="#e2e8f0" strokeDasharray="4 4" />
+                <Line type="monotone" dataKey="savings" stroke="#14b8a6" strokeWidth={2.5} dot={{ fill: '#14b8a6', r: 4, strokeWidth: 0 }} activeDot={{ r: 6, fill: '#14b8a6', stroke: '#fff', strokeWidth: 2 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Category Breakdown */}
+        <div className="card px-6 py-5">
+          <div className="flex items-center justify-between mb-5">
+            <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Expenses Breakdown</h3>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>*Compare to last month</span>
+          </div>
+
+          {categorySpending.length === 0 ? (
+            <div className="flex items-center justify-center h-40">
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', color: 'var(--text-muted)' }}>No spending data yet</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {categorySpending.map((cat, i) => (
+                <div key={cat.name} className="flex items-center gap-3 py-2 rounded-xl px-2 -mx-2 hover:bg-gray-50 transition-colors cursor-pointer">
+                  <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style={{ background: `${CATEGORY_COLORS[cat.name]}15` }}>
+                    <span className="text-base">{CATEGORY_ICONS[cat.name as keyof typeof CATEGORY_ICONS]}</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between mb-1">
+                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>{cat.name}</span>
+                      <span style={{ fontFamily: 'var(--font-manrope)', fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }} className="tabular-nums">
+                        {currency}{cat.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: '#f0f2f5' }}>
+                        <div className="h-full rounded-full transition-all duration-700" style={{ width: `${cat.percent}%`, background: CATEGORY_COLORS[cat.name] || 'var(--teal)' }} />
+                      </div>
+                      <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', minWidth: '30px', textAlign: 'right' }}>{cat.percent}%</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Total */}
+              <div className="flex items-center justify-between pt-3 mt-1" style={{ borderTop: '1px solid #f0f2f5' }}>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-secondary)' }}>Total Spending</span>
+                <span style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }} className="tabular-nums">
+                  {currency}{totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
             </div>
           )}
         </div>
-        <div className="h-52">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={monthlyHistory}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(71,85,105,0.3)" vertical={false} />
-              <XAxis
-                dataKey="month"
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fill: '#64748b', fontSize: 10 }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={v => `$${v >= 0 ? '' : '-'}${Math.abs(v / 1000).toFixed(1)}k`}
-                width={52}
-              />
-              <Tooltip content={<SavingsTooltip />} />
-              <ReferenceLine y={0} stroke="rgba(71,85,105,0.6)" strokeDasharray="4 4" />
-              <Line
-                type="monotone"
-                dataKey="savings"
-                stroke="#10b981"
-                strokeWidth={2.5}
-                dot={{ fill: '#10b981', strokeWidth: 0, r: 4 }}
-                activeDot={{ r: 6, fill: '#10b981', stroke: '#022c22', strokeWidth: 2 }}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-
-      {/* ── Category Breakdown Table ── */}
-      <div className="glass-card rounded-2xl p-4 sm:p-6">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="text-base font-bold text-white">Category Breakdown</h3>
-          <span className="rounded-full bg-slate-800/60 px-2.5 py-0.5 text-[10px] font-bold text-slate-400">
-            All time
-          </span>
-        </div>
-
-        {categorySpending.length === 0 ? (
-          <div className="py-8 text-center">
-            <p className="text-sm text-slate-600">No spending data recorded yet</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {categorySpending.map((cat, i) => (
-              <div
-                key={cat.name}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition hover:bg-slate-800/40"
-              >
-                {/* Rank */}
-                <span className="w-5 text-center text-[11px] font-bold text-slate-600">
-                  #{i + 1}
-                </span>
-
-                {/* Icon */}
-                <span className="text-base">
-                  {CATEGORY_ICONS[cat.name as keyof typeof CATEGORY_ICONS]}
-                </span>
-
-                {/* Name + bar */}
-                <div className="min-w-0 flex-1">
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-200">{cat.name}</span>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-medium text-slate-500">
-                        {cat.percent}%
-                      </span>
-                      <span className="text-sm font-bold text-slate-200">
-                        ${cat.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
-                    <div
-                      className="h-full rounded-full transition-all duration-700 ease-out"
-                      style={{
-                        width:           `${cat.percent ?? 0}%`,
-                        backgroundColor: CATEGORY_COLORS[cat.name as keyof typeof CATEGORY_COLORS],
-                        opacity:         0.85,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {/* Total row */}
-            <div className="mt-2 flex items-center justify-between rounded-xl border border-slate-700/30 bg-slate-800/30 px-3 py-2.5">
-              <span className="text-sm font-bold text-slate-300">Total Spending</span>
-              <span className="text-sm font-bold text-white">
-                ${totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
