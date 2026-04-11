@@ -12,17 +12,27 @@ export interface Transaction {
   isRecurring?: boolean; // detected as a recurring charge
   confidence?:  number;  // AI parse confidence 0.0–1.0
   aiParsed?:    boolean; // true when parsed by Anthropic API
+  tags?:        string[]; // Phase 4.2 custom tags
 }
 
 // ─── Budget types ──────────────────────────────────────────────────────────────
 
+export type BudgetPeriod = 'weekly' | 'biweekly' | 'monthly';
+
+export interface BudgetConfig {
+  period:          BudgetPeriod;
+  rolloverEnabled: boolean;
+}
+
 export interface Budget {
-  category:  Category;
-  limit:     number;
-  spent:     number;
-  percent:   number;
-  remaining: number;
-  status:    'safe' | 'warning' | 'danger';
+  category:       Category;
+  limit:          number;  // effective limit = baseLimit + rolloverAmount
+  baseLimit:      number;  // the user-configured limit
+  rolloverAmount: number;  // amount carried over from previous period
+  spent:          number;
+  percent:        number;
+  remaining:      number;
+  status:         'safe' | 'warning' | 'danger';
 }
 
 // ─── Monthly stats ─────────────────────────────────────────────────────────────
@@ -47,7 +57,7 @@ export interface MonthlyHistoryPoint {
 
 // ─── Categories ───────────────────────────────────────────────────────────────
 
-export type Category =
+export type DefaultCategory =
   | 'Food'
   | 'Subscriptions'
   | 'Transport'
@@ -57,9 +67,58 @@ export type Category =
   | 'Health'
   | 'Income';
 
+export type Category = DefaultCategory | (string & {});
+
+export interface CustomCategoryDef {
+  id: string;
+  name: string;
+  color: string;
+  icon: string;
+}
+
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
-export type AppView = 'dashboard' | 'budget' | 'analytics' | 'history' | 'goals';
+export type AppView = 'dashboard' | 'budget' | 'analytics' | 'history' | 'goals' | 'sync' | 'profile' | 'portfolio' | 'subscriptions';
+
+// ─── Phase 6.1: Bank / UPI Integration ──────────────────────────────────────────
+
+export type UPIProvider = 'gpay' | 'phonepe' | 'paytm' | 'cred' | 'bhim' | 'other';
+
+// ─── Phase 7.1: Portfolio / Net Worth ────────────────────────────────────────────
+
+export type AssetType = 'bank' | 'investment' | 'crypto' | 'property' | 'other';
+export type LiabilityType = 'loan' | 'credit_card' | 'mortgage' | 'other';
+
+export interface AssetEntry {
+  id: string;
+  name: string;
+  type: AssetType;
+  balance: number;
+  currency?: string;
+  icon?: string;
+  color?: string;
+  lastUpdated: string; // ISO date
+}
+
+export interface LiabilityEntry {
+  id: string;
+  name: string;
+  type: LiabilityType;
+  balance: number;
+  currency?: string;
+  icon?: string;
+  lastUpdated: string; // ISO date
+}
+
+export interface UPIAccount {
+  id: string;
+  provider: UPIProvider;
+  upiId: string;
+  linkedAt: string; // ISO date
+  lastSynced: string; // ISO date
+  status: 'active' | 'error' | 'disconnected';
+}
+
 
 // ─── Chart data ───────────────────────────────────────────────────────────────
 

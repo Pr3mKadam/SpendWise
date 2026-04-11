@@ -1,4 +1,4 @@
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Receipt, Target, Settings, LogOut, PieChart } from 'lucide-react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw } from 'lucide-react';
 import { AppView } from '../types';
 import { useAuth } from '../hooks/useAuth';
 
@@ -10,11 +10,14 @@ interface SidebarProps {
 }
 
 const NAV_ITEMS = [
-  { id: 'dashboard'  as AppView, label: 'Overview',     icon: LayoutDashboard },
-  { id: 'analytics'  as AppView, label: 'Statistics',   icon: PieChart },
-  { id: 'budget'     as AppView, label: 'Budget',       icon: Target },
-  { id: 'goals'      as AppView, label: 'Goals',        icon: CreditCard },
-  { id: 'history'    as AppView, label: 'Transactions', icon: ArrowLeftRight },
+  { id: 'dashboard'     as AppView, label: 'Overview',         icon: LayoutDashboard },
+  { id: 'analytics'     as AppView, label: 'Statistics',       icon: PieChart },
+  { id: 'budget'        as AppView, label: 'Budget',           icon: Target },
+  { id: 'goals'         as AppView, label: 'Goals',            icon: CreditCard },
+  { id: 'portfolio'     as AppView, label: 'Net Worth',        icon: TrendingUp },
+  { id: 'subscriptions' as AppView, label: 'Subscriptions',    icon: RefreshCw },
+  { id: 'sync'          as AppView, label: 'Bank Sync',        icon: Landmark },
+  { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
 ];
 
 export default function Sidebar({ activeView, onViewChange, overBudgetCount, onReset }: SidebarProps) {
@@ -87,13 +90,20 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
         {/* Bottom Actions */}
         <div className="px-3 pb-6 space-y-1">
           <button
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
-            style={{ color: 'var(--sidebar-text)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+            onClick={() => onViewChange('profile')}
+            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors relative"
+            style={{ 
+              background: activeView === 'profile' ? 'var(--teal)' : 'transparent',
+              color: activeView === 'profile' ? '#ffffff' : 'var(--sidebar-text)', 
+              fontFamily: 'var(--font-inter)', 
+              fontSize: '14px', 
+              fontWeight: activeView === 'profile' ? 600 : 500 
+            }}
+            onMouseEnter={e => { if (activeView !== 'profile') (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)'; }}
+            onMouseLeave={e => { if (activeView !== 'profile') (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
           >
-            <Settings size={18} strokeWidth={2} />
-            <span>Settings</span>
+            <Settings size={18} strokeWidth={activeView === 'profile' ? 2.5 : 2} />
+            <span>Profile & Settings</span>
           </button>
 
           <button

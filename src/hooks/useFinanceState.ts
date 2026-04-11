@@ -7,21 +7,17 @@ import {
   MonthlyStats,
   MonthlyHistoryPoint,
 } from '../types';
-import { initialTransactions, CATEGORY_COLORS, INITIAL_TRANSACTIONS_NET } from '../data/mockData';
-import {
-  deleteTransactionRemote,
-  fetchTransactions,
-  insertTransactionRemote,
-  resetUserCloudData,
-} from '../lib/supabaseData';
+import { initialTransactions } from '../data/mockData';
+import { useCategories } from './useCategories';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
-const STORAGE_KEY    = 'spendwise_transactions_v2';
-const ONBOARDING_KEY = 'spendwise_config_v1';
-const DEFAULT_BALANCE = 5200;
+const STORAGE_KEY          = 'spendwise_transactions_v2';
+const ONBOARDING_KEY       = 'spendwise_config_v1';
+const DEFAULT_BALANCE      = 5200;
 
 // ─── Stable seeded random (for consistent projection line across renders) ──────
+// Uses a simple LCG (Linear Congruential Generator) — deterministic given same seed.
 
 function seededRandom(seed: number): () => number {
   let s = seed;
@@ -51,89 +47,36 @@ function saveTransactions(txs: Transaction[]): void {
   } catch { /* ignore quota errors */ }
 }
 
-// ─── Hook options ──────────────────────────────────────────────────────────────
-
-export interface UseFinanceStateOptions {
-  userId?:           string | null;
-  balanceAnchorNet?: number;
-  onResetConfig?:    () => void;
-}
-
 // ─── Hook ──────────────────────────────────────────────────────────────────────
 
-export function useFinanceState(
-  initialBalance: number = DEFAULT_BALANCE,
-  options?: UseFinanceStateOptions
-) {
-  const userId           = options?.userId ?? null;
-  const balanceAnchorNet = options?.balanceAnchorNet ?? INITIAL_TRANSACTIONS_NET;
+export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
+  const { mergedColors } = useCategories();
+  const [transactions, setTransactions] = useState<Transaction[]>(loadTransactions);
 
-  const [transactions, setTransactions] = useState<Transaction[]>(() =>
-    userId ? [] : loadTransactions()
-  );
-  const [remoteHydrated, setRemoteHydrated] = useState(!userId);
-
-  // Load / switch between local and cloud ledger
+  // Persist to localStorage whenever transactions change
   useEffect(() => {
-    if (!userId) {
-      setTransactions(loadTransactions());
-      setRemoteHydrated(true);
-      return;
-    }
-
-    setRemoteHydrated(false);
-    setTransactions([]);
-
-    let cancelled = false;
-    fetchTransactions(userId)
-      .then(rows => {
-        if (cancelled) return;
-        setTransactions(rows.map(tx => ({ ...tx, isNew: false })));
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setTransactions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setRemoteHydrated(true);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [userId]);
-
-  // Persist locally when not using cloud
-  useEffect(() => {
-    if (userId) return;
     saveTransactions(transactions);
-  }, [transactions, userId]);
+  }, [transactions]);
 
-  // Clear `isNew` flag after 2s
+  // Clear `isNew` flag after 2s so re-renders don't re-trigger entry animations
   const newFlagTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   useEffect(() => {
     const hasNew = transactions.some(tx => tx.isNew);
     if (!hasNew) return;
     if (newFlagTimerRef.current) clearTimeout(newFlagTimerRef.current);
     newFlagTimerRef.current = setTimeout(() => {
-      setTransactions(prev => prev.map(tx => (tx.isNew ? { ...tx, isNew: false } : tx)));
+      setTransactions(prev => prev.map(tx => tx.isNew ? { ...tx, isNew: false } : tx));
     }, 2000);
     return () => {
       if (newFlagTimerRef.current) clearTimeout(newFlagTimerRef.current);
     };
   }, [transactions]);
 
-  const addTransaction = useCallback(
-    (tx: Transaction) => {
-      const next = { ...tx, isNew: true } as Transaction;
-      setTransactions(prev => [next, ...prev]);
-      if (userId) void insertTransactionRemote(userId, next);
-    },
-    [userId]
-  );
+  // ── Actions ────────────────────────────────────────────────────────────────
 
-  const onResetConfigRef = useRef(options?.onResetConfig);
-  onResetConfigRef.current = options?.onResetConfig;
+  const addTransaction = useCallback((tx: Transaction) => {
+    setTransactions(prev => [{ ...tx, isNew: true }, ...prev]);
+  }, []);
 
   const resetData = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
@@ -141,20 +84,23 @@ export function useFinanceState(
     setTransactions([]);
   }, []);
 
-  const deleteTransaction = useCallback(
-    (id: string) => {
-      setTransactions(prev => prev.filter(tx => tx.id !== id));
-      if (userId) void deleteTransactionRemote(userId, id);
-    },
-    [userId]
-  );
+  const deleteTransaction = useCallback((id: string) => {
+    setTransactions(prev => prev.filter(tx => tx.id !== id));
+  }, []);
 
   // ── Derived: balance ────────────────────────────────────────────────────────
 
   const currentBalance = useMemo(() => {
     const startingPoint = initialBalance;
 
-  // ── Derived: category spending (debits only) ─────────────────────────────────
+    return Math.round(
+      transactions.reduce((acc, tx) => {
+        return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
+      }, startingPoint) * 100
+    ) / 100;
+  }, [transactions, initialBalance]);
+
+  // ── Derived: category spending (debits only) ───────────────────────────────
 
   const categorySpending = useMemo((): CategorySpend[] => {
     const map = new Map<Category, number>();
@@ -167,17 +113,18 @@ export function useFinanceState(
       .map(([name, value]) => ({
         name,
         value:   Math.round(value * 100) / 100,
-        color:   CATEGORY_COLORS[name],
+        color:   mergedColors[name] || '#14b8a6', // fallback for unknown custom
         percent: 0,
       }))
       .sort((a, b) => b.value - a.value);
-  }, [transactions]);
+  }, [transactions, mergedColors]);
 
   const totalSpent = useMemo(
     () => Math.round(categorySpending.reduce((acc, c) => acc + c.value, 0) * 100) / 100,
     [categorySpending]
   );
 
+  // Attach percentages after totalSpent is known
   const categorySpendingWithPercent = useMemo((): CategorySpend[] => {
     return categorySpending.map(c => ({
       ...c,
@@ -190,6 +137,8 @@ export function useFinanceState(
     [categorySpendingWithPercent]
   );
 
+  // ── Derived: daily spend rate (30-day calendar window, debits only) ────────
+
   const dailySpendRate = useMemo(() => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
@@ -199,12 +148,16 @@ export function useFinanceState(
     return Math.round((total / 30) * 100) / 100;
   }, [transactions]);
 
+  // ── Derived: predicted end-of-month balance ────────────────────────────────
+
   const predictedEndOfMonth = useMemo(() => {
     const today    = new Date();
     const lastDay  = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const daysLeft = lastDay - today.getDate();
     return Math.round((currentBalance - dailySpendRate * daysLeft) * 100) / 100;
   }, [currentBalance, dailySpendRate]);
+
+  // ── Derived: monthly stats ─────────────────────────────────────────────────
 
   const monthlyStats = useMemo((): MonthlyStats => {
     const now      = new Date();
@@ -225,9 +178,14 @@ export function useFinanceState(
     };
   }, [transactions]);
 
+  // ── Derived: 6-month history (for Analytics bar chart) ────────────────────
+  // Uses real transactions + simulated prior months so Analytics isn't empty.
+
   const monthlyHistory = useMemo((): MonthlyHistoryPoint[] => {
     const now    = new Date();
     const points: MonthlyHistoryPoint[] = [];
+
+    // Seeded fake data for past 5 months so the chart looks alive
     const seed = 42;
     const rand = seededRandom(seed);
 
@@ -238,6 +196,7 @@ export function useFinanceState(
       const monthStr  = `${year}-${String(monthNum).padStart(2, '0')}`;
       const label     = d.toLocaleDateString('en-US', { month: 'short' });
 
+      // Current month: use real transaction data
       if (m === 0) {
         const thisMonth = transactions.filter(tx => tx.date.startsWith(monthStr));
         const income    = thisMonth.filter(tx => tx.type === 'credit').reduce((a, tx) => a + tx.amount, 0);
@@ -261,10 +220,11 @@ export function useFinanceState(
     return points;
   }, [transactions]);
 
+  // ── Derived: balance trend (14-day history + 14-day stable projection) ─────
+
   const balanceTrend = useMemo((): BalanceDataPoint[] => {
     const points: BalanceDataPoint[] = [];
     const today = new Date();
-    const startingPoint = initialBalance - balanceAnchorNet;
 
     // Use the same starting point reverse-calc for the trend lines
     const startingPoint = initialBalance;
@@ -288,6 +248,7 @@ export function useFinanceState(
       });
     }
 
+    // --- Projection: next 14 days (deterministic via seeded RNG) ---
     const seed  = transactions.length * 1000 + today.getMonth() * 100 + today.getDate();
     const rand  = seededRandom(seed);
     let lastBal = points[points.length - 1].balance;
@@ -295,7 +256,7 @@ export function useFinanceState(
     for (let i = 1; i <= 14; i++) {
       const d           = new Date(today);
       d.setDate(d.getDate() + i);
-      const dailyChange = -dailySpendRate + (rand() - 0.5) * 40;
+      const dailyChange = -(dailySpendRate) + (rand() - 0.5) * 40;
       lastBal           = Math.round((lastBal + dailyChange) * 100) / 100;
 
       points.push({
@@ -306,14 +267,15 @@ export function useFinanceState(
     }
 
     return points;
-  }, [transactions, dailySpendRate, initialBalance, balanceAnchorNet]);
+  }, [transactions, dailySpendRate]);
+
+  // ── Return ──────────────────────────────────────────────────────────────────
 
   return {
     transactions,
     addTransaction,
     deleteTransaction,
     resetData,
-    remoteHydrated,
     currentBalance,
     predictedEndOfMonth,
     topCategory,

@@ -1,6 +1,6 @@
 import { RefreshCw, Calendar, TrendingUp, Clock, Zap } from 'lucide-react';
 import { RecurringPattern } from '../types';
-import { CATEGORY_ICONS, CATEGORY_COLORS } from '../data/mockData';
+import { useCategories } from '../hooks/useCategories';
 
 interface RecurringViewProps {
   patterns: RecurringPattern[];
@@ -33,11 +33,12 @@ function formatDate(dateStr: string): string {
 // ─── Pattern card ─────────────────────────────────────────────────────────────
 
 function PatternCard({ pattern, currency }: { pattern: RecurringPattern; currency: string }) {
+  const { mergedColors, mergedIcons } = useCategories();
   const freq     = FREQ_CONFIG[pattern.frequency];
   const days     = daysUntil(pattern.nextExpected);
   const isUrgent = days <= 5;
-  const catColor = CATEGORY_COLORS[pattern.category] ?? '#64748b';
-  const catIcon  = CATEGORY_ICONS[pattern.category] ?? '💳';
+  const catColor = mergedColors[pattern.category] ?? '#64748b';
+  const catIcon  = mergedIcons[pattern.category] ?? '💳';
 
   return (
     <div
