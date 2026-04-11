@@ -49,7 +49,7 @@ export default function AICoach({ topCategory, totalSpent, categorySpending }: A
   // Build the insight string using applyTemplate (fixes all {placeholder} replacements)
   const insight = useMemo(() => {
     if (!topCategory) {
-      return 'Add your first transaction above to get personalized AI insights! ✨';
+      return 'Add your first transaction above to see spending insights here. ✨';
     }
 
     const pool     = isRoastMode ? savageInsights : professionalInsights;
@@ -100,9 +100,9 @@ export default function AICoach({ topCategory, totalSpent, categorySpending }: A
             )}
           </div>
           <div>
-            <h2 className="text-sm font-bold text-white">AI Financial Coach</h2>
+            <h2 className="text-sm font-bold text-white">Spending insights</h2>
             <p className="text-[10px] text-slate-500">
-              {modeIsRoast ? '🔥 Savage Mode Active' : '💡 Powered by SpendWise AI'}
+              {modeIsRoast ? '🔥 Savage mode' : '💡 From your categories & totals'}
             </p>
           </div>
         </div>

@@ -244,7 +244,7 @@ export default function NotificationCenter({
         {/* Footer */}
         <div className="flex-shrink-0 border-t border-slate-800/60 px-4 py-3 text-center">
           <p className="text-[10px] text-slate-600">
-            Alerts reset when you reload · Powered by SpendWise AI
+            Alerts reset when you reload · Stored on this device only
           </p>
         </div>
       </div>

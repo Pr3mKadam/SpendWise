@@ -1,26 +1,27 @@
 import { useState, useRef } from 'react';
-import { Sparkles, Loader2, Zap, AlertTriangle, CheckCircle2, X, Bot } from 'lucide-react';
+import { Sparkles, Loader2, Zap, AlertTriangle, CheckCircle2, X } from 'lucide-react';
 import { Transaction } from '../types';
 import { parseTransaction as aiParseTransaction, AIServiceError } from '../services/ai';
 import { parseTransaction as regexParseTransaction, CATEGORY_ICONS, CATEGORY_COLORS } from '../data/mockData';
 
 interface MagicInputProps {
   onAddTransaction: (tx: Transaction) => void;
+  currency?: string;
 }
 
 type Status = 'idle' | 'processing' | 'success' | 'error';
 
-const EXAMPLE_PROMPTS = [
-  'Spent $45 on Uber ride home',
-  'Netflix charged $15.99 monthly',
-  'Received $500 freelance payment',
-  'Bought groceries at Whole Foods $78.43',
-  'Starbucks coffee $6.75',
-];
+export default function MagicInput({ onAddTransaction, currency = '$' }: MagicInputProps) {
+  const EXAMPLE_PROMPTS = [
+    `Spent ${currency}45 on Uber ride home`,
+    `Netflix charged ${currency}15.99 monthly`,
+    `Received ${currency}500 freelance payment`,
+    `Bought groceries at Whole Foods ${currency}78.43`,
+    `Starbucks coffee ${currency}6.75`,
+  ];
 
-const MAX_CHARS = 280;
+  const MAX_CHARS = 280;
 
-export default function MagicInput({ onAddTransaction }: MagicInputProps) {
   const [text, setText]               = useState('');
   const [status, setStatus]           = useState<Status>('idle');
   const [lastParsed, setLastParsed]   = useState<Transaction | null>(null);
@@ -49,7 +50,7 @@ export default function MagicInput({ onAddTransaction }: MagicInputProps) {
       let tx: Transaction;
 
       try {
-        // ── AI parse (Anthropic) ──────────────────────────────────────────────
+        // ── Cloud parse (Gemini) ──────────────────────────────────────────────
         const parsed = await aiParseTransaction(text, today);
         tx = {
           id:          `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
@@ -112,11 +113,8 @@ export default function MagicInput({ onAddTransaction }: MagicInputProps) {
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-base font-bold text-white">
           <Zap className="h-5 w-5 text-amber-400" />
-          Magic Input
+          Quick add
         </h2>
-        <span className="rounded-full bg-amber-500/10 px-2.5 py-0.5 text-[10px] font-bold text-amber-400 ring-1 ring-amber-500/20">
-          AI-Powered
-        </span>
       </div>
 
       {/* Example prompt pills */}
@@ -169,7 +167,7 @@ export default function MagicInput({ onAddTransaction }: MagicInputProps) {
         {isProcessing ? (
           <>
             <Loader2 className="h-4 w-4 animate-spin" />
-            <span>AI is parsing…</span>
+            <span>Parsing…</span>
           </>
         ) : (
           <>
@@ -185,15 +183,8 @@ export default function MagicInput({ onAddTransaction }: MagicInputProps) {
           <div className="flex items-start gap-3 px-3.5 py-3">
             <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-400" />
             <div className="min-w-0 flex-1">
-              {/* Title row — "Transaction added!" + optional AI badge */}
               <div className="flex items-center gap-2">
                 <p className="text-xs font-semibold text-blue-400">Transaction added!</p>
-                {lastParsed.aiParsed && (
-                  <span className="flex items-center gap-0.5 rounded-full bg-blue-600/30 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-blue-300 ring-1 ring-blue-500/30">
-                    <Bot className="h-2.5 w-2.5" />
-                    AI
-                  </span>
-                )}
               </div>
 
               {/* Low-confidence warning */}

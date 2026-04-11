@@ -74,7 +74,7 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-base font-bold text-white">Balance Trend</h2>
-          <p className="text-[11px] text-slate-500 mt-0.5">14-day history + 14-day AI projection</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">14-day history + 14-day forecast</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
@@ -150,7 +150,7 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
                     <div className="mt-2 flex items-center gap-1.5">
                       <div className={`h-1.5 w-1.5 rounded-full ${isProjected ? 'bg-rose-500' : 'bg-blue-500'}`} />
                       <span className="text-[10px] font-medium text-slate-400">
-                        {isProjected ? 'AI Projected' : 'Actual Balance'}
+                        {isProjected ? 'Forecast' : 'Actual balance'}
                       </span>
                     </div>
                   </div>

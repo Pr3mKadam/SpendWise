@@ -75,7 +75,7 @@ export default function MetricCards({
         </div>
       </div>
 
-      {/* ── AI Projection Card ── */}
+      {/* ── Month-end forecast card ── */}
       <div className="glass-card p-6 flex flex-col justify-between hoverable relative overflow-hidden group">
         <div className={`absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none transition-all duration-700
           ${isPositiveTrend ? 'bg-blue-500/8 group-hover:bg-blue-500/15' : 'bg-rose-500/8 group-hover:bg-rose-500/15'}
@@ -85,7 +85,7 @@ export default function MetricCards({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">AI Projection</h3>
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Month-end forecast</h3>
             </div>
             {isPositiveTrend ? (
               <TrendingUp className="h-4 w-4 text-blue-400" />

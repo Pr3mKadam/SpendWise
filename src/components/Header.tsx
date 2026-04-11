@@ -29,7 +29,7 @@ export default function Header({ onReset, unreadCount, onToggleNotifications }: 
               Spend<span className="text-blue-400">Wise</span>
             </h1>
             <span className="text-[9px] font-semibold text-slate-600 uppercase tracking-widest mt-0.5">
-              AI Finance Dashboard
+              Personal finance
             </span>
           </div>
         </div>

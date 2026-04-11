@@ -75,11 +75,12 @@ function DashboardView({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <SpendingDonut data={categorySpending} totalSpent={totalSpent} currency={currency} />
             <div className="flex flex-col gap-6">
-              <MagicInput onAddTransaction={onAdd} />
+              <MagicInput onAddTransaction={onAdd} currency={currency} />
               <AICoach
                 topCategory={topCategory}
                 totalSpent={totalSpent}
                 categorySpending={categorySpending}
+                currency={currency}
               />
             </div>
           </div>
@@ -210,6 +211,7 @@ export default function App() {
                 overBudgetCount={overBudgetCount}
                 onUpdateLimit={updateLimit}
                 onResetLimits={resetLimits}
+                currency={currency}
               />
             </div>
           )}
@@ -222,9 +224,10 @@ export default function App() {
                 monthlyStats={monthlyStats}
                 categorySpending={categorySpending}
                 totalSpent={totalSpent}
+                currency={currency}
               />
               {/* Recurring charges section */}
-              <RecurringView patterns={recurringData} />
+              <RecurringView patterns={recurringData} currency={currency} />
             </div>
           )}
 
@@ -248,6 +251,7 @@ export default function App() {
                 onUpdate={goalsState.updateGoal}
                 onDelete={goalsState.deleteGoal}
                 onContribute={goalsState.addContribution}
+                currency={currency}
               />
             </div>
           )}
@@ -258,6 +262,7 @@ export default function App() {
               <HistoryView
                 transactions={transactions}
                 onDelete={deleteTransaction}
+                currency={currency}
               />
             </div>
           )}
@@ -266,7 +271,7 @@ export default function App() {
           <footer className="mt-10 border-t border-slate-800/30 pb-6 pt-6 text-center">
             <p className="text-[10px] text-slate-700">
               Built with ⚡ for the 24-hour hackathon ·{' '}
-              <span className="font-semibold text-slate-600">SpendWise AI v3.0</span>{' '}
+              <span className="font-semibold text-slate-600">SpendWise v3.0</span>{' '}
               · All data stored locally · No data leaves your device 🔒
             </p>
           </footer>
