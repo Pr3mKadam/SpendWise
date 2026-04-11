@@ -1,105 +1,115 @@
-import { useState } from 'react';
-import { RotateCcw, Check, X, Bell, Zap, LogOut } from 'lucide-react';
+import { Bell, Search, ChevronRight, Moon, Sun } from 'lucide-react';
+import { AppView } from '../types';
 
 interface HeaderProps {
-  onReset:               () => void;
+  activeView:            AppView;
   unreadCount:           number;
   onToggleNotifications: () => void;
-  onSignOut?:            () => void;
-  userEmail?:            string | null;
+  currency:              string;
+  currentBalance:        number;
+  theme:                 'light' | 'dark';
+  onToggleTheme:         () => void;
 }
 
-export default function Header({
-  onReset,
-  unreadCount,
-  onToggleNotifications,
-  onSignOut,
-  userEmail,
-}: HeaderProps) {
-  const [showConfirm, setShowConfirm] = useState(false);
+const VIEW_TITLES: Record<AppView, string> = {
+  dashboard: 'Overview',
+  analytics: 'Statistics',
+  budget:    'Budget',
+  goals:     'Goals',
+  history:   'Transactions',
+};
 
-  const handleConfirmReset = () => {
-    onReset();
-    setShowConfirm(false); // Auto-close after reset
-  };
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+export default function Header({ activeView, unreadCount, onToggleNotifications, theme, onToggleTheme }: HeaderProps) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-5 pb-2 sm:px-6 lg:px-8 bg-[#060b13]/80 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-[1440px] items-center justify-between">
-
-        {/* Left: SpendWise Branding */}
-        <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-500/15 border border-blue-500/20">
-            <Zap className="h-4.5 w-4.5 text-blue-400" />
-          </div>
-          <div className="flex flex-col">
-            <h1 className="text-base font-bold tracking-tight text-white leading-none">
-              Spend<span className="text-blue-400">Wise</span>
-            </h1>
-            <span className="text-[9px] font-semibold text-slate-600 uppercase tracking-widest mt-0.5">
-              Personal finance
+    <header
+      className="sticky top-0 z-30 flex items-center justify-between px-6 lg:px-8 shrink-0"
+      style={{
+        height: '70px',
+        background: 'var(--surface-card)',
+        boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
+      }}
+    >
+      {/* Left — Greeting */}
+      <div className="flex items-center gap-3">
+        {/* Breadcrumb for non-dashboard pages */}
+        {activeView !== 'dashboard' && (
+          <>
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', color: 'var(--text-muted)', fontWeight: 500 }}>
+              Dashboard
             </span>
+            <ChevronRight size={14} style={{ color: 'var(--text-dim)' }} />
+          </>
+        )}
+        <div>
+          <div style={{ fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '18px', color: 'var(--text-primary)', lineHeight: 1.2 }}>
+            {activeView === 'dashboard' ? `${getGreeting()}, User` : VIEW_TITLES[activeView]}
           </div>
-        </div>
-
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2">
-          {userEmail && (
-            <span className="hidden sm:block max-w-[140px] truncate text-[10px] text-slate-600 mr-1" title={userEmail}>
-              {userEmail}
-            </span>
-          )}
-          {onSignOut && (
-            <button
-              type="button"
-              onClick={() => void onSignOut()}
-              className="flex items-center justify-center h-9 px-2.5 rounded-xl border border-slate-800/80 bg-slate-900/50 text-slate-500 transition-all hover:bg-slate-800 hover:text-white hover:border-slate-700 gap-1.5"
-              title="Sign out"
-            >
-              <LogOut className="h-3.5 w-3.5" />
-              <span className="text-[10px] font-semibold hidden sm:inline">Out</span>
-            </button>
-          )}
-          {/* Reset */}
-          {!showConfirm ? (
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="flex items-center justify-center h-9 w-9 rounded-xl border border-slate-800/80 bg-slate-900/50 text-slate-500 transition-all hover:bg-slate-800 hover:text-white hover:border-slate-700"
-              title="Reset Data"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-            </button>
-          ) : (
-            <div className="flex items-center gap-1 animate-scale-in rounded-xl bg-slate-900 border border-slate-700/60 p-1">
-              <span className="px-2 text-[9px] font-bold text-red-400 uppercase tracking-wider">Reset?</span>
-              <button
-                onClick={handleConfirmReset}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-red-500/20 text-red-400 transition-colors hover:bg-red-500 hover:text-white"
-              >
-                <Check className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-800 text-slate-500 transition-colors hover:bg-slate-700 hover:text-white"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
+          {activeView === 'dashboard' && (
+            <div style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', fontWeight: 400 }}>
+              {dateStr}
             </div>
           )}
+        </div>
+      </div>
 
-          {/* Notification bell — wired */}
-          <button
-            onClick={onToggleNotifications}
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-800/80 bg-slate-900/50 text-slate-500 transition-all hover:bg-slate-800 hover:text-white hover:border-slate-700"
-            title="Notifications"
-          >
-            <Bell className="h-3.5 w-3.5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-bold text-white shadow-lg shadow-rose-500/40 badge-bounce">
-                {unreadCount > 9 ? '9+' : unreadCount}
-              </span>
-            )}
-          </button>
+      {/* Right — Search & Bell */}
+      <div className="flex items-center gap-3">
+        {/* Search box */}
+        <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-xl" style={{ background: 'var(--surface-input)', minWidth: '180px' }}>
+          <Search size={15} style={{ color: 'var(--text-muted)' }} />
+          <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', fontWeight: 400 }}>
+            Search here
+          </span>
+        </div>
+
+        {/* Theme toggle */}
+        <button
+          onClick={onToggleTheme}
+          className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-colors"
+          style={{ background: 'var(--surface-input)' }}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+        >
+          {theme === 'dark' ? (
+            <Sun size={17} style={{ color: 'var(--text-secondary)' }} />
+          ) : (
+            <Moon size={17} style={{ color: 'var(--text-secondary)' }} />
+          )}
+        </button>
+
+        {/* Notification bell */}
+        <button
+          onClick={onToggleNotifications}
+          className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-colors"
+          style={{ background: 'var(--surface-input)' }}
+          title="Notifications"
+        >
+          <Bell size={17} style={{ color: 'var(--text-secondary)' }} />
+          {unreadCount > 0 && (
+            <span
+              className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold text-white px-1"
+              style={{ background: 'var(--red)' }}
+            >
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
+        </button>
+
+        {/* User avatar */}
+        <div
+          className="flex h-9 w-9 items-center justify-center rounded-full text-white font-bold text-sm shrink-0"
+          style={{ background: 'var(--teal)', fontFamily: 'var(--font-manrope)' }}
+        >
+          U
         </div>
       </div>
     </header>

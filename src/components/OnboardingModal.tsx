@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Lock } from 'lucide-react';
+import { Shield, TrendingUp, Target, Zap, ArrowRight, Check } from 'lucide-react';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -15,8 +15,19 @@ export interface SpendWiseConfig {
 type CurrencySymbol = '$' | '£' | '€' | '₹';
 
 const STORAGE_KEY = 'spendwise_config_v1';
+const CURRENCIES: { sym: CurrencySymbol; label: string }[] = [
+  { sym: '$', label: 'USD' },
+  { sym: '£', label: 'GBP' },
+  { sym: '€', label: 'EUR' },
+  { sym: '₹', label: 'INR' },
+];
 
-const CURRENCIES: CurrencySymbol[] = ['$', '£', '€', '₹'];
+const FEATURES = [
+  { icon: TrendingUp, text: 'AI-powered spending insights' },
+  { icon: Target,     text: 'Smart budget tracking'       },
+  { icon: Zap,        text: 'Natural language input'      },
+  { icon: Shield,     text: '100% private — no servers'   },
+];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -50,35 +61,22 @@ interface OnboardingModalProps {
   cloudMode?: boolean;
 }
 
-export default function OnboardingModal({
-  onComplete,
-  transactionLedgerNet,
-  cloudMode = false,
-}: OnboardingModalProps) {
-  const [currency, setCurrency]     = useState<CurrencySymbol>('$');
-  const [rawValue, setRawValue]     = useState('');
-  const [focused, setFocused]       = useState(false);
-  const inputRef                    = useRef<HTMLInputElement>(null);
+export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
+  const [currency, setCurrency] = useState<CurrencySymbol>('$');
+  const [rawValue, setRawValue] = useState('');
+  const [focused, setFocused]   = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-focus the input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
+  useEffect(() => { inputRef.current?.focus(); }, []);
 
-  // ── Derived state ────────────────────────────────────────────────────────────
-  const numericValue  = parseFloat(rawValue.replace(/,/g, ''));
-  const isValid       = !isNaN(numericValue) && numericValue > 0;
-  const placeholder   = `${currency}5,200.00`;
+  const numericValue = parseFloat(rawValue.replace(/,/g, ''));
+  const isValid      = !isNaN(numericValue) && numericValue > 0;
+  const placeholder  = `e.g. 5,200.00`;
 
-  // ── Input handler — allow digits, commas, one decimal point ─────────────────
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    // Strip anything that isn't a digit, comma, or period
-    const cleaned = v.replace(/[^\d,.]/g, '');
-    setRawValue(cleaned);
+    setRawValue(e.target.value.replace(/[^\d,.]/g, ''));
   };
 
-  // ── Submit ───────────────────────────────────────────────────────────────────
   const handleSubmit = () => {
     if (!isValid) return;
     const config: SpendWiseConfig = {
@@ -97,228 +95,211 @@ export default function OnboardingModal({
   };
 
   return (
-    /* ── Full-viewport overlay ── */
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: 'rgba(14, 19, 29, 0.85)' }}
+      style={{ background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(8px)' }}
     >
-      {/* ── Modal card ── */}
       <div
-        className="w-full animate-fade-in-up"
+        className="w-full animate-scale-in overflow-hidden flex flex-col md:flex-row"
         style={{
-          maxWidth:     '460px',
-          background:   '#151c2c',
+          maxWidth:     '820px',
           borderRadius: '24px',
-          padding:      '40px',
-          boxShadow:    '0 20px 60px rgba(0,0,0,0.5)',
+          boxShadow:    '0 24px 80px rgba(0,0,0,0.2)',
         }}
       >
 
-        {/* 1 ── Brand name */}
-        <p
-          style={{
-            fontFamily:   'Manrope, sans-serif',
-            fontSize:     '18px',
-            fontWeight:   600,
-            color:        '#578cff',
-            marginBottom: '24px',
-          }}
-        >
-          SpendWise
-        </p>
-
-        {/* 2 ── Headline */}
-        <h1
-          style={{
-            fontFamily:   'Manrope, sans-serif',
-            fontSize:     '28px',
-            fontWeight:   700,
-            color:        '#ffffff',
-            marginBottom: '8px',
-            lineHeight:   1.2,
-          }}
-        >
-          Let's set up your account
-        </h1>
-
-        {/* 3 ── Sub-headline */}
-        <p
-          style={{
-            fontFamily:   'Inter, sans-serif',
-            fontSize:     '14px',
-            fontWeight:   400,
-            color:        '#c2c6d7',
-            marginBottom: '32px',
-          }}
-        >
-          We need one number to get started
-        </p>
-
-        {/* 4 ── Label + currency pills row */}
+        {/* ── Left Panel — Dark sidebar (Finebank style) ── */}
         <div
+          className="flex-shrink-0 flex flex-col justify-between p-8 md:p-10"
           style={{
-            display:        'flex',
-            alignItems:     'center',
-            justifyContent: 'space-between',
-            marginBottom:   '12px',
+            background: 'var(--sidebar-bg)',
+            width: '100%',
+            maxWidth: '280px',
+            minHeight: '400px',
           }}
         >
-          {/* Label */}
-          <span
-            style={{
-              fontFamily:    'Inter, sans-serif',
-              fontSize:      '11px',
-              fontWeight:    500,
-              color:         '#c2c6d7',
-              letterSpacing: '0.08em',
-              textTransform: 'uppercase',
-            }}
-          >
-            Your Current Balance
-          </span>
+          {/* Brand */}
+          <div>
+            <div className="mb-8">
+              <span style={{ fontFamily: 'var(--font-manrope)', fontWeight: 800, fontSize: '20px', color: '#ffffff', letterSpacing: '-0.5px' }}>
+                <span style={{ fontWeight: 400 }}>SPEND</span>Wise<span style={{ color: 'var(--teal)' }}>.</span>AI
+              </span>
+            </div>
 
-          {/* Currency pills */}
-          <div style={{ display: 'flex', gap: '8px' }}>
-            {CURRENCIES.map((sym) => {
-              const selected = sym === currency;
-              return (
-                <button
-                  key={sym}
-                  onClick={() => setCurrency(sym)}
-                  style={{
-                    width:           '36px',
-                    height:          '36px',
-                    borderRadius:    '50%',
-                    border:          'none',
-                    cursor:          'pointer',
-                    fontFamily:      'Inter, sans-serif',
-                    fontSize:        '14px',
-                    fontWeight:      600,
-                    display:         'flex',
-                    alignItems:      'center',
-                    justifyContent:  'center',
-                    transition:      'transform 0.15s, box-shadow 0.15s',
-                    background:      selected ? '#578cff' : '#1e2535',
-                    color:           selected ? '#ffffff' : '#c2c6d7',
-                    boxShadow:       selected ? '0 4px 12px rgba(87,140,255,0.35)' : 'none',
-                    transform:       'scale(1)',
-                  }}
-                  onMouseEnter={e => {
-                    if (!selected) (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1.08)';
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)';
-                  }}
-                  aria-label={`Select currency ${sym}`}
-                  aria-pressed={selected}
-                >
-                  {sym}
-                </button>
-              );
-            })}
+            <h2 style={{ fontFamily: 'var(--font-manrope)', fontSize: '22px', fontWeight: 700, color: '#ffffff', lineHeight: 1.3, marginBottom: '8px' }}>
+              Your smart<br />finance copilot
+            </h2>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
+              Set up in 30 seconds. No account needed.
+            </p>
+          </div>
+
+          {/* Feature list */}
+          <div className="mt-8 space-y-3">
+            {FEATURES.map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-3">
+                <div className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--teal-dim)' }}>
+                  <Icon size={13} style={{ color: 'var(--teal)' }} />
+                </div>
+                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'rgba(255,255,255,0.65)' }}>{text}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Privacy */}
+          <div className="mt-8 flex items-center gap-2">
+            <Shield size={13} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
+              All data stored locally on your device
+            </span>
           </div>
         </div>
 
-        {/* 5 ── Balance input */}
-        <div style={{ marginBottom: '24px', position: 'relative' }}>
-          <input
-            ref={inputRef}
-            id="balance-input"
-            type="text"
-            inputMode="decimal"
-            value={rawValue}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setFocused(true)}
-            onBlur={() => setFocused(false)}
-            placeholder={placeholder}
-            style={{
-              width:        '100%',
-              boxSizing:    'border-box',
-              background:   '#1e2535',
-              borderRadius: '16px',
-              padding:      '20px 24px',
-              border:       'none',
-              outline:      'none',
-              fontFamily:   'Manrope, sans-serif',
-              fontSize:     '28px',
-              fontWeight:   600,
-              color:        '#ffffff',
-              caretColor:   '#578cff',
-              boxShadow:    focused
-                ? '0 0 0 2px rgba(87,140,255,0.4)'
-                : '0 0 0 2px transparent',
-              transition:   'box-shadow 0.2s ease',
-            }}
-          />
-          {/* Placeholder color override via pseudo-element workaround: inline style on the input
-              handles the glow; placeholder colour is set globally in index.css */}
-        </div>
+        {/* ── Right Panel — White form ── */}
+        <div className="flex-1 p-8 md:p-10" style={{ background: '#ffffff' }}>
 
-        {/* 6 ── CTA button */}
-        <button
-          onClick={handleSubmit}
-          disabled={!isValid}
-          id="onboarding-submit"
-          style={{
-            width:         '100%',
-            height:        '56px',
-            borderRadius:  '50px',
-            border:        'none',
-            cursor:        isValid ? 'pointer' : 'not-allowed',
-            fontFamily:    'Inter, sans-serif',
-            fontSize:      '16px',
-            fontWeight:    600,
-            color:         '#ffffff',
-            background:    'linear-gradient(135deg, #578cff 0%, #3d6fe8 100%)',
-            opacity:       isValid ? 1 : 0.4,
-            transition:    'box-shadow 0.2s ease, opacity 0.2s ease',
-            display:       'flex',
-            alignItems:    'center',
-            justifyContent:'center',
-            gap:           '8px',
-          }}
-          onMouseEnter={e => {
-            if (isValid)
-              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 8px 24px rgba(87,140,255,0.35)';
-          }}
-          onMouseLeave={e => {
-            (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
-          }}
-        >
-          Get started →
-        </button>
+          <div className="mb-7">
+            <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+              Let's get started
+            </h3>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
+              Enter your current balance to begin tracking
+            </p>
+          </div>
 
-        {/* 7 ── Privacy note */}
-        <div
-          style={{
-            marginTop:      '20px',
-            display:        'flex',
-            alignItems:     'center',
-            justifyContent: 'center',
-            gap:            '6px',
-          }}
-        >
-          <Lock
+          {/* Currency selector */}
+          <div className="mb-5">
+            <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '10px' }}>
+              Select Currency
+            </label>
+            <div className="flex gap-2">
+              {CURRENCIES.map(({ sym, label }) => {
+                const selected = sym === currency;
+                return (
+                  <button
+                    key={sym}
+                    onClick={() => setCurrency(sym)}
+                    style={{
+                      flex: 1,
+                      padding: '8px 4px',
+                      borderRadius: '10px',
+                      border: selected ? '2px solid var(--teal)' : '2px solid #edf2f7',
+                      background: selected ? 'var(--teal-dim)' : '#f8fafc',
+                      cursor: 'pointer',
+                      transition: 'all 150ms',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      gap: '2px',
+                    }}
+                  >
+                    <span style={{ fontFamily: 'var(--font-manrope)', fontSize: '17px', fontWeight: 700, color: selected ? 'var(--teal)' : 'var(--text-secondary)' }}>
+                      {sym}
+                    </span>
+                    <span style={{ fontFamily: 'var(--font-inter)', fontSize: '9px', fontWeight: 600, color: selected ? 'var(--teal)' : 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      {label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Balance input */}
+          <div className="mb-6">
+            <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '10px' }}>
+              Current Balance
+            </label>
+            <div className="relative">
+              {/* Currency prefix */}
+              <span
+                className="absolute left-4 top-1/2 -translate-y-1/2"
+                style={{ fontFamily: 'var(--font-manrope)', fontSize: '22px', fontWeight: 700, color: focused || rawValue ? 'var(--teal)' : '#a0aec0', transition: 'color 150ms' }}
+              >
+                {currency}
+              </span>
+              <input
+                ref={inputRef}
+                id="balance-input"
+                type="text"
+                inputMode="decimal"
+                value={rawValue}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder={placeholder}
+                style={{
+                  width:        '100%',
+                  boxSizing:    'border-box',
+                  background:   focused ? '#ffffff' : '#f8fafc',
+                  borderRadius: '14px',
+                  padding:      '18px 20px 18px 48px',
+                  border:       focused ? '2px solid var(--teal)' : '2px solid #edf2f7',
+                  outline:      'none',
+                  fontFamily:   'var(--font-manrope)',
+                  fontSize:     '26px',
+                  fontWeight:   700,
+                  color:        'var(--text-primary)',
+                  boxShadow:    focused ? '0 0 0 4px var(--teal-dim)' : 'none',
+                  transition:   'all 200ms ease',
+                }}
+              />
+              {isValid && (
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full"
+                  style={{ background: 'var(--teal-dim)' }}>
+                  <Check size={14} style={{ color: 'var(--teal)' }} />
+                </span>
+              )}
+            </div>
+            {rawValue && !isValid && (
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--red)', marginTop: '6px' }}>
+                Please enter a valid positive number
+              </p>
+            )}
+          </div>
+
+          {/* CTA Button */}
+          <button
+            onClick={handleSubmit}
+            disabled={!isValid}
+            id="onboarding-submit"
             style={{
-              width:  '14px',
-              height: '14px',
-              color:  '#3a4255',
-              flexShrink: 0,
+              width:          '100%',
+              height:         '52px',
+              borderRadius:   '12px',
+              border:         'none',
+              cursor:         isValid ? 'pointer' : 'not-allowed',
+              fontFamily:     'var(--font-inter)',
+              fontSize:       '15px',
+              fontWeight:     600,
+              color:          '#ffffff',
+              background:     isValid ? 'var(--teal)' : '#a0aec0',
+              transition:     'background 200ms ease, box-shadow 200ms ease, transform 80ms',
+              display:        'flex',
+              alignItems:     'center',
+              justifyContent: 'center',
+              gap:            '8px',
             }}
-          />
-          <span
-            style={{
-              fontFamily:  'Inter, sans-serif',
-              fontSize:    '12px',
-              fontWeight:  400,
-              color:       '#3a4255',
+            onMouseEnter={e => {
+              if (isValid) {
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--teal-light)';
+                (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 20px var(--teal-glow)';
+              }
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = isValid ? 'var(--teal)' : '#a0aec0';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
             }}
           >
-            {cloudMode ? 'Synced securely to your account' : 'Your data stays on this device'}
-          </span>
-        </div>
+            Start Tracking
+            <ArrowRight size={16} />
+          </button>
 
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '16px' }}>
+            You can always update your balance later
+          </p>
+        </div>
       </div>
     </div>
   );

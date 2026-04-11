@@ -1,47 +1,36 @@
 import { useState, useCallback, useEffect } from 'react';
-import OnboardingModal, {
-  loadConfig,
-  persistLocalSpendWiseConfig,
-  SpendWiseConfig,
-} from './components/OnboardingModal';
-import AuthScreen from './components/AuthScreen';
-import { useAuth } from './contexts/AuthContext';
-import { INITIAL_TRANSACTIONS_NET } from './data/mockData';
-import {
-  fetchProfile,
-  profileRowToConfig,
-  saveProfileFromConfig,
-} from './lib/supabaseData';
+import OnboardingModal, { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
 
-// ── Components ──────────────────────────────────────────────────────────────────
-import Header          from './components/Header';
-import NavTabs         from './components/NavTabs';
-import MetricCards     from './components/MetricCards';
-import BalanceChart    from './components/BalanceChart';
-import SpendingDonut   from './components/SpendingDonut';
-import TransactionList from './components/TransactionList';
-import MagicInput      from './components/MagicInput';
-import AICoach         from './components/AICoach';
-import BudgetManager   from './components/BudgetManager';
-import AnalyticsView   from './components/AnalyticsView';
-import HistoryView     from './components/HistoryView';
-import AlertBanner     from './components/AlertBanner';
+// ── Components ──────────────────────────────────────────────────
+import Sidebar          from './components/Sidebar';
+import Header           from './components/Header';
+import MetricCards      from './components/MetricCards';
+import BalanceChart     from './components/BalanceChart';
+import SpendingDonut    from './components/SpendingDonut';
+import TransactionList  from './components/TransactionList';
+import MagicInput       from './components/MagicInput';
+import AICoach          from './components/AICoach';
+import BudgetManager    from './components/BudgetManager';
+import AnalyticsView    from './components/AnalyticsView';
+import HistoryView      from './components/HistoryView';
+import AlertBanner      from './components/AlertBanner';
 import NotificationCenter from './components/NotificationCenter';
-import RecurringView   from './components/RecurringView';
-import GoalsView       from './components/GoalsView';
+import RecurringView    from './components/RecurringView';
+import GoalsView        from './components/GoalsView';
 
-// ── Hooks ───────────────────────────────────────────────────────────────────────
+// ── Hooks ────────────────────────────────────────────────────────
 import { useFinanceState }  from './hooks/useFinanceState';
 import { useBudgets }       from './hooks/useBudgets';
 import { useAlerts }        from './hooks/useAlerts';
 import { useRecurring }     from './hooks/useRecurring';
 import { useNotifications } from './hooks/useNotifications';
 import { useGoals }         from './hooks/useGoals';
-
-// ── Types ───────────────────────────────────────────────────────────────────────
+import { useAuth }          from './hooks/useAuth';
+import AuthView             from './components/AuthView';
+// ── Types ────────────────────────────────────────────────────────
 import { AppView } from './types';
 
-// ── Dashboard Sub-View ──────────────────────────────────────────────────────────
+// ── Dashboard Sub-View ──────────────────────────────────────────
 
 function DashboardView({
   financeState,
@@ -66,8 +55,9 @@ function DashboardView({
   } = financeState;
 
   return (
-    <div className="view-enter space-y-6">
+    <div className="view-enter">
 
+      {/* Top Metrics Row */}
       <MetricCards
         currentBalance={currentBalance}
         predictedEndOfMonth={predictedEndOfMonth}
@@ -76,8 +66,10 @@ function DashboardView({
         currency={currency}
       />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_380px]">
+      {/* Main grid */}
+      <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_360px]">
 
+        {/* Left Column */}
         <div className="space-y-6">
           <BalanceChart data={balanceTrend} currency={currency} />
 
@@ -89,36 +81,47 @@ function DashboardView({
                 topCategory={topCategory}
                 totalSpent={totalSpent}
                 categorySpending={categorySpending}
+                currency={currency}
               />
             </div>
           </div>
         </div>
 
-        <div className="space-y-6">
-          <TransactionList transactions={transactions} onDelete={onDelete} currency={currency} />
-        </div>
+        {/* Right Column — Transactions */}
+        <TransactionList transactions={transactions} onDelete={onDelete} currency={currency} />
       </div>
     </div>
   );
 }
 
-function LoadingScreen() {
-  return (
-    <div className="min-h-screen bg-[#090e17] flex items-center justify-center text-slate-500 text-sm">
-      Loading…
-    </div>
-  );
-}
+// ── App Root ────────────────────────────────────────────────────
 
-// ── Authenticated / local shell ─────────────────────────────────────────────────
+export default function App() {
+  const { session, loading } = useAuth();
+  const [activeView, setActiveView]               = useState<AppView>('dashboard');
+  const [showNotifications, setShowNotifications] = useState(false);
 
-interface MainShellProps {
-  config: SpendWiseConfig | null;
-  setConfig: (c: SpendWiseConfig | null) => void;
-  userId: string | null;
-  isCloud: boolean;
-  onSignOut: () => void;
-}
+  // ── Theme ───────────────────────────────────────────────────
+  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
+    return (localStorage.getItem('spendwise_theme') as 'light' | 'dark') || 'light';
+  });
+
+  useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    localStorage.setItem('spendwise_theme', theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme(t => (t === 'light' ? 'dark' : 'light'));
+  }, []);
+
+  // ── Onboarding gate ─────────────────────────────────────────
+  const [config, setConfig] = useState<SpendWiseConfig | null>(() => loadConfig());
+  const isOnboarded = config?.onboardingComplete === true;
 
 function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellProps) {
   const initialBal = config?.initialBalance ?? 5200;
@@ -135,6 +138,8 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
     },
   });
 
+  // ── Core Finance State ──────────────────────────────────────
+  const financeState = useFinanceState(config?.initialBalance ?? 5200);
   const {
     transactions,
     addTransaction,
@@ -149,23 +154,15 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
     remoteHydrated,
   } = financeState;
 
-  const budgetState = useBudgets(categorySpending, userId, dataRefreshKey);
-  const {
-    budgets,
-    budgetsHydrated,
-    updateLimit,
-    resetLimits,
-    totalBudgeted,
-    totalSpentAgainstBudget,
-    overBudgetCount,
-  } = budgetState;
+  // ── Budgets ─────────────────────────────────────────────────
+  const budgetState = useBudgets(categorySpending);
+  const { budgets, updateLimit, resetLimits, totalBudgeted, totalSpentAgainstBudget, overBudgetCount } = budgetState;
 
-  const goalsState = useGoals(userId, dataRefreshKey);
-  const { goals, goalsHydrated, addGoal, updateGoal, deleteGoal, addContribution } = goalsState;
-
-  const alertState    = useAlerts(transactions, currentBalance, budgets, dailySpendRate);
-  const recurringData = useRecurring(transactions);
-  const notifState    = useNotifications(alertState.alerts, recurringData, goals);
+  // ── Phase 3 Hooks ───────────────────────────────────────────
+  const alertState      = useAlerts(transactions, currentBalance, budgets, dailySpendRate);
+  const recurringData   = useRecurring(transactions);
+  const goalsState      = useGoals();
+  const notifState      = useNotifications(alertState.alerts, recurringData, goalsState.goals);
 
   const currency = config?.currency ?? '$';
   const isOnboarded = config?.onboardingComplete === true;
@@ -198,9 +195,22 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
   const { user } = useAuth();
   const userEmail = user?.email ?? null;
 
-  return (
-    <div className="min-h-screen bg-[#090e17] text-slate-50 font-sans relative overflow-x-hidden">
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
+        <div className="text-[var(--accent)] animate-pulse font-medium text-lg">Loading SpendWise...</div>
+      </div>
+    );
+  }
 
+  if (!session) {
+    return <AuthView />;
+  }
+
+  return (
+    <div className="flex min-h-screen" style={{ background: 'var(--bg)' }}>
+
+      {/* ── Onboarding Modal ── */}
       {!isOnboarded && (
         <OnboardingModal
           onComplete={handleOnboardingComplete}
@@ -209,35 +219,32 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
         />
       )}
 
-      <div className="pointer-events-none fixed inset-0 overflow-hidden" aria-hidden="true">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-blue-600/[0.06] blur-[120px] rounded-full" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-rose-600/[0.04] blur-[120px] rounded-full" />
-      </div>
+      {/* ── Sidebar ── */}
+      <Sidebar
+        activeView={activeView}
+        onViewChange={handleViewChange}
+        overBudgetCount={overBudgetCount}
+        onReset={resetData}
+      />
 
-      <div className="relative z-10 flex flex-col min-h-screen">
+      {/* ── Main Content ── */}
+      <div className="flex-1 flex flex-col min-w-0 md:ml-[240px]">
+
+        {/* Top Header Bar */}
         <Header
-          onReset={resetData}
+          activeView={activeView}
           unreadCount={notifState.unreadCount}
-          onToggleNotifications={() => setShowNotifications(prev => !prev)}
-          onSignOut={isCloud ? onSignOut : undefined}
-          userEmail={isCloud ? userEmail : undefined}
+          onToggleNotifications={toggleNotifications}
+          currency={currency}
+          currentBalance={currentBalance}
+          theme={theme}
+          onToggleTheme={toggleTheme}
         />
 
-        <div className="pt-4 sm:pt-5">
-          <NavTabs
-            activeView={activeView}
-            onViewChange={handleViewChange}
-            overBudgetCount={overBudgetCount}
-          />
-        </div>
+        {/* Page Content */}
+        <main className="flex-1 px-6 lg:px-8 py-6 lg:py-8 max-w-[1400px] w-full">
 
-        <main className="mx-auto max-w-[1440px] w-full px-4 pb-6 sm:px-6 lg:pb-8 relative">
-          {!dataReady && userId && (
-            <div className="absolute inset-0 z-[90] flex items-start justify-center pt-24 bg-[#090e17]/70 backdrop-blur-sm">
-              <p className="text-sm text-slate-400">Syncing your data…</p>
-            </div>
-          )}
-
+          {/* Alert Banner */}
           {activeView === 'dashboard' && alertState.alerts.length > 0 && (
             <AlertBanner
               alerts={alertState.alerts}
@@ -264,6 +271,7 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
                 overBudgetCount={overBudgetCount}
                 onUpdateLimit={updateLimit}
                 onResetLimits={resetLimits}
+                currency={currency}
               />
             </div>
           )}
@@ -275,8 +283,9 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
                 monthlyStats={monthlyStats}
                 categorySpending={categorySpending}
                 totalSpent={totalSpent}
+                currency={currency}
               />
-              <RecurringView patterns={recurringData} />
+              <RecurringView patterns={recurringData} currency={currency} />
             </div>
           )}
 
@@ -296,9 +305,10 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
                     color:               data.color,
                   });
                 }}
-                onUpdate={updateGoal}
-                onDelete={deleteGoal}
-                onContribute={addContribution}
+                onUpdate={goalsState.updateGoal}
+                onDelete={goalsState.deleteGoal}
+                onContribute={goalsState.addContribution}
+                currency={currency}
               />
             </div>
           )}
@@ -308,27 +318,25 @@ function MainShell({ config, setConfig, userId, isCloud, onSignOut }: MainShellP
               <HistoryView
                 transactions={transactions}
                 onDelete={deleteTransaction}
+                currency={currency}
               />
             </div>
           )}
 
-          <footer className="mt-10 border-t border-slate-800/30 pb-6 pt-6 text-center">
-            <p className="text-[10px] text-slate-700">
-              Built with ⚡ for the 24-hour hackathon ·{' '}
-              <span className="font-semibold text-slate-600">SpendWise v3.0</span>
-              {' · '}
-              {userId ? (
-                <>Signed in — data synced to your account</>
-              ) : (
-                <>Stored on this device · Add Supabase env vars for cloud backup</>
-              )}
+          {/* Footer */}
+          <footer className="mt-12 pb-6 text-center">
+            <p className="text-caption">
+              SpendWise v3.0 · All data stored locally · No data leaves your device 🔒
             </p>
           </footer>
+
         </main>
 
-        <div className="mobile-nav-spacer" />
+        {/* Mobile bottom nav spacer */}
+        <div className="mobile-nav-spacer md:hidden" />
       </div>
 
+      {/* ── Notification Center ── */}
       <NotificationCenter
         notifications={notifState.notifications}
         unreadCount={notifState.unreadCount}

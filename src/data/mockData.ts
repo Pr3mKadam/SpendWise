@@ -197,21 +197,21 @@ export function parseTransaction(text: string): Transaction {
 // Uses {placeholder} syntax — applyTemplate() replaces ALL occurrences safely
 
 export const professionalInsights: string[] = [
-  "Your {category} spending of ${amount} is your biggest expense this month. Consider capping it at ${cap} to stay on target.",
-  "You're spending ${amount} on {category} — that's {percent}% of total expenses. Benchmark: keep it under {benchmark}%.",
-  "Reducing {category} by just 20% saves you ${savings}/month — that's ${annualized}/year compounded.",
-  "Your income-to-expense ratio looks healthy. Keep {category} under ${cap} to build 3 months of emergency savings.",
-  "Tip: Automate a ${savings} transfer on payday. Your {category} habit costs ${amount} — automation beats willpower.",
-  "{category} is at ${amount} this period. A weekly ${cap} soft-cap alert could prevent overspend before it happens.",
-  "At your current burn rate, you're spending ${amount} on {category}. Redirect ${savings} of that to investments for real impact.",
+  "Your {category} spending of {currency}{amount} is your biggest expense this month. Consider capping it at {currency}{cap} to stay on target.",
+  "You're spending {currency}{amount} on {category} — that's {percent}% of total expenses. Benchmark: keep it under {benchmark}%.",
+  "Reducing {category} by just 20% saves you {currency}{savings}/month — that's {currency}{annualized}/year compounded.",
+  "Your income-to-expense ratio looks healthy. Keep {category} under {currency}{cap} to build 3 months of emergency savings.",
+  "Tip: Automate a {currency}{savings} transfer on payday. Your {category} habit costs {currency}{amount} — automation beats willpower.",
+  "{category} is at {currency}{amount} this period. A weekly {currency}{cap} soft-cap alert could prevent overspend before it happens.",
+  "At your current burn rate, you're spending {currency}{amount} on {category}. Redirect {currency}{savings} of that to investments for real impact.",
 ];
 
 export const savageInsights: string[] = [
-  "Bro... ${amount} on {category}?! Your wallet isn't bleeding — it's hemorrhaging. Seek help. 💀",
-  "You've torched ${amount} on {category}. Your future self is watching this from a cardboard box. 📦",
+  "Bro... {currency}{amount} on {category}?! Your wallet isn't bleeding — it's hemorrhaging. Seek help. 💀",
+  "You've torched {currency}{amount} on {category}. Your future self is watching this from a cardboard box. 📦",
   "At {percent}% of your budget on {category}, you're not on a financial plan — you're on a financial YOLO. 🎰",
-  "${amount} on {category}. Genuinely impressive. Most people ruin their finances slowly — you're speedrunning it. 🏃💨",
-  "Your {category} spending is ${amount}. Your bank account just filed a restraining order against you. 🚨",
-  "Saving ${savings} from {category} would be easy. But nah, you love the chaos. We get it. We don't respect it, but we get it. 🫡",
-  "{category}: ${amount}. Add that up yearly and it's ${annualized}. That's a vacation. Or a therapy fund. Clearly you need both. ✈️🛋️",
+  "{currency}{amount} on {category}. Genuinely impressive. Most people ruin their finances slowly — you're speedrunning it. 🏃💨",
+  "Your {category} spending is {currency}{amount}. Your bank account just filed a restraining order against you. 🚨",
+  "Saving {currency}{savings} from {category} would be easy. But nah, you love the chaos. We get it. We don't respect it, but we get it. 🫡",
+  "{category}: {currency}{amount}. Add that up yearly and it's {currency}{annualized}. That's a vacation. Or a therapy fund. Clearly you need both. ✈️🛋️",
 ];

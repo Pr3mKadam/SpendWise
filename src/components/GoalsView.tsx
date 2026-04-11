@@ -12,13 +12,12 @@ const STATUS_CONFIG: Record<GoalStatus, {
   label:   string;
   icon:    typeof CheckCircle2;
   color:   string;
-  bgClass: string;
-  textCls: string;
+  bg:      string;
 }> = {
-  'on-track': { label: 'On Track',  icon: TrendingUp,    color: '#10b981', bgClass: 'bg-emerald-500/10', textCls: 'text-emerald-400' },
-  'at-risk':  { label: 'At Risk',   icon: AlertTriangle, color: '#f59e0b', bgClass: 'bg-amber-500/10',   textCls: 'text-amber-400'   },
-  'achieved': { label: 'Achieved',  icon: CheckCircle2,  color: '#a855f7', bgClass: 'bg-purple-500/10',  textCls: 'text-purple-400'  },
-  'paused':   { label: 'Paused',    icon: PauseCircle,   color: '#64748b', bgClass: 'bg-slate-500/10',   textCls: 'text-slate-400'   },
+  'on-track': { label: 'On Track',  icon: TrendingUp,    color: 'var(--teal)',       bg: 'rgba(20,184,166,0.12)'   },
+  'at-risk':  { label: 'At Risk',   icon: AlertTriangle, color: 'var(--amber)',      bg: 'rgba(245,158,11,0.12)'    },
+  'achieved': { label: 'Achieved',  icon: CheckCircle2,  color: 'var(--purple)',     bg: 'rgba(139,92,246,0.12)'    },
+  'paused':   { label: 'Paused',    icon: PauseCircle,   color: 'var(--text-muted)', bg: '#f5f7fa'                  },
 };
 
 // ─── SVG progress ring ────────────────────────────────────────────────────────
@@ -39,9 +38,7 @@ function ProgressRing({
 
   return (
     <svg width={size} height={size} className="-rotate-90">
-      {/* Track */}
-      <circle cx={center} cy={center} r={r} fill="none" stroke="rgba(71,85,105,0.4)" strokeWidth={6} />
-      {/* Progress */}
+      <circle cx={center} cy={center} r={r} fill="none" stroke="#f0f2f5" strokeWidth={6} />
       <circle
         cx={center} cy={center} r={r}
         fill="none"
@@ -104,10 +101,12 @@ function GoalModal({
   initial,
   onSave,
   onClose,
+  currency,
 }: {
   initial?: Partial<GoalFormData>;
   onSave:   (data: GoalFormData) => void;
   onClose:  () => void;
+  currency: string;
 }) {
   const [form, setForm] = useState<GoalFormData>({ ...defaultForm(), ...initial });
   const [errors, setErrors] = useState<Partial<Record<keyof GoalFormData, string>>>({});
@@ -131,20 +130,19 @@ function GoalModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.25)' }} onClick={onClose} />
 
-      <div className="relative w-full max-w-md animate-fade-in-up overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900 shadow-2xl">
-        {/* Top accent */}
-        <div className="h-1 w-full bg-gradient-to-r from-emerald-500 to-blue-500" />
+      <div className="card relative w-full max-w-md animate-scale-in overflow-hidden rounded-2xl">
+        <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, var(--teal), var(--blue))` }} />
 
         <div className="p-6">
           <div className="mb-5 flex items-center justify-between">
-            <h3 className="flex items-center gap-2 text-lg font-bold text-white">
-              <Target className="h-5 w-5 text-emerald-400" />
+            <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }} className="flex items-center gap-2">
+              <Target size={18} style={{ color: 'var(--teal)' }} />
               {initial ? 'Edit Goal' : 'New Savings Goal'}
             </h3>
-            <button onClick={onClose} className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-800 hover:text-slate-400">
-              <X className="h-4 w-4" />
+            <button onClick={onClose} className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors" style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <X size={15} />
             </button>
           </div>
 
@@ -153,13 +151,14 @@ function GoalModal({
             <div className="flex gap-3">
               {/* Emoji picker */}
               <div className="flex-shrink-0">
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Icon</label>
-                <div className="flex flex-wrap w-28 gap-1 rounded-xl border border-slate-700/60 bg-slate-800/50 p-1.5">
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Icon</label>
+                <div className="flex flex-wrap w-28 gap-1 rounded-xl p-1.5" style={{ background: '#f5f7fa' }}>
                   {GOAL_EMOJIS.map(e => (
                     <button
                       key={e}
                       onClick={() => setForm(p => ({ ...p, emoji: e }))}
-                      className={`h-7 w-7 rounded-lg text-sm transition-all hover:bg-slate-700/60 ${form.emoji === e ? 'bg-slate-700 ring-1 ring-emerald-500/50' : ''}`}
+                      className="h-7 w-7 rounded-lg text-sm transition-all hover:bg-white"
+                      style={{ background: form.emoji === e ? 'var(--surface-card)' : 'transparent', boxShadow: form.emoji === e ? '0 1px 4px rgba(0,0,0,0.1)' : 'none' }}
                     >
                       {e}
                     </button>
@@ -169,28 +168,31 @@ function GoalModal({
 
               {/* Name */}
               <div className="flex-1">
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Goal Name *</label>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Goal Name *</label>
                 <input
                   type="text"
                   value={form.name}
                   onChange={set('name')}
                   placeholder="e.g. Emergency Fund"
-                  className="w-full rounded-xl border border-slate-700/60 bg-slate-800/50 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ background: '#f5f7fa', border: '1.5px solid transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'transparent'; }}
                 />
-                {errors.name && <p className="mt-1 text-[10px] text-red-400">{errors.name}</p>}
+                {errors.name && <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--red)', marginTop: '4px' }}>{errors.name}</p>}
               </div>
             </div>
 
             {/* Color picker */}
             <div>
-              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Accent Color</label>
+              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Accent Color</label>
               <div className="flex gap-2">
                 {GOAL_COLORS.map(c => (
                   <button
                     key={c}
                     onClick={() => setForm(p => ({ ...p, color: c }))}
-                    className={`h-7 w-7 rounded-full transition-transform hover:scale-110 ${form.color === c ? 'ring-2 ring-white ring-offset-1 ring-offset-slate-900' : ''}`}
-                    style={{ backgroundColor: c }}
+                    className="h-7 w-7 rounded-full transition-transform hover:scale-110"
+                    style={{ backgroundColor: c, outline: form.color === c ? `3px solid ${c}` : 'none', outlineOffset: '2px' }}
                   />
                 ))}
               </div>
@@ -199,18 +201,24 @@ function GoalModal({
             {/* Target + Saved amounts */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Target ($) *</label>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Target ({currency}) *</label>
                 <input type="number" min={1} value={form.targetAmount} onChange={set('targetAmount')}
                   placeholder="10000"
-                  className="w-full rounded-xl border border-slate-700/60 bg-slate-800/50 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ background: '#f5f7fa', border: '1.5px solid transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'transparent'; }}
                 />
                 {errors.targetAmount && <p className="mt-1 text-[10px] text-red-400">{errors.targetAmount}</p>}
               </div>
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Already Saved ($)</label>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Already Saved ({currency})</label>
                 <input type="number" min={0} value={form.savedAmount} onChange={set('savedAmount')}
                   placeholder="0"
-                  className="w-full rounded-xl border border-slate-700/60 bg-slate-800/50 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ background: '#f5f7fa', border: '1.5px solid transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'transparent'; }}
                 />
               </div>
             </div>
@@ -218,19 +226,25 @@ function GoalModal({
             {/* Target Date + Monthly */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Target Date *</label>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Target Date *</label>
                 <input type="date" value={form.targetDate} onChange={set('targetDate')}
-                  className="w-full rounded-xl border border-slate-700/60 bg-slate-800/50 px-3 py-2.5 text-sm text-white focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ background: '#f5f7fa', border: '1.5px solid transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'transparent'; }}
                 />
                 {errors.targetDate && <p className="mt-1 text-[10px] text-red-400">{errors.targetDate}</p>}
               </div>
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest text-slate-500">Monthly ($) *</label>
+                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Monthly ({currency}) *</label>
                 <input type="number" min={0} value={form.monthlyContribution} onChange={set('monthlyContribution')}
                   placeholder="500"
-                  className="w-full rounded-xl border border-slate-700/60 bg-slate-800/50 px-3 py-2.5 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
+                  style={{ background: '#f5f7fa', border: '1.5px solid transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                  onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
+                  onBlur={e => { e.target.style.borderColor = 'transparent'; }}
                 />
-                {errors.monthlyContribution && <p className="mt-1 text-[10px] text-red-400">{errors.monthlyContribution}</p>}
+                {errors.monthlyContribution && <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--red)', marginTop: '4px' }}>{errors.monthlyContribution}</p>}
               </div>
             </div>
           </div>
@@ -238,12 +252,14 @@ function GoalModal({
           {/* Actions */}
           <div className="mt-6 flex gap-3">
             <button onClick={onClose}
-              className="flex flex-1 items-center justify-center rounded-xl border border-slate-700/60 bg-slate-800/60 py-2.5 text-sm font-semibold text-slate-400 transition hover:text-white">
+              className="flex flex-1 items-center justify-center rounded-xl py-2.5 text-sm font-semibold transition-colors"
+              style={{ background: '#f5f7fa', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
               Cancel
             </button>
             <button onClick={handleSave}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:from-emerald-500 hover:to-emerald-400">
-              <Target className="h-4 w-4" />
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white"
+              style={{ background: 'var(--teal)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+              <Target size={15} />
               {initial ? 'Save Changes' : 'Create Goal'}
             </button>
           </div>
@@ -259,10 +275,12 @@ function ContributeModal({
   goal,
   onContribute,
   onClose,
+  currency,
 }: {
   goal:         SavingsGoal;
   onContribute: (amount: number) => void;
   onClose:      () => void;
+  currency:     string;
 }) {
   const [amount, setAmount] = useState('');
   const remaining = goal.targetAmount - goal.savedAmount;
@@ -273,52 +291,58 @@ function ContributeModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-sm animate-fade-in-up overflow-hidden rounded-2xl border border-slate-700/60 bg-slate-900 shadow-2xl">
+      <div className="absolute inset-0 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.25)' }} onClick={onClose} />
+      <div className="card relative w-full max-w-sm animate-scale-in overflow-hidden rounded-2xl">
         <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${goal.color}, transparent)` }} />
         <div className="p-6">
           <div className="mb-4 flex items-center gap-3">
-            <span className="text-3xl">{goal.emoji}</span>
+            <span style={{ fontSize: '28px' }}>{goal.emoji}</span>
             <div>
-              <h3 className="text-base font-bold text-white">{goal.name}</h3>
-              <p className="text-xs text-slate-500">${remaining.toFixed(0)} remaining to goal</p>
+              <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{goal.name}</h3>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>{currency}{remaining.toFixed(0)} remaining</p>
             </div>
           </div>
 
-          {/* Quick amounts */}
           <div className="mb-3 flex flex-wrap gap-1.5">
             {[...new Set(quickAmts)].map(a => (
               <button key={a} onClick={() => setAmount(String(a))}
-                className="rounded-full border border-slate-700/60 bg-slate-800/40 px-2.5 py-1 text-xs font-semibold text-slate-400 transition hover:border-emerald-500/40 hover:text-emerald-400">
-                +${a}
+                className="rounded-full px-2.5 py-1 text-xs font-semibold transition-colors"
+                style={{ background: '#f5f7fa', color: 'var(--text-secondary)', border: '1.5px solid #edf2f7', fontFamily: 'var(--font-inter)', cursor: 'pointer' }}>
+                +{currency}{a}
               </button>
             ))}
             <button onClick={() => setAmount(String(remaining.toFixed(2)))}
-              className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-400 transition hover:bg-emerald-500/20">
-              Full ${remaining.toFixed(0)}
+              className="rounded-full px-2.5 py-1 text-xs font-semibold transition-colors"
+              style={{ background: 'var(--teal-dim)', color: 'var(--teal)', border: '1.5px solid var(--teal-glow)', fontFamily: 'var(--font-inter)', cursor: 'pointer' }}>
+              Full {currency}{remaining.toFixed(0)}
             </button>
           </div>
 
           <div className="relative mb-4">
-            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">$</span>
+            <span className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600, color: 'var(--text-muted)' }}>{currency}</span>
             <input
               type="number" min={1} max={remaining} step={0.01}
               value={amount} onChange={e => setAmount(e.target.value)}
               placeholder="0.00"
-              className="w-full rounded-xl border border-slate-700/60 bg-slate-800/50 py-2.5 pl-8 pr-3 text-sm text-white placeholder-slate-600 focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+              className="w-full rounded-xl py-2.5 pl-8 pr-3 text-sm focus:outline-none"
+              style={{ background: '#f5f7fa', border: '1.5px solid transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+              onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
+              onBlur={e => { e.target.style.borderColor = 'transparent'; }}
             />
           </div>
 
           <div className="flex gap-3">
             <button onClick={onClose}
-              className="flex-1 rounded-xl border border-slate-700/60 bg-slate-800/60 py-2.5 text-sm font-semibold text-slate-400 transition hover:text-white">
+              className="flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors"
+              style={{ background: '#f5f7fa', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
               Cancel
             </button>
             <button
               onClick={() => { if (isValid) { onContribute(parsed); onClose(); } }}
               disabled={!isValid}
-              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:from-emerald-500 hover:to-emerald-400 disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none">
-              <Zap className="h-4 w-4" />
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+              style={{ background: 'var(--teal)', fontFamily: 'var(--font-inter)', border: 'none', cursor: isValid ? 'pointer' : 'not-allowed' }}>
+              <Zap size={15} />
               Contribute
             </button>
           </div>
@@ -335,11 +359,13 @@ function GoalCard({
   onContribute,
   onEdit,
   onDelete,
+  currency,
 }: {
   goal:         SavingsGoal;
   onContribute: (amount: number) => void;
   onEdit:       () => void;
   onDelete:     () => void;
+  currency:     string;
 }) {
   const [showContribute, setShowContribute] = useState(false);
   const statusCfg = STATUS_CONFIG[goal.status];
@@ -352,7 +378,7 @@ function GoalCard({
 
   return (
     <>
-      <div className={`group relative overflow-hidden rounded-2xl border border-slate-700/40 bg-slate-800/30 p-5 transition-all duration-200 hover:border-slate-600/50 hover:bg-slate-800/50 ${isAchieved ? 'opacity-80' : ''}`}>
+      <div className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-200 card card-hover ${isAchieved ? 'opacity-80' : ''}`}>
         {/* Top gradient accent */}
         <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl opacity-70"
           style={{ background: `linear-gradient(90deg, ${goal.color}, transparent)` }}
@@ -378,14 +404,15 @@ function GoalCard({
             </div>
 
             <div>
-              <h3 className="text-base font-bold text-white">{goal.name}</h3>
-              <p className="mt-0.5 text-xs text-slate-500">
-                ${goal.savedAmount.toLocaleString()} saved of ${goal.targetAmount.toLocaleString()}
+              <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>{goal.name}</h3>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                {currency}{goal.savedAmount.toLocaleString()} saved of {currency}{goal.targetAmount.toLocaleString()}
               </p>
-
-              {/* Status badge */}
-              <span className={`mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-bold ${statusCfg.bgClass} ${statusCfg.textCls}`}>
-                <StatusIcon className="h-2.5 w-2.5" />
+              <span
+                className="mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                style={{ background: statusCfg.bg, color: statusCfg.color, fontFamily: 'var(--font-inter)' }}
+              >
+                <StatusIcon size={10} />
                 {statusCfg.label}
               </span>
             </div>
@@ -394,18 +421,20 @@ function GoalCard({
           {/* Right: actions */}
           <div className="flex flex-shrink-0 items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
             <button onClick={onEdit}
-              className="rounded-lg p-1.5 text-slate-600 transition hover:bg-slate-700/50 hover:text-slate-400">
-              <Edit3 className="h-3.5 w-3.5" />
+              className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors"
+              style={{ background: '#f5f7fa', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>
+              <Edit3 size={13} />
             </button>
             <button onClick={onDelete}
-              className="rounded-lg p-1.5 text-slate-600 transition hover:bg-red-500/15 hover:text-red-400">
-              <Trash2 className="h-3.5 w-3.5" />
+              className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors"
+              style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}>
+              <Trash2 size={13} />
             </button>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-slate-700/60">
+        <div className="mt-4 h-2 w-full overflow-hidden rounded-full" style={{ background: '#f0f2f5' }}>
           <div
             className="h-full rounded-full transition-all duration-700 ease-out"
             style={{ width: `${pct}%`, backgroundColor: goal.color }}
@@ -414,15 +443,15 @@ function GoalCard({
 
         {/* Footer: target date + monthly + contribute button */}
         <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-3 text-[11px] text-slate-500">
+          <div className="flex items-center gap-3" style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>
             <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              {isAchieved ? 'Achieved!' : days > 0 ? `${days}d left` : formatDate(goal.targetDate)}
+              <Calendar size={12} />
+              {isAchieved ? '🎉 Achieved!' : days > 0 ? `${days}d left` : formatDate(goal.targetDate)}
             </span>
             {goal.monthlyContribution > 0 && (
               <span className="flex items-center gap-1">
-                <DollarSign className="h-3 w-3" />
-                ${goal.monthlyContribution}/mo
+                <DollarSign size={12} />
+                {currency}{goal.monthlyContribution}/mo
               </span>
             )}
           </div>
@@ -430,9 +459,10 @@ function GoalCard({
           {!isAchieved && (
             <button
               onClick={() => setShowContribute(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-700/60 bg-slate-700/40 px-2.5 py-1.5 text-[11px] font-semibold text-slate-300 transition hover:border-emerald-500/40 hover:bg-emerald-500/10 hover:text-emerald-400"
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors"
+              style={{ background: 'var(--teal-dim)', color: 'var(--teal)', border: '1.5px solid var(--teal-glow)', fontFamily: 'var(--font-inter)', cursor: 'pointer' }}
             >
-              <Plus className="h-3 w-3" />
+              <Plus size={11} />
               Contribute
             </button>
           )}
@@ -444,6 +474,7 @@ function GoalCard({
           goal={goal}
           onContribute={onContribute}
           onClose={() => setShowContribute(false)}
+          currency={currency}
         />
       )}
     </>
@@ -454,24 +485,26 @@ function GoalCard({
 
 function GoalsSummary({
   stats,
+  currency,
 }: {
   stats: {
     activeCount: number; achievedCount: number;
     totalTarget: number; totalSaved: number;
     overallPercent: number; monthlyCommitted: number;
   };
+  currency: string;
 }) {
   return (
-    <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+    <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
       {[
-        { label: 'Active Goals',      value: String(stats.activeCount),                           color: 'text-emerald-400' },
-        { label: 'Achieved',          value: String(stats.achievedCount),                          color: 'text-purple-400'  },
-        { label: 'Total Target',      value: `$${stats.totalTarget.toLocaleString()}`,             color: 'text-blue-400'    },
-        { label: 'Monthly Committed', value: `$${stats.monthlyCommitted.toLocaleString()}/mo`,    color: 'text-amber-400'   },
+        { label: 'Active Goals',      value: String(stats.activeCount),                                  color: 'var(--teal)'   },
+        { label: 'Achieved',          value: String(stats.achievedCount),                                 color: 'var(--purple)' },
+        { label: 'Total Target',      value: `${currency}${stats.totalTarget.toLocaleString()}`,          color: 'var(--blue)'   },
+        { label: 'Monthly Committed', value: `${currency}${stats.monthlyCommitted.toLocaleString()}/mo`,  color: 'var(--amber)'  },
       ].map(s => (
-        <div key={s.label} className="rounded-xl border border-slate-700/40 bg-slate-800/30 px-3 py-3">
-          <p className="mb-1 text-[9px] font-bold uppercase tracking-widest text-slate-600">{s.label}</p>
-          <p className={`text-sm font-bold sm:text-base ${s.color}`}>{s.value}</p>
+        <div key={s.label} className="card px-4 py-3">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', marginBottom: '4px' }}>{s.label}</p>
+          <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px', fontWeight: 800, color: s.color }}>{s.value}</p>
         </div>
       ))}
     </div>
@@ -498,9 +531,10 @@ interface GoalsViewProps {
   onUpdate:     (id: string, data: Partial<SavingsGoal>) => void;
   onDelete:     (id: string) => void;
   onContribute: (id: string, amount: number) => void;
+  currency?:    string;
 }
 
-export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onContribute }: GoalsViewProps) {
+export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onContribute, currency = '$' }: GoalsViewProps) {
   const [showAdd,  setShowAdd]  = useState(false);
   const [editGoal, setEditGoal] = useState<SavingsGoal | null>(null);
 
@@ -542,41 +576,43 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="flex items-center gap-2.5 text-xl font-bold text-white sm:text-2xl">
-            <Target className="h-6 w-6 text-emerald-400" />
+          <h1 style={{ fontFamily: 'var(--font-manrope)', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)' }} className="flex items-center gap-2.5">
+            <Target size={22} style={{ color: 'var(--teal)' }} />
             Savings Goals
           </h1>
-          <p className="mt-0.5 text-sm text-slate-500">
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
             Track and achieve your financial milestones
           </p>
         </div>
 
         <button
           onClick={() => setShowAdd(true)}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-emerald-500 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-emerald-500/20 transition hover:from-emerald-500 hover:to-emerald-400 active:scale-[0.98]"
+          className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold text-white"
+          style={{ background: 'var(--teal)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}
         >
-          <Plus className="h-4 w-4" />
+          <Plus size={15} />
           <span className="hidden sm:inline">New Goal</span>
           <span className="sm:hidden">New</span>
         </button>
       </div>
 
       {/* Summary stats */}
-      {goals.length > 0 && <GoalsSummary stats={stats} />}
+      {goals.length > 0 && <GoalsSummary stats={stats} currency={currency} />}
 
       {/* Goals grid */}
       {goals.length === 0 ? (
-        <div className="glass-card rounded-2xl p-12 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800/60">
-            <Target className="h-8 w-8 text-slate-600" />
+        <div className="card p-12 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: '#f5f7fa' }}>
+            <Target size={28} style={{ color: 'var(--text-muted)' }} />
           </div>
-          <h3 className="text-base font-semibold text-slate-400">No goals yet</h3>
-          <p className="mt-1 text-sm text-slate-600">Create your first savings goal to start tracking</p>
+          <h3 style={{ fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 600, color: 'var(--text-secondary)' }}>No goals yet</h3>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>Create your first savings goal to start tracking</p>
           <button
             onClick={() => setShowAdd(true)}
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-500"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold text-white"
+            style={{ background: 'var(--teal)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}
           >
-            <Plus className="h-4 w-4" />
+            <Plus size={14} />
             Create first goal
           </button>
         </div>
@@ -589,6 +625,7 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
               onContribute={amt => onContribute(g.id, amt)}
               onEdit={() => setEditGoal(g)}
               onDelete={() => onDelete(g.id)}
+              currency={currency}
             />
           ))}
         </div>
@@ -596,7 +633,7 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
 
       {/* Add modal */}
       {showAdd && (
-        <GoalModal onSave={handleAdd} onClose={() => setShowAdd(false)} />
+        <GoalModal onSave={handleAdd} onClose={() => setShowAdd(false)} currency={currency} />
       )}
 
       {/* Edit modal */}
@@ -613,6 +650,7 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
           }}
           onSave={handleEdit}
           onClose={() => setEditGoal(null)}
+          currency={currency}
         />
       )}
     </div>

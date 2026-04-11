@@ -5,48 +5,44 @@ import { CategorySpend } from '../types';
 interface SpendingDonutProps {
   data: CategorySpend[];
   totalSpent: number;
+  currency?: string;
 }
 
-const COLORS = ['#3b82f6', '#f43f5e', '#10b981', '#a855f7', '#f59e0b', '#06b6d4', '#ec4899', '#64748b'];
+const PALETTE = ['#14b8a6', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#ec4899', '#64748b'];
 
-export default function SpendingDonut({ data, totalSpent }: SpendingDonutProps) {
+export default function SpendingDonut({ data, totalSpent, currency = '$' }: SpendingDonutProps) {
   const chartData = useMemo(() => {
-    return data.map((d, i) => ({
-      ...d,
-      fill: d.color || COLORS[i % COLORS.length]
-    })).filter(d => d.value > 0);
+    return data.map((d, i) => ({ ...d, fill: d.color || PALETTE[i % PALETTE.length] })).filter(d => d.value > 0);
   }, [data]);
 
   if (chartData.length === 0) {
     return (
-      <div className="glass-card p-6 h-[380px] flex flex-col items-center justify-center text-center">
-        <div className="h-16 w-16 rounded-2xl bg-[#1c2230] border border-white/5 flex items-center justify-center mb-4">
-          <span className="text-2xl opacity-40">🍩</span>
-        </div>
-        <p className="text-sm font-medium text-slate-400">No expenses yet</p>
-        <p className="text-xs text-slate-600 mt-1">Add transactions to see the breakdown</p>
+      <div className="card flex flex-col items-center justify-center h-[360px] text-center">
+        <div className="text-3xl mb-3 opacity-40">🍩</div>
+        <p className="text-title" style={{ color: 'var(--text-muted)' }}>No expenses yet</p>
+        <p className="text-caption mt-1">Add transactions to see breakdown</p>
       </div>
     );
   }
 
   return (
-    <div className="glass-card p-6 flex flex-col h-[380px]">
-      <h3 className="text-base font-bold text-white mb-0.5">Spending Breakdown</h3>
-      <p className="text-[11px] text-slate-500 mb-5">By category this period</p>
+    <div className="card px-5 py-5 flex flex-col">
+      <h3 className="text-headline mb-1">Expenses Breakdown</h3>
+      <p className="text-caption mb-5">*Compare to last month</p>
 
-      <div className="flex-1 relative">
+      <div className="relative flex-1 min-h-[200px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={chartData}
               cx="50%"
               cy="50%"
-              innerRadius="62%"
-              outerRadius="88%"
-              paddingAngle={4}
+              innerRadius={55}
+              outerRadius={85}
+              paddingAngle={3}
               dataKey="value"
               stroke="none"
-              cornerRadius={6}
+              cornerRadius={4}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -54,19 +50,19 @@ export default function SpendingDonut({ data, totalSpent }: SpendingDonutProps) 
             </Pie>
             <Tooltip
               content={({ active, payload }) => {
-                if (!active || !payload || !payload.length) return null;
+                if (!active || !payload?.length) return null;
                 const d = payload[0].payload;
                 const pct = totalSpent > 0 ? ((d.value / totalSpent) * 100).toFixed(1) : '0';
                 return (
-                  <div className="bg-[#151a23] border border-white/10 rounded-xl p-3 shadow-2xl">
+                  <div className="card px-4 py-3 shadow-lg">
                     <div className="flex items-center gap-2 mb-1">
                       <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.fill }} />
-                      <p className="text-xs font-semibold text-white">{d.name}</p>
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>{d.name}</p>
                     </div>
-                    <p className="text-sm font-bold text-slate-200 tabular-nums">
-                      ${d.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)' }}>
+                      {currency}{d.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">{pct}% of total spending</p>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>{pct}% of total</p>
                   </div>
                 );
               }}
@@ -74,24 +70,46 @@ export default function SpendingDonut({ data, totalSpent }: SpendingDonutProps) 
           </PieChart>
         </ResponsiveContainer>
 
-        {/* Center Total */}
+        {/* Center */}
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          <p className="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Total</p>
-          <p className="text-xl font-bold text-white mt-0.5 tabular-nums">
-            ${totalSpent.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+          <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
+            {currency}{totalSpent.toLocaleString('en-US', { maximumFractionDigits: 0 })}
           </p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>Total</p>
         </div>
       </div>
 
-      {/* Legend — shows ALL categories */}
-      <div className="mt-3 grid grid-cols-2 gap-1.5">
-        {chartData.map((d) => {
+      {/* Category list — Finebank style row list */}
+      <div className="mt-5 space-y-2">
+        {chartData.slice(0, 4).map((d) => {
           const pct = totalSpent > 0 ? Math.round((d.value / totalSpent) * 100) : 0;
           return (
-            <div key={d.name} className="flex items-center gap-2 px-1.5 py-0.5 rounded-lg hover:bg-slate-800/30 transition-colors">
-              <div className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: d.fill }} />
-              <span className="text-[10px] text-slate-400 truncate flex-1">{d.name}</span>
-              <span className="text-[10px] font-semibold text-white tabular-nums">{pct}%</span>
+            <div key={d.name} className="flex items-center gap-3 group cursor-pointer">
+              <div
+                className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
+                style={{ background: `${d.fill}18` }}
+              >
+                <div className="w-2 h-2 rounded-full" style={{ background: d.fill }} />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center mb-1">
+                  <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 500, color: 'var(--text-primary)' }}>
+                    {d.name}
+                  </span>
+                  <span style={{ fontFamily: 'var(--font-manrope)', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>
+                    {currency}{d.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div className="h-1.5 w-full rounded-full overflow-hidden" style={{ background: '#f0f2f5' }}>
+                  <div
+                    className="h-full rounded-full transition-all duration-700"
+                    style={{ width: `${pct}%`, background: d.fill }}
+                  />
+                </div>
+                <div className="flex justify-between mt-1">
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>{pct}%</span>
+                </div>
+              </div>
             </div>
           );
         })}

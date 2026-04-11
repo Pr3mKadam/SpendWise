@@ -41,7 +41,7 @@ function loadTransactions(): Transaction[] {
       return parsed.map(tx => ({ ...tx, isNew: false }));
     }
   } catch { /* ignore parse errors */ }
-  return initialTransactions;
+  return [];
 }
 
 function saveTransactions(txs: Transaction[]): void {
@@ -136,18 +136,10 @@ export function useFinanceState(
   onResetConfigRef.current = options?.onResetConfig;
 
   const resetData = useCallback(() => {
-    if (userId) {
-      void resetUserCloudData(userId).then(() => {
-        setTransactions([]);
-        onResetConfigRef.current?.();
-      });
-    } else {
-      localStorage.removeItem(STORAGE_KEY);
-      localStorage.removeItem(ONBOARDING_KEY);
-      setTransactions(initialTransactions.map(tx => ({ ...tx, isNew: false })));
-      onResetConfigRef.current?.();
-    }
-  }, [userId]);
+    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(ONBOARDING_KEY);
+    setTransactions([]);
+  }, []);
 
   const deleteTransaction = useCallback(
     (id: string) => {
@@ -160,15 +152,7 @@ export function useFinanceState(
   // ── Derived: balance ────────────────────────────────────────────────────────
 
   const currentBalance = useMemo(() => {
-    const startingPoint = initialBalance - balanceAnchorNet;
-    return (
-      Math.round(
-        transactions.reduce((acc, tx) => {
-          return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
-        }, startingPoint) * 100
-      ) / 100
-    );
-  }, [transactions, initialBalance, balanceAnchorNet]);
+    const startingPoint = initialBalance;
 
   // ── Derived: category spending (debits only) ─────────────────────────────────
 
@@ -265,13 +249,11 @@ export function useFinanceState(
           savings:  Math.round(income - expenses),
         });
       } else {
-        const income   = Math.round(2200 + rand() * 1200);
-        const expenses = Math.round(1100 + rand() * 900);
         points.push({
           month:    label,
-          income,
-          expenses,
-          savings:  income - expenses,
+          income:   0,
+          expenses: 0,
+          savings:  0,
         });
       }
     }
@@ -284,6 +266,10 @@ export function useFinanceState(
     const today = new Date();
     const startingPoint = initialBalance - balanceAnchorNet;
 
+    // Use the same starting point reverse-calc for the trend lines
+    const startingPoint = initialBalance;
+
+    // --- Historical: last 14 days ---
     for (let i = 13; i >= 0; i--) {
       const d       = new Date(today);
       d.setDate(d.getDate() - i);

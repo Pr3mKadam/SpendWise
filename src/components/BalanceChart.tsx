@@ -1,12 +1,6 @@
 import { useMemo } from 'react';
 import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  ReferenceLine,
+  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid,
 } from 'recharts';
 import { BalanceDataPoint } from '../types';
 
@@ -16,172 +10,121 @@ interface BalanceChartProps {
 }
 
 export default function BalanceChart({ data, currency = '$' }: BalanceChartProps) {
-  // Find the split point between actual and projected
   const splitIndex = useMemo(() => {
     const idx = data.findIndex(d => d.projected);
     return idx >= 0 ? idx : data.length;
   }, [data]);
 
-  // Build chart data with separate series + bridge point
   const chartData = useMemo(() => {
     return data.map((d, i) => {
       const isProjected = !!d.projected;
-      const isBridge = i === splitIndex; // first projected point
-      const isBridgeActual = i === splitIndex - 1; // last actual point
-
+      const isBridgeActual = i === splitIndex - 1;
+      const isBridge = i === splitIndex;
       return {
-        date: d.date, // already formatted as "Jan 5" from useFinanceState
+        date: d.date,
         balance: d.balance,
         isProjected,
-        // Actual series: show for non-projected + bridge on last actual
         actualBalance: !isProjected ? d.balance : undefined,
-        // Projected series: show for projected + bridge from last actual
         projectedBalance: isProjected || isBridgeActual ? d.balance : undefined,
-        // Bridge logic: first projected point also gets actual value for connection
         ...(isBridge ? { actualBalance: undefined } : {}),
       };
     });
   }, [data, splitIndex]);
 
-  // Y-axis domain with padding
-  const { min, max } = useMemo(() => {
-    if (!data.length) return { min: 0, max: 1000 };
-    const balances = data.map(d => d.balance);
-    const minVal = Math.min(...balances);
-    const maxVal = Math.max(...balances);
-    const padding = (maxVal - minVal) * 0.25;
-    return {
-      min: Math.max(0, Math.floor((minVal - padding) / 100) * 100),
-      max: Math.ceil((maxVal + padding) / 100) * 100,
-    };
-  }, [data]);
-
-  // "Today" label for reference line
-  const todayLabel = splitIndex > 0 && splitIndex < data.length
-    ? data[splitIndex - 1]?.date
-    : undefined;
+  const todayLabel = splitIndex > 0 && splitIndex < data.length ? data[splitIndex - 1]?.date : undefined;
 
   if (data.length === 0) {
     return (
-      <div className="glass-card p-6 h-[340px] flex items-center justify-center">
-        <p className="text-sm text-slate-500">No balance data yet</p>
+      <div className="card flex items-center justify-center h-[300px]">
+        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', fontSize: '14px' }}>No balance data yet</p>
       </div>
     );
   }
 
   return (
-    <div className="glass-card p-5 sm:p-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="card px-6 py-5">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-base font-bold text-white">Balance Trend</h2>
-          <p className="text-[11px] text-slate-500 mt-0.5">14-day history + 14-day forecast</p>
+          <h2 className="text-headline">Weekly Comparison</h2>
+          <p className="text-caption mt-1">14-day history + 14-day AI projection</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-5 rounded-full bg-blue-500" />
-            <span className="text-[10px] text-slate-500 font-medium">Actual</span>
+        {/* Legend */}
+        <div className="flex items-center gap-5">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ background: 'var(--teal)' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Actual</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <div className="h-2 w-5 rounded-full bg-rose-500 opacity-60" style={{ backgroundImage: 'repeating-linear-gradient(90deg, transparent, transparent 2px, #0d131f 2px, #0d131f 4px)' }} />
-            <span className="text-[10px] text-slate-500 font-medium">Projected</span>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ background: '#cbd5e0' }} />
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Projected</span>
           </div>
         </div>
       </div>
 
-      <div className="h-[260px] sm:h-[280px] w-full">
+      <div style={{ height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 5, left: -15, bottom: 0 }}>
+          <AreaChart data={chartData} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="gradActual" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+                <stop offset="20%" stopColor="#14b8a6" stopOpacity={0.2} />
+                <stop offset="100%" stopColor="#14b8a6" stopOpacity={0} />
               </linearGradient>
               <linearGradient id="gradProjected" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.15} />
-                <stop offset="95%" stopColor="#f43f5e" stopOpacity={0} />
+                <stop offset="20%" stopColor="#94a3b8" stopOpacity={0.15} />
+                <stop offset="100%" stopColor="#94a3b8" stopOpacity={0} />
               </linearGradient>
             </defs>
+
+            <CartesianGrid stroke="#f0f2f5" vertical={false} />
 
             <XAxis
               dataKey="date"
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: '#475569' }}
-              minTickGap={40}
+              tick={{ fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' }}
               dy={10}
+              minTickGap={40}
             />
             <YAxis
-              domain={[min, max]}
               axisLine={false}
               tickLine={false}
-              tick={{ fontSize: 10, fill: '#475569' }}
-              tickFormatter={(val) => `${currency}${(val / 1000).toFixed(1)}k`}
-              dx={-5}
+              tick={{ fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' }}
+              tickFormatter={v => `${currency}${(v / 1000).toFixed(1)}k`}
+              width={52}
             />
 
-            {/* Today reference line */}
             {todayLabel && (
               <ReferenceLine
                 x={todayLabel}
-                stroke="rgba(100,116,139,0.3)"
+                stroke="#cbd5e0"
                 strokeDasharray="4 4"
-                label={{
-                  value: 'Today',
-                  position: 'top',
-                  fill: '#64748b',
-                  fontSize: 10,
-                  fontWeight: 600,
-                }}
+                label={{ value: 'TODAY', position: 'top', fill: '#a0aec0', fontSize: 10, fontFamily: 'var(--font-inter)', fontWeight: 600, letterSpacing: '0.08em' }}
               />
             )}
 
             <Tooltip
               content={({ active, payload, label }) => {
-                if (!active || !payload || !payload.length) return null;
+                if (!active || !payload?.length) return null;
                 const point = payload[0]?.payload;
-                const isProjected = point?.isProjected;
+                const isProj = point?.isProjected;
                 const value = point?.balance;
                 return (
-                  <div className="bg-[#151a23] border border-white/10 rounded-xl p-3 shadow-2xl">
-                    <p className="text-[10px] text-slate-500 font-semibold mb-1.5 uppercase tracking-wider">{label}</p>
-                    <p className={`text-lg font-bold tabular-nums ${isProjected ? 'text-rose-400' : 'text-blue-400'}`}>
+                  <div className="card px-4 py-3 shadow-lg">
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{label}</p>
+                    <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px', fontWeight: 800, color: isProj ? 'var(--text-muted)' : 'var(--teal)' }}>
                       {currency}{Number(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
                     </p>
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <div className={`h-1.5 w-1.5 rounded-full ${isProjected ? 'bg-rose-500' : 'bg-blue-500'}`} />
-                      <span className="text-[10px] font-medium text-slate-400">
-                        {isProjected ? 'Forecast' : 'Actual balance'}
-                      </span>
-                    </div>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                      {isProj ? 'AI Projected' : 'Actual Balance'}
+                    </p>
                   </div>
                 );
               }}
             />
 
-            {/* Actual Balance Area */}
-            <Area
-              type="monotone"
-              dataKey="actualBalance"
-              stroke="#3b82f6"
-              strokeWidth={2.5}
-              fillOpacity={1}
-              fill="url(#gradActual)"
-              connectNulls
-              activeDot={{ r: 5, fill: '#3b82f6', stroke: '#0d131f', strokeWidth: 3 }}
-            />
-
-            {/* Projected Balance Area */}
-            <Area
-              type="monotone"
-              dataKey="projectedBalance"
-              stroke="#f43f5e"
-              strokeWidth={2.5}
-              strokeDasharray="6 4"
-              fillOpacity={1}
-              fill="url(#gradProjected)"
-              connectNulls
-              activeDot={{ r: 5, fill: '#f43f5e', stroke: '#0d131f', strokeWidth: 3 }}
-            />
+            <Area type="monotone" dataKey="actualBalance" stroke="#14b8a6" strokeWidth={2.5} fillOpacity={1} fill="url(#gradActual)" connectNulls activeDot={{ r: 5, fill: '#14b8a6', stroke: '#fff', strokeWidth: 2 }} />
+            <Area type="monotone" dataKey="projectedBalance" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" fillOpacity={1} fill="url(#gradProjected)" connectNulls activeDot={{ r: 5, fill: '#94a3b8', stroke: '#fff', strokeWidth: 2 }} />
           </AreaChart>
         </ResponsiveContainer>
       </div>
