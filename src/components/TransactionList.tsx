@@ -3,6 +3,7 @@ import { Bot } from 'lucide-react';
 import { Transaction } from '../types';
 import { useCategories } from '../hooks/useCategories';
 import { useParentalControl } from '../contexts/ParentalControlContext';
+import { CategoryDropdown } from './CategoryDropdown';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -154,19 +155,11 @@ export default function TransactionList({ transactions, onCategoryChange, curren
                   </div>
 
                   {/* Edit Category */}
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <select
+                  <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-36">
+                    <CategoryDropdown
                       value={tx.category}
-                      onChange={(e) => onCategoryChange?.(tx.id, e.target.value)}
-                      className="bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)] rounded-md text-[10px] p-1 font-inter cursor-pointer hover:border-[var(--teal)] transition-colors focus:outline-none"
-                    >
-                      <option disabled value="">Change Category...</option>
-                      {Object.keys(mergedIcons).map((cat) => (
-                        <option key={cat} value={cat}>
-                          {mergedIcons[cat]} {cat}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(newCat) => onCategoryChange?.(tx.id, newCat)}
+                    />
                   </div>
                 </div>
               </div>

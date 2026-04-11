@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Search, Filter, ArrowUpRight, ArrowDownLeft, Download, X, ChevronUp, ChevronDown, Upload, FileText, Calendar } from 'lucide-react';
 import { Transaction, Category } from '../types';
 import { useCategories } from '../hooks/useCategories';
+import { CategoryDropdown } from './CategoryDropdown';
 
 interface HistoryViewProps {
   transactions: Transaction[];
@@ -329,18 +330,11 @@ export default function HistoryView({ transactions, onCategoryChange, onImportCl
                   {isCredit ? <ArrowDownLeft size={12} style={{ color: 'var(--teal)' }} /> : <ArrowUpRight size={12} style={{ color: 'var(--red)' }} />}
                 </div>
                 {onCategoryChange && (
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity w-32 shrink-0">
-                    <select
+                  <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-36 shrink-0">
+                    <CategoryDropdown
                       value={tx.category}
-                      onChange={(e) => onCategoryChange(tx.id, e.target.value as Category)}
-                      className="w-full bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)] rounded-md text-[10px] p-1 font-inter cursor-pointer hover:border-[var(--teal)] transition-colors focus:outline-none"
-                    >
-                      {allCategories.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {mergedIcons[cat]} {cat}
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(newCat) => onCategoryChange(tx.id, newCat as Category)}
+                    />
                   </div>
                 )}
               </div>
