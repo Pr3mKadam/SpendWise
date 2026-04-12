@@ -13,6 +13,7 @@ export interface Transaction {
   confidence?:  number;  // AI parse confidence 0.0–1.0
   aiParsed?:    boolean; // true when parsed by Anthropic API
   tags?:        string[]; // Phase 4.2 custom tags
+  status?:      'completed' | 'pending_approval'; // parental control gate
 }
 
 // ─── Budget types ──────────────────────────────────────────────────────────────

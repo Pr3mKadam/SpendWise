@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Landmark, Link2, DownloadCloud, UploadCloud, SmartphoneNfc, MoreHorizontal, ShieldCheck, Activity, RefreshCw, Zap } from 'lucide-react';
+import { Landmark, Link2, DownloadCloud, UploadCloud, SmartphoneNfc, ShieldCheck, Activity, RefreshCw, Zap } from 'lucide-react';
 import { Transaction, UPIAccount } from '../types';
 import UPILinkModal from './UPILinkModal';
 import ImportCSVModal from './ImportCSVModal';

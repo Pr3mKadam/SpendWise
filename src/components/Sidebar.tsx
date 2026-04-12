@@ -8,7 +8,6 @@ interface SidebarProps {
   activeView:      AppView;
   onViewChange:    (view: AppView) => void;
   overBudgetCount: number;
-  onOpenParentalSettings?: () => void;
 }
 
 const ALL_NAV_ITEMS = [
@@ -23,7 +22,7 @@ const ALL_NAV_ITEMS = [
   { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
 ];
 
-export default function Sidebar({ activeView, onViewChange, overBudgetCount, onOpenParentalSettings }: SidebarProps) {
+export default function Sidebar({ activeView, onViewChange, overBudgetCount }: SidebarProps) {
   const { signOut } = useAuth();
   const { isKidMode, settings } = useParentalControl();
 
@@ -119,17 +118,6 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onO
             <span>Profile & Settings</span>
           </button>
 
-          <button
-            onClick={onOpenParentalSettings}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
-            style={{ color: 'var(--sidebar-text)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-            title="Parental Controls"
-          >
-            <Shield size={18} strokeWidth={2} />
-            <span>Parental Controls</span>
-          </button>
 
 
           

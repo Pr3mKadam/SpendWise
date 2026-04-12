@@ -129,6 +129,11 @@ export default function AuthView({ mfaRequired = false }: { mfaRequired?: boolea
           options: { data: { first_name: firstName, last_name: lastName, phone } },
         });
         if (error) throw error;
+        
+        // WIPE LOCAL DATA SO NEW ACCOUNT STARTS FRESH
+        localStorage.removeItem('spendwise_transactions_v2');
+        localStorage.removeItem('spendwise_config_v1');
+
         setSuccess('Account created! Check your email for a confirmation link, then sign in.');
         setIsLogin(true);
       }

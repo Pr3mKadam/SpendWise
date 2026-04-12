@@ -33,6 +33,7 @@ import { generatePDFReport } from './utils/exportPDF';
 import { useParentalControl } from './contexts/ParentalControlContext';
 import { ParentalPinGate, KidModeBanner } from './components/ParentalControlGate';
 import ParentalControlModal from './components/ParentalControlModal';
+import ParentDashboard from './components/ParentDashboard';
 
 // ── Hooks ────────────────────────────────────────────────────────
 import { useFinanceState }  from './hooks/useFinanceState';
@@ -155,6 +156,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [showParentalModal, setShowParentalModal]   = useState(false);
   const [showParentalGate, setShowParentalGate]     = useState(false);
+  const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [activeView, setActiveView]               = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -169,7 +171,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
 
   const financeState = useFinanceState(config?.initialBalance ?? 5200);
   const {
-    transactions,
+    transactions: allTransactions,
     addTransaction,
     deleteTransaction: _deleteTransaction,
     updateTransactionCategory,
@@ -183,6 +185,10 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
     predictedEndOfMonth,
     projectionMeta,
   } = financeState;
+
+  // Exclude pending-approval transactions from balance & budget calculations
+  const transactions = allTransactions.filter(t => t.status !== 'pending_approval');
+  const pendingTransactions = allTransactions.filter(t => t.status === 'pending_approval');
 
   const budgetState = useBudgets(transactions);
   const {
@@ -306,6 +312,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         onViewChange={handleViewChange}
         overBudgetCount={overBudgetCount}
         onOpenParentalSettings={() => setShowParentalModal(true)}
+        onOpenParentDashboard={() => setShowParentDashboard(true)}
       />
 
       {/* ── Main Content ── */}
@@ -452,6 +459,8 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
                   }
                 }}
                 transactions={transactions}
+                onOpenParentalSettings={() => setShowParentalModal(true)}
+                onOpenParentDashboard={() => setShowParentDashboard(true)}
               />
             </div>
           )}
@@ -513,6 +522,29 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
       <ParentalControlModal
         isOpen={showParentalModal}
         onClose={() => setShowParentalModal(false)}
+        pendingTransactions={pendingTransactions}
+        onApproveTx={async (txId) => {
+          // Move from pending to completed locally
+          updateTransactionCategory(txId, allTransactions.find(t => t.id === txId)?.category ?? 'Other');
+          if (userId) {
+            const { approveTransaction } = await import('./lib/supabaseData');
+            await approveTransaction(userId, txId).catch(console.error);
+          }
+        }}
+        onRejectTx={async (txId) => {
+          _deleteTransaction(txId);
+          if (userId) {
+            const { rejectTransaction } = await import('./lib/supabaseData');
+            await rejectTransaction(userId, txId).catch(console.error);
+          }
+        }}
+      />
+
+      {/* ── Remote Parent Dashboard ── */}
+      <ParentDashboard
+        isOpen={showParentDashboard}
+        onClose={() => setShowParentDashboard(false)}
+        currency={currency}
       />
 
       {/* ── Custom Categories Modal ── */}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TrendingUp, Plus, Trash2, X, Landmark, BarChart2, ShieldAlert } from 'lucide-react';
 import { AssetType, LiabilityType } from '../types';
 import { usePortfolio } from '../hooks/usePortfolio';
+import Portal from './Portal';
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 
@@ -60,8 +61,9 @@ function AddModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+    <Portal>
+      <div
+        className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.5)', backdropFilter: 'blur(6px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}
     >
@@ -185,7 +187,8 @@ function AddModal({
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </Portal>
   );
 }
 

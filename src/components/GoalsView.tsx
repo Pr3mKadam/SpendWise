@@ -5,6 +5,7 @@ import {
   DollarSign, X, Zap,
 } from 'lucide-react';
 import { SavingsGoal, GoalStatus } from '../types';
+import Portal from './Portal';
 
 // ─── Goal status config ───────────────────────────────────────────────────────
 
@@ -129,7 +130,8 @@ function GoalModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <Portal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.25)' }} onClick={onClose} />
 
       <div className="card relative w-full max-w-md animate-scale-in overflow-hidden rounded-2xl">
@@ -263,9 +265,10 @@ function GoalModal({
               {initial ? 'Save Changes' : 'Create Goal'}
             </button>
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }
 
@@ -290,7 +293,8 @@ function ContributeModal({
   const quickAmts = [goal.monthlyContribution, 50, 100, 200].filter(a => a > 0 && a <= remaining);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+    <Portal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 backdrop-blur-sm" style={{ background: 'rgba(0,0,0,0.25)' }} onClick={onClose} />
       <div className="card relative w-full max-w-sm animate-scale-in overflow-hidden rounded-2xl">
         <div className="h-1 w-full" style={{ background: `linear-gradient(90deg, ${goal.color}, transparent)` }} />
@@ -346,9 +350,10 @@ function ContributeModal({
               Contribute
             </button>
           </div>
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }
 

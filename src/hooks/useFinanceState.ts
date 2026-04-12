@@ -91,6 +91,10 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     setTransactions(prev => prev.map(tx => tx.id === id ? { ...tx, category: newCategory } : tx));
   }, []);
 
+  const setTransactionsAll = useCallback((txs: Transaction[]) => {
+    setTransactions(txs);
+  }, []);
+
   // ── Derived: balance ────────────────────────────────────────────────────────
 
   const currentBalance = useMemo(() => {
@@ -301,6 +305,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     deleteTransaction,
     updateTransactionCategory,
     resetData,
+    setTransactionsAll,
     currentBalance,
     predictedEndOfMonth,
     projectionMeta,

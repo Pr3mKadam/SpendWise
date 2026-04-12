@@ -11,6 +11,8 @@ interface ProfileViewProps {
   onUpdateConfig: (cfg: SpendWiseConfig) => void;
   onResetData: () => void;
   transactions: Transaction[];
+  onOpenParentalSettings?: () => void;
+  onOpenParentDashboard?: () => void;
 }
 
 const STORAGE_KEY = 'spendwise_config_v1';
@@ -26,7 +28,14 @@ const COMMON_CURRENCIES = [
   { code: 'AED', name: 'UAE Dirham (AED)',     flag: '🇦🇪' },
 ];
 
-export default function ProfileView({ config, onUpdateConfig, onResetData, transactions }: ProfileViewProps) {
+export default function ProfileView({ 
+  config, 
+  onUpdateConfig, 
+  onResetData, 
+  transactions,
+  onOpenParentalSettings,
+  onOpenParentDashboard
+}: ProfileViewProps) {
   const [name, setName] = useState(config?.name ?? 'User');
   const [phone, setPhone] = useState(config?.phone ?? '');
   const [occupation, setOccupation] = useState(config?.occupation ?? '');
@@ -354,6 +363,46 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
               Reset All Data
             </button>
           </div>
+        </div>
+      </div>
+      {/* Family & Safety (Just in case) */}
+      <div className="card border border-[var(--teal)]/20 shadow-sm shadow-[var(--teal)]/5">
+        <div className="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between">
+          <div>
+            <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">
+              Family & Safety (Optional)
+            </h3>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">Manage controls or link family accounts.</p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-[var(--teal-dim)] flex items-center justify-center text-[var(--teal)]">
+            <ShieldCheck size={20} />
+          </div>
+        </div>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <button
+              onClick={onOpenParentalSettings}
+              className="flex items-center gap-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)] hover:bg-[var(--surface-card)] transition-colors text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                <ShieldCheck size={18} className="text-amber-500" />
+              </div>
+              <div>
+                <h4 className="font-inter font-bold text-sm text-[var(--text-primary)]">Parental Controls</h4>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5 max-w-[200px]">Lock device with a PIN and set limits for shared devices.</p>
+              </div>
+            </button>
+            <button
+              onClick={onOpenParentDashboard}
+              className="flex items-center gap-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)] hover:bg-[var(--surface-card)] transition-colors text-left"
+            >
+              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center shrink-0">
+                <User size={18} className="text-purple-400" />
+              </div>
+              <div>
+                <h4 className="font-inter font-bold text-sm text-[var(--text-primary)]">Parent Dashboard</h4>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5 max-w-[200px]">Monitor and manage a linked child's account remotely.</p>
+              </div>
+            </button>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { X, Upload, AlertCircle, CheckCircle2, ChevronRight, RefreshCw, FileText } from 'lucide-react';
 import { Transaction, Category } from '../types';
+import Portal from './Portal';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -205,8 +206,9 @@ export default function ImportCSVModal({ isOpen, onClose, onImport }: ImportCSVM
   // ─────────────────────────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+    <Portal>
+      <div
+        className="fixed inset-0 z-[200] flex items-center justify-center p-4"
       style={{ background: 'rgba(15,23,42,0.65)', backdropFilter: 'blur(8px)' }}
       onClick={e => { if (e.target === e.currentTarget) handleClose(); }}
     >
@@ -427,6 +429,7 @@ export default function ImportCSVModal({ isOpen, onClose, onImport }: ImportCSVM
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </Portal>
   );
 }

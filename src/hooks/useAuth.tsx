@@ -57,7 +57,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signOut = useCallback(async () => {
-    if (supabase) await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+      localStorage.removeItem('spendwise_transactions_v2');
+      localStorage.removeItem('spendwise_config_v1');
+      window.location.reload();
+    }
   }, []);
 
   const value = useMemo<AuthContextType>(() => ({

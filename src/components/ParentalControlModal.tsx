@@ -2,9 +2,10 @@ import { useState, useEffect } from 'react';
 import {
   Shield, Lock, Unlock, Eye, EyeOff, Baby, User as _User, ChevronRight,
   X, Check, AlertTriangle, Settings, Trash2, DollarSign, Tag as _Tag,
-  ShieldCheck, ShieldOff, RefreshCw
+  ShieldCheck, ShieldOff, RefreshCw, Mail, Clock, CheckCircle, XCircle
 } from 'lucide-react';
 import { useParentalControl, type AgeGroup } from '../contexts/ParentalControlContext';
+import type { Transaction } from '../types';
 
 // ── PIN Pad ───────────────────────────────────────────────────────
 
@@ -128,6 +129,9 @@ function Row({
 interface ParentalControlModalProps {
   isOpen: boolean;
   onClose: () => void;
+  pendingTransactions?: Transaction[];
+  onApproveTx?: (txId: string) => void;
+  onRejectTx?: (txId: string) => void;
 }
 
 type Screen =
@@ -135,6 +139,7 @@ type Screen =
   | 'setup-pin'
   | 'confirm-pin'
   | 'unlock'
+  | 'forgot-pin'
   | 'change-pin-old'
   | 'change-pin-new'
   | 'change-pin-confirm'
@@ -151,9 +156,9 @@ const ALL_CATEGORIES = [
   'Education','Housing','Utilities','Travel','Personal','Other',
 ];
 
-export default function ParentalControlModal({ isOpen, onClose }: ParentalControlModalProps) {
+export default function ParentalControlModal({ isOpen, onClose, pendingTransactions = [], onApproveTx, onRejectTx }: ParentalControlModalProps) {
   const pc = useParentalControl();
-  const { settings, setupPin, verifyPin, changePin, removePin, updateSettings, lockSession } = pc;
+  const { settings, setupPin, verifyPin, changePin, removePin, updateSettings, lockSession, sendPasswordResetEmail } = pc;
 
   const [screen, setScreen] = useState<Screen>('home');
   const [pin1, setPin1] = useState('');
@@ -311,8 +316,56 @@ export default function ParentalControlModal({ isOpen, onClose }: ParentalContro
           {busy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Unlock className="w-4 h-4" />}
           Unlock Settings
         </button>
+        <button
+          onClick={() => { setPin1(''); setPinError(''); setScreen('forgot-pin'); }}
+          className="text-xs text-[var(--teal)] hover:underline mt-1"
+        >
+          Forgot PIN?
+        </button>
         <button onClick={onClose} className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] mt-1">
           Cancel
+        </button>
+      </div>
+    ),
+
+    'forgot-pin': (
+      <div className="flex flex-col items-center gap-3 py-2">
+        <div className="w-14 h-14 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-1">
+          <Mail className="w-7 h-7 text-blue-400" />
+        </div>
+        <h2 className="text-xl font-bold text-[var(--text-primary)]">Forgot PIN?</h2>
+        <p className="text-sm text-[var(--text-muted)] text-center max-w-[260px]">
+          We'll send a magic link to your registered email address. Clicking it will sign you back in and let you reset the parental PIN.
+        </p>
+        {showSuccess === 'email_sent' ? (
+          <div className="flex flex-col items-center gap-2 mt-2">
+            <CheckCircle className="w-8 h-8 text-[var(--teal)]" />
+            <p className="text-sm text-[var(--teal)] font-semibold">Magic link sent! Check your inbox.</p>
+          </div>
+        ) : (
+          <button
+            onClick={async () => {
+              setBusy(true);
+              const ok = await sendPasswordResetEmail();
+              setBusy(false);
+              if (ok) setShowSuccess('email_sent');
+              else setPinError('Could not send email. Are you signed in?');
+            }}
+            disabled={busy}
+            className="mt-2 w-full max-w-xs py-2.5 rounded-xl bg-blue-500 text-white font-semibold text-sm hover:bg-blue-400 disabled:opacity-40 flex items-center justify-center gap-2"
+          >
+            {busy ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+            Send Magic Link
+          </button>
+        )}
+        {pinError && (
+          <p className="text-xs text-red-400 flex items-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> {pinError}
+          </p>
+        )}
+        <button onClick={() => { setScreen('unlock'); setPinError(''); setShowSuccess(''); }}
+          className="text-xs text-[var(--text-muted)] hover:text-[var(--text-secondary)] mt-1">
+          Back
         </button>
       </div>
     ),
@@ -597,8 +650,48 @@ export default function ParentalControlModal({ isOpen, onClose }: ParentalContro
                     )}
                   </div>
 
-                  {/* PIN management */}
-                  <p className="text-label px-1 mb-2">Security</p>
+                   {/* Pending Approval Queue */}
+                    {pendingTransactions.length > 0 && (
+                      <>
+                        <p className="text-label px-1 mt-2 mb-2">Pending Approvals
+                          <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
+                            {pendingTransactions.length}
+                          </span>
+                        </p>
+                        <div className="rounded-2xl bg-[var(--surface-input)] divide-y divide-[var(--border)] mb-4 overflow-hidden">
+                          {pendingTransactions.map(tx => (
+                            <div key={tx.id} className="flex items-center gap-3 p-3">
+                              <div className="w-8 h-8 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
+                                <Clock className="w-4 h-4 text-amber-500" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-[var(--text-primary)] truncate">{tx.merchant}</p>
+                                <p className="text-xs text-[var(--text-muted)]">{tx.category} · {tx.type === 'debit' ? '-' : '+'}{tx.amount.toFixed(2)}</p>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <button
+                                  onClick={() => onApproveTx?.(tx.id)}
+                                  className="p-1.5 rounded-lg bg-[var(--teal-dim)] text-[var(--teal)] hover:bg-[var(--teal)] hover:text-white transition-colors"
+                                  title="Approve"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => onRejectTx?.(tx.id)}
+                                  className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-colors"
+                                  title="Reject"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* PIN management */}
+                    <p className="text-label px-1 mb-2">Security</p>
                   <div className="rounded-2xl bg-[var(--surface-input)] divide-y divide-[var(--border)] mb-2">
                     <button
                       onClick={() => { setPin1(''); setPin2(''); setPinError(''); setScreen('change-pin-old'); }}
