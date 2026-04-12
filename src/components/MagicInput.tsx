@@ -401,14 +401,13 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
             <ChevronDown size={16} className="text-[var(--text-muted)]" />
           </button>
 
-          {/* Absolute dropdown menu */}
           <div
             id="category-dropdown-menu"
             className="hidden absolute top-full left-0 w-full mt-2 py-2 rounded-xl shadow-xl z-50 animate-scale-in"
             style={{
               background: 'var(--surface-card)',
               border: '1px solid var(--border)',
-              maxHeight: '220px',
+              maxHeight: '350px',
               overflowY: 'auto'
             }}
           >
