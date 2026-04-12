@@ -116,9 +116,17 @@ export async function parseTransaction(
   if (!response.ok) {
     let body = '';
     try { body = await response.text(); } catch { /* ignore */ }
-    throw new AIServiceError(
-      `Gemini API returned HTTP ${response.status}: ${body}`,
-    );
+    
+    let errorMessage = `API returned HTTP ${response.status}: ${body}`;
+    if (response.status === 429) {
+      errorMessage = 'You are sending requests too quickly! Gemini API rate limit exceeded (HTTP 429). Please wait 15 seconds and try again.';
+    } else if (response.status === 400) {
+      errorMessage = 'Bad Request (HTTP 400). Please check your input.';
+    } else if (response.status === 401 || response.status === 403) {
+      errorMessage = `Authentication Error (HTTP ${response.status}). Please check your VITE_GEMINI_API_KEY in .env.local.`;
+    }
+    
+    throw new AIServiceError(errorMessage);
   }
 
   // ── Parse the Gemini response envelope ────────────────────────────────────
@@ -160,6 +168,96 @@ export async function parseTransaction(
       `Model JSON did not match ParsedTransaction schema: ${JSON.stringify(parsed).slice(0, 300)}`,
     );
   }
+
+  return validated;
+}
+
+/**
+ * Calls the Google Gemini API to parse a receipt image.
+ *
+ * @param base64 - Base64 encoded image string (without the data:image prefix).
+ * @param mimeType - MIME type of the image (e.g., 'image/jpeg').
+ * @param today - Today's date in YYYY-MM-DD format.
+ */
+export async function parseReceiptImage(
+  base64: string,
+  mimeType: string,
+  today: string,
+): Promise<ParsedTransaction> {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+
+  if (!apiKey) {
+    throw new AIServiceError('VITE_GEMINI_API_KEY is not set. Receipt scanning unavailable.');
+  }
+
+  const systemPrompt = SYSTEM_PROMPT_TEMPLATE.replace('{TODAY}', today);
+
+  let response: Response;
+  try {
+    response = await fetch(API_URL(apiKey), {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemPrompt }] },
+        contents: [
+          {
+            role:  'user',
+            parts: [
+              {
+                inlineData: {
+                  mimeType,
+                  data: base64,
+                },
+              },
+              { text: "Parse this receipt into structured transaction data. If there are multiple line items of different categories, please return them in the 'split' array." }
+            ],
+          },
+        ],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature:      0.1,
+          maxOutputTokens:  1024,
+        },
+      }),
+    });
+  } catch (networkError) {
+    throw new AIServiceError(`Network error contacting Gemini: ${String(networkError)}`, networkError);
+  }
+
+  if (!response.ok) {
+    let body = '';
+    try { body = await response.text(); } catch { /* ignore */ }
+    
+    let errorMessage = `API returned HTTP ${response.status}: ${body}`;
+    if (response.status === 429) {
+      errorMessage = 'You are sending requests too quickly! Gemini API rate limit exceeded (HTTP 429). Please wait 15 seconds and try again.';
+    } else if (response.status === 400) {
+      errorMessage = 'Bad Request (HTTP 400). The image format might not be supported.';
+    } else if (response.status === 401 || response.status === 403) {
+      errorMessage = `Authentication Error (HTTP ${response.status}). Please check your VITE_GEMINI_API_KEY in .env.local.`;
+    }
+
+    throw new AIServiceError(errorMessage);
+  }
+
+  let envelope: GeminiResponse;
+  try {
+    envelope = (await response.json()) as GeminiResponse;
+  } catch (jsonError) {
+    throw new AIServiceError('Failed to parse Gemini API response as JSON.', jsonError);
+  }
+
+  const rawText = envelope?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  if (!rawText) throw new AIServiceError('API returned empty content.');
+
+  const cleaned = rawText.trim().replace(/^```json\s*/i, '').replace(/```\s*$/, '').trim();
+  let parsed: unknown;
+  try { parsed = JSON.parse(cleaned); } catch (e) {
+    throw new AIServiceError(`Invalid JSON from model: ${cleaned.slice(0, 100)}`, e);
+  }
+
+  const validated = validateParsedTransaction(parsed);
+  if (!validated) throw new AIServiceError('Model output did not match required schema.');
 
   return validated;
 }

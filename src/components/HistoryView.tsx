@@ -77,7 +77,7 @@ export default function HistoryView({ transactions, onCategoryChange, onImportCl
         if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
         if (dateFrom && tx.date < dateFrom) return false;
         if (dateTo   && tx.date > dateTo)   return false;
-        if (q) return tx.merchant.toLowerCase().includes(q) || tx.category.toLowerCase().includes(q) || tx.amount.toString().includes(q) || tx.date.includes(q);
+        if (q) return tx.merchant.toLowerCase().includes(q) || tx.category.toLowerCase().includes(q) || tx.amount.toString().includes(q) || tx.date.includes(q) || (tx.tags && tx.tags.some(t => t.toLowerCase().includes(q)));
         return true;
       })
       .sort((a, b) => {

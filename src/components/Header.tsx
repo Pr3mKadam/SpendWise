@@ -1,4 +1,4 @@
-import { Bell, ChevronRight, Moon, Sun, User } from 'lucide-react';
+import { Bell, ChevronRight, Moon, Sun, User, Search } from 'lucide-react';
 import { AppView } from '../types';
 import { SpendWiseConfig } from './OnboardingModal';
 
@@ -12,6 +12,7 @@ interface HeaderProps {
   theme:                 'light' | 'dark';
   onToggleTheme:         () => void;
   config?:               SpendWiseConfig | null;
+  onOpenSearch?:         () => void;
 }
 
 const VIEW_TITLES: Partial<Record<AppView, string>> = {
@@ -42,6 +43,7 @@ export default function Header({
   theme,
   onToggleTheme,
   config,
+  onOpenSearch,
 }: HeaderProps) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -114,6 +116,18 @@ export default function Header({
             <Moon size={16} style={{ color: 'var(--text-secondary)' }} />
           )}
         </button>
+
+        {/* Global Search */}
+        {onOpenSearch && (
+          <button
+            onClick={onOpenSearch}
+            className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+            style={{ background: 'var(--surface-input)', border: 'none', cursor: 'pointer' }}
+            title="Search (Cmd+K)"
+          >
+            <Search size={16} style={{ color: 'var(--text-secondary)' }} />
+          </button>
+        )}
 
         {/* Notification bell */}
         <button

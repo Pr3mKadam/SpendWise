@@ -19,7 +19,10 @@ function PinDot({ filled }: { filled: boolean }) {
 // this full-screen overlay sits on top of the app, prompting for the parent PIN
 // or allowing continued use in kid mode.
 
-export function ParentalPinGate({ onContinueAsKid }: { onContinueAsKid: () => void }) {
+export function ParentalPinGate({ onContinueAsKid, onUnlocked }: {
+  onContinueAsKid: () => void;
+  onUnlocked?: () => void;
+}) {
   const { settings, unlockSession } = useParentalControl();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
@@ -41,6 +44,9 @@ export function ParentalPinGate({ onContinueAsKid }: { onContinueAsKid: () => vo
     if (!ok) {
       setError('Incorrect PIN — try again');
       setPin('');
+    } else {
+      // Success — dismiss the gate
+      onUnlocked?.();
     }
   };
 

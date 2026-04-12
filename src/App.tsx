@@ -34,6 +34,7 @@ import { useParentalControl } from './contexts/ParentalControlContext';
 import { ParentalPinGate, KidModeBanner } from './components/ParentalControlGate';
 import ParentalControlModal from './components/ParentalControlModal';
 import ParentDashboard from './components/ParentDashboard';
+import CommandPalette from './components/CommandPalette';
 
 // ── Hooks ────────────────────────────────────────────────────────
 import { useFinanceState }  from './hooks/useFinanceState';
@@ -43,6 +44,7 @@ import { useRecurring }     from './hooks/useRecurring';
 import { useNotifications } from './hooks/useNotifications';
 import { useGoals }         from './hooks/useGoals';
 import { useCategories }    from './hooks/useCategories';
+
 
 // ── Dashboard Sub-View ──────────────────────────────────────────
 
@@ -157,8 +159,20 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
   const [showParentalModal, setShowParentalModal]   = useState(false);
   const [showParentalGate, setShowParentalGate]     = useState(false);
   const [showParentDashboard, setShowParentDashboard] = useState(false);
+  const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [activeView, setActiveView]               = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
+
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setShowCommandPalette(v => !v);
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, []);
 
   const parentalControl = useParentalControl();
   const { settings: pcSettings, isKidMode } = parentalControl;
@@ -204,6 +218,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
   const recurringData = useRecurring(transactions);
   const goalsState    = useGoals(userId);
   const notifState    = useNotifications(alertState.alerts, recurringData, goalsState.goals);
+  const totalUnread   = notifState.unreadCount;
   const isOnboarded = config?.onboardingComplete === true;
 
   const { goals, addGoal } = goalsState;
@@ -292,7 +307,10 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
 
       {/* ── Parent PIN unlock overlay (triggered from banner) ── */}
       {showParentalGate && (
-        <ParentalPinGate onContinueAsKid={() => setShowParentalGate(false)} />
+        <ParentalPinGate
+          onContinueAsKid={() => setShowParentalGate(false)}
+          onUnlocked={() => setShowParentalGate(false)}
+        />
       )}
 
       <div className="flex flex-1 min-h-0">
@@ -311,8 +329,6 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         activeView={activeView}
         onViewChange={handleViewChange}
         overBudgetCount={overBudgetCount}
-        onOpenParentalSettings={() => setShowParentalModal(true)}
-        onOpenParentDashboard={() => setShowParentDashboard(true)}
       />
 
       {/* ── Main Content ── */}
@@ -321,7 +337,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         {/* Top Header Bar */}
         <Header
           activeView={activeView}
-          unreadCount={notifState.unreadCount}
+          unreadCount={totalUnread}
           onToggleNotifications={toggleNotifications}
           onNavigate={handleViewChange}
           currency={currency}
@@ -329,6 +345,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
           theme={theme}
           onToggleTheme={toggleTheme}
           config={config}
+          onOpenSearch={() => setShowCommandPalette(true)}
         />
 
         {/* Page Content */}
@@ -410,7 +427,7 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
           )}
 
           {activeView === 'shared' && (
-            <SharedView currency={currency} />
+            <SharedView currency={currency} userId={userId} />
           )}
 
           {activeView === 'history' && (
@@ -563,6 +580,15 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
             }
           });
         }}
+      />
+
+      {/* ── Global Command Palette ── */}
+      <CommandPalette
+        isOpen={showCommandPalette}
+        onClose={() => setShowCommandPalette(false)}
+        onNavigate={handleViewChange}
+        transactions={transactions}
+        currency={currency}
       />
     </div>
   );

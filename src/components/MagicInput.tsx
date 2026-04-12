@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, CheckCircle2, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, CheckCircle2, X, ChevronDown, ChevronUp, Camera, Loader2, ListTree } from 'lucide-react';
 import { Transaction } from '../types';
 import { parseUPISMS } from '../utils/upiParser';
 import { useCategories } from '../hooks/useCategories';
 import { useParentalControl } from '../contexts/ParentalControlContext';
+import { parseReceiptImage, SplitItem } from '../services/ai';
 
 interface MagicInputProps {
   onAddTransaction: (tx: Transaction) => void;
@@ -31,6 +32,11 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
   const [pasteOpen, setPasteOpen]   = useState(false);
   const [pasteText, setPasteText]   = useState('');
   const [pasteHint, setPasteHint]   = useState<string | null>(null);
+
+  const [splits, setSplits]         = useState<SplitItem[] | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [scanError, setScanError]   = useState('');
+  const fileInputRef                = useRef<HTMLInputElement>(null);
 
   const [status, setStatus]         = useState<Status>('idle');
   const [lastAdded, setLastAdded]   = useState<Transaction | null>(null);
@@ -92,7 +98,48 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
 
     const merchantTrim = merchant.trim() || (type === 'credit' ? 'Income' : 'Expense');
     const noteTrim = note.trim();
-    const tags = noteTrim.match(/#[a-zA-Z0-9_-]+/g)?.map(t => t.slice(1).toLowerCase());
+    const baseTags = noteTrim.match(/#[a-zA-Z0-9_-]+/g)?.map(t => t.slice(1).toLowerCase()) || [];
+
+    if (splits && splits.length > 0) {
+      const parentId = `receipt-${Date.now().toString(36)}`;
+      const parentTags = [...baseTags, parentId];
+      
+      let sum = 0;
+      splits.forEach((split, idx) => {
+        sum += split.amount;
+        const splitTx: Transaction = {
+          id:          `${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 7)}`,
+          date,
+          amount:      split.amount,
+          category:    split.category as Transaction['category'],
+          merchant:    split.merchant,
+          type,
+          description: `Split from ${merchantTrim}${noteTrim ? ` · ${noteTrim}` : ''}`,
+          isNew:       true,
+          aiParsed:    true,
+          tags:        parentTags,
+        };
+        onAddTransaction(splitTx);
+      });
+      
+      // If the parent amount exists and is significantly larger than the tracked splits, 
+      // add a remainder 'Uncategorized' transaction.
+      if (amount - sum > 0.05) {
+        onAddTransaction({
+          id: `${Date.now()}-rem-${Math.random().toString(36).slice(2, 7)}`,
+          date, amount: Math.round((amount - sum) * 100) / 100, category: 'General',
+          merchant: merchantTrim, type, description: 'Uncategorized remainder', 
+          isNew: true, aiParsed: true, tags: parentTags
+        });
+      }
+
+      setSplits(null);
+      setScanError('');
+      setStatus('success');
+      resetForm();
+      successTimer.current = setTimeout(() => setStatus('idle'), 4000);
+      return;
+    }
 
     const tx: Transaction = {
       id:          `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
@@ -104,7 +151,7 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
       description: noteTrim || undefined,
       isNew:       true,
       aiParsed:    false,
-      tags:        tags?.length ? tags : undefined,
+      tags:        baseTags.length ? baseTags : undefined,
     };
 
     onAddTransaction(tx);
@@ -136,6 +183,50 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
     }
 
     setPasteHint('No Rs/INR amount found. Enter amount and details manually above.');
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setScanError('');
+    setIsScanning(true);
+    setSplits(null);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64Url = event.target?.result as string;
+      const base64Content = base64Url.split(',')[1];
+      const mimeType = file.type;
+
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const res = await parseReceiptImage(base64Content, mimeType, today);
+        
+        setAmountStr(String(res.amount));
+        setMerchant(res.merchant);
+        setType(res.type);
+        if (allCategories.includes(res.category)) setCategory(res.category);
+        else if (res.type === 'credit' && allCategories.includes('Income')) setCategory('Income');
+        else setCategory(allCategories[0]);
+        setDate(res.date);
+        if (res.split && res.split.length > 0) {
+          setSplits(res.split);
+          setScanError('Multiple items found! Review splits below.');
+        } else {
+          setScanError('Scan successful!');
+        }
+      } catch (err: any) {
+        setScanError(err?.message || 'Failed to parse receipt.');
+      } finally {
+        setIsScanning(false);
+        if (fileInputRef.current) fileInputRef.current.value = '';
+      }
+    };
+    reader.onerror = () => {
+      setScanError('Failed to read file.');
+      setIsScanning(false);
+    };
+    reader.readAsDataURL(file);
   };
 
   const amountNum = parseAmountInput(amountStr);
@@ -399,13 +490,67 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
         )}
       </div>
 
-      {status === 'success' && lastAdded && (
+      {/* AI Receipt Scanner */}
+      <div className="mt-4 border-t border-[var(--border-subtle,#e2e8f0)] pt-4">
+        <label
+          className="flex w-full items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all"
+          style={{
+            background: 'var(--teal-dim)',
+            color: 'var(--teal)',
+            border: '1px dashed var(--teal-glow)',
+            fontFamily: 'var(--font-inter)',
+          }}
+        >
+          {isScanning ? <><Loader2 size={16} className="animate-spin" /> Scanning...</> : <><Camera size={16} /> Snap Receipt (AI)</>}
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            disabled={isScanning}
+          />
+        </label>
+        
+        {scanError && (
+          <p className="mt-2 text-center text-xs font-semibold" style={{ color: splits ? 'var(--teal)' : 'var(--red)', fontFamily: 'var(--font-inter)' }}>
+            {scanError}
+          </p>
+        )}
+
+        {splits && splits.length > 0 && (
+          <div className="mt-3 p-3 rounded-xl" style={{ background: '#f8fafc', border: '1px solid #edf2f7' }}>
+            <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}>
+              <ListTree size={14} /> AI Found {splits.length} Items:
+            </p>
+            <div className="space-y-1.5 max-h-32 overflow-y-auto">
+              {splits.map((s, idx) => (
+                <div key={idx} className="flex justify-between text-xs items-center p-1.5 rounded-lg" style={{ background: 'var(--bg)', border: '1px solid #edf2f7' }}>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-[11px] truncate" style={{ color: 'var(--text-primary)' }}>{s.merchant}</p>
+                    <p className="text-[10px] text-muted truncate" style={{ color: 'var(--text-muted)' }}>{s.category}</p>
+                  </div>
+                  <span className="font-semibold text-[11px] tabular-nums shrink-0 ml-2">{currency}{s.amount.toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[10px] mt-2 text-center text-muted" style={{ color: 'var(--text-muted)' }}>
+              Tapping "Add transaction" will save these as individual split transactions.
+            </p>
+          </div>
+        )}
+      </div>
+
+      {status === 'success' && (
         <div className="mt-3 rounded-xl px-4 py-3 flex items-start gap-3 animate-fade-in-up" style={{ background: 'var(--green-dim)' }}>
           <CheckCircle2 size={16} style={{ color: 'var(--green)', marginTop: '2px', flexShrink: 0 }} />
           <div className="flex-1 min-w-0">
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--green)' }}>Added</p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--green)' }}>Success</p>
             <p style={{ fontSize: '12px', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', marginTop: '2px' }}>
-              {mergedIcons[lastAdded.category] || '📦'} {lastAdded.category} · {lastAdded.type === 'credit' ? '+' : '-'}{currency}{lastAdded.amount.toFixed(2)} · {lastAdded.merchant}
+              {lastAdded 
+                ? <>{mergedIcons[lastAdded.category] || '📦'} {lastAdded.category} · {lastAdded.type === 'credit' ? '+' : '-'}{currency}{lastAdded.amount.toFixed(2)} · {lastAdded.merchant}</>
+                : "Transactions added successfully!"}
             </p>
           </div>
           <button type="button" onClick={() => setStatus('idle')} style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>

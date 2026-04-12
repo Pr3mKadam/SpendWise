@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS public.transactions (
   confidence numeric,
   ai_parsed boolean DEFAULT false,
   status text DEFAULT 'completed',        -- 'completed' | 'pending_approval'
+  tags text[] DEFAULT '{}'::text[],
   created_at timestamptz DEFAULT now()
 );
 

@@ -97,6 +97,7 @@ function rowToTransaction(r: {
   confidence: number | null;
   ai_parsed: boolean | null;
   status: string | null;
+  tags: string[] | null;
 }): Transaction {
   return {
     id:          r.id,
@@ -110,6 +111,7 @@ function rowToTransaction(r: {
     confidence:  r.confidence ?? undefined,
     aiParsed:    r.ai_parsed ?? undefined,
     status:      (r.status as Transaction['status']) ?? 'completed',
+    tags:        r.tags ?? undefined,
   };
 }
 
@@ -117,7 +119,7 @@ export async function fetchTransactions(userId: string): Promise<Transaction[]> 
   assertClient();
   const { data, error } = await supabase!
     .from('transactions')
-    .select('id, date, amount, category, merchant, type, description, confidence, ai_parsed, status')
+    .select('id, date, amount, category, merchant, type, description, confidence, ai_parsed, status, tags')
     .eq('user_id', userId)
     .order('date', { ascending: false });
   if (error) throw error;
@@ -137,6 +139,7 @@ function txToInsert(userId: string, tx: Transaction) {
     confidence:  tx.confidence ?? null,
     ai_parsed:   tx.aiParsed ?? false,
     status:      tx.status ?? 'completed',
+    tags:        tx.tags ?? null,
   };
 }
 

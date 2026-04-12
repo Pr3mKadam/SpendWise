@@ -1,4 +1,4 @@
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield } from 'lucide-react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users } from 'lucide-react';
 import { AppView } from '../types';
 import { useAuth } from '../hooks/useAuth';
 

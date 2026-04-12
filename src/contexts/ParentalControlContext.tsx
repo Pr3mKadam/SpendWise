@@ -112,6 +112,9 @@ export function ParentalControlProvider({ children }: { children: ReactNode }) {
   const [settings, setSettings] = useState<ParentalSettings>(loadLocalSettings);
   const [cloudSyncing, setCloudSyncing] = useState(false);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Always-current ref so async callbacks never read stale pin values
+  const settingsRef = useRef<ParentalSettings>(settings);
+  useEffect(() => { settingsRef.current = settings; }, [settings]);
 
   // ── On Login: load cloud settings (overrides local if cloud has data) ──
   useEffect(() => {
@@ -160,27 +163,27 @@ export function ParentalControlProvider({ children }: { children: ReactNode }) {
 
   const verifyPin = useCallback(async (pin: string): Promise<boolean> => {
     const hash = await sha256(pin);
-    return hash === settings.pin;
-  }, [settings.pin]);
+    return hash === settingsRef.current.pin;
+  }, []);
 
   const changePin = useCallback(async (oldPin: string, newPin: string): Promise<boolean> => {
     const oldHash = await sha256(oldPin);
-    if (oldHash !== settings.pin) return false;
+    if (oldHash !== settingsRef.current.pin) return false;
     const newHash = await sha256(newPin);
     applySettings((s) => ({ ...s, pin: newHash }));
     return true;
-  }, [settings.pin, applySettings]);
+  }, [applySettings]);
 
   const removePin = useCallback(async (pin: string): Promise<boolean> => {
     const hash = await sha256(pin);
-    if (hash !== settings.pin) return false;
+    if (hash !== settingsRef.current.pin) return false;
     const reset = defaultSettings();
     setSettings(reset);
     persistLocal(reset);
     // Clear from cloud too
     if (user) clearParentalSettings(user.id).catch(console.error);
     return true;
-  }, [settings.pin, user]);
+  }, [user]);
 
   const lockSession = useCallback(() => {
     setSettings((s) => ({ ...s, sessionUnlocked: false, kidMode: s.enabled ? true : s.kidMode }));
@@ -188,10 +191,10 @@ export function ParentalControlProvider({ children }: { children: ReactNode }) {
 
   const unlockSession = useCallback(async (pin: string): Promise<boolean> => {
     const hash = await sha256(pin);
-    if (hash !== settings.pin) return false;
+    if (hash !== settingsRef.current.pin) return false;
     setSettings((s) => ({ ...s, sessionUnlocked: true, kidMode: false }));
     return true;
-  }, [settings.pin]);
+  }, []);
 
   const canAddTransaction = useCallback((amount: number, category: string): { allowed: boolean; reason?: string } => {
     if (!settings.enabled || !settings.kidMode) return { allowed: true };
