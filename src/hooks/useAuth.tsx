@@ -40,14 +40,35 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       } catch { /* ignore */ }
     };
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    // sessionStorage is cleared when the tab/browser is closed, but survives
+    // page refreshes within the same session.  We use this to decide whether
+    // the user actually logged in during *this* browser session or whether
+    // Supabase is restoring a persisted token from a previous visit.
+    const hasPageSession = Boolean(sessionStorage.getItem('sw_page_session'));
+
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+      if (s && !hasPageSession) {
+        // There's a persisted token but the user hasn't logged in this session.
+        // Sign out silently (don't clear app data) so the auth screen shows.
+        await supabase!.auth.signOut();
+        setSession(null);
+        setUser(null);
+        setAuthReady(true);
+        return;
+      }
       setSession(s);
       setUser(s?.user ?? null);
       setAuthReady(true);
       void checkMFA(s);
     }).catch(() => setAuthReady(true));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'SIGNED_IN') {
+        // User actively logged in — mark this page session as authenticated.
+        sessionStorage.setItem('sw_page_session', '1');
+      } else if (event === 'SIGNED_OUT') {
+        sessionStorage.removeItem('sw_page_session');
+      }
       setSession(s);
       setUser(s?.user ?? null);
       void checkMFA(s);
@@ -58,6 +79,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = useCallback(async () => {
     if (supabase) {
+      sessionStorage.removeItem('sw_page_session');
       await supabase.auth.signOut();
       localStorage.removeItem('spendwise_transactions_v2');
       localStorage.removeItem('spendwise_config_v1');
