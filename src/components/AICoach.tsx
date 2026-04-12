@@ -160,40 +160,23 @@ export default function AICoach({
                 AI financial coach
               </span>
             </div>
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setIsChatOpen(true)}
-                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
-                style={{
-                  fontFamily: 'var(--font-inter)',
-                  color:      '#ffffff',
-                  background: 'var(--teal)',
-                  border:     'none',
-                  cursor:     'pointer',
-                  boxShadow:  '0 2px 4px rgba(20, 184, 166, 0.2)'
-                }}
-              >
-                <MessageSquareText size={12} />
-                Chat
-              </button>
-              <button
-                type="button"
-                onClick={refreshAi}
-                disabled={aiLoading}
-                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
-                style={{
-                  fontFamily: 'var(--font-inter)',
-                  color:      'var(--teal)',
-                  background: 'rgba(255,255,255,0.6)',
-                  border:     'none',
-                  cursor:     aiLoading ? 'wait' : 'pointer',
-                  opacity:    aiLoading ? 0.7 : 1,
-                }}
-              >
-                {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={refreshAi}
+              disabled={aiLoading}
+              className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
+              style={{
+                fontFamily: 'var(--font-inter)',
+                color:      'var(--teal)',
+                background: 'rgba(255,255,255,0.6)',
+                border:     'none',
+                cursor:     aiLoading ? 'wait' : 'pointer',
+                opacity:    aiLoading ? 0.7 : 1,
+              }}
+            >
+              {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+              Refresh
+            </button>
           </div>
           {aiLoading && !aiInsight ? (
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
@@ -268,7 +251,7 @@ export default function AICoach({
       </div>
 
       {categorySpending.length > 0 && (
-        <div className="space-y-3">
+        <div className="space-y-3 mb-5">
           {categorySpending.slice(0, 3).map(cat => (
             <div key={cat.name} className="flex items-center gap-3">
               <span style={{ fontSize: '16px' }}>{CATEGORY_ICONS[cat.name as keyof typeof CATEGORY_ICONS]}</span>
@@ -287,6 +270,25 @@ export default function AICoach({
             </div>
           ))}
         </div>
+      )}
+
+      {HAS_GEMINI && (
+        <button
+          type="button"
+          onClick={() => setIsChatOpen(true)}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-[13px] transition-all hover:scale-[1.02]"
+          style={{
+            fontFamily: 'var(--font-inter)',
+            color: '#ffffff',
+            background: accentColor,
+            boxShadow: `0 4px 12px ${isRoastMode ? 'rgba(239, 68, 68, 0.3)' : 'rgba(20, 184, 166, 0.3)'}`,
+            border: 'none',
+            cursor: 'pointer'
+          }}
+        >
+          <MessageSquareText size={16} />
+          💬 Let's chat about this
+        </button>
       )}
 
       {/* Embedded Chat Pane component */}

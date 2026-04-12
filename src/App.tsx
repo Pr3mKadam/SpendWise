@@ -91,7 +91,7 @@ function DashboardView({
         <div className="space-y-6">
           <BalanceChart data={balanceTrend} currency={currency} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             <SpendingDonut data={categorySpending} totalSpent={totalSpent} currency={currency} />
             <div className="flex flex-col gap-6">
               <MagicInput onAddTransaction={onAdd} currency={currency} />
