@@ -30,7 +30,7 @@ export default function SpendingDonut({ data, totalSpent, currency = '$' }: Spen
       <h3 className="text-headline mb-1">Expenses Breakdown</h3>
       <p className="text-caption mb-5">*Compare to last month</p>
 
-      <div className="relative flex-1 min-h-[200px]">
+      <div className="relative h-[240px] shrink-0 my-4">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
