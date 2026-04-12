@@ -10,6 +10,10 @@ export interface SpendWiseConfig {
   balanceAnchorNet?:  number;
   onboardingComplete: boolean;
   createdAt:          string;
+  phone?:             string;
+  occupation?:        string;
+  monthlyGoal?:       number;
+  location?:          string;
 }
 
 type CurrencySymbol = '$' | '£' | '€' | '₹';
@@ -49,15 +53,26 @@ function saveConfig(config: SpendWiseConfig): void {
 
 interface OnboardingModalProps {
   onComplete: (config: SpendWiseConfig) => void;
+  preferredName?: string;
+  preferredPhone?: string;
 }
 
-export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
+export default function OnboardingModal({ onComplete, preferredName, preferredPhone }: OnboardingModalProps) {
+  const [step, setStep] = useState<1 | 2>(1);
   const [currency, setCurrency] = useState<CurrencySymbol>('$');
   const [rawValue, setRawValue] = useState('');
   const [focused, setFocused]   = useState(false);
+  
+  // Advanced fields
+  const [occupation, setOccupation] = useState('');
+  const [location, setLocation] = useState('');
+  const [monthlyGoal, setMonthlyGoal] = useState('');
+
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { inputRef.current?.focus(); }, []);
+  useEffect(() => { 
+    if (step === 1) inputRef.current?.focus(); 
+  }, [step]);
 
   const numericValue = parseFloat(rawValue.replace(/,/g, ''));
   const isValid      = !isNaN(numericValue) && numericValue > 0;
@@ -67,11 +82,20 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
     setRawValue(e.target.value.replace(/[^\d,.]/g, ''));
   };
 
-  const handleSubmit = () => {
+  const handleNextStep = () => {
     if (!isValid) return;
+    setStep(2);
+  };
+
+  const handleFinalSubmit = () => {
     const config: SpendWiseConfig = {
       initialBalance:     numericValue,
       currency,
+      name:               preferredName || 'User',
+      phone:              preferredPhone,
+      occupation:         occupation.trim() || undefined,
+      location:           location.trim() || undefined,
+      monthlyGoal:        parseFloat(monthlyGoal) || undefined,
       onboardingComplete: true,
       createdAt:          new Date().toISOString(),
     };
@@ -80,7 +104,10 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && isValid) handleSubmit();
+    if (e.key === 'Enter') {
+      if (step === 1 && isValid) handleNextStep();
+      else if (step === 2) handleFinalSubmit();
+    }
   };
 
   return (
@@ -111,7 +138,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
           <div>
             <div className="mb-8">
               <span style={{ fontFamily: 'var(--font-manrope)', fontWeight: 800, fontSize: '20px', color: '#ffffff', letterSpacing: '-0.5px' }}>
-                <span style={{ fontWeight: 400 }}>SPEND</span>Wise<span style={{ color: 'var(--teal)' }}>.</span>AI
+                SpendWise
               </span>
             </div>
 
@@ -145,7 +172,7 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
         </div>
 
         {/* ── Right Panel — White form ── */}
-        <div className="flex-1 p-8 md:p-10" style={{ background: '#ffffff' }}>
+        <div className="flex-1 p-8 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 1 ? 'block' : 'none' }}>
 
           <div className="mb-7">
             <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -247,12 +274,11 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
               </p>
             )}
           </div>
-
-          {/* CTA Button */}
+          
+          {/* CTA Button Step 1 */}
           <button
-            onClick={handleSubmit}
+            onClick={handleNextStep}
             disabled={!isValid}
-            id="onboarding-submit"
             style={{
               width:          '100%',
               height:         '52px',
@@ -281,13 +307,114 @@ export default function OnboardingModal({ onComplete }: OnboardingModalProps) {
               (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
             }}
           >
-            Start Tracking
+            Continue
+            <ArrowRight size={16} />
+          </button>
+        </div>
+        
+        {/* Step 2 Panel */}
+        <div className="flex-1 p-8 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 2 ? 'block' : 'none' }}>
+           <div className="mb-7">
+            <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+              {preferredName ? `Welcome, ${preferredName}!` : "Tell us about yourself"}
+            </h3>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
+              Help us personalize your dashboard (Optional)
+            </p>
+          </div>
+
+          <div className="space-y-4 mb-8">
+            <div>
+              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                Occupation
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Software Engineer"
+                value={occupation}
+                onChange={e => setOccupation(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
+                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                Location
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. New York, USA"
+                value={location}
+                onChange={e => setLocation(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
+                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
+              />
+            </div>
+            
+            <div>
+              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                Monthly Income Goal ({currency})
+              </label>
+              <input
+                type="number"
+                placeholder={`e.g. 8000`}
+                value={monthlyGoal}
+                onChange={e => setMonthlyGoal(e.target.value)}
+                onKeyDown={handleKeyDown}
+                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
+                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
+              />
+            </div>
+          </div>
+
+          {/* CTA Button Step 2 */}
+          <button
+            onClick={handleFinalSubmit}
+            id="onboarding-submit-final"
+            style={{
+              width:          '100%',
+              height:         '52px',
+              borderRadius:   '12px',
+              border:         'none',
+              cursor:         'pointer',
+              fontFamily:     'var(--font-inter)',
+              fontSize:       '15px',
+              fontWeight:     600,
+              color:          '#ffffff',
+              background:     'var(--teal)',
+              transition:     'background 200ms ease, box-shadow 200ms ease, transform 80ms',
+              display:        'flex',
+              alignItems:     'center',
+              justifyContent: 'center',
+              gap:            '8px',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'var(--teal-light)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 20px var(--teal-glow)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLButtonElement).style.background = 'var(--teal)';
+              (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
+            }}
+          >
+            Go to Dashboard
             <ArrowRight size={16} />
           </button>
 
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '16px' }}>
-            You can always update your balance later
-          </p>
+          {step === 1 && (
+             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', marginTop: '16px' }}>
+               You can always update your balance later
+             </p>
+          )}
         </div>
       </div>
     </div>

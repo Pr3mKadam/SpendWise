@@ -1,0 +1,35 @@
+Act as an expert startup pitch deck creator and product marketer. I want you to create a comprehensive slide-by-slide outline for a presentation about a revolutionary fintech application called "SpendWise". 
+
+Please write the presentation focusing on the narrative of giving users ultimate control, deep intelligence, and complete privacy over their personal finances. For each slide, provide a compelling title, the key talking points (bullet points), and design/visual suggestions for what should be on the screen.
+
+Here is the entire feature set and architecture of SpendWise to base the presentation on:
+
+*Product Overview:*
+SpendWise is an AI-powered, predictive personal finance dashboard. Unlike traditional budgeting apps, it acts as a "smart finance copilot" that learns from user behavior to predict end-of-month balances and analyze spending patterns, all while strictly prioritizing user privacy through a local-first architecture. 
+
+*Key Features & Value Propositions:*
+AI Magic Input & Coach: Users can log transactions using natural language (e.g., "Spent $15 on coffee at Starbucks"), and the AI automatically categorizes it. The AI Coach provides actionable insights on spending trends.
+Local-First Privacy with Secure Cloud Sync: 100% of the user's data is calculated securely on their local device. Users can optionally connect a Supabase-powered backend for secure cloud backups, protected by 2FA and 256-bit encryption.
+Live Bank & UPI Sync: SpendWise features live API connections (such as direct Razorpay integrations) to pull, categorize, and track transactions dynamically, alongside CSV statement parsing for offline banking.
+Wealth Horizon Predictions: Instead of just showing past data, it calculates "Daily Spend Rates" and visually projects expected end-of-month financial trajectories using advanced charting.
+Advanced Modular Dashboard:
+   - Budget Manager (track specific spending limits)
+   - Savings Goals (track long-term objectives with progress bars)
+   - Recurring Subscriptions Tracker (identify hidden costs)
+   - Shared Family Views & Parental Controls (Kid mode options)
+Export & Portability: 1-click professional PDF report generation and CSV data exports for external accounting.
+
+*Target Audience:*
+Freelancers, tech-savvy professionals, and families who are tired of clunky spreadsheet budgeting and want an automated, visually stunning, modern application that deeply respects their data privacy.
+
+*Please structure the presentation into the following 8 slides:*
+Slide 1: Title & The Hook (The Personal Finance Problem)
+Slide 2: Meet SpendWise (The Solution)
+Slide 3: Real-Time Sync & Razorpay Integration
+Slide 4: The AI Financial Copilot (Magic Input)
+Slide 5: Predictive Analytics (Wealth Horizon)
+Slide 6: Uncompromising Security & Privacy (Local-first architecture)
+Slide 7: The Complete Ecosystem (Budgets, Goals, Subscriptions, Parental Controls)
+Slide 8: Summary & Call to Action (Why SpendWise is the future)
+
+Make the tone professional, persuasive, visionary, and sleek.

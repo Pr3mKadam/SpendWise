@@ -28,12 +28,18 @@ const COMMON_CURRENCIES = [
 
 export default function ProfileView({ config, onUpdateConfig, onResetData, transactions }: ProfileViewProps) {
   const [name, setName] = useState(config?.name ?? 'User');
+  const [phone, setPhone] = useState(config?.phone ?? '');
+  const [occupation, setOccupation] = useState(config?.occupation ?? '');
+  const [location, setLocation] = useState(config?.location ?? '');
+  const [monthlyGoal, setMonthlyGoal] = useState(config?.monthlyGoal !== undefined ? String(config.monthlyGoal) : '');
+  
   const [currency, setCurrency] = useState(config?.currency ?? '$');
   const [showSavedMsg, setShowSavedMsg] = useState(false);
 
   const [mfaEnrolled, setMfaEnrolled] = useState(false);
   const [showTwoFactorModal, setShowTwoFactorModal] = useState(false);
   const [unenrolling, setUnenrolling] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const fetchMfaStatus = useCallback(async () => {
     if (!supabase) return;
@@ -54,13 +60,21 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
 
   const handleSave = useCallback(() => {
     if (!config) return;
-    const updated: SpendWiseConfig = { ...config, name, currency };
+    const updated: SpendWiseConfig = { 
+      ...config, 
+      name, 
+      currency,
+      phone: phone.trim() || undefined,
+      occupation: occupation.trim() || undefined,
+      location: location.trim() || undefined,
+      monthlyGoal: monthlyGoal ? parseFloat(monthlyGoal) : undefined
+    };
     onUpdateConfig(updated);
     // Persist directly to the same key that loadConfig() reads.
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
     setShowSavedMsg(true);
     setTimeout(() => setShowSavedMsg(false), 3000);
-  }, [config, name, currency, onUpdateConfig]);
+  }, [config, name, currency, phone, occupation, location, monthlyGoal, onUpdateConfig]);
 
   const handleUnenrollMfa = async () => {
     if (!supabase || !window.confirm('Are you sure you want to disable Two-Factor Authentication?')) return;
@@ -102,21 +116,91 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Display Name */}
-          <div className="max-w-md">
-            <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
-              Display Name
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Your name"
-              className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
-              style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
-              onFocus={e => e.target.style.borderColor = 'var(--teal)'}
-              onBlur={e => e.target.style.borderColor = 'transparent'}
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+            {/* Display Name */}
+            <div>
+              <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                Display Name
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Your name"
+                className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
+                onFocus={e => e.target.style.borderColor = 'var(--teal)'}
+                onBlur={e => e.target.style.borderColor = 'transparent'}
+              />
+            </div>
+
+            {/* Mobile / Phone */}
+            <div>
+              <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                Mobile Number
+              </label>
+              <input
+                type="tel"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                placeholder="+1 234 567 8900"
+                className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
+                onFocus={e => e.target.style.borderColor = 'var(--teal)'}
+                onBlur={e => e.target.style.borderColor = 'transparent'}
+              />
+            </div>
+            
+            {/* Occupation */}
+            <div>
+              <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                Occupation
+              </label>
+              <input
+                type="text"
+                value={occupation}
+                onChange={(e) => setOccupation(e.target.value)}
+                placeholder="e.g. Designer, Analyst"
+                className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
+                onFocus={e => e.target.style.borderColor = 'var(--teal)'}
+                onBlur={e => e.target.style.borderColor = 'transparent'}
+              />
+            </div>
+
+            {/* Location */}
+            <div>
+              <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                Location
+              </label>
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="e.g. San Francisco, CA"
+                className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
+                onFocus={e => e.target.style.borderColor = 'var(--teal)'}
+                onBlur={e => e.target.style.borderColor = 'transparent'}
+              />
+            </div>
+            
+            {/* Monthly Goal */}
+            <div>
+              <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                Monthly Income Goal ({currency})
+              </label>
+              <input
+                type="number"
+                value={monthlyGoal}
+                onChange={(e) => setMonthlyGoal(e.target.value)}
+                placeholder="e.g. 5000"
+                className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
+                onFocus={e => e.target.style.borderColor = 'var(--teal)'}
+                onBlur={e => e.target.style.borderColor = 'transparent'}
+              />
+            </div>
           </div>
 
           {/* Currency Selector */}
@@ -263,11 +347,7 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
               Permanently delete all transactions, budgets, goals, and custom categories. This cannot be undone.
             </p>
             <button
-              onClick={() => {
-                if (window.confirm('Are you absolutely sure? ALL data will be permanently deleted.')) {
-                  onResetData();
-                }
-              }}
+              onClick={() => setShowResetConfirm(true)}
               className="self-start px-4 py-2 rounded-lg font-inter font-bold text-xs transition-colors"
               style={{ color: 'var(--red)', background: 'rgba(239,68,68,0.1)', border: 'none', cursor: 'pointer' }}
             >
@@ -295,6 +375,38 @@ export default function ProfileView({ config, onUpdateConfig, onResetData, trans
             alert('Two-Factor Authentication is now enabled!');
           }}
         />
+      )}
+
+      {/* Custom Confirm Reset Modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[var(--surface-card)] rounded-2xl w-full max-w-sm p-6 shadow-2xl animate-scale-in border border-red-500/20">
+            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
+              <Trash2 className="text-red-500 w-6 h-6" />
+            </div>
+            <h3 className="font-manrope font-bold text-xl text-center text-[var(--text-primary)] mb-2">Delete all data?</h3>
+            <p className="font-inter text-sm text-[var(--text-secondary)] text-center mb-8">
+              This action cannot be undone. All your transactions, budgets, goals, and history will be permanently wiped.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                className="flex-1 py-3 rounded-xl font-inter font-semibold text-sm border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-input)] transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  setShowResetConfirm(false);
+                  onResetData();
+                }}
+                className="flex-1 py-3 rounded-xl font-inter font-semibold text-sm bg-red-500 text-white hover:bg-red-600 shadow-lg shadow-red-500/20 transition-all"
+              >
+                Yes, delete it
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

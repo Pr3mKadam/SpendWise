@@ -18,8 +18,16 @@ export default function TwoFactorModal({ onClose, onSuccess }: TwoFactorModalPro
     let active = true;
     const enrollMfa = async () => {
       try {
+        // Clean up any stale unverified factors from previous abandoned attempts
+        const { data: listData } = await supabase!.auth.mfa.listFactors();
+        const staleFactors = listData?.totp?.filter(f => (f.status as any) === 'unverified') || [];
+        for (const factor of staleFactors) {
+          await supabase!.auth.mfa.unenroll({ factorId: factor.id });
+        }
+
         const { data, error } = await supabase!.auth.mfa.enroll({
           factorType: 'totp',
+          friendlyName: 'SpendWise App ' + new Date().getTime(),
         });
         if (error) throw error;
         if (active) {
@@ -96,10 +104,13 @@ export default function TwoFactorModal({ onClose, onSuccess }: TwoFactorModalPro
           <form onSubmit={handleVerify} className="space-y-6">
             <div className="flex justify-center p-4 bg-white rounded-xl">
               {qrCodeSvg && (
-                <div
-                  className="w-48 h-48 flex items-center justify-center [&>svg]:w-full [&>svg]:h-full"
-                  dangerouslySetInnerHTML={{ __html: qrCodeSvg }}
-                />
+                <div className="w-48 h-48 flex items-center justify-center">
+                  {qrCodeSvg.startsWith('data:image') || qrCodeSvg.startsWith('http') ? (
+                    <img src={qrCodeSvg} alt="QR Code" className="w-full h-full" />
+                  ) : (
+                    <div className="w-full h-full [&>svg]:w-full [&>svg]:h-full" dangerouslySetInnerHTML={{ __html: qrCodeSvg }} />
+                  )}
+                </div>
               )}
             </div>
 

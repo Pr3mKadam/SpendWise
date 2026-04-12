@@ -28,12 +28,11 @@ export default function NavTabs({ activeView, onViewChange, overBudgetCount }: N
               <button
                 key={tab.id}
                 onClick={() => onViewChange(tab.id)}
-                className={`flex items-center gap-[8px] py-[12px] font-[500] text-[14px] transition-all duration-200 border-b-2 relative -mb-[1px]
+                className={`flex items-center gap-[8px] py-[12px] font-[500] text-[14px] transition-all duration-200 border-b-2 relative -mb-[1px] font-inter
                   ${isActive
                     ? 'border-[var(--blue)] text-[var(--text-primary)]'
                     : 'border-transparent text-[var(--text-muted)] hover:text-[var(--text-secondary)]'
                   }`}
-                style={{ fontFamily: 'var(--font-inter)' }}
               >
                 {tab.label}
                 {tab.badge > 0 && (
@@ -59,9 +58,9 @@ export default function NavTabs({ activeView, onViewChange, overBudgetCount }: N
                 onClick={() => onViewChange(tab.id)}
                 className="relative flex flex-col items-center justify-center w-[60px] h-[50px]"
               >
-                <div className={`text-[12px] font-[500] transition-colors ${
+                <div className={`text-[12px] font-[500] transition-colors font-inter ${
                   isActive ? 'text-[var(--blue)]' : 'text-[var(--text-muted)]'
-                }`} style={{ fontFamily: 'var(--font-inter)' }}>
+                }`}>
                   {tab.label}
                 </div>
                 {/* Active Indicator on Mobile */}

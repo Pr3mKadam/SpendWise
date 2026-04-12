@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
 import OnboardingModal, { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
 import { supabase } from './services/supabaseClient';
-import { fetchProfile, profileRowToConfig, saveProfileFromConfig, insertTransactionRemote } from './lib/supabaseData';
+import { fetchProfile, profileRowToConfig, saveProfileFromConfig, insertTransactionRemote, resetUserCloudData } from './lib/supabaseData';
 import { AppView, Transaction, Category } from './types';
 import { useAuth } from './hooks/useAuth';
 import AuthView from './components/AuthView';
@@ -131,6 +131,7 @@ function LoadingScreen() {
 }
 
 function MainShell({ config, setConfig, userId }: MainShellProps) {
+  const { user } = useAuth();
   const { customCategories, addCustomCategory, updateCustomCategory, deleteCustomCategory } = useCategories();
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -292,7 +293,11 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
 
       {/* ── Onboarding Modal ── */}
       {!isOnboarded && (
-        <OnboardingModal onComplete={handleOnboardingComplete} />
+        <OnboardingModal 
+          onComplete={handleOnboardingComplete} 
+          preferredName={user?.user_metadata?.first_name}
+          preferredPhone={user?.user_metadata?.phone}
+        />
       )}
 
       {/* ── Sidebar ── */}
@@ -300,7 +305,6 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         activeView={activeView}
         onViewChange={handleViewChange}
         overBudgetCount={overBudgetCount}
-        onReset={resetData}
         onOpenParentalSettings={() => setShowParentalModal(true)}
       />
 
@@ -432,7 +436,21 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
               <ProfileView
                 config={config}
                 onUpdateConfig={setConfig}
-                onResetData={resetData}
+                onResetData={async () => {
+                  if (userId) {
+                    try {
+                      await resetUserCloudData(userId);
+                    } catch (err) {
+                      console.error('Failed to reset cloud data:', err);
+                    }
+                  }
+                  resetData();
+                  if (config) {
+                    const nextConfig = { ...config, initialBalance: 0 };
+                    setConfig(nextConfig);
+                    localStorage.setItem('spendwise_config_v1', JSON.stringify(nextConfig));
+                  }
+                }}
                 transactions={transactions}
               />
             </div>
@@ -505,6 +523,14 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         onAdd={addCustomCategory}
         onUpdate={updateCustomCategory}
         onDelete={deleteCustomCategory}
+        transactions={transactions}
+        onReassign={(oldCat, newCat) => {
+          transactions.forEach((tx) => {
+            if (tx.category === oldCat) {
+              handleCategoryChange(tx.id, newCat);
+            }
+          });
+        }}
       />
     </div>
   );
@@ -530,29 +556,43 @@ function AppAuthenticated() {
     fetchProfile(userId)
       .then(row => {
         if (cancelled) return;
-        setConfig(
-          row
-            ? profileRowToConfig(row)
-            : loadConfig() || {
-                initialBalance:     5200,
-                balanceAnchorNet:   0,
-                currency:           '$',
-                onboardingComplete: false,
-                createdAt:          new Date().toISOString(),
-              }
-        );
+        const local: Partial<SpendWiseConfig> = loadConfig() || {};
+        
+        // Auto-fill missing data directly from Supabase Auth metadata!
+        if (!local.name && user?.user_metadata?.first_name) {
+          local.name = user.user_metadata.first_name;
+        }
+        if (!local.phone && user?.user_metadata?.phone) {
+          local.phone = user.user_metadata.phone;
+        }
+
+        const mergedConfig = row 
+          ? { ...local, ...profileRowToConfig(row) } as SpendWiseConfig
+          : {
+              initialBalance:     5200,
+              balanceAnchorNet:   0,
+              currency:           '$',
+              onboardingComplete: false,
+              createdAt:          new Date().toISOString(),
+              ...local
+            } as SpendWiseConfig;
+
+        setConfig(mergedConfig);
       })
       .catch(() => {
         if (cancelled) return;
-        setConfig(
-          loadConfig() || {
-            initialBalance:     5200,
-            balanceAnchorNet:   0,
-            currency:           '$',
-            onboardingComplete: false,
-            createdAt:          new Date().toISOString(),
-          }
-        );
+        const local: Partial<SpendWiseConfig> = loadConfig() || {};
+        if (!local.name && user?.user_metadata?.first_name) local.name = user.user_metadata.first_name;
+        if (!local.phone && user?.user_metadata?.phone) local.phone = user.user_metadata.phone;
+
+        setConfig({
+          initialBalance:     5200,
+          balanceAnchorNet:   0,
+          currency:           '$',
+          onboardingComplete: false,
+          createdAt:          new Date().toISOString(),
+          ...local
+        } as SpendWiseConfig);
       })
       .finally(() => {
         if (!cancelled) setProfileLoading(false);

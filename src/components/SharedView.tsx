@@ -171,7 +171,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl mb-3" style={{ background: 'var(--teal-dim)' }}>
             <Users size={28} style={{ color: 'var(--teal)' }} />
           </div>
-          <h2 className="text-headline" style={{ fontFamily: 'var(--font-manrope)' }}>Shared money</h2>
+          <h2 className="text-headline font-manrope" >Shared money</h2>
           <p className="text-caption mt-2 max-w-md mx-auto">
             Track a joint wallet, split bills with roommates or friends, and save together toward a group goal.
             Everything stays on this device — perfect for coordinating with people you live or plan with.
@@ -208,7 +208,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
                     }}
                   >
                     <Icon size={18} style={{ color: sel ? 'var(--teal)' : 'var(--text-muted)' }} />
-                    <p className="text-sm font-semibold mt-1" style={{ fontFamily: 'var(--font-manrope)' }}>{p.label}</p>
+                    <p className="text-sm font-semibold mt-1 font-manrope" >{p.label}</p>
                     <p className="text-[10px] text-muted mt-0.5" style={{ color: 'var(--text-muted)' }}>{p.hint}</p>
                   </button>
                 );
@@ -280,7 +280,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
           <p className="text-caption uppercase tracking-wide font-semibold" style={{ color: 'var(--teal)' }}>Shared</p>
-          <h2 className="text-headline mt-0.5" style={{ fontFamily: 'var(--font-manrope)' }}>{sh.settings.name}</h2>
+          <h2 className="text-headline mt-0.5 font-manrope" >{sh.settings.name}</h2>
           <p className="text-caption mt-1">
             {PURPOSE_META.find(p => p.id === sh.settings!.purpose)?.label ?? 'Group'} · {members.length} people · stored locally on this device
           </p>
@@ -319,7 +319,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
       {tab === 'group' && (
         <div className="space-y-4">
           <div className="card p-5 space-y-3">
-            <h3 className="text-title" style={{ fontFamily: 'var(--font-manrope)' }}>Group details</h3>
+            <h3 className="text-title font-manrope" >Group details</h3>
             <div className="flex flex-wrap gap-2 items-end">
               <div className="flex-1 min-w-[200px]">
                 <label className="text-[11px] font-semibold text-muted block mb-1">Name</label>
@@ -348,13 +348,13 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           </div>
 
           <div className="card p-5">
-            <h3 className="text-title mb-3" style={{ fontFamily: 'var(--font-manrope)' }}>Members</h3>
+            <h3 className="text-title mb-3 font-manrope" >Members</h3>
             <ul className="space-y-2">
               {members.map(m => (
                 <li key={m.id} className="flex items-center gap-3 py-2 border-b border-[#f0f2f5] last:border-0">
                   <span className="text-2xl">{m.emoji}</span>
                   <div className="flex-1">
-                    <p className="font-semibold text-sm" style={{ fontFamily: 'var(--font-manrope)' }}>{m.name}</p>
+                    <p className="font-semibold text-sm font-manrope" >{m.name}</p>
                     {m.relation && <p className="text-xs text-muted" style={{ color: 'var(--text-muted)' }}>{m.relation}</p>}
                   </div>
                   <button
@@ -456,7 +456,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           </div>
 
           <div className="card p-5 space-y-3">
-            <h3 className="text-title" style={{ fontFamily: 'var(--font-manrope)' }}>Add entry</h3>
+            <h3 className="text-title font-manrope" >Add entry</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="text-[11px] font-semibold block mb-1">Type</label>
@@ -524,7 +524,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           </div>
 
           <div className="card p-5">
-            <h3 className="text-title mb-3" style={{ fontFamily: 'var(--font-manrope)' }}>History</h3>
+            <h3 className="text-title mb-3 font-manrope" >History</h3>
             {sh.wallet.length === 0 ? (
               <p className="text-caption">No entries yet.</p>
             ) : (
@@ -554,7 +554,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
       {tab === 'splits' && (
         <div className="space-y-4">
           <div className="card p-5">
-            <h3 className="text-title mb-1" style={{ fontFamily: 'var(--font-manrope)' }}>Who owes whom</h3>
+            <h3 className="text-title mb-1 font-manrope" >Who owes whom</h3>
             <p className="text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
               Positive = others owe this person overall (after all logged splits). Settle outside the app or log a contribution in the wallet.
             </p>
@@ -573,7 +573,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           </div>
 
           <div className="card p-5 space-y-3">
-            <h3 className="text-title" style={{ fontFamily: 'var(--font-manrope)' }}>Log split expense</h3>
+            <h3 className="text-title font-manrope" >Log split expense</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <input value={exLabel} onChange={e => setExLabel(e.target.value)} placeholder="What was it?" className="rounded-xl px-3 py-2 text-sm sm:col-span-2" style={{ border: '2px solid #edf2f7' }} />
               <input value={exCat} onChange={e => setExCat(e.target.value)} placeholder="Category" className="rounded-xl px-3 py-2 text-sm" style={{ border: '2px solid #edf2f7' }} />
@@ -638,7 +638,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           </div>
 
           <div className="card p-5">
-            <h3 className="text-title mb-3" style={{ fontFamily: 'var(--font-manrope)' }}>Recent splits</h3>
+            <h3 className="text-title mb-3 font-manrope" >Recent splits</h3>
             {sh.expenses.length === 0 ? (
               <p className="text-caption">No split expenses yet.</p>
             ) : (
@@ -664,7 +664,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
       {tab === 'goals' && (
         <div className="space-y-4">
           <div className="card p-5 space-y-3">
-            <h3 className="text-title" style={{ fontFamily: 'var(--font-manrope)' }}>New group goal</h3>
+            <h3 className="text-title font-manrope" >New group goal</h3>
             <div className="flex flex-wrap gap-2">
               <input value={gEmoji} onChange={e => setGEmoji(e.target.value)} className="w-12 rounded-lg text-center text-lg" style={{ border: '2px solid #edf2f7' }} maxLength={4} />
               <input value={gName} onChange={e => setGName(e.target.value)} placeholder="Goal name" className="flex-1 min-w-[160px] rounded-xl px-3 py-2 text-sm" style={{ border: '2px solid #edf2f7' }} />
@@ -722,7 +722,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
                 <div className="flex justify-between items-start gap-2">
                   <div>
                     <p className="text-2xl">{g.emoji}</p>
-                    <h4 className="text-lg font-bold" style={{ fontFamily: 'var(--font-manrope)' }}>{g.name}</h4>
+                    <h4 className="text-lg font-bold font-manrope" >{g.name}</h4>
                     <p className="text-xs text-muted" style={{ color: 'var(--text-muted)' }}>Target {fmtMoney(currency, g.targetAmount)} by {g.targetDate}</p>
                   </div>
                   <button type="button" onClick={() => sh.deleteSharedGoal(g.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--red)' }}><Trash2 size={16} /></button>
@@ -759,7 +759,7 @@ export default function SharedView({ currency = '$' }: { currency?: string }) {
           {contribGoalId && (
             <div className="fixed inset-0 z-[200] flex items-center justify-center p-4" style={{ background: 'rgba(15,23,42,0.45)' }}>
               <div className="card p-6 max-w-sm w-full space-y-3">
-                <h4 className="font-bold" style={{ fontFamily: 'var(--font-manrope)' }}>Add contribution</h4>
+                <h4 className="font-bold font-manrope" >Add contribution</h4>
                 <select value={contribMember} onChange={e => setContribMember(e.target.value)} className="w-full rounded-xl px-3 py-2 text-sm" style={{ border: '2px solid #edf2f7' }}>
                   {members.map(m => (
                     <option key={m.id} value={m.id}>{m.name}</option>

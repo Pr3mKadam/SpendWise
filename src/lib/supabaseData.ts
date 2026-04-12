@@ -143,10 +143,8 @@ export async function resetUserCloudData(userId: string): Promise<void> {
   await supabase!.from('transactions').delete().eq('user_id', userId);
   await supabase!.from('savings_goals').delete().eq('user_id', userId);
   const { error } = await supabase!.from('profiles').update({
-    initial_balance:     5200,
+    initial_balance:     0,
     balance_anchor_net:  0,
-    currency:            '$',
-    onboarding_complete: false,
     budget_limits:       {},
     updated_at:          new Date().toISOString(),
   }).eq('id', userId);

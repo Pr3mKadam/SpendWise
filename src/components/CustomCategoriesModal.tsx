@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Edit3, Tag as TagIcon } from 'lucide-react';
-import { CustomCategoryDef } from '../types';
+import { CustomCategoryDef, Transaction } from '../types';
+import { useCategories } from '../hooks/useCategories';
 
 interface CustomCategoriesModalProps {
   isOpen: boolean;
@@ -9,6 +10,8 @@ interface CustomCategoriesModalProps {
   onAdd: (def: Omit<CustomCategoryDef, 'id'>) => void;
   onUpdate: (id: string, def: Partial<CustomCategoryDef>) => void;
   onDelete: (id: string) => void;
+  transactions?: Transaction[];
+  onReassign?: (oldCategoryName: string, newCategoryName: string) => void;
 }
 
 const EMOJI_OPTIONS = ['🛍️', '🍔', '✈️', '🎮', '🚗', '💡', '🏥', '💰', '🐶', '📚', '☕', '🎫', '🍷', '🛠️', '🎓'];
@@ -31,9 +34,12 @@ const COLOR_OPTIONS = [
 ];
 
 export default function CustomCategoriesModal({
-  isOpen, onClose, customCategories, onAdd, onUpdate, onDelete
+  isOpen, onClose, customCategories, onAdd, onUpdate, onDelete, transactions = [], onReassign
 }: CustomCategoriesModalProps) {
+  const { allCategories, mergedIcons } = useCategories();
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [reassigningCat, setReassigningCat] = useState<CustomCategoryDef | null>(null);
+  const [selectedFallback, setSelectedFallback] = useState<string>('Other');
   
   // Form state
   const [name, setName] = useState('');
@@ -67,6 +73,26 @@ export default function CustomCategoriesModal({
     setEditingId(null);
   };
 
+  const handleDeleteAttempt = (cat: CustomCategoryDef) => {
+    // Check if any transactions exist for this category
+    const usedCount = transactions.filter(t => t.category === cat.name).length;
+    if (usedCount > 0 && onReassign) {
+      setReassigningCat(cat);
+      // Auto-select first available alternative category
+      const fallback = allCategories.find(c => c !== cat.name) || 'Other';
+      setSelectedFallback(fallback);
+    } else {
+      onDelete(cat.id);
+    }
+  };
+
+  const handleConfirmReassign = () => {
+    if (!reassigningCat) return;
+    if (onReassign) onReassign(reassigningCat.name, selectedFallback);
+    onDelete(reassigningCat.id);
+    setReassigningCat(null);
+  };
+
   return (
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center p-4"
@@ -92,7 +118,49 @@ export default function CustomCategoriesModal({
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-6">
-          {!editingId ? (
+          {reassigningCat ? (
+            // REASSIGNMENT VIEW
+            <div className="space-y-5 animate-fade-in-up">
+              <div className="text-center">
+                <div className="w-14 h-14 bg-[var(--red-dim)] rounded-full flex items-center justify-center mx-auto mb-3">
+                  <Trash2 size={24} className="text-[var(--red)]" />
+                </div>
+                <h3 className="text-title" style={{ fontFamily: 'var(--font-manrope)' }}>Category in Use</h3>
+                <p className="text-body mt-2">
+                  You have <strong className="text-[var(--text-primary)]">{transactions.filter(t => t.category === reassigningCat.name).length}</strong> transaction(s) categorized as <strong>"{reassigningCat.name}"</strong>.
+                  Before deleting this category, please select a new category for these transactions.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-label block mb-2">Move transactions to...</label>
+                <select
+                  value={selectedFallback}
+                  onChange={e => setSelectedFallback(e.target.value)}
+                  className="w-full rounded-xl py-3 px-4 text-sm font-medium focus:outline-none transition-all"
+                  style={{ background: 'var(--surface-input)', border: '2px solid transparent', color: 'var(--text-primary)' }}
+                  onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
+                  onBlur={e => { e.target.style.border = '2px solid transparent'; }}
+                >
+                  {allCategories.filter(c => c !== reassigningCat.name).map(c => (
+                    <option key={c} value={c}>{mergedIcons[c] || '📦'} {c}</option>
+                  ))}
+                  {!allCategories.includes('Other') && (
+                    <option value="Other">📦 Other</option>
+                  )}
+                </select>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button onClick={() => setReassigningCat(null)} className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors bg-[#f5f7fa] dark:bg-[var(--surface-input)] text-[var(--text-secondary)]">
+                  Cancel
+                </button>
+                <button onClick={handleConfirmReassign} className="flex-1 py-3 rounded-xl font-semibold text-sm text-white transition-all bg-[var(--red)] border-none cursor-pointer">
+                  Move & Delete
+                </button>
+              </div>
+            </div>
+          ) : !editingId ? (
             // LIST VIEW
             <div>
               {customCategories.length === 0 ? (
@@ -117,7 +185,7 @@ export default function CustomCategoriesModal({
                         <button onClick={() => handleStartEdit(cat)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: '#f5f7fa', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>
                           <Edit3 size={14} />
                         </button>
-                        <button onClick={() => onDelete(cat.id)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}>
+                        <button onClick={() => handleDeleteAttempt(cat)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}>
                           <Trash2 size={14} />
                         </button>
                       </div>

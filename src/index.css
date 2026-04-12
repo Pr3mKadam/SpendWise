@@ -47,6 +47,14 @@
     --purple:        #8b5cf6;
     --purple-dim:    rgba(139, 92, 246, 0.1);
 
+    /* ── Border ── */
+    --border:        #e2e8f0;
+
+    /* ── Accent (alias for teal) ── */
+    --accent:        #14b8a6;
+    --accent-light:  #2dd4bf;
+    --accent-dim:    rgba(20, 184, 166, 0.12);
+
     /* ── Card Shadow ── */
     --shadow-card:   0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
     --shadow-md:     0 4px 20px rgba(0,0,0,0.08);
@@ -86,6 +94,14 @@
     --text-secondary: #cbd5e1;
     --text-muted:     #94a3b8;
     --text-dim:       #64748b;
+
+    /* ── Border dark ── */
+    --border:        #2d3748;
+
+    /* ── Accent (alias for teal) ── */
+    --accent:        #14b8a6;
+    --accent-light:  #2dd4bf;
+    --accent-dim:    rgba(20, 184, 166, 0.15);
 
     /* ── Shadow tweaks for dark mode ── */
     --shadow-card:   0 1px 3px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.4);
@@ -249,6 +265,16 @@
     outline: none;
     border-color: var(--teal);
     box-shadow: 0 0 0 3px var(--teal-dim);
+  }
+
+  /* Autofill override */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active{
+      -webkit-box-shadow: 0 0 0 30px var(--surface-input) inset !important;
+      -webkit-text-fill-color: var(--text-primary) !important;
+      transition: background-color 5000s ease-in-out 0s;
   }
 
   /* ── Badge pill ── */

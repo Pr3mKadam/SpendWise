@@ -8,7 +8,6 @@ interface SidebarProps {
   activeView:      AppView;
   onViewChange:    (view: AppView) => void;
   overBudgetCount: number;
-  onReset:         () => void;
   onOpenParentalSettings?: () => void;
 }
 
@@ -24,7 +23,7 @@ const ALL_NAV_ITEMS = [
   { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
 ];
 
-export default function Sidebar({ activeView, onViewChange, overBudgetCount, onReset, onOpenParentalSettings }: SidebarProps) {
+export default function Sidebar({ activeView, onViewChange, overBudgetCount, onOpenParentalSettings }: SidebarProps) {
   const { signOut } = useAuth();
   const { isKidMode, settings } = useParentalControl();
 
@@ -132,17 +131,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, onR
             <span>Parental Controls</span>
           </button>
 
-          <button
-            onClick={onReset}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors"
-            style={{ color: 'rgba(239,68,68,0.7)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.1)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-            title="Reset all data"
-          >
-            <LogOut size={18} strokeWidth={2} />
-            <span>Reset Data</span>
-          </button>
+
           
           <button
             onClick={signOut}

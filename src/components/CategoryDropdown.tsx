@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCategories } from '../hooks/useCategories';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { Category } from '../types';
 
 interface CategoryDropdownProps {
@@ -35,7 +35,12 @@ export function CategoryDropdown({ value, onChange, className = '', placeholder 
           e.stopPropagation();
           setOpen(!open);
         }}
-        className="flex items-center justify-between w-full h-7 bg-[#f5f7fa] dark:bg-[#273043] border border-transparent hover:border-[#cbd5e1] dark:hover:border-[#475569] rounded-lg px-2 text-xs cursor-pointer transition-colors focus:outline-none focus:border-[var(--teal)] focus:ring-1 focus:ring-[var(--teal-dim)]"
+        className="flex items-center justify-between w-full h-7 rounded-lg px-2 text-xs cursor-pointer transition-colors focus:outline-none focus:ring-1 focus:ring-[var(--teal-dim)]"
+        style={{ background: 'var(--surface-input)', border: '1px solid transparent' }}
+        onMouseOver={(e) => e.currentTarget.style.borderColor = 'var(--text-muted)'}
+        onMouseOut={(e) => e.currentTarget.style.borderColor = 'transparent'}
+        onFocus={(e) => e.currentTarget.style.borderColor = 'var(--teal)'}
+        onBlur={(e) => e.currentTarget.style.borderColor = 'transparent'}
       >
         <div className="flex items-center gap-1.5 truncate">
           {value ? (
@@ -47,34 +52,40 @@ export function CategoryDropdown({ value, onChange, className = '', placeholder 
              <span className="truncate text-muted">{placeholder}</span>
           )}
         </div>
-        <ChevronDown size={14} className={`text-[var(--text-muted)] transition-transform shrink-0 ml-1 ${open ? 'rotate-180' : ''}`} />
+        <ChevronDown size={14} className={`transition-transform shrink-0 ml-1 ${open ? 'rotate-180' : ''}`} style={{ color: 'var(--text-muted)' }} />
       </button>
 
       {open && (
-        <div 
-          className="absolute z-50 right-0 top-full mt-1 w-48 bg-white dark:bg-[#1e2536] rounded-xl shadow-lg border border-[#f0f2f5] dark:border-[#334155] py-1.5 max-h-56 overflow-y-auto"
-          style={{ boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)' }}
-        >
-          {allCategories.map((cat) => (
-            <button
-              key={cat}
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onChange(cat);
-                setOpen(false);
-              }}
-              className={`flex items-center gap-2.5 w-full text-left px-3 py-2 text-[12px] font-medium font-inter transition-colors hover:bg-[#f8fafc] dark:hover:bg-[#232c40] ${
-                value === cat 
-                  ? 'bg-[#f0fdf4] dark:bg-[rgba(16,185,129,0.1)] text-[var(--teal)]' 
-                  : 'text-[var(--text-primary)]'
-              }`}
-            >
-              <span className="text-sm shrink-0">{mergedIcons[cat as Category] || '📦'}</span>
-              <span className="truncate">{cat}</span>
-            </button>
-          ))}
+        <div className="absolute z-50 right-0 top-full mt-1 w-48 rounded-xl shadow-lg border overflow-hidden" 
+             style={{ background: 'var(--surface-card)', borderColor: 'var(--surface-input)', boxShadow: 'var(--shadow-modal)' }}>
+          <div className="py-1 max-h-56 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--text-muted) transparent' }}>
+            {allCategories.map((cat) => (
+              <button
+                key={cat}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onChange(cat);
+                  setOpen(false);
+                }}
+                onMouseOver={(e) => {
+                  if (value !== cat) e.currentTarget.style.background = 'var(--surface-hover)';
+                }}
+                onMouseOut={(e) => {
+                  if (value !== cat) e.currentTarget.style.background = 'transparent';
+                }}
+                className="flex items-center gap-2.5 w-full text-left px-3 py-2 text-[12px] font-medium font-inter transition-colors"
+                style={{ 
+                  background: value === cat ? 'var(--teal-dim)' : 'transparent',
+                  color: value === cat ? 'var(--teal)' : 'var(--text-primary)' 
+                }}
+              >
+                <span className="text-sm shrink-0">{mergedIcons[cat as Category] || '📦'}</span>
+                <span className="truncate">{cat}</span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
     </div>
