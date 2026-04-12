@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { BriefcaseBusiness, Flame, ChevronRight, Sparkles, RefreshCw, Loader2 } from 'lucide-react';
+import { BriefcaseBusiness, Flame, ChevronRight, Sparkles, RefreshCw, Loader2, MessageSquareText } from 'lucide-react';
 import { CategorySpend, MonthlyStats } from '../types';
 import { professionalInsights, savageInsights, applyTemplate, CATEGORY_ICONS } from '../data/mockData';
 import { generateCoachInsight, type CoachContext } from '../services/ai';
 import { useParentalControl } from '../contexts/ParentalControlContext';
+import AIChatPane from './AIChatPane';
 
 type ProjectionQuality = 'low' | 'medium' | 'high';
 
@@ -43,6 +44,7 @@ export default function AICoach({
   const [aiInsight, setAiInsight]   = useState<string | null>(null);
   const [aiLoading, setAiLoading]   = useState(false);
   const [aiRefresh, setAiRefresh]   = useState(0);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const { settings, isKidMode } = useParentalControl();
   const shouldHideBalances = isKidMode && settings.hideBalances;
@@ -74,6 +76,18 @@ export default function AICoach({
     [categorySpending],
   );
 
+  const fullCtx = useMemo<CoachContext>(() => ({
+    currency,
+    currentBalance,
+    predictedEndOfMonth,
+    totalSpentMonth:  monthlyStats.totalExpenses,
+    totalIncomeMonth: monthlyStats.totalIncome,
+    dailySpendRate,
+    daysLeftInMonth:  projectionMeta.daysLeftInMonth,
+    dataQuality:      projectionMeta.dataQuality,
+    topCategories:    topCategoriesForCoach,
+  }), [currency, currentBalance, predictedEndOfMonth, monthlyStats, dailySpendRate, projectionMeta, topCategoriesForCoach]);
+
   useEffect(() => {
     if (!HAS_GEMINI) {
       setAiInsight(null);
@@ -84,17 +98,6 @@ export default function AICoach({
     let cancelled = false;
     const timer = window.setTimeout(() => {
       setAiLoading(true);
-      const fullCtx: CoachContext = {
-        currency,
-        currentBalance,
-        predictedEndOfMonth,
-        totalSpentMonth:  monthlyStats.totalExpenses,
-        totalIncomeMonth: monthlyStats.totalIncome,
-        dailySpendRate,
-        daysLeftInMonth:  projectionMeta.daysLeftInMonth,
-        dataQuality:      projectionMeta.dataQuality,
-        topCategories:    topCategoriesForCoach,
-      };
       void generateCoachInsight(fullCtx).then(text => {
         if (cancelled) return;
         setAiInsight(text);
@@ -106,18 +109,7 @@ export default function AICoach({
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [
-    currency,
-    currentBalance,
-    predictedEndOfMonth,
-    dailySpendRate,
-    monthlyStats.totalExpenses,
-    monthlyStats.totalIncome,
-    projectionMeta.daysLeftInMonth,
-    projectionMeta.dataQuality,
-    topCategoriesForCoach,
-    aiRefresh,
-  ]);
+  }, [fullCtx, aiRefresh]);
 
   const templateInsight = useMemo(() => {
     if (!topCategory) return 'Add your first transaction to get personalized insights!';
@@ -137,7 +129,7 @@ export default function AICoach({
   const refreshAi = useCallback(() => setAiRefresh(x => x + 1), []);
 
   return (
-    <div className="card px-5 py-5">
+    <div className="card px-5 py-5 relative">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -168,23 +160,40 @@ export default function AICoach({
                 AI financial coach
               </span>
             </div>
-            <button
-              type="button"
-              onClick={refreshAi}
-              disabled={aiLoading}
-              className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
-              style={{
-                fontFamily: 'var(--font-inter)',
-                color:      'var(--teal)',
-                background: 'rgba(255,255,255,0.6)',
-                border:     'none',
-                cursor:     aiLoading ? 'wait' : 'pointer',
-                opacity:    aiLoading ? 0.7 : 1,
-              }}
-            >
-              {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-              Refresh
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsChatOpen(true)}
+                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
+                style={{
+                  fontFamily: 'var(--font-inter)',
+                  color:      '#ffffff',
+                  background: 'var(--teal)',
+                  border:     'none',
+                  cursor:     'pointer',
+                  boxShadow:  '0 2px 4px rgba(20, 184, 166, 0.2)'
+                }}
+              >
+                <MessageSquareText size={12} />
+                Chat
+              </button>
+              <button
+                type="button"
+                onClick={refreshAi}
+                disabled={aiLoading}
+                className="flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-semibold"
+                style={{
+                  fontFamily: 'var(--font-inter)',
+                  color:      'var(--teal)',
+                  background: 'rgba(255,255,255,0.6)',
+                  border:     'none',
+                  cursor:     aiLoading ? 'wait' : 'pointer',
+                  opacity:    aiLoading ? 0.7 : 1,
+                }}
+              >
+                {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+              </button>
+            </div>
           </div>
           {aiLoading && !aiInsight ? (
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
@@ -279,6 +288,14 @@ export default function AICoach({
           ))}
         </div>
       )}
+
+      {/* Embedded Chat Pane component */}
+      <AIChatPane 
+        isOpen={isChatOpen} 
+        onClose={() => setIsChatOpen(false)} 
+        isRoastMode={isRoastMode} 
+        contextData={fullCtx} 
+      />
     </div>
   );
 }

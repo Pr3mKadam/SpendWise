@@ -276,10 +276,94 @@ export interface CoachContext {
   topCategories:         { name: string; amount: number; percent: number }[];
 }
 
+export interface ChatMessage {
+  role: 'user' | 'model';
+  content: string;
+}
+
 const COACH_SYSTEM = `You are a concise, supportive financial coach. You receive numeric spending summaries only.
 Write exactly 2–3 short sentences (under 400 characters total). Be specific with numbers and the user's currency symbol.
 Focus on: spending patterns, whether month-end balance looks healthy, one concrete habit to try.
 No markdown, no bullet characters, no JSON, no preamble — output only the coaching sentences.`;
+
+const CHAT_SYSTEM_PRO = `You are 'SpendWise AI', a highly professional, polite, and deeply insightful financial advisor.
+Your goal is to answer the user's explicit questions about their spending data concisely and accurately.
+1. The user will ask questions based on the JSON context provided at the start of the chat.
+2. Keep your answers directly relevant to the data, concise, and well-formatted. Do not use markdown headers (#), just plain text with occasional bolding (**).
+3. If the user asks about something outside the provided context, gracefully state that you can only see their summarized monthly figures.
+4. Always use the provided currency symbol. Keep your tone encouraging but strictly professional.`;
+
+const CHAT_SYSTEM_ROAST = `You are 'Savage SpendWise', an aggressively sarcastic, brutally honest, and slightly mocking financial coach.
+Your goal is to answer the user's explicit questions about their spending data, while mercilessly roasting their financial habits.
+1. Use the JSON context provided to form your answers.
+2. Mock their highest spending category in a witty way. Use Gen-Z/internet slang occasionally.
+3. If they ask if they can afford something, tell them the truth, and remind them they are broke.
+4. Keep it concise, no long essays. No markdown headers. Always use their currency symbol. DO NOT be helpful without also being insulting.`;
+
+/**
+ * Generates an interactive chat response from Gemini using the conversational history and financial context.
+ */
+export async function generateChatResponse(history: ChatMessage[], ctx: CoachContext, isRoastMode: boolean): Promise<string> {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string | undefined;
+  if (!apiKey) throw new Error("Missing Gemini API Key");
+
+  const systemInstruction = isRoastMode ? CHAT_SYSTEM_ROAST : CHAT_SYSTEM_PRO;
+
+  // We inject the financial string context into the VERY FIRST message's payload so the model knows the state invisibly.
+  const contextString = `[INTERNAL CONTEXT DO NOT READ THIS OUT LOUD:
+Currency: ${ctx.currency}
+Current Balance: ${ctx.currentBalance}
+Predicted End of Month: ${ctx.predictedEndOfMonth}
+Income this month: ${ctx.totalIncomeMonth}
+Expenses this month: ${ctx.totalSpentMonth}
+Daily avg debit: ${ctx.dailySpendRate}
+Days left: ${ctx.daysLeftInMonth}
+Top Categories: ${JSON.stringify(ctx.topCategories)}] `;
+
+  // Format history for Gemini API
+  const formattedHistory = history.map((msg, index) => {
+    let text = msg.content;
+    if (index === 0 && msg.role === 'user') {
+      text = contextString + "\n" + msg.content;
+    }
+    return {
+      role: msg.role === 'user' ? 'user' : 'model',
+      parts: [{ text }]
+    };
+  });
+
+  let response: Response;
+  try {
+    response = await fetch(API_URL(apiKey), {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: systemInstruction }] },
+        contents: formattedHistory,
+        generationConfig: {
+          temperature: isRoastMode ? 0.7 : 0.3,
+          maxOutputTokens: 512,
+        },
+      }),
+    });
+  } catch (err) {
+    throw new AIServiceError("Network error contacting chat api");
+  }
+
+  if (!response.ok) throw new AIServiceError("Failed to fetch chat response");
+
+  let envelope: GeminiResponse;
+  try {
+    envelope = (await response.json()) as GeminiResponse;
+  } catch {
+    throw new AIServiceError("Failed to parse json");
+  }
+
+  const rawText = envelope?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  if (!rawText) throw new AIServiceError("Empty response");
+
+  return rawText.trim();
+}
 
 /**
  * Returns a short coaching paragraph, or null if the API key is missing or the call fails.
