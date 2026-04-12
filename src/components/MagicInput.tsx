@@ -435,6 +435,7 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
             ))}
           </div>
         </div>
+      </div>
 
       <div className="mb-4">
         <label
