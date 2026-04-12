@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import { User, Globe, Download, Trash2, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { User, Globe, Download, Trash2, CheckCircle2, ShieldCheck, DownloadCloud } from 'lucide-react';
 import { SpendWiseConfig } from './OnboardingModal';
 import { exportTransactionsToCSV } from '../utils/exportCSV';
 import { Transaction } from '../types';
 import TwoFactorModal from './TwoFactorModal';
 import { supabase } from '../services/supabaseClient';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface ProfileViewProps {
   config: SpendWiseConfig | null;
@@ -36,6 +37,7 @@ export default function ProfileView({
   onOpenParentalSettings,
   onOpenParentDashboard
 }: ProfileViewProps) {
+  const { isInstallable, isAppInstalled, triggerInstall } = usePWAInstall();
   const [name, setName] = useState(config?.name ?? 'User');
   const [phone, setPhone] = useState(config?.phone ?? '');
   const [occupation, setOccupation] = useState(config?.occupation ?? '');
@@ -406,13 +408,29 @@ export default function ProfileView({
         </div>
       </div>
 
-      {/* App Info */}
-      <div className="card px-6 py-4 flex items-center justify-between">
+      {/* App Info & PWA Install */}
+      <div className="card px-6 py-5 flex items-center justify-between flex-wrap gap-4">
         <div>
           <p className="font-inter font-semibold text-[13px]" style={{ color: 'var(--text-primary)' }}>SpendWise</p>
-          <p className="font-inter text-[11px]" style={{ color: 'var(--text-muted)' }}>v3.1 · {transactions.length} transactions · All data stored locally</p>
+          <p className="font-inter text-[11px]" style={{ color: 'var(--text-muted)' }}>v4.0 (PWA) · {transactions.length} transactions · All data stored locally</p>
         </div>
-        <span className="text-2xl">🔒</span>
+        
+        <div className="flex items-center gap-4">
+          {(!isAppInstalled && isInstallable) && (
+            <button
+              onClick={triggerInstall}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--teal)] text-white text-xs font-bold transition-all hover:scale-105"
+            >
+              <DownloadCloud size={14} /> Install App
+            </button>
+          )}
+          {isAppInstalled && (
+            <span className="text-xs font-semibold text-[var(--teal)] flex items-center gap-1">
+              <CheckCircle2 size={14} /> App Installed
+            </span>
+          )}
+          <span className="text-2xl">🔒</span>
+        </div>
       </div>
 
       {showTwoFactorModal && (
