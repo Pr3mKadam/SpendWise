@@ -265,7 +265,8 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
         setNote(transcript);
         setVoiceError('Voice processed!');
       } catch (err: any) {
-        setVoiceError('Failed to parse voice command.');
+        console.error('Voice Parsing Error:', err);
+        setVoiceError(err.message || 'Failed to parse voice command.');
       } finally {
         setIsListening(false);
         setTimeout(() => setVoiceError(''), 2000);
