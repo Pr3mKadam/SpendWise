@@ -88,7 +88,34 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   }, []);
 
   const updateTransactionCategory = useCallback((id: string, newCategory: Category) => {
-    setTransactions(prev => prev.map(tx => tx.id === id ? { ...tx, category: newCategory } : tx));
+    setTransactions(prev => prev.map(tx => {
+      if (tx.id === id) {
+        // If the user manually changes the category, we wipe out the ghost memory
+        // so it doesn't accidentally revert later.
+        const { originalCategory, ...rest } = tx;
+        return { ...rest, category: newCategory } as Transaction;
+      }
+      return tx;
+    }));
+  }, []);
+
+  const bulkReassignCategory = useCallback((oldCategory: string, newCategory: Category) => {
+    setTransactions(prev => prev.map(tx => {
+      if (tx.category === oldCategory) {
+        return { ...tx, category: newCategory, originalCategory: oldCategory };
+      }
+      return tx;
+    }));
+  }, []);
+
+  const recoverOriginalCategory = useCallback((recoveredCategory: string) => {
+    setTransactions(prev => prev.map(tx => {
+      if (tx.originalCategory === recoveredCategory) {
+        const { originalCategory, ...rest } = tx;
+        return { ...rest, category: recoveredCategory } as Transaction;
+      }
+      return tx;
+    }));
   }, []);
 
   const setTransactionsAll = useCallback((txs: Transaction[]) => {
@@ -304,6 +331,8 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     addTransaction,
     deleteTransaction,
     updateTransactionCategory,
+    bulkReassignCategory,
+    recoverOriginalCategory,
     resetData,
     setTransactionsAll,
     currentBalance,

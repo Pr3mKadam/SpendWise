@@ -189,6 +189,8 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
     addTransaction,
     deleteTransaction: _deleteTransaction,
     updateTransactionCategory,
+    bulkReassignCategory,
+    recoverOriginalCategory,
     resetData,
     categorySpending,
     totalSpent,
@@ -569,16 +571,15 @@ function MainShell({ config, setConfig, userId }: MainShellProps) {
         isOpen={showCategoriesModal}
         onClose={() => setShowCategoriesModal(false)}
         customCategories={customCategories}
-        onAdd={addCustomCategory}
+        onAdd={(newCat) => {
+          addCustomCategory(newCat);
+          recoverOriginalCategory(newCat.name);
+        }}
         onUpdate={updateCustomCategory}
         onDelete={deleteCustomCategory}
         transactions={transactions}
         onReassign={(oldCat, newCat) => {
-          transactions.forEach((tx) => {
-            if (tx.category === oldCat) {
-              handleCategoryChange(tx.id, newCat);
-            }
-          });
+          bulkReassignCategory(oldCat, newCat);
         }}
       />
 
