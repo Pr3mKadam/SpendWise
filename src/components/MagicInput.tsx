@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, CheckCircle2, X, ChevronDown, ChevronUp, Camera, Loader2, ListTree } from 'lucide-react';
+import { Plus, CheckCircle2, X, ChevronDown, ChevronUp, Camera, Loader2, ListTree, Mic } from 'lucide-react';
 import { Transaction } from '../types';
 import { parseUPISMS } from '../utils/upiParser';
 import { useCategories } from '../hooks/useCategories';
 import { useParentalControl } from '../contexts/ParentalControlContext';
-import { parseReceiptImage, SplitItem } from '../services/ai';
+import { parseReceiptImage, SplitItem, parseTransaction } from '../services/ai';
 
 interface MagicInputProps {
   onAddTransaction: (tx: Transaction) => void;
@@ -36,6 +36,8 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
   const [splits, setSplits]         = useState<SplitItem[] | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError]   = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const [voiceError, setVoiceError] = useState('');
   const fileInputRef                = useRef<HTMLInputElement>(null);
 
   const [status, setStatus]         = useState<Status>('idle');
@@ -227,6 +229,59 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
       setIsScanning(false);
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleVoiceInput = () => {
+    // @ts-ignore - Vendor prefixes
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setVoiceError('Voice input is not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setVoiceError('');
+    };
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      try {
+        setVoiceError('Processing voice...');
+        const today = new Date().toISOString().split('T')[0];
+        const res = await parseTransaction(transcript, today);
+        setAmountStr(String(res.amount));
+        setMerchant(res.merchant);
+        setType(res.type);
+        if (allCategories.includes(res.category)) setCategory(res.category);
+        else if (res.type === 'credit' && allCategories.includes('Income')) setCategory('Income');
+        else setCategory(allCategories[0]);
+        setDate(today);
+        setNote(transcript);
+        setVoiceError('Voice processed!');
+      } catch (err: any) {
+        setVoiceError('Failed to parse voice command.');
+      } finally {
+        setIsListening(false);
+        setTimeout(() => setVoiceError(''), 2000);
+      }
+    };
+
+    recognition.onerror = (event: any) => {
+      setVoiceError(event.error === 'not-allowed' ? 'Microphone blocked.' : 'Voice error occurred.');
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
   };
 
   const amountNum = parseAmountInput(amountStr);
@@ -536,10 +591,10 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
         )}
       </div>
 
-      {/* AI Receipt Scanner */}
-      <div className="mt-4 border-t border-[var(--border-subtle,#e2e8f0)] pt-4">
+      {/* AI Receipt Scanner & Voice */}
+      <div className="mt-4 border-t border-[var(--border-subtle,#e2e8f0)] pt-4 flex gap-2">
         <label
-          className="flex w-full items-center justify-center gap-2 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all hover:opacity-90"
           style={{
             background: 'var(--teal-dim)',
             color: 'var(--teal)',
@@ -547,7 +602,7 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
             fontFamily: 'var(--font-inter)',
           }}
         >
-          {isScanning ? <><Loader2 size={16} className="animate-spin" /> Scanning...</> : <><Camera size={16} /> Snap Receipt (AI)</>}
+          {isScanning ? <><Loader2 size={16} className="animate-spin" /> Scanning</> : <><Camera size={16} /> Snap Receipt</>}
           <input
             type="file"
             accept="image/*"
@@ -555,38 +610,53 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
             className="hidden"
             ref={fileInputRef}
             onChange={handleFileChange}
-            disabled={isScanning}
+            disabled={isScanning || isListening}
           />
         </label>
         
-        {scanError && (
-          <p className="mt-2 text-center text-xs font-semibold" style={{ color: splits ? 'var(--teal)' : 'var(--red)', fontFamily: 'var(--font-inter)' }}>
-            {scanError}
-          </p>
-        )}
-
-        {splits && splits.length > 0 && (
-          <div className="mt-3 p-3 rounded-xl" style={{ background: '#f8fafc', border: '1px solid #edf2f7' }}>
-            <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}>
-              <ListTree size={14} /> AI Found {splits.length} Items:
-            </p>
-            <div className="space-y-1.5 max-h-32 overflow-y-auto">
-              {splits.map((s, idx) => (
-                <div key={idx} className="flex justify-between text-xs items-center p-1.5 rounded-lg" style={{ background: 'var(--bg)', border: '1px solid #edf2f7' }}>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-[11px] truncate" style={{ color: 'var(--text-primary)' }}>{s.merchant}</p>
-                    <p className="text-[10px] text-muted truncate" style={{ color: 'var(--text-muted)' }}>{s.category}</p>
-                  </div>
-                  <span className="font-semibold text-[11px] tabular-nums shrink-0 ml-2">{currency}{s.amount.toFixed(2)}</span>
-                </div>
-              ))}
-            </div>
-            <p className="text-[10px] mt-2 text-center text-muted" style={{ color: 'var(--text-muted)' }}>
-              Tapping "Add transaction" will save these as individual split transactions.
-            </p>
-          </div>
-        )}
+        <button
+          type="button"
+          onClick={handleVoiceInput}
+          disabled={isScanning || isListening}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all hover:opacity-90"
+          style={{
+            background: isListening ? 'var(--red-dim)' : 'rgba(59, 130, 246, 0.1)',
+            color: isListening ? 'var(--red)' : '#3b82f6',
+            border: `1px dashed ${isListening ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
+            fontFamily: 'var(--font-inter)',
+          }}
+        >
+          {isListening ? <><Loader2 size={16} className="animate-spin" /> Listening</> : <><Mic size={16} /> Magic Mic</>}
+        </button>
       </div>
+        
+      {(scanError || voiceError) && (
+        <p className="mt-2 text-center text-xs font-semibold" style={{ color: (splits || voiceError === 'Voice processed!') ? 'var(--green)' : voiceError === 'Processing voice...' ? 'var(--blue)' : 'var(--red)', fontFamily: 'var(--font-inter)' }}>
+          {scanError || voiceError}
+        </p>
+      )}
+
+      {splits && splits.length > 0 && (
+        <div className="mt-3 p-3 rounded-xl" style={{ background: '#f8fafc', border: '1px solid #edf2f7' }}>
+          <p className="text-xs font-semibold mb-2 flex items-center gap-1.5" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}>
+            <ListTree size={14} /> AI Found {splits.length} Items:
+          </p>
+          <div className="space-y-1.5 max-h-32 overflow-y-auto">
+            {splits.map((s, idx) => (
+              <div key={idx} className="flex justify-between text-xs items-center p-1.5 rounded-lg" style={{ background: 'var(--bg)', border: '1px solid #edf2f7' }}>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-[11px] truncate" style={{ color: 'var(--text-primary)' }}>{s.merchant}</p>
+                  <p className="text-[10px] text-muted truncate" style={{ color: 'var(--text-muted)' }}>{s.category}</p>
+                </div>
+                <span className="font-semibold text-[11px] tabular-nums shrink-0 ml-2">{currency}{s.amount.toFixed(2)}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] mt-2 text-center text-muted" style={{ color: 'var(--text-muted)' }}>
+            Tapping "Add transaction" will save these as individual split transactions.
+          </p>
+        </div>
+      )}
 
       {status === 'success' && (
         <div className="mt-3 rounded-xl px-4 py-3 flex items-start gap-3 animate-fade-in-up" style={{ background: 'var(--green-dim)' }}>

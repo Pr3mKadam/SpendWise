@@ -63,6 +63,7 @@ export default function HistoryView({ transactions, onCategoryChange, onImportCl
   const [dateFrom, setDateFrom]           = useState('');
   const [dateTo, setDateTo]               = useState('');
   const [showDateFilter, setShowDateFilter] = useState(false);
+  const [selectedIds, setSelectedIds]     = useState<Set<string>>(new Set());
 
   const handleSort = (key: SortKey) => {
     setSortKey(k => { if (k === key) { setSortDir(d => d === 'desc' ? 'asc' : 'desc'); return k; } setSortDir('desc'); return key; });
@@ -251,9 +252,53 @@ export default function HistoryView({ transactions, onCategoryChange, onImportCl
       </div>
 
       {/* Table Card */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden relative">
+        {/* Bulk Action Header (Absolute overlay) */}
+        {selectedIds.size > 0 && onCategoryChange && (
+          <div className="absolute top-0 left-0 w-full h-12 bg-[var(--teal-dim)] flex items-center justify-between px-5 z-10" style={{ borderBottom: '1px solid var(--teal-glow)' }}>
+            <div className="flex items-center gap-3">
+              <input
+                type="checkbox"
+                checked={selectedIds.size === paginated.length && paginated.length > 0}
+                onChange={() => {
+                  if (selectedIds.size === paginated.length) setSelectedIds(new Set());
+                  else setSelectedIds(new Set(paginated.map(t => t.id)));
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
+              />
+              <span className="text-sm font-semibold" style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)' }}>
+                {selectedIds.size} selected
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)' }}>Change Category:</span>
+              <div className="w-40 z-50">
+                <CategoryDropdown
+                  value="All"
+                  onChange={(newCat) => {
+                    const ids = Array.from(selectedIds);
+                    ids.forEach(id => onCategoryChange(id, newCat as Category));
+                    setSelectedIds(new Set());
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Table header */}
         <div className="hidden sm:flex items-center gap-4 px-5 py-3" style={{ borderBottom: '1.5px solid #f0f2f5' }}>
+          <div className="w-6 flex items-center justify-center">
+            <input
+              type="checkbox"
+              checked={paginated.length > 0 && selectedIds.size === paginated.length}
+              onChange={() => {
+                if (selectedIds.size === paginated.length) setSelectedIds(new Set());
+                else setSelectedIds(new Set(paginated.map(t => t.id)));
+              }}
+              className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
+            />
+          </div>
           <div className="w-10" />
           <div className="w-24"><SortBtn label="Date" field="date" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
           <div className="flex-1"><SortBtn label="Merchant" field="merchant" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
@@ -287,9 +332,22 @@ export default function HistoryView({ transactions, onCategoryChange, onImportCl
                 className="group flex items-center gap-4 px-5 py-3.5 transition-colors"
                 style={{
                   borderBottom: i < paginated.length - 1 ? '1px solid #f7f8fa' : 'none',
-                  background: tx.isNew ? '#f0fdfb' : undefined,
+                  background: tx.isNew ? '#f0fdfb' : selectedIds.has(tx.id) ? 'var(--teal-dim)' : undefined,
                 }}
               >
+                <div className="w-6 flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" style={{ opacity: selectedIds.has(tx.id) ? 1 : undefined }}>
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.has(tx.id)}
+                    onChange={(e) => {
+                      const newSet = new Set(selectedIds);
+                      if (e.target.checked) newSet.add(tx.id);
+                      else newSet.delete(tx.id);
+                      setSelectedIds(newSet);
+                    }}
+                    className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
+                  />
+                </div>
                 <span className="flex w-10 h-10 items-center justify-center rounded-xl text-base shrink-0" style={{ background: `${mergedColors[tx.category] || '#14b8a6'}15` }}>
                   {mergedIcons[tx.category] || '📦'}
                 </span>
