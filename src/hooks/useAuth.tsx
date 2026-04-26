@@ -1,14 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { supabase } from '../services/supabaseClient';
-import type { User, Session } from '@supabase/supabase-js';
+
+export interface User {
+  id: string;
+  email?: string;
+  user_metadata?: any;
+}
 
 export interface AuthContextType {
   user: User | null;
-  session: Session | null;
-  loading: boolean;      // legacy alias for !authReady
+  session: any | null;
+  loading: boolean;
   authReady: boolean;
   mfaRequired: boolean;
   signOut: () => Promise<void>;
+  signInAnonymously: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,83 +23,48 @@ const AuthContext = createContext<AuthContextType>({
   authReady: false,
   mfaRequired: false,
   signOut: async () => {},
+  signInAnonymously: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [authReady, setAuthReady] = useState(false);
-  const [mfaRequired, setMfaRequired] = useState(false);
 
   useEffect(() => {
-    if (!supabase) {
-      setAuthReady(true);
-      return;
+    const storedUser = localStorage.getItem('spendwise_user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    } else {
+      // For hackathon: Auto-login as a guest if no user exists
+      const guestUser = { id: 'guest_' + Math.random().toString(36).substr(2, 9), email: 'guest@example.com' };
+      localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
+      setUser(guestUser);
     }
-
-    const checkMFA = async (s: Session | null) => {
-      if (!s) { setMfaRequired(false); return; }
-      try {
-        const { data, error } = await supabase!.auth.mfa.getAuthenticatorAssuranceLevel();
-        setMfaRequired(!error && data?.nextLevel === 'aal2' && data?.currentLevel === 'aal1');
-      } catch { /* ignore */ }
-    };
-
-    // sessionStorage is cleared when the tab/browser is closed, but survives
-    // page refreshes within the same session.  We use this to decide whether
-    // the user actually logged in during *this* browser session or whether
-    // Supabase is restoring a persisted token from a previous visit.
-    const hasPageSession = Boolean(sessionStorage.getItem('sw_page_session'));
-
-    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
-      if (s && !hasPageSession) {
-        // There's a persisted token but the user hasn't logged in this session.
-        // Sign out silently (don't clear app data) so the auth screen shows.
-        await supabase!.auth.signOut();
-        setSession(null);
-        setUser(null);
-        setAuthReady(true);
-        return;
-      }
-      setSession(s);
-      setUser(s?.user ?? null);
-      setAuthReady(true);
-      void checkMFA(s);
-    }).catch(() => setAuthReady(true));
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-      if (event === 'SIGNED_IN') {
-        // User actively logged in — mark this page session as authenticated.
-        sessionStorage.setItem('sw_page_session', '1');
-      } else if (event === 'SIGNED_OUT') {
-        sessionStorage.removeItem('sw_page_session');
-      }
-      setSession(s);
-      setUser(s?.user ?? null);
-      void checkMFA(s);
-    });
-
-    return () => { subscription.unsubscribe(); };
+    setAuthReady(true);
   }, []);
 
   const signOut = useCallback(async () => {
-    if (supabase) {
-      sessionStorage.removeItem('sw_page_session');
-      await supabase.auth.signOut();
-      localStorage.removeItem('spendwise_transactions_v2');
-      localStorage.removeItem('spendwise_config_v1');
-      window.location.reload();
-    }
+    localStorage.removeItem('spendwise_user');
+    localStorage.removeItem('spendwise_transactions_v2');
+    localStorage.removeItem('spendwise_config_v1');
+    window.location.reload();
+  }, []);
+
+  const signInAnonymously = useCallback(() => {
+    const guestUser = { id: 'guest_' + Math.random().toString(36).substr(2, 9), email: 'guest@example.com' };
+    localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
+    setUser(guestUser);
   }, []);
 
   const value = useMemo<AuthContextType>(() => ({
     user,
-    session,
+    session: user ? { user } : null,
     loading: !authReady,
     authReady,
-    mfaRequired,
+    mfaRequired: false,
     signOut,
-  }), [user, session, authReady, mfaRequired, signOut]);
+    signInAnonymously,
+  }), [user, authReady, signOut, signInAnonymously]);
 
   return (
     <AuthContext.Provider value={value}>
