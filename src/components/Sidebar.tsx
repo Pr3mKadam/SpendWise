@@ -18,7 +18,7 @@ const ALL_NAV_ITEMS = [
   { id: 'shared'        as AppView, label: 'Shared',           icon: Users },
   { id: 'portfolio'     as AppView, label: 'Net Worth',        icon: TrendingUp },
   { id: 'subscriptions' as AppView, label: 'Subscriptions',    icon: RefreshCw },
-  { id: 'sync'          as AppView, label: 'Bank Sync',        icon: Landmark },
+  { id: 'sync'          as AppView, label: 'UPI Sync',         icon: Landmark },
   { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
 ];
 
@@ -46,15 +46,18 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
       >
         {/* Brand */}
         <div className="flex items-center px-6 h-[70px] shrink-0">
-          <div className="flex items-baseline gap-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--teal)] to-[#0d9488] flex items-center justify-center shadow-lg shadow-teal-500/20">
+              <Landmark size={16} className="text-white" />
+            </div>
             <span style={{
               fontFamily: 'var(--font-manrope)',
               fontWeight: 800,
               fontSize: '20px',
-              color: '#ffffff',
+              color: 'var(--text-primary)',
               letterSpacing: '-0.5px'
             }}>
-              <span style={{ fontWeight: 400 }}>SPEND</span>wise
+              Spend<span className="text-[var(--teal)]">Wise</span>
             </span>
           </div>
         </div>
@@ -69,19 +72,25 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
               <button
                 key={item.id}
                 onClick={() => onViewChange(item.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-150 text-left relative"
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left relative group ${isActive ? 'shadow-md shadow-teal-500/10' : ''}`}
                 style={{
-                  background: isActive ? 'var(--teal)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--sidebar-text)',
+                  background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
+                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
                   fontFamily: 'var(--font-inter)',
                   fontSize: '14px',
                   fontWeight: isActive ? 600 : 500,
                 }}
                 onMouseEnter={e => {
-                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)';
+                  if (!isActive) {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface-input)';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+                  }
                 }}
                 onMouseLeave={e => {
-                  if (!isActive) (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                  if (!isActive) {
+                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+                  }
                 }}
               >
                 <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
@@ -103,16 +112,26 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
         <div className="px-3 pb-6 space-y-1">
           <button
             onClick={() => onViewChange('profile')}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors relative"
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative ${activeView === 'profile' ? 'shadow-md shadow-teal-500/10' : ''}`}
             style={{ 
-              background: activeView === 'profile' ? 'var(--teal)' : 'transparent',
-              color: activeView === 'profile' ? '#ffffff' : 'var(--sidebar-text)', 
+              background: activeView === 'profile' ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
+              color: activeView === 'profile' ? '#ffffff' : 'var(--text-secondary)', 
               fontFamily: 'var(--font-inter)', 
               fontSize: '14px', 
               fontWeight: activeView === 'profile' ? 600 : 500 
             }}
-            onMouseEnter={e => { if (activeView !== 'profile') (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)'; }}
-            onMouseLeave={e => { if (activeView !== 'profile') (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
+            onMouseEnter={e => { 
+              if (activeView !== 'profile') {
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface-input)';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+              } 
+            }}
+            onMouseLeave={e => { 
+              if (activeView !== 'profile') {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+              } 
+            }}
           >
             <Settings size={18} strokeWidth={activeView === 'profile' ? 2.5 : 2} />
             <span>Profile & Settings</span>

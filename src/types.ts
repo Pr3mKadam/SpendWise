@@ -163,7 +163,7 @@ export interface SharedSavingsGoal {
 
 // ─── Phase 6.1: Bank / UPI Integration ──────────────────────────────────────────
 
-export type UPIProvider = 'gpay' | 'phonepe' | 'paytm' | 'cred' | 'bhim' | 'other';
+export type UPIProvider = 'gpay' | 'phonepe' | 'paytm' | 'cred' | 'bhim' | 'razorpay' | 'other';
 
 // ─── Phase 7.1: Portfolio / Net Worth ────────────────────────────────────────────
 
@@ -242,11 +242,12 @@ export interface RecurringPattern {
   nextExpected:  string; // ISO date
   occurrences:   number;
   totalSpent:    number;
+  priceCreep?:   boolean; // If last transaction > average
 }
 
 // ─── Phase 3: App Notification ────────────────────────────────────────────────
 
-export type NotificationType = 'alert' | 'recurring' | 'goal' | 'insight' | 'budget';
+export type NotificationType = 'alert' | 'recurring' | 'goal' | 'insight' | 'budget' | 'subscription';
 
 export interface AppNotification {
   id:        string;

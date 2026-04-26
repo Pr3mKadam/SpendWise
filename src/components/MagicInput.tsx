@@ -1,10 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
-import { Plus, CheckCircle2, X, ChevronDown, ChevronUp, Camera, Loader2, ListTree, Mic } from 'lucide-react';
+import { Plus, CheckCircle2, X, ListTree } from 'lucide-react';
 import { Transaction } from '../types';
 import { parseUPISMS } from '../utils/upiParser';
 import { useCategories } from '../hooks/useCategories';
 import { useParentalControl } from '../contexts/ParentalControlContext';
-import { parseReceiptImage, SplitItem, parseTransaction } from '../services/ai';
+import { parseVoiceLocally } from '../utils/voiceParser';
+import { compressImage } from '../utils/imageUtils';
+import { recognizeReceipt, parseOfflineReceipt } from '../utils/tesseractParser';
+import { PasteUPI } from './magic/PasteUPI';
+import { AIInputTools } from './magic/AIInputTools';
+import { CategorySelect } from './magic/CategorySelect';
 
 interface MagicInputProps {
   onAddTransaction: (tx: Transaction) => void;
@@ -33,7 +38,7 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
   const [pasteText, setPasteText]   = useState('');
   const [pasteHint, setPasteHint]   = useState<string | null>(null);
 
-  const [splits, setSplits]         = useState<SplitItem[] | null>(null);
+
   const [isScanning, setIsScanning] = useState(false);
   const [scanError, setScanError]   = useState('');
   const [isListening, setIsListening] = useState(false);
@@ -43,6 +48,7 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
   const [status, setStatus]         = useState<Status>('idle');
   const [lastAdded, setLastAdded]   = useState<Transaction | null>(null);
   const [errorMsg, setErrorMsg]     = useState('');
+  const [splits, setSplits]         = useState<{ merchant: string; amount: number; category: string }[] | null>(null);
   const successTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -103,63 +109,41 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
     const baseTags = noteTrim.match(/#[a-zA-Z0-9_-]+/g)?.map(t => t.slice(1).toLowerCase()) || [];
 
     if (splits && splits.length > 0) {
-      const parentId = `receipt-${Date.now().toString(36)}`;
-      const parentTags = [...baseTags, parentId];
-      
-      let sum = 0;
-      splits.forEach((split, idx) => {
-        sum += split.amount;
-        const splitTx: Transaction = {
-          id:          `${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 7)}`,
-          date,
-          amount:      split.amount,
-          category:    split.category as Transaction['category'],
-          merchant:    split.merchant,
-          type,
-          description: `Split from ${merchantTrim}${noteTrim ? ` · ${noteTrim}` : ''}`,
-          isNew:       true,
-          aiParsed:    true,
-          tags:        parentTags,
-        };
-        onAddTransaction(splitTx);
-      });
-      
-      // If the parent amount exists and is significantly larger than the tracked splits, 
-      // add a remainder 'Uncategorized' transaction.
-      if (amount - sum > 0.05) {
+      splits.forEach((s, idx) => {
         onAddTransaction({
-          id: `${Date.now()}-rem-${Math.random().toString(36).slice(2, 7)}`,
-          date, amount: Math.round((amount - sum) * 100) / 100, category: 'General',
-          merchant: merchantTrim, type, description: 'Uncategorized remainder', 
-          isNew: true, aiParsed: true, tags: parentTags
+          id:          `${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 5)}`,
+          date,
+          amount:      s.amount,
+          category:    s.category as Transaction['category'],
+          merchant:    s.merchant,
+          type:        'debit',
+          description: `Part of ${merchantTrim}`,
+          isNew:       true,
+          aiParsed:    false,
         });
-      }
-
+      });
+      setStatus('success');
       setSplits(null);
-      setScanError('');
+      resetForm();
+    } else {
+      const tx: Transaction = {
+        id:          `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        date,
+        amount,
+        category:    category as Transaction['category'],
+        merchant:    merchantTrim,
+        type,
+        description: noteTrim || undefined,
+        isNew:       true,
+        aiParsed:    false,
+        tags:        baseTags.length ? baseTags : undefined,
+      };
+
+      onAddTransaction(tx);
+      setLastAdded(tx);
       setStatus('success');
       resetForm();
-      successTimer.current = setTimeout(() => setStatus('idle'), 4000);
-      return;
     }
-
-    const tx: Transaction = {
-      id:          `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      date,
-      amount,
-      category:    category as Transaction['category'],
-      merchant:    merchantTrim,
-      type,
-      description: noteTrim || undefined,
-      isNew:       true,
-      aiParsed:    false,
-      tags:        baseTags.length ? baseTags : undefined,
-    };
-
-    onAddTransaction(tx);
-    setLastAdded(tx);
-    setStatus('success');
-    resetForm();
     successTimer.current = setTimeout(() => setStatus('idle'), 4000);
   };
 
@@ -192,40 +176,54 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
     if (!file) return;
     setScanError('');
     setIsScanning(true);
-    setSplits(null);
+
 
     const reader = new FileReader();
     reader.onload = async (event) => {
       const base64Url = event.target?.result as string;
-      const base64Content = base64Url.split(',')[1];
-      const mimeType = file.type;
+      let base64Content: string;
+      let mimeType: string;
 
       try {
-        const today = new Date().toISOString().split('T')[0];
-        const res = await parseReceiptImage(base64Content, mimeType, today);
-        
-        setAmountStr(String(res.amount));
-        setMerchant(res.merchant);
-        setType(res.type);
-        if (allCategories.includes(res.category)) setCategory(res.category);
-        else if (res.type === 'credit' && allCategories.includes('Income')) setCategory('Income');
-        else setCategory(allCategories[0]);
-        setDate(res.date);
-        if (res.split && res.split.length > 0) {
-          setSplits(res.split);
-          setScanError('Multiple items found! Review splits below.');
+        // ── Compress image to max 800px / 75% quality before sending ────────
+        setScanError('📷 Compressing image...');
+        const compressed = await compressImage(base64Url, 800, 0.75);
+        base64Content = compressed.base64;
+        mimeType = compressed.mimeType;
+      } catch {
+        // Compression failed — use original
+        base64Content = base64Url.split(',')[1];
+        mimeType = file.type || 'image/jpeg';
+      }
+
+      setScanError('🔍 Extracting text locally...');
+      try {
+        const dataUrl = `data:${mimeType};base64,${base64Content}`;
+        const rawText = await recognizeReceipt(dataUrl);
+        const res = parseOfflineReceipt(rawText);
+
+        if (res.amount) setAmountStr(String(res.amount));
+        if (res.merchant) setMerchant(res.merchant);
+        if (res.type === 'credit' || res.type === 'debit') setType(res.type);
+        if (res.category && allCategories.includes(res.category)) {
+           setCategory(res.category);
         } else {
-          setScanError('Scan successful!');
+           setCategory(allCategories[0]);
         }
-      } catch (err: any) {
-        setScanError(err?.message || 'Failed to parse receipt.');
+        if (res.date) setDate(res.date);
+        if (res.splits) setSplits(res.splits);
+        else setSplits(null);
+
+        setScanError('✅ Receipt scanned offline! Review & tap Add.');
+      } catch (offlineErr) {
+        setScanError('❌ Failed to parse receipt. Try a clearer photo.');
       } finally {
         setIsScanning(false);
         if (fileInputRef.current) fileInputRef.current.value = '';
       }
     };
     reader.onerror = () => {
-      setScanError('Failed to read file.');
+      setScanError('❌ Failed to read image file.');
       setIsScanning(false);
     };
     reader.readAsDataURL(file);
@@ -235,53 +233,91 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
     // @ts-ignore - Vendor prefixes
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setVoiceError('Voice input is not supported in this browser.');
+      setVoiceError('🚫 Voice not supported. Try Chrome or Edge.');
       return;
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 1;
+    recognition.lang = 'en-IN'; // Indian English for better rupee/merchant detection
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 3;
+    recognition.continuous = false;
 
     recognition.onstart = () => {
       setIsListening(true);
-      setVoiceError('');
+      setVoiceError('🎙️ Listening... speak now');
     };
 
     recognition.onresult = async (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      try {
-        setVoiceError('Processing voice...');
-        const today = new Date().toISOString().split('T')[0];
-        const res = await parseTransaction(transcript, today);
-        setAmountStr(String(res.amount));
-        setMerchant(res.merchant);
+      // Show interim results as user speaks
+      const interim = Array.from(event.results)
+        .map((r: any) => r[0].transcript)
+        .join(' ');
+      if (!event.results[event.results.length - 1].isFinal) {
+        setVoiceError(`Heard: "${interim}"`);
+        return;
+      }
+
+      // Pick the best final transcript
+      const finalResult = event.results[event.results.length - 1];
+      const transcript = Array.from(finalResult as any)
+        .map((alt: any) => alt.transcript)
+        .join(' ').trim();
+
+      if (!transcript) {
+        setVoiceError('No speech detected. Try again.');
+        setIsListening(false);
+        return;
+      }
+
+      setVoiceError(`✅ Heard: "${transcript}" — Parsing...`);
+      const today = new Date().toISOString().split('T')[0];
+
+      // ── Step 1: Local parser (instant, no API) ──────────────────────────
+      const local = parseVoiceLocally(transcript, today);
+
+      const applyResult = (res: typeof local, src: string) => {
+        if (res.amount > 0) setAmountStr(String(res.amount));
+        if (res.merchant) setMerchant(res.merchant);
         setType(res.type);
         if (allCategories.includes(res.category)) setCategory(res.category);
         else if (res.type === 'credit' && allCategories.includes('Income')) setCategory('Income');
         else setCategory(allCategories[0]);
         setDate(today);
         setNote(transcript);
-        setVoiceError('Voice processed!');
-      } catch (err: any) {
-        console.error('Voice Parsing Error:', err);
-        setVoiceError(err.message || 'Failed to parse voice command.');
-      } finally {
+        setVoiceError(`✅ Filled via ${src}. Review & tap Add.`);
+      };
+
+      if (local.confidence >= 0.75) {
+        applyResult(local, 'local parser');
         setIsListening(false);
-        setTimeout(() => setVoiceError(''), 2000);
+        setTimeout(() => setVoiceError(''), 4000);
+        return;
+      } else if (local.amount > 0) {
+        // Best effort
+        applyResult(local, 'local parser (low confidence)');
+        setIsListening(false);
+        setTimeout(() => setVoiceError(''), 4000);
+        return;
+      } else {
+        setVoiceError(`Could not parse: "${transcript}" — Fill manually.`);
+        setIsListening(false);
+        setTimeout(() => setVoiceError(''), 5000);
       }
     };
 
     recognition.onerror = (event: any) => {
-      setVoiceError(event.error === 'not-allowed' ? 'Microphone blocked.' : 'Voice error occurred.');
+      const msgs: Record<string, string> = {
+        'not-allowed': '🚫 Microphone blocked. Allow mic in browser settings.',
+        'no-speech': 'No speech detected. Tap mic and speak clearly.',
+        'network': 'Network error. Voice works offline too — try again.',
+        'aborted': 'Listening cancelled.',
+      };
+      setVoiceError(msgs[event.error] || `Voice error: ${event.error}`);
       setIsListening(false);
     };
 
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
+    recognition.onend = () => setIsListening(false);
     recognition.start();
   };
 
@@ -303,11 +339,11 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
       </div>
 
       {/* Expense / Income */}
-      <div className="flex rounded-xl p-1 mb-4" style={{ background: '#f5f7fa' }}>
+      <div className="flex rounded-xl p-1 mb-4 relative overflow-hidden" style={{ background: 'var(--surface-input)' }}>
         <button
           type="button"
           onClick={setExpenseMode}
-          className="flex flex-1 items-center justify-center py-2.5 rounded-xl text-xs font-semibold transition-all"
+          className="flex flex-1 items-center justify-center py-2.5 rounded-lg text-[13px] font-bold transition-all z-10"
           style={{
             fontFamily: 'var(--font-inter)',
             background: type === 'debit' ? 'var(--surface-card)' : 'transparent',
@@ -322,7 +358,7 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
         <button
           type="button"
           onClick={setIncomeMode}
-          className="flex flex-1 items-center justify-center py-2.5 rounded-xl text-xs font-semibold transition-all"
+          className="flex flex-1 items-center justify-center py-2.5 rounded-lg text-[13px] font-bold transition-all z-10"
           style={{
             fontFamily: 'var(--font-inter)',
             background: type === 'credit' ? 'var(--surface-card)' : 'transparent',
@@ -418,79 +454,14 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
         />
       </div>
 
-      <div className="mb-3">
-        <label
-          htmlFor="tx-category"
-          style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', display: 'block', marginBottom: 6 }}
-        >
-          Category
-        </label>
-        <div className="relative">
-          <button
-            type="button"
-            id="tx-category"
-            onClick={() => {
-              // Ensure we close paste if it's open so things don't overlap too much
-              if (pasteOpen) setPasteOpen(false);
-              document.getElementById('category-dropdown-menu')?.classList.toggle('hidden');
-            }}
-            onBlur={() => {
-              // Use a slight timeout to allow click events on options to fire first
-              setTimeout(() => {
-                const menu = document.getElementById('category-dropdown-menu');
-                if (menu && !menu.classList.contains('hidden')) {
-                  menu.classList.add('hidden');
-                }
-              }, 150);
-            }}
-            className="w-full flex items-center justify-between rounded-xl text-sm text-left focus:outline-none transition-all"
-            style={{
-              background: '#f8fafc',
-              border:     '2px solid transparent',
-              padding:    '12px 14px',
-              fontFamily: 'var(--font-inter)',
-              color:      'var(--text-primary)',
-            }}
-            onFocus={e => { e.currentTarget.style.border = '2px solid var(--teal)'; }}
-          >
-            <span>{(mergedIcons[category] ? `${mergedIcons[category]} ` : '') + category}</span>
-            <ChevronDown size={16} className="text-[var(--text-muted)]" />
-          </button>
-
-          <div
-            id="category-dropdown-menu"
-            className="hidden absolute top-full left-0 w-full mt-2 py-2 rounded-xl shadow-xl z-50 animate-scale-in"
-            style={{
-              background: 'var(--surface-card)',
-              border: '1px solid var(--border)',
-              maxHeight: '350px',
-              overflowY: 'auto'
-            }}
-          >
-            {allCategories.map(c => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => {
-                  setCategory(c);
-                  document.getElementById('category-dropdown-menu')?.classList.add('hidden');
-                }}
-                className="w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-[var(--surface-input)] flex items-center gap-2"
-                style={{
-                  fontFamily: 'var(--font-inter)',
-                  color: category === c ? 'var(--teal)' : 'var(--text-primary)',
-                  fontWeight: category === c ? 600 : 400,
-                  background: category === c ? 'var(--teal-dim)' : 'transparent',
-                }}
-              >
-                <span>{(mergedIcons[c] ? `${mergedIcons[c]}` : '')}</span>
-                <span>{c}</span>
-                {category === c && <CheckCircle2 size={14} className="ml-auto" style={{ color: 'var(--teal)' }} />}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <CategorySelect
+        category={category}
+        setCategory={setCategory}
+        allCategories={allCategories}
+        mergedIcons={mergedIcons}
+        pasteOpen={pasteOpen}
+        setPasteOpen={setPasteOpen}
+      />
 
       <div className="mb-4">
         <label
@@ -522,120 +493,36 @@ export default function MagicInput({ onAddTransaction, currency = '$' }: MagicIn
         type="button"
         onClick={handleSubmit}
         disabled={!canSubmit}
-        className="w-full h-11 flex items-center justify-center gap-2 rounded-xl font-semibold text-sm text-white transition-all"
+        className="w-full h-12 flex items-center justify-center gap-2 rounded-xl font-bold text-sm text-white transition-all transform hover:scale-[1.02] active:scale-95"
         style={{
-          background: !canSubmit ? '#a0aec0' : 'var(--teal)',
+          background: !canSubmit ? 'var(--border)' : 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)',
+          boxShadow: !canSubmit ? 'none' : '0 4px 14px -4px rgba(20, 184, 166, 0.4)',
           cursor:     !canSubmit ? 'not-allowed' : 'pointer',
           fontFamily: 'var(--font-inter)',
           border:     'none',
         }}
       >
-        <Plus size={16} strokeWidth={2.5} />
+        <Plus size={18} strokeWidth={2.5} />
         Add transaction
       </button>
 
-      {/* Optional UPI paste — no AI */}
-      <div className="mt-4 border-t border-[var(--border-subtle,#e2e8f0)] pt-4">
-        <button
-          type="button"
-          onClick={() => setPasteOpen(o => !o)}
-          className="flex w-full items-center justify-between text-left"
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            fontFamily: 'var(--font-inter)',
-            fontSize: '12px',
-            fontWeight: 600,
-            color: 'var(--text-muted)',
-          }}
-        >
-          <span>Paste UPI / bank SMS (auto-fill)</span>
-          {pasteOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-        </button>
-        {pasteOpen && (
-          <div className="mt-3 space-y-2">
-            <textarea
-              value={pasteText}
-              onChange={e => setPasteText(e.target.value)}
-              placeholder="Paste message containing Rs. or INR amount…"
-              rows={3}
-              className="w-full resize-none rounded-xl text-sm focus:outline-none"
-              style={{
-                background: '#f8fafc',
-                border: '2px solid #edf2f7',
-                padding: '10px 12px',
-                fontFamily: 'var(--font-inter)',
-                color: 'var(--text-primary)',
-              }}
-            />
-            <button
-              type="button"
-              onClick={handleApplyPaste}
-              className="w-full py-2 rounded-xl text-xs font-semibold"
-              style={{
-                background: '#edf2f7',
-                color: 'var(--text-secondary)',
-                border: 'none',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-inter)',
-              }}
-            >
-              Apply to form
-            </button>
-            {pasteHint && (
-              <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', margin: 0 }}>
-                {pasteHint}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
+      <PasteUPI
+        pasteOpen={pasteOpen}
+        setPasteOpen={setPasteOpen}
+        pasteText={pasteText}
+        setPasteText={setPasteText}
+        handleApplyPaste={handleApplyPaste}
+        pasteHint={pasteHint}
+      />
 
-      {/* AI Receipt Scanner & Voice */}
-      <div className="mt-4 border-t border-[var(--border-subtle,#e2e8f0)] pt-4 flex gap-2">
-        <label
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all hover:opacity-90"
-          style={{
-            background: 'var(--teal-dim)',
-            color: 'var(--teal)',
-            border: '1px dashed var(--teal-glow)',
-            fontFamily: 'var(--font-inter)',
-          }}
-        >
-          {isScanning ? <><Loader2 size={16} className="animate-spin" /> Scanning</> : <><Camera size={16} /> Snap Receipt</>}
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            disabled={isScanning || isListening}
-          />
-        </label>
-        
-        <button
-          type="button"
-          onClick={handleVoiceInput}
-          disabled={isScanning || isListening}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all hover:opacity-90"
-          style={{
-            background: isListening ? 'var(--red-dim)' : 'rgba(59, 130, 246, 0.1)',
-            color: isListening ? 'var(--red)' : '#3b82f6',
-            border: `1px dashed ${isListening ? 'rgba(239, 68, 68, 0.3)' : 'rgba(59, 130, 246, 0.3)'}`,
-            fontFamily: 'var(--font-inter)',
-          }}
-        >
-          {isListening ? <><Loader2 size={16} className="animate-spin" /> Listening</> : <><Mic size={16} /> Magic Mic</>}
-        </button>
-      </div>
-        
-      {(scanError || voiceError) && (
-        <p className="mt-2 text-center text-xs font-semibold" style={{ color: (splits || voiceError === 'Voice processed!') ? 'var(--green)' : voiceError === 'Processing voice...' ? 'var(--blue)' : 'var(--red)', fontFamily: 'var(--font-inter)' }}>
-          {scanError || voiceError}
-        </p>
-      )}
+      <AIInputTools
+        isScanning={isScanning}
+        isListening={isListening}
+        scanStatus={scanError || voiceError || undefined}
+        handleFileChange={handleFileChange}
+        handleVoiceInput={handleVoiceInput}
+        fileInputRef={fileInputRef}
+      />
 
       {splits && splits.length > 0 && (
         <div className="mt-3 p-3 rounded-xl" style={{ background: '#f8fafc', border: '1px solid #edf2f7' }}>

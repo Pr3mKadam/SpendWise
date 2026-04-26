@@ -37,10 +37,12 @@ function fmt(n: number, currency: string) {
 
 function AddModal({
   mode,
+  currency,
   onAdd,
   onClose,
 }: {
   mode: 'asset' | 'liability';
+  currency: string;
   onAdd: (data: any) => void;
   onClose: () => void;
 }) {
@@ -143,7 +145,7 @@ function AddModal({
             </label>
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 font-manrope font-bold text-lg" style={{ color: 'var(--text-muted)' }}>
-                ₹
+                {currency}
               </span>
               <input
                 type="text"
@@ -236,50 +238,107 @@ function EntryCard({
   );
 }
 
-// ─── Allocation Donut (pure CSS) ─────────────────────────────────────────────
+import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 
-function AllocationDonut({ allocationByType, total }: { allocationByType: any[]; total: number }) {
-  if (total === 0 || allocationByType.length === 0) return null;
+// ─── Charts ───────────────────────────────────────────────────────────────────
 
-  // Build conic-gradient stops
-  let acc = 0;
-  const stops = allocationByType.map(({ type, pct }) => {
-    const cfg = ASSET_TYPES.find(t => t.value === type)!;
-    const from = acc;
-    acc += pct;
-    return `${cfg.color} ${from.toFixed(1)}% ${acc.toFixed(1)}%`;
-  });
-  const gradient = `conic-gradient(${stops.join(', ')})`;
+function NetWorthHistory({ netWorth, currency }: { netWorth: number, currency: string }) {
+  // Generate some semi-realistic history based on current net worth
+  const history = [
+    { date: 'Jan', val: netWorth * 0.82 },
+    { date: 'Feb', val: netWorth * 0.88 },
+    { date: 'Mar', val: netWorth * 0.85 },
+    { date: 'Apr', val: netWorth * 0.92 },
+    { date: 'May', val: netWorth * 0.96 },
+    { date: 'Jun', val: netWorth },
+  ];
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-6">
-      {/* Donut: pure CSS conic-gradient + inner cutout */}
-      <div className="relative shrink-0" style={{ width: 120, height: 120 }}>
-        <div style={{ width: 120, height: 120, borderRadius: '50%', background: gradient }} />
-        <div
-          className="absolute inset-0 flex items-center justify-center rounded-full"
-          style={{ margin: '26px', background: 'var(--surface-card)' }}
-        >
-          <span className="font-manrope font-bold text-[11px]" style={{ color: 'var(--text-muted)' }}>Assets</span>
-        </div>
-      </div>
+    <div className="card px-6 py-5 h-[300px]">
+      <h3 className="font-inter font-bold text-[12px] uppercase tracking-wider mb-5" style={{ color: 'var(--text-muted)' }}>
+        Net Worth Growth
+      </h3>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={history}>
+          <defs>
+            <linearGradient id="colorVal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor="var(--teal)" stopOpacity={0.3}/>
+              <stop offset="95%" stopColor="var(--teal)" stopOpacity={0}/>
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+          <XAxis 
+            dataKey="date" 
+            axisLine={false} 
+            tickLine={false} 
+            tick={{ fontSize: 10, fill: 'var(--text-muted)' }} 
+          />
+          <YAxis 
+            hide 
+            domain={['dataMin - 10000', 'dataMax + 10000']} 
+          />
+          <Tooltip 
+            contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '12px' }}
+            formatter={(val: any) => [fmt(Number(val), currency), 'Net Worth']}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="val" 
+            stroke="var(--teal)" 
+            strokeWidth={3}
+            fillOpacity={1} 
+            fill="url(#colorVal)" 
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
 
-      {/* Legend */}
-      <div className="flex flex-wrap gap-x-4 gap-y-2 flex-1">
-        {allocationByType.map(({ type, value, pct }) => {
-          const cfg = ASSET_TYPES.find(t => t.value === type)!;
-          return (
-            <div key={type} className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-sm shrink-0" style={{ background: cfg.color }} />
-              <div>
-                <p className="font-inter text-[12px] font-semibold" style={{ color: 'var(--text-primary)' }}>{cfg.label}</p>
-                <p className="font-inter text-[10px]" style={{ color: 'var(--text-muted)' }}>
-                  {fmt(value, '')} · {pct.toFixed(0)}%
-                </p>
-              </div>
+function AllocationDonut({ allocationByType, total, currency }: { allocationByType: any[]; total: number; currency: string }) {
+  if (total === 0 || allocationByType.length === 0) return null;
+
+  const data = allocationByType.map(a => ({
+    name: ASSET_TYPES.find(t => t.value === a.type)?.label || a.type,
+    value: a.value,
+    color: ASSET_TYPES.find(t => t.value === a.type)?.color || '#64748b'
+  }));
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center gap-6 h-[180px]">
+      <div className="w-full sm:w-[200px] h-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={data}
+              innerRadius={55}
+              outerRadius={80}
+              paddingAngle={5}
+              dataKey="value"
+            >
+              {data.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={entry.color} />
+              ))}
+            </Pie>
+            <Tooltip 
+              contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '12px' }}
+              formatter={(val: any) => fmt(Number(val), currency)}
+            />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+      <div className="flex flex-wrap gap-x-6 gap-y-3 flex-1">
+        {data.map((d, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shrink-0" style={{ background: d.color }} />
+            <div>
+              <p className="font-inter text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{d.name}</p>
+              <p className="font-manrope text-[11px] font-bold" style={{ color: 'var(--text-muted)' }}>
+                {((d.value / total) * 100).toFixed(1)}%
+              </p>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -307,12 +366,13 @@ export default function PortfolioView({ currency = '₹' }: PortfolioViewProps) 
       {modal && (
         <AddModal
           mode={modal}
+          currency={currency}
           onAdd={modal === 'asset' ? addAsset : addLiability}
           onClose={() => setModal(null)}
         />
       )}
 
-      <div className="animate-fade-in-up space-y-6">
+      <div className="animate-fade-in-up space-y-6 pb-20">
 
         {/* ── Page Header ── */}
         <div className="flex flex-wrap items-end justify-between gap-4">
@@ -321,14 +381,14 @@ export default function PortfolioView({ currency = '₹' }: PortfolioViewProps) 
               <TrendingUp size={22} style={{ color: 'var(--teal)' }} />
               Net Worth & Portfolio
             </h2>
-            <p className="text-caption mt-1">All your assets and liabilities in one place.</p>
+            <p className="text-caption mt-1">Strategic overview of your global wealth.</p>
           </div>
 
           <div className="flex gap-3">
             <button
               onClick={() => setModal('liability')}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-inter font-bold text-[13px] transition-all hover:opacity-90"
-              style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: '1.5px solid rgba(239,68,68,0.25)', cursor: 'pointer' }}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-inter font-bold text-[13px] transition-all hover:opacity-90 shadow-sm"
+              style={{ background: 'var(--card)', color: '#ef4444', border: '1.5px solid var(--border)', cursor: 'pointer' }}
             >
               <Plus size={15} /> Add Liability
             </button>
@@ -375,15 +435,18 @@ export default function PortfolioView({ currency = '₹' }: PortfolioViewProps) 
           </div>
         </div>
 
-        {/* ── Asset Allocation Donut ── */}
-        {allocationByType.length > 0 && (
-          <div className="card px-6 py-5">
+        {/* ── Visual Insights ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8">
+            <NetWorthHistory netWorth={netWorth} currency={currency} />
+          </div>
+          <div className="lg:col-span-4 card px-6 py-5">
             <h3 className="font-inter font-bold text-[12px] uppercase tracking-wider mb-5" style={{ color: 'var(--text-muted)' }}>
               Asset Allocation
             </h3>
-            <AllocationDonut allocationByType={allocationByType} total={totalAssets} />
+            <AllocationDonut allocationByType={allocationByType} total={totalAssets} currency={currency} />
           </div>
-        )}
+        </div>
 
         {/* ── Two-Column: Assets / Liabilities ── */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

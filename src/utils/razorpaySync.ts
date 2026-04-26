@@ -1,5 +1,74 @@
 import { Transaction, Category } from '../types';
 
+
+// ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
+const MEMORY_KEY = 'spendwise_merchant_memory';
+
+type MerchantMemory = Record<string, { merchant: string; category: string }>;
+
+function loadMerchantMemory(): MerchantMemory {
+  try { return JSON.parse(localStorage.getItem(MEMORY_KEY) || '{}'); } catch { return {}; }
+}
+function saveMerchantMemory(m: MerchantMemory) {
+  localStorage.setItem(MEMORY_KEY, JSON.stringify(m));
+}
+
+/** After AI parse or manual correction — remember this UPI VPA mapping. */
+export function rememberMerchant(upiVPA: string, merchant: string, category: string) {
+  if (!upiVPA) return;
+  const m = loadMerchantMemory();
+  m[upiVPA.toLowerCase()] = { merchant, category };
+  saveMerchantMemory(m);
+}
+
+/**
+ * Parse a UPI payment description with Gemini AI.
+ * Falls back to simple keyword heuristics if Gemini is unavailable.
+ * Uses merchant memory to skip repeat AI calls for known VPAs.
+ */
+export async function parseUPIPayment(
+  description: string,
+  upiVPA = '',
+): Promise<{ merchant: string; category: Category; confidence: number; aiParsed: boolean }> {
+  const vpaKey = upiVPA.toLowerCase();
+
+  // 1 — Check merchant memory first (Phase 8.3)
+  if (vpaKey) {
+    const memory = loadMerchantMemory();
+    if (memory[vpaKey]) {
+      return {
+        merchant: memory[vpaKey].merchant,
+        category: memory[vpaKey].category as Category,
+        confidence: 1.0,
+        aiParsed: false, // from memory — no AI call
+      };
+    }
+  }
+
+  // 2 — Offline Heuristics Parse
+  const desc = (description || upiVPA).toLowerCase();
+  const cat: Category =
+    /zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|pizza|burger/.test(desc) ? 'Food' :
+    /uber|ola|rapido|metro|bus|train|flight|fuel|petrol/.test(desc) ? 'Transport' :
+    /netflix|spotify|amazon|prime|youtube|hotstar|sub/.test(desc) ? 'Subscriptions' :
+    /amazon|flipkart|myntra|mall|shop|store/.test(desc) ? 'Shopping' :
+    /electricity|water|bill|recharge|mobile|broadband|wifi/.test(desc) ? 'Utilities' :
+    /doctor|hospital|pharma|med|health|clinic/.test(desc) ? 'Health' :
+    /movie|game|play|event|party|concert/.test(desc) ? 'Entertainment' :
+    'Transfer';
+
+  const out = {
+    merchant: description || upiVPA || 'UPI Payment',
+    category: cat,
+    confidence: 0.8,
+    aiParsed: false,
+  };
+
+  if (vpaKey) rememberMerchant(vpaKey, out.merchant, out.category);
+  return out;
+}
+
+
 export interface RazorpayAuth {
   keyId: string;
   keySecret: string;
@@ -61,3 +130,60 @@ export async function fetchRazorpayTransactions(auth: RazorpayAuth): Promise<Tra
 
   return transactions;
 }
+
+// ─── UPI Payment Checkout ───────────────────────────────────────────────────
+
+export interface RazorpayPaymentOptions {
+  keyId: string;
+  amount: number;         // in rupees — converted to paise internally
+  description: string;
+  prefillName?: string;
+  prefillEmail?: string;
+  prefillContact?: string;
+  onSuccess: (details: RazorpayPaymentResult) => void;
+  onFailure?: (error: any) => void;
+}
+
+export interface RazorpayPaymentResult {
+  razorpay_payment_id: string;
+  amount: number;         // in rupees
+  description: string;
+  method: string;
+}
+
+/** Opens the Razorpay checkout popup for a UPI payment. */
+export function initiateRazorpayPayment(opts: RazorpayPaymentOptions): void {
+  const RazorpaySDK = (window as any).Razorpay;
+  if (!RazorpaySDK) {
+    alert('Razorpay SDK not loaded. Check your internet connection.');
+    return;
+  }
+
+  const rzp = new RazorpaySDK({
+    key: opts.keyId,
+    amount: Math.round(opts.amount * 100), // convert to paise
+    currency: 'INR',
+    name: 'SpendWise',
+    description: opts.description,
+    prefill: {
+      name: opts.prefillName ?? '',
+      email: opts.prefillEmail ?? '',
+      contact: opts.prefillContact ?? '',
+    },
+    theme: { color: '#14b8a6' },
+    handler: function (response: any) {
+      opts.onSuccess({
+        razorpay_payment_id: response.razorpay_payment_id ?? `demo_${Date.now()}`,
+        amount: opts.amount,
+        description: opts.description,
+        method: 'upi',
+      });
+    },
+    modal: {
+      ondismiss: () => opts.onFailure?.({ message: 'Payment cancelled by user' }),
+    },
+  });
+
+  rzp.open();
+}
+

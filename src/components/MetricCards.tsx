@@ -13,6 +13,7 @@ interface MetricCardsProps {
   };
   monthlyStats: MonthlyStats;
   currency?: string;
+  healthScore?: number;
 }
 
 export default function MetricCards({
@@ -111,10 +112,16 @@ export default function MetricCards({
                 )}
               </div>
               <div
-                className="flex items-center justify-center w-10 h-10 rounded-xl"
-                style={{ background: card.dimColor }}
+                className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm"
+                style={{ 
+                  background: card.color === 'var(--teal)' ? 'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(20,184,166,0.05) 100%)' :
+                             card.color === 'var(--green)' ? 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%)' :
+                             card.color === 'var(--red)' ? 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 100%)' :
+                             card.dimColor,
+                  border: `1px solid ${card.dimColor}`
+                }}
               >
-                <Icon size={18} style={{ color: card.color }} strokeWidth={2.5} />
+                <Icon size={20} style={{ color: card.color }} strokeWidth={2} />
               </div>
             </div>
 
@@ -141,7 +148,7 @@ export default function MetricCards({
               </span>
               {card.trend && (
                 <span
-                  className="flex items-center gap-1 text-xs font-semibold"
+                  className={`flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${card.trendUp ? 'bg-green-500/10' : 'bg-red-500/10'}`}
                   style={{
                     color: card.trendUp ? 'var(--green)' : 'var(--red)',
                     fontFamily: 'var(--font-inter)',

@@ -73,8 +73,16 @@ export function useRecurring(transactions: Transaction[]): RecurringPattern[] {
       const lastSeen  = sorted[sorted.length - 1].date;
       const nextGap   = freq === 'weekly' ? 7 : freq === 'monthly' ? 30 : 365;
       const nextExpected = addDays(lastSeen, nextGap);
-      const avgAmount = sorted.reduce((a, tx) => a + tx.amount, 0) / sorted.length;
-      const totalSpent = sorted.reduce((a, tx) => a + tx.amount, 0);
+      const totalSpent = sorted.reduce((a, b) => a + b.amount, 0);
+      const avgAmount  = totalSpent / sorted.length;
+
+      const lastAmount = sorted[sorted.length - 1].amount;
+      const prevTxs = sorted.slice(0, -1);
+      const avgPrevAmount = prevTxs.length > 0
+        ? prevTxs.reduce((a, tx) => a + tx.amount, 0) / prevTxs.length
+        : avgAmount;
+
+      const priceCreep = lastAmount > avgPrevAmount * 1.05; // 5% threshold
 
       patterns.push({
         merchant:     sorted[0].merchant, // use original casing
@@ -85,6 +93,7 @@ export function useRecurring(transactions: Transaction[]): RecurringPattern[] {
         nextExpected,
         occurrences:  sorted.length,
         totalSpent:   Math.round(totalSpent * 100) / 100,
+        priceCreep,
       });
     });
 

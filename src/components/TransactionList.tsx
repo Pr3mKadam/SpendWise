@@ -8,12 +8,13 @@ import { CategoryDropdown } from './CategoryDropdown';
 interface TransactionListProps {
   transactions: Transaction[];
   onCategoryChange?: (id: string, newCategory: string) => void;
+  onDelete?: (id: string) => void;
   currency?: string;
 }
 
 type TabFilter = 'all' | 'credit' | 'debit';
 
-export default function TransactionList({ transactions, onCategoryChange, currency = '$' }: TransactionListProps) {
+export default function TransactionList({ transactions, onCategoryChange, onDelete: _onDelete, currency = '$' }: TransactionListProps) {
   const { mergedIcons } = useCategories();
   const { settings, isKidMode } = useParentalControl();
   const shouldHideBalances = isKidMode && settings.hideBalances;
@@ -43,8 +44,8 @@ export default function TransactionList({ transactions, onCategoryChange, curren
         <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
           Recent Transaction
         </h3>
-        <button style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600, color: 'var(--teal)', background: 'none', border: 'none', cursor: 'pointer' }}>
-          View All ›
+        <button className="group flex items-center gap-1 hover:bg-[var(--surface-input)] px-2 py-1 rounded-md transition-colors" style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600, color: 'var(--teal)', background: 'none', border: 'none', cursor: 'pointer' }}>
+          View All <span className="transform transition-transform group-hover:translate-x-1">›</span>
         </button>
       </div>
 
@@ -77,12 +78,17 @@ export default function TransactionList({ transactions, onCategoryChange, curren
       {/* Transaction List */}
       <div className="flex-1 overflow-y-auto px-5 py-3">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-center">
-            <span className="text-3xl mb-2 opacity-30">
-              {tab === 'credit' ? '💰' : tab === 'debit' ? '💸' : '📋'}
-            </span>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', color: 'var(--text-muted)' }}>
+          <div className="flex flex-col items-center justify-center h-40 text-center bg-[var(--surface-input)] mx-2 my-2 rounded-xl border border-dashed border-[var(--border)]">
+            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--surface-card)] shadow-sm">
+              <span className="text-xl">
+                {tab === 'credit' ? '💰' : tab === 'debit' ? '💸' : '📋'}
+              </span>
+            </div>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
               No transactions yet
+            </p>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>
+              Add a {tab === 'all' ? 'transaction' : tab} and it will show up here.
             </p>
           </div>
         ) : (

@@ -163,8 +163,16 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                     </span>
                   </p>
 
+                  {/* Price Creep Alert */}
+                  {sub.priceCreep && (
+                    <div className="flex items-center gap-1.5 mt-1 animate-pulse">
+                      <TrendingUp size={12} className="text-red-500" />
+                      <span className="font-inter text-[10px] font-bold text-red-500 uppercase tracking-tight">Price Increased Recently</span>
+                    </div>
+                  )}
+
                   {/* Annual cost */}
-                  <p className="font-inter text-[11px] mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                  <p className="font-inter text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
                     {currency}{annualCost.toFixed(0)} / year
                   </p>
 

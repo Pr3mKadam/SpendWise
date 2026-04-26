@@ -7,6 +7,7 @@ import { CategoryDropdown } from './CategoryDropdown';
 interface HistoryViewProps {
   transactions: Transaction[];
   onCategoryChange?: (id: string, newCategory: Category) => void;
+  onDelete?: (id: string) => void;
   onImportClick?: () => void;
   onPDFReport?:   () => void;
   currency?:    string;
@@ -52,7 +53,7 @@ function SortBtn({ label, field, sortKey, sortDir, onSort }: { label: string; fi
   );
 }
 
-export default function HistoryView({ transactions, onCategoryChange, onImportClick, onPDFReport, currency = '$' }: HistoryViewProps) {
+export default function HistoryView({ transactions, onCategoryChange, onDelete, onImportClick, onPDFReport, currency = '$' }: HistoryViewProps) {
   const { allCategories, mergedIcons, mergedColors } = useCategories();
   const [search, setSearch]               = useState('');
   const [categoryFilter, setCategoryFilter] = useState<Category | 'All'>('All');
@@ -282,6 +283,21 @@ export default function HistoryView({ transactions, onCategoryChange, onImportCl
                   }}
                 />
               </div>
+              {onDelete && (
+                <button
+                  onClick={() => {
+                    if (window.confirm(`Delete ${selectedIds.size} transactions?`)) {
+                      const ids = Array.from(selectedIds);
+                      ids.forEach(id => onDelete(id));
+                      setSelectedIds(new Set());
+                    }
+                  }}
+                  className="ml-2 flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold transition-colors"
+                  style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+                >
+                  <X size={14} /> Delete
+                </button>
+              )}
             </div>
           </div>
         )}
