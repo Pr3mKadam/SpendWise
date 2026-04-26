@@ -1,159 +1,84 @@
-# SpendWise Feature Roadmap
+# SpendWise Feature Roadmap (Offline-First Edition)
 
-> This roadmap outlines the evolution of SpendWise into a comprehensive personal financial ecosystem.
-> Each phase builds on the last while preserving the premium UI and core UX principles.
-
----
-
-## ✅ Phase 1: Core Dashboard (Complete)
-*Foundation: Data model, AI transaction parsing, spending overview.*
-
-- [x] **Transaction Engine** — Add, delete, and persist transactions via Supabase.
-- [x] **AI Magic Input** — Natural-language transaction parser powered by Claude AI.
-- [x] **Spending Donut** — Category breakdown with animated chart.
-- [x] **Balance Chart (Wealth Horizon)** — 30-day balance trend with projected end-of-month.
-- [x] **Metric Cards** — Live stats: current balance, top category, savings rate, avg daily spend.
-- [x] **Multi-Currency Support** — Select native currency in onboarding; symbols propagate everywhere.
+> This roadmap outlines the evolution of SpendWise into a high-performance, privacy-focused personal financial ecosystem.
+> We have recently pivoted to a **100% Offline-First AI** model. Foundation features (Core Dashboard, Local OCR, Local Voice Parsing, Supabase Auth) are complete.
 
 ---
 
-## ✅ Phase 2: Intelligence & Budgets (Complete)
-*Focus: Giving users actionable financial insight.*
-
-- [x] **Budget Manager** — Per-category limits with safe/warning/danger status rings.
-- [x] **AI Coach** — Context-aware spending tips derived from live category data.
-- [x] **Analytics View** — Monthly income vs. expenses bar chart + category performance table.
-- [x] **Transaction History** — Full sortable and filterable transaction log with CSV-style view.
-- [x] **Spending Velocity Alerts** — Banner alerts triggered when spending pace exceeds budget.
-- [x] **Recurring Detector** — Automatically identifies and flags subscription/recurring patterns.
+## 🚀 Phase 1: Local AI & Data Friction Removal
+**Status**: ✅ Complete
+*Focus: Removing all friction from logging transactions using advanced browser-local processing.*
+- [x] **Local Magic Mic** — Voice-to-transaction using native Web Speech API and client-side Regex NLP.
+- [x] **Offline Snap Receipt** — Receipt scanning using WebAssembly-based Tesseract.js in the browser.
+- [x] **Zero-API Bulk Editor** — Smart heuristics for auto-categorization without cloud AI.
 
 ---
 
-## ✅ Phase 3: Ecosystem Features (Complete)
-*Focus: Goals, notifications, and a polished multi-tab experience.*
-
-- [x] **Savings Goals** — Create, contribute to, and track progress toward financial milestones.
-- [x] **Notification Center** — Unified inbox for alerts, budget warnings, and goal milestones.
-- [x] **Light / Dark Mode** — Full dual-theme toggle with CSS variable system.
-- [x] **Supabase Authentication** — Email/password login with session management and auth gate.
-- [x] **Onboarding Modal** — First-run wizard: name, currency, initial balance, and profile setup.
-- [x] **Sidebar Navigation** — Collapsible sidebar with over-budget badge counter.
+## 🏗️ Phase 1.5: Backend Modernization (Convex Migration)
+**Status**: 🏗️ In Planning
+*Focus: Replacing Supabase with Convex for unified real-time backend and simplified logic.*
+- [ ] **Core Setup** — Initialize Convex and define schema.
+- [ ] **Auth Transition** — Move from Supabase Auth to Convex-compatible Auth.
+- [ ] **Logic Migration** — Rewrite Supabase client calls as Convex functions.
 
 ---
 
-## 🚧 Phase 4: Power User Features (Next Up — Short-term)
-*Focus: Removing friction and giving users deeper control.*
+## 🎮 Phase 2: Gamification & Behavioral Finance (Current Focus)
+*Focus: Keeping users engaged and motivated to save money without relying on a conversational AI coach.*
 
-### 4.1 Data Portability
-- [ ] **CSV Export** — Download full transaction history as a `.csv` file, filtered by date range or category.
-- [ ] **PDF Monthly Report** — Generate a beautifully styled monthly summary (income, expenses, goals, net cash flow) exportable as a PDF.
-- [ ] **Import via CSV** — Bulk-import transactions from a bank-exported CSV using an auto-mapping wizard.
+### 2.1 The "Wealth Tree" & Visual Progress
+- [ ] **Dynamic Savings Pet/Tree** — A visual element (like a plant or Tamagotchi) on the dashboard that thrives when you stay under budget and wilts when you overspend.
+- [ ] **Unlockable Badges** — Achievements for milestones like "First $1,000 Saved," "Local Privacy Champion," or "Subscription Slayer."
 
-### 4.2 Transaction Enrichment
-- [ ] **Custom Categories** — Create, rename, and color-code custom categories beyond the 8 defaults. Persist to Supabase.
-- [ ] **Receipt Attachment** — Optionally attach a photo or PDF receipt to any transaction (stored in Supabase Storage).
-- [ ] **Transaction Tags** — Free-form tags (e.g. `#work`, `#vacation`) for flexible cross-category filtering.
-- [ ] **Split Transactions** — Divide a single transaction across multiple categories (e.g. a grocery run split into Food + Household).
-
-### 4.3 Budget Evolution
-- [ ] **Budget Rollover** — Optionally carry over unspent budget from the previous month instead of resetting.
-- [ ] **Flexible Budget Periods** — Weekly or bi-weekly budgets in addition to the current monthly cycle.
-- [ ] **Budget Templates** — Save and re-apply a full budget layout (e.g. "Student" or "Freelancer" preset).
+### 2.2 Streaks & Financial Health Score
+- [ ] **Daily Logging Streak** — Track consecutive days of opening the app (shown with a 🔥 icon).
+- [ ] **Local Health Score Engine** — A dynamically calculated 0–100 score based on savings rate and budget adherence, processed entirely locally.
 
 ---
 
-## 📅 Phase 5: Social & Security (Mid-term)
-*Focus: Sharing, collaboration, and protecting sensitive data.*
+## 📈 Phase 3: Wealth & Subscriptions Ecosystem
+*Focus: Moving from just tracking expenses to building long-term wealth.*
 
-### 5.1 Security
-- [ ] **Two-Factor Authentication (2FA)** — TOTP or SMS second factor via Supabase Auth MFA.
-- [ ] **Session Management Dashboard** — View and revoke active login sessions from any device.
-- [ ] **Data Encryption at Rest** — Client-side encryption of sensitive fields (amounts, merchants) before Supabase sync, using a user-held key.
+### 3.1 Offline-Smart Subscriptions
+- [ ] **Subscription Auto-Detector** — Local heuristic engine that scans transaction history for recurring identical amounts and dates to identify subscriptions.
+- [ ] **Price Creep Alerts** — Notify the user if a detected recurring bill increases from the previous month.
 
-### 5.2 Profile & Personalization
-- [ ] **Profile Page** — Dedicated `/profile` view: change display name, avatar (upload via Supabase Storage), email, currency, and password.
-- [ ] **Goal Emoji & Color Picker** — Rich emoji/color palette expanded to 50+ theme options.
-- [ ] **Custom Dashboard Layout** — Drag-and-drop card reordering on the overview screen (persisted per user).
-
-### 5.3 Shared Finances
-- [ ] **Shared Wallets** — Invite a partner by email; sync specific categories (e.g. Rent, Groceries) in real time via Supabase Realtime subscriptions.
-- [ ] **Expense Splitting** — Log a shared transaction and automatically calculate each person's share; send a "you owe me" reminder.
-- [ ] **Bill Reminders** — Dedicated "Upcoming Bills" section in the Notification Center for fixed recurring costs, with push notification support.
+### 3.2 Portfolio Tracking
+- [ ] **Assets Tab** — Track non-cash assets: Stocks, ETFs, Crypto, and Real Estate.
+- [ ] **Net Worth Chart** — Aggregate liquid cash (from accounts) + assets - liabilities into a single "Wealth Horizon" chart.
 
 ---
 
-## 🔌 Phase 6: Automation & Bank Connectivity (Power Users)
-*Focus: Eliminating manual data entry entirely.*
+## 🛡️ Phase 4: Privacy-First Portability & PWA
+*Focus: Complete control over data, security, and true offline capability.*
 
-### 6.1 Bank Integration
-- [ ] **Plaid Link** — OAuth connection to 10,000+ banks; auto-import real transactions on a daily schedule.
-- [ ] **Sync History** — View the last sync timestamp, resolve duplicates, and approve/reject auto-imported transactions.
-- [ ] **Account Balance Aggregation** — Show balances from all connected accounts in the MetricCards area.
+### 4.1 Progressive Web App (PWA)
+- [ ] **Offline Mode** — Implement Service Workers so the app loads and functions even with zero internet connection.
+- [ ] **Installable Desktop/Mobile App** — Add web manifest for native-like installation.
 
-### 6.2 Subscriptions Intelligence
-- [ ] **Subscription Manager Tab** — Dedicated view listing all detected subscriptions, their cost, and next billing date.
-- [ ] **Cancellation Alerts** — Flag subscriptions that have increased in price since last month.
-- [ ] **Annual Subscription Cost** — Show total yearly spend on subscriptions in one stat.
-
-### 6.3 Mobile PWA
-- [ ] **PWA Manifest & Service Worker** — Make SpendWise installable on iOS/Android home screens.
-- [ ] **Offline Mode** — Queue transactions locally when offline; sync when connectivity resumes.
-- [ ] **Push Notifications** — Budget warnings and bill reminders delivered to the device even when the app is closed.
+### 4.2 Data Portability
+- [ ] **Local Backup & Restore** — Export the entire local state to an encrypted JSON file, and restore from it.
+- [ ] **Browser-Native PDF Export** — Download full transaction history or beautiful monthly reports for taxes, generated via client-side libraries.
 
 ---
 
-## 🌐 Phase 7: Financial Ecosystem (Long-term)
-*Focus: SpendWise as a complete personal finance command center.*
+## 👥 Phase 5: Social & Shared Finances (Optional Cloud)
+*Focus: Managing money with partners, requiring opt-in cloud sync via Supabase.*
 
-### 7.1 Investment Tracking
-- [ ] **Portfolio Tab** — Track stocks, ETFs, crypto, or retirement fund balances alongside spending.
-- [ ] **Net Worth Calculator** — Aggregate all assets (bank accounts, investments, property) minus liabilities (loans, credit) into one trend line.
-- [ ] **Asset Allocation Donut** — Visual breakdown of portfolio mix by asset class.
+### 5.1 Shared Wallets
+- [ ] **Wallet Invites** — Invite another Supabase user to join a specific wallet (e.g., "Household Fund").
+- [ ] **Real-time Sync** — Transactions added by one partner instantly appear for the other using Supabase Realtime.
 
-### 7.2 Tax Intelligence
-- [ ] **Tax-Deductible Tags** — One-tap flag for business / deductible transactions.
-- [ ] **Annual Tax Summary** — Aggregate all flagged transactions by category, exportable to PDF for your accountant.
-- [ ] **Mileage Tracker** — Log work-related trips with distance and auto-calculate deductible mileage cost.
-
-### 7.3 Gamification
-- [ ] **Streaks & Badges** — Reward consistent logging, staying under budget, or hitting savings goals with unlockable badges.
-- [ ] **Monthly Challenge** — Opt-in monthly spending challenges (e.g. "No takeaway in July") with a progress ring.
-- [ ] **Financial Health Score** — A single 0–100 score updated monthly, factoring in savings rate, budget adherence, and goal progress.
-
----
-
-## 🏗️ Technical Debt & Infrastructure
-*Ongoing work that enables all phases above.*
-
-- [ ] **Supabase Row-Level Security Audit** — Review all RLS policies to ensure strict per-user data isolation.
-- [ ] **E2E Test Suite** — Playwright tests for core flows: login, add transaction, budget alert, goal contribution.
-- [ ] **Performance Profiling** — Virtualise the TransactionList for users with 1,000+ transactions.
-- [ ] **i18n / Localisation** — Abstract all display strings for future translation; format dates and numbers per locale.
-- [ ] **CI/CD Pipeline** — GitHub Actions: lint → typecheck → test → deploy to Vercel on every merge to `main`.
+### 5.2 Split Expenses
+- [ ] **"You Owe Me" Calculator** — Log a transaction and split it 50/50 or custom amounts.
 
 ---
 
 ## 🎨 UI Design Philosophy
 *Principles that keep every phase visually cohesive.*
 
-1. **Tabular Growth** — New features are added as sidebar tabs; the Overview dashboard stays clean.
-2. **Adaptive Detail** — Use slide-over Drawer menus to surface complexity only when requested.
-3. **Visual Consistency** — Strictly use established CSS variables (`--teal`, `--accent`, `--surface-card`, `--bg`).
-4. **Motion Budget** — Every animation must serve a purpose (entry, state change, feedback). No animation for its own sake.
+1. **Bento Grid Architecture** — High-level insights live on the main dashboard; deep dives live in their own tabs.
+2. **Privacy First Visuals** — Highlight local processing with "Zero Data Leakage" indicators and padlocks.
+3. **Adaptive Detail** — Use slide-over Drawer menus to surface complexity only when requested.
+4. **Motion Budget** — Every animation must serve a purpose (entry, state change, feedback).
 5. **Mobile First** — Every new component must be fully usable on a 375px viewport before desktop polish is added.
-
----
-
-## 🗓️ Suggested Sprint Order
-
-| Sprint | Focus | Phases |
-|--------|-------|--------|
-| S1 | CSV Export + PDF Report | 4.1 |
-| S2 | Custom Categories + Tags | 4.2 |
-| S3 | Budget Rollover + Templates | 4.3 |
-| S4 | Profile Page + 2FA | 5.1 + 5.2 |
-| S5 | Shared Wallets + Bill Reminders | 5.3 |
-| S6 | PWA + Offline Mode | 6.3 |
-| S7 | Subscription Manager + Plaid | 6.1 + 6.2 |
-| S8 | Investment Tracking + Net Worth | 7.1 |
-| S9 | Tax Intelligence + Gamification | 7.2 + 7.3 |
