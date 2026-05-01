@@ -1,5 +1,5 @@
 import { Transaction, Category } from '../types';
-
+import { analyzeTransactionString } from './aiAnalyzer';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
 const MEMORY_KEY = 'spendwise_merchant_memory';
@@ -45,7 +45,20 @@ export async function parseUPIPayment(
     }
   }
 
-  // 2 — Offline Heuristics Parse
+  // 2 — Attempt AI Analysis
+  const aiResult = await analyzeTransactionString(description || upiVPA);
+  if (aiResult) {
+    const out = {
+      merchant: aiResult.merchant || description || upiVPA || 'UPI Payment',
+      category: aiResult.category || 'Shopping',
+      confidence: 0.95,
+      aiParsed: true,
+    };
+    if (vpaKey) rememberMerchant(vpaKey, out.merchant, out.category);
+    return out;
+  }
+
+  // 3 — Offline Heuristics Parse (Fallback)
   const desc = (description || upiVPA).toLowerCase();
   const cat: Category =
     /zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|pizza|burger/.test(desc) ? 'Food' :
@@ -186,4 +199,3 @@ export function initiateRazorpayPayment(opts: RazorpayPaymentOptions): void {
 
   rzp.open();
 }
-

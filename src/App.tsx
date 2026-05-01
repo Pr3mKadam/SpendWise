@@ -1,9 +1,7 @@
-import { useState, useEffect } from 'react';
-import { loadConfig, SpendWiseConfig } from './components/OnboardingModal';
-import { supabase } from './services/supabaseClient';
-import { fetchProfile, profileRowToConfig } from './lib/supabaseData';
+import { useState, useMemo, useEffect } from 'react';
+import { SpendWiseConfig } from './components/OnboardingModal';
 import { useAuth } from './hooks/useAuth';
-import AuthView from './components/AuthView';
+import AuthView from './components/views/AuthView';
 import { MainShell } from './components/layout/MainShell';
 
 function LoadingScreen() {
@@ -16,88 +14,39 @@ function LoadingScreen() {
 
 function AppAuthenticated() {
   const { user } = useAuth();
-  const userId = user ? user.id : null;
+  const userId = user ? user.id : "guest";
 
-  const [config, setConfig] = useState<SpendWiseConfig | null>(() => (userId ? null : loadConfig()));
-  const [profileLoading, setProfileLoading] = useState(Boolean(userId));
+  const [config, setConfigState] = useState<SpendWiseConfig | null>(null);
 
   useEffect(() => {
-    if (!userId) {
-      setConfig(loadConfig());
-      setProfileLoading(false);
-      return;
+    const saved = localStorage.getItem('spendwise_config_v1');
+    if (saved) {
+      setConfigState(JSON.parse(saved));
+    } else {
+      setConfigState({
+        initialBalance: 5200,
+        balanceAnchorNet: 0,
+        currency: '₹',
+        onboardingComplete: false,
+        createdAt: new Date().toISOString(),
+      });
     }
+  }, []);
 
-    let cancelled = false;
-    setProfileLoading(true);
-    fetchProfile(userId)
-      .then(row => {
-        if (cancelled) return;
-        const local: Partial<SpendWiseConfig> = loadConfig() || {};
-        if (!local.name && user?.user_metadata?.first_name) local.name = user.user_metadata.first_name;
-        if (!local.phone && user?.user_metadata?.phone)     local.phone = user.user_metadata.phone;
+  const setConfig = (newConfig: SpendWiseConfig) => {
+    localStorage.setItem('spendwise_config_v1', JSON.stringify(newConfig));
+    setConfigState(newConfig);
+  };
 
-        const mergedConfig = row
-          ? { ...local, ...profileRowToConfig(row) } as SpendWiseConfig
-          : { initialBalance: 5200, balanceAnchorNet: 0, currency: '₹', onboardingComplete: false, createdAt: new Date().toISOString(), ...local } as SpendWiseConfig;
-
-        setConfig(mergedConfig);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        const local: Partial<SpendWiseConfig> = loadConfig() || {};
-        if (!local.name && user?.user_metadata?.first_name) local.name = user.user_metadata.first_name;
-        if (!local.phone && user?.user_metadata?.phone)     local.phone = user.user_metadata.phone;
-        setConfig({ initialBalance: 5200, balanceAnchorNet: 0, currency: '₹', onboardingComplete: false, createdAt: new Date().toISOString(), ...local } as SpendWiseConfig);
-      })
-      .finally(() => { if (!cancelled) setProfileLoading(false); });
-
-    return () => { cancelled = true; };
-  }, [userId, user]);
-
-  if (profileLoading) return <LoadingScreen />;
-  return <MainShell config={config} setConfig={setConfig} userId={userId} />;
-}
-
-/** Runs without any backend — uses localStorage only */
-function AppLocalMode() {
-  const [config, setConfig] = useState<SpendWiseConfig | null>(() => {
-    const saved = loadConfig();
-    if (saved) return saved;
-    return {
-      initialBalance: 5200,
-      balanceAnchorNet: 0,
-      currency: '₹',
-      onboardingComplete: false,
-      createdAt: new Date().toISOString(),
-    } as SpendWiseConfig;
-  });
-  return <MainShell config={config} setConfig={setConfig} userId={null} />;
+  if (config === null) return <LoadingScreen />;
+  return <MainShell config={config} setConfig={setConfig as any} userId={userId} />;
 }
 
 export default function App() {
-  const { session, authReady, mfaRequired } = useAuth();
-  const [supabaseReachable, setSupabaseReachable] = useState<boolean | null>(null);
+  const { user, authReady } = useAuth();
 
-  // Probe Supabase reachability on startup (4s timeout)
-  useEffect(() => {
-    if (!supabase) { setSupabaseReachable(false); return; }
-    const controller = new AbortController();
-    const timer = setTimeout(() => { controller.abort(); setSupabaseReachable(false); }, 4000);
-    fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/health`, { signal: controller.signal })
-      .then(r => setSupabaseReachable(r.ok || r.status < 500))
-      .catch(() => setSupabaseReachable(false))
-      .finally(() => clearTimeout(timer));
-    return () => { controller.abort(); clearTimeout(timer); };
-  }, []);
+  if (!authReady) return <LoadingScreen />;
+  if (!user) return <AuthView />;
 
-  // Still probing or auth resolving
-  if (supabaseReachable === null || !authReady) return <LoadingScreen />;
-
-  // Supabase unreachable → bypass auth, run locally
-  if (!supabaseReachable) return <AppLocalMode />;
-
-  // Supabase is live → require auth
-  if (!session || mfaRequired) return <AuthView mfaRequired={mfaRequired} />;
   return <AppAuthenticated />;
 }

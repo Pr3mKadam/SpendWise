@@ -1,33 +1,34 @@
 import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
-import { supabase } from '../../services/supabaseClient';
 import { AppView, Transaction, Category } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 
-import Sidebar from '../Sidebar';
-import Header from '../Header';
-import BudgetManager from '../BudgetManager';
-import AnalyticsView from '../AnalyticsView';
-import HistoryView from '../HistoryView';
-import AlertBanner from '../AlertBanner';
-import NotificationCenter from '../NotificationCenter';
-import RecurringView from '../RecurringView';
-import GoalsView from '../GoalsView';
-import SharedView from '../SharedView';
-import ImportCSVModal from '../ImportCSVModal';
-import CustomCategoriesModal from '../CustomCategoriesModal';
-import BankSyncView from '../BankSyncView';
-import ProfileView from '../ProfileView';
-import PortfolioView from '../PortfolioView';
-import SubscriptionManager from '../SubscriptionManager';
+import Sidebar from '../common/Sidebar';
+import Header from '../common/Header';
+import BudgetManager from '../features/budgets/BudgetManager';
+import AnalyticsView from '../views/AnalyticsView';
+import HistoryView from '../views/HistoryView';
+import BudgetView from '../views/BudgetView';
+import AlertBanner from '../common/AlertBanner';
+import NotificationCenter from '../common/NotificationCenter';
+import RecurringView from '../views/RecurringView';
+import GoalsView from '../views/GoalsView';
+import SharedView from '../views/SharedView';
+import QuestCompletionOverlay from '../features/gamification/QuestCompletionOverlay';
+
+import CustomCategoriesModal from '../common/CustomCategoriesModal';
+import BankSyncView from '../views/BankSyncView';
+import ProfileView from '../views/ProfileView';
+import PortfolioView from '../views/PortfolioView';
+import SubscriptionManager from '../features/subscriptions/SubscriptionManager';
+import AdvisorView from '../views/AdvisorView';
+import ReportsView from '../views/ReportsView';
 import { generatePDFReport } from '../../utils/exportPDF';
-import { useParentalControl } from '../../contexts/ParentalControlContext';
-import { ParentalPinGate, KidModeBanner } from '../ParentalControlGate';
-import ParentalControlModal from '../ParentalControlModal';
-import ParentDashboard from '../ParentDashboard';
-import CommandPalette from '../CommandPalette';
-import { DashboardView } from '../DashboardView';
-import OnboardingModal, { SpendWiseConfig } from '../OnboardingModal';
-import { insertTransactionRemote, resetUserCloudData } from '../../lib/supabaseData';
+import { useStore } from '../../store';
+import { ParentalPinGate, KidModeBanner } from '../features/parental/ParentalControlGate';
+import ParentalView from '../views/ParentalView';
+import CommandPalette from '../common/CommandPalette';
+import { DashboardView } from '../views/DashboardView';
+import OnboardingModal, { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 
 import { useFinanceState } from '../../hooks/useFinanceState';
 import { useBudgets } from '../../hooks/useBudgets';
@@ -64,11 +65,8 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
     setTheme(t => (t === 'light' ? 'dark' : 'light'));
   }, []);
 
-  const [showImportCSV, setShowImportCSV]         = useState(false);
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
-  const [showParentalModal, setShowParentalModal]   = useState(false);
   const [showParentalGate, setShowParentalGate]     = useState(false);
-  const [showParentDashboard, setShowParentDashboard] = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [activeView, setActiveView]               = useState<AppView>('dashboard');
   const [showNotifications, setShowNotifications] = useState(false);
@@ -84,8 +82,9 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
-  const parentalControl = useParentalControl();
-  const { settings: pcSettings, isKidMode } = parentalControl;
+  const store = useStore();
+  const pcSettings = store.parentalState;
+  const isKidMode = pcSettings.isTeenMode;
 
   const toggleNotifications = useCallback(() => {
     setShowNotifications(v => !v);
@@ -100,7 +99,6 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
     deleteTransaction: _deleteTransaction,
     updateTransactionCategory,
     bulkReassignCategory,
-    recoverOriginalCategory,
     resetData,
     categorySpending,
     totalSpent,
@@ -114,7 +112,6 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
 
   // Exclude pending-approval transactions from balance & budget calculations
   const transactions = allTransactions.filter(t => t.status !== 'pending_approval');
-  const pendingTransactions = allTransactions.filter(t => t.status === 'pending_approval');
 
   const budgetState = useBudgets(transactions);
   const {
@@ -128,7 +125,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
     daysLeftInMonth: projectionMeta.daysLeftInMonth,
   });
   const recurringData = useRecurring(transactions);
-  const goalsState    = useGoals(userId);
+  const goalsState    = useGoals();
   const notifState    = useNotifications(alertState.alerts, recurringData, goalsState.goals);
   const totalUnread   = notifState.unreadCount;
   const isOnboarded = config?.onboardingComplete === true;
@@ -138,40 +135,19 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
   const handleOnboardingComplete = useCallback(
     (cfg: SpendWiseConfig) => {
       setConfig(cfg);
-      if (userId) {
-        import('../../lib/supabaseData').then(({ saveProfileFromConfig }) => {
-          saveProfileFromConfig(userId, cfg).catch((err) => {
-            console.error('Failed to save profile to cloud:', err);
-          });
-        });
-      }
     },
-    [userId, setConfig]
+    [setConfig]
   );
 
   const onAdd = useCallback((tx: Transaction) => {
     addTransaction(tx);
-    if (userId) {
-      insertTransactionRemote(userId, tx).catch(err => console.error("Cloud insert failed:", err));
-    }
-  }, [addTransaction, userId]);
+  }, [addTransaction]);
 
   const handleCategoryChange = useCallback(
     async (id: string, newCategory: string) => {
       updateTransactionCategory(id, newCategory as Category);
-
-      if (userId) {
-        const tx = transactions.find((t) => t.id === id);
-        if (tx) {
-          try {
-            await insertTransactionRemote(userId, { ...tx, category: newCategory as Category });
-          } catch (err) {
-            console.error('Failed to sync category update to cloud:', err);
-          }
-        }
-      }
     },
-    [userId, transactions, updateTransactionCategory]
+    [updateTransactionCategory]
   );
 
   const handlePDFReport = useCallback(() => {
@@ -203,7 +179,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
   return (
     <div className="flex min-h-screen flex-col" style={{ background: 'var(--bg)' }}>
       {pcSettings.enabled && !pcSettings.sessionUnlocked && !isKidMode && (
-        <ParentalPinGate onContinueAsKid={() => parentalControl.updateSettings({ kidMode: true })} />
+        <ParentalPinGate onContinueAsKid={() => store.updateParentalSettings({ isTeenMode: true })} />
       )}
 
       {isKidMode && (
@@ -246,7 +222,11 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
           onOpenSearch={() => setShowCommandPalette(true)}
         />
 
-        <main className="flex-1 px-6 lg:px-8 py-6 lg:py-8 max-w-[1400px] w-full">
+        <main 
+          id="main-content" 
+          role="main" 
+          className="flex-1 px-6 lg:px-8 py-6 lg:py-8 max-w-[1400px] w-full"
+        >
           {activeView === 'dashboard' && alertState.alerts.length > 0 && (
             <AlertBanner
               alerts={alertState.alerts}
@@ -255,6 +235,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
             />
           )}
 
+          {/* ... existing views ... */}
           {activeView === 'dashboard' && (
             <DashboardView
               financeState={financeState}
@@ -292,6 +273,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 categorySpending={categorySpending}
                 totalSpent={totalSpent}
                 currency={currency}
+                transactions={transactions}
               />
               <RecurringView patterns={recurringData} currency={currency} />
             </div>
@@ -325,13 +307,19 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
             <SharedView currency={currency} userId={userId} />
           )}
 
+          {activeView === 'budget' && (
+            <div className="view-enter">
+              <BudgetView currency={currency} />
+            </div>
+          )}
+
           {activeView === 'history' && (
             <div className="view-enter">
               <HistoryView
                 transactions={transactions}
                 onCategoryChange={handleCategoryChange}
                 onDelete={financeState.deleteTransaction}
-                onImportClick={() => setShowImportCSV(true)}
+                onImportClick={() => setActiveView('sync')}
                 onPDFReport={handlePDFReport}
                 currency={currency}
               />
@@ -358,14 +346,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 config={config}
                 onUpdateConfig={setConfig}
                 onResetData={async () => {
-                  if (userId) {
-                    try {
-                      await resetUserCloudData(userId);
-                    } catch (err) {
-                      console.error('Failed to reset cloud data:', err);
-                    }
-                  }
-                  resetData();
+                  await resetData();
                   if (config) {
                     const nextConfig = { ...config, initialBalance: 0 };
                     setConfig(nextConfig);
@@ -373,15 +354,20 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                   }
                 }}
                 transactions={transactions}
-                onOpenParentalSettings={() => setShowParentalModal(true)}
-                onOpenParentDashboard={() => setShowParentDashboard(true)}
+                onNavigate={handleViewChange}
               />
+            </div>
+          )}
+
+          {activeView === 'parental' && (
+            <div className="view-enter">
+              <ParentalView />
             </div>
           )}
 
           {activeView === 'portfolio' && (
             <div className="view-enter">
-              <PortfolioView currency={currency} />
+              <PortfolioView currency={currency} financeState={financeState} />
             </div>
           )}
 
@@ -391,9 +377,21 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
             </div>
           )}
 
-          <footer className="mt-12 pb-6 text-center">
+          {activeView === 'advisor' && (
+            <div className="view-enter">
+              <AdvisorView transactions={transactions} />
+            </div>
+          )}
+
+          {activeView === 'reports' && (
+            <div className="view-enter">
+              <ReportsView />
+            </div>
+          )}
+
+          <footer className="mt-12 pb-6 text-center" role="contentinfo">
             <p className="text-caption">
-              SpendWise v3.0 · All data stored locally · No data leaves your device 🔒
+              SpendWise v4.0 · All data stored locally · No data leaves your device 🔒
             </p>
           </footer>
         </main>
@@ -417,47 +415,12 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
         cloudMode={Boolean(userId)}
       />
 
-      <ImportCSVModal
-        isOpen={showImportCSV}
-        onClose={() => setShowImportCSV(false)}
-        onImport={(txs) => {
-          txs.forEach(addTransaction);
-        }}
-      />
-
-      <ParentalControlModal
-        isOpen={showParentalModal}
-        onClose={() => setShowParentalModal(false)}
-        pendingTransactions={pendingTransactions}
-        onApproveTx={async (txId) => {
-          updateTransactionCategory(txId, allTransactions.find(t => t.id === txId)?.category ?? 'Other');
-          if (userId) {
-            const { approveTransaction } = await import('../../lib/supabaseData');
-            await approveTransaction(userId, txId).catch(console.error);
-          }
-        }}
-        onRejectTx={async (txId) => {
-          _deleteTransaction(txId);
-          if (userId) {
-            const { rejectTransaction } = await import('../../lib/supabaseData');
-            await rejectTransaction(userId, txId).catch(console.error);
-          }
-        }}
-      />
-
-      <ParentDashboard
-        isOpen={showParentDashboard}
-        onClose={() => setShowParentDashboard(false)}
-        currency={currency}
-      />
-
       <CustomCategoriesModal
         isOpen={showCategoriesModal}
         onClose={() => setShowCategoriesModal(false)}
         customCategories={customCategories}
         onAdd={(newCat) => {
           addCustomCategory(newCat);
-          recoverOriginalCategory(newCat.name);
         }}
         onUpdate={updateCustomCategory}
         onDelete={deleteCustomCategory}

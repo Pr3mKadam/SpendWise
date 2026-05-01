@@ -1,140 +1,27 @@
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import {
-  Transaction,
-  BalanceDataPoint,
-  CategorySpend,
-  Category,
-  MonthlyStats,
-  MonthlyHistoryPoint,
-} from '../types';
+import { useMemo, useCallback } from 'react';
+import { CategorySpend, MonthlyStats, BalanceDataPoint, Transaction, Category } from '../types';
 import { useCategories } from './useCategories';
+import { useStore } from '../store';
 
-// ─── Constants ─────────────────────────────────────────────────────────────────
-
-const STORAGE_KEY          = 'spendwise_transactions_v2';
-const ONBOARDING_KEY       = 'spendwise_config_v1';
-const DEFAULT_BALANCE      = 5200;
-
-// ─── Stable seeded random (for consistent projection line across renders) ──────
-// Uses a simple LCG (Linear Congruential Generator) — deterministic given same seed.
-
-function seededRandom(seed: number): () => number {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) & 0xffffffff;
-    return (s >>> 0) / 0xffffffff;
-  };
-}
-
-// ─── localStorage helpers ──────────────────────────────────────────────────────
-
-function loadTransactions(): Transaction[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as Transaction[];
-      return parsed.map(tx => ({ ...tx, isNew: false }));
-    }
-  } catch { /* ignore parse errors */ }
-  return [];
-}
-
-function saveTransactions(txs: Transaction[]): void {
-  try {
-    const toSave = txs.map(tx => ({ ...tx, isNew: false }));
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
-  } catch { /* ignore quota errors */ }
-}
-
-// ─── Hook ──────────────────────────────────────────────────────────────────────
+const DEFAULT_BALANCE = 5200;
 
 export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   const { mergedColors } = useCategories();
-  const [transactions, setTransactions] = useState<Transaction[]>(loadTransactions);
-
-  // Persist to localStorage whenever transactions change
-  useEffect(() => {
-    saveTransactions(transactions);
-  }, [transactions]);
-
-  // Clear `isNew` flag after 2s so re-renders don't re-trigger entry animations
-  const newFlagTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  useEffect(() => {
-    const hasNew = transactions.some(tx => tx.isNew);
-    if (!hasNew) return;
-    if (newFlagTimerRef.current) clearTimeout(newFlagTimerRef.current);
-    newFlagTimerRef.current = setTimeout(() => {
-      setTransactions(prev => prev.map(tx => tx.isNew ? { ...tx, isNew: false } : tx));
-    }, 2000);
-    return () => {
-      if (newFlagTimerRef.current) clearTimeout(newFlagTimerRef.current);
-    };
-  }, [transactions]);
-
-  // ── Actions ────────────────────────────────────────────────────────────────
-
-  const addTransaction = useCallback((tx: Transaction) => {
-    setTransactions(prev => [{ ...tx, isNew: true }, ...prev]);
-  }, []);
-
-  const resetData = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(ONBOARDING_KEY);
-    setTransactions([]);
-  }, []);
-
-  const deleteTransaction = useCallback((id: string) => {
-    setTransactions(prev => prev.filter(tx => tx.id !== id));
-  }, []);
-
-  const updateTransactionCategory = useCallback((id: string, newCategory: Category) => {
-    setTransactions(prev => prev.map(tx => {
-      if (tx.id === id) {
-        // If the user manually changes the category, we wipe out the ghost memory
-        // so it doesn't accidentally revert later.
-        const { originalCategory, ...rest } = tx;
-        return { ...rest, category: newCategory } as Transaction;
-      }
-      return tx;
-    }));
-  }, []);
-
-  const bulkReassignCategory = useCallback((oldCategory: string, newCategory: Category) => {
-    setTransactions(prev => prev.map(tx => {
-      if (tx.category === oldCategory) {
-        return { ...tx, category: newCategory, originalCategory: oldCategory };
-      }
-      return tx;
-    }));
-  }, []);
-
-  const recoverOriginalCategory = useCallback((recoveredCategory: string) => {
-    setTransactions(prev => prev.map(tx => {
-      if (tx.originalCategory === recoveredCategory) {
-        const { originalCategory, ...rest } = tx;
-        return { ...rest, category: recoveredCategory } as Transaction;
-      }
-      return tx;
-    }));
-  }, []);
-
-  const setTransactionsAll = useCallback((txs: Transaction[]) => {
-    setTransactions(txs);
-  }, []);
-
-  // ── Derived: balance ────────────────────────────────────────────────────────
+  
+  const transactions = useStore(state => state.transactions);
+  const addTransaction = useStore(state => state.addTransaction);
+  const deleteTransaction = useStore(state => state.deleteTransaction);
+  const updateTransactionCategory = useStore(state => state.updateTransactionCategory);
+  const bulkReassignCategory = useStore(state => state.bulkReassignCategory);
+  const resetData = useStore(state => state.resetData);
 
   const currentBalance = useMemo(() => {
-    const startingPoint = initialBalance;
-
     return Math.round(
       transactions.reduce((acc, tx) => {
         return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
-      }, startingPoint) * 100
+      }, initialBalance) * 100
     ) / 100;
   }, [transactions, initialBalance]);
-
-  // ── Derived: category spending (debits only) ───────────────────────────────
 
   const categorySpending = useMemo((): CategorySpend[] => {
     const map = new Map<Category, number>();
@@ -147,7 +34,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
       .map(([name, value]) => ({
         name,
         value:   Math.round(value * 100) / 100,
-        color:   mergedColors[name] || '#14b8a6', // fallback for unknown custom
+        color:   mergedColors[name] || '#14b8a6',
         percent: 0,
       }))
       .sort((a, b) => b.value - a.value);
@@ -158,21 +45,6 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     [categorySpending]
   );
 
-  // Attach percentages after totalSpent is known
-  const categorySpendingWithPercent = useMemo((): CategorySpend[] => {
-    return categorySpending.map(c => ({
-      ...c,
-      percent: totalSpent > 0 ? Math.round((c.value / totalSpent) * 100) : 0,
-    }));
-  }, [categorySpending, totalSpent]);
-
-  const topCategory = useMemo(
-    () => (categorySpendingWithPercent.length > 0 ? categorySpendingWithPercent[0] : null),
-    [categorySpendingWithPercent]
-  );
-
-  // ── Derived: daily spend rate (30-day calendar window, debits only) ────────
-
   const dailySpendRate = useMemo(() => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
@@ -182,39 +54,12 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     return Math.round((total / 30) * 100) / 100;
   }, [transactions]);
 
-  // ── Derived: predicted end-of-month balance ────────────────────────────────
-
   const predictedEndOfMonth = useMemo(() => {
     const today    = new Date();
     const lastDay  = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
     const daysLeft = lastDay - today.getDate();
     return Math.round((currentBalance - dailySpendRate * daysLeft) * 100) / 100;
   }, [currentBalance, dailySpendRate]);
-
-  /** Extra context for metrics, alerts, and AI coach (30-day burn × days left in month). */
-  const projectionMeta = useMemo(() => {
-    const today    = new Date();
-    const lastDay  = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-    const daysLeft = Math.max(0, lastDay - today.getDate());
-    const cutoff   = new Date();
-    cutoff.setDate(cutoff.getDate() - 30);
-    const cutoffStr = cutoff.toISOString().split('T')[0];
-    const debitCount = transactions.filter(
-      tx => tx.type === 'debit' && tx.date >= cutoffStr
-    ).length;
-    let dataQuality: 'low' | 'medium' | 'high' = 'low';
-    if (debitCount >= 12) dataQuality = 'high';
-    else if (debitCount >= 4) dataQuality = 'medium';
-    const expectedChange = Math.round((predictedEndOfMonth - currentBalance) * 100) / 100;
-    return {
-      daysLeftInMonth: daysLeft,
-      dataQuality,
-      expectedChange,
-      debitCount30d: debitCount,
-    };
-  }, [transactions, predictedEndOfMonth, currentBalance]);
-
-  // ── Derived: monthly stats ─────────────────────────────────────────────────
 
   const monthlyStats = useMemo((): MonthlyStats => {
     const now      = new Date();
@@ -224,107 +69,98 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     const expenses  = thisMonth.filter(tx => tx.type === 'debit').reduce((a, tx) => a + tx.amount, 0);
     const net       = income - expenses;
     const savings   = income > 0 ? Math.round((net / income) * 100) : 0;
-    const days      = now.getDate();
     return {
       totalIncome:      Math.round(income * 100) / 100,
       totalExpenses:    Math.round(expenses * 100) / 100,
       savingsRate:      savings,
       netCashFlow:      Math.round(net * 100) / 100,
-      avgDailySpend:    Math.round((expenses / Math.max(1, days)) * 100) / 100,
+      avgDailySpend:    Math.round((expenses / Math.max(1, now.getDate())) * 100) / 100,
       transactionCount: thisMonth.length,
     };
   }, [transactions]);
 
-  // ── Derived: 6-month history (for Analytics bar chart) ────────────────────
-  // Uses real transactions + simulated prior months so Analytics isn't empty.
-
-  const monthlyHistory = useMemo((): MonthlyHistoryPoint[] => {
-    const now    = new Date();
-    const points: MonthlyHistoryPoint[] = [];
-
-    // Seeded fake data for past 5 months so the chart looks alive
-
-    for (let m = 5; m >= 0; m--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - m, 1);
-      const year      = d.getFullYear();
-      const monthNum  = d.getMonth() + 1;
-      const monthStr  = `${year}-${String(monthNum).padStart(2, '0')}`;
-      const label     = d.toLocaleDateString('en-US', { month: 'short' });
-
-      // Current month: use real transaction data
-      if (m === 0) {
-        const thisMonth = transactions.filter(tx => tx.date.startsWith(monthStr));
-        const income    = thisMonth.filter(tx => tx.type === 'credit').reduce((a, tx) => a + tx.amount, 0);
-        const expenses  = thisMonth.filter(tx => tx.type === 'debit').reduce((a, tx) => a + tx.amount, 0);
-        points.push({
-          month:    label,
-          income:   Math.round(income),
-          expenses: Math.round(expenses),
-          savings:  Math.round(income - expenses),
-        });
-      } else {
-        points.push({
-          month:    label,
-          income:   0,
-          expenses: 0,
-          savings:  0,
-        });
-      }
-    }
-
-    return points;
-  }, [transactions]);
-
-  // ── Derived: balance trend (14-day history + 14-day stable projection) ─────
-
   const balanceTrend = useMemo((): BalanceDataPoint[] => {
     const points: BalanceDataPoint[] = [];
     const today = new Date();
-
-    // Use the same starting point reverse-calc for the trend lines
     const startingPoint = initialBalance;
-
-    // --- Historical: last 14 days ---
     for (let i = 13; i >= 0; i--) {
       const d       = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-
       let bal = startingPoint;
       transactions.forEach(tx => {
         if (tx.date <= dateStr) {
           bal += tx.type === 'credit' ? tx.amount : -tx.amount;
         }
       });
-
       points.push({
         date:    d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         balance: Math.round(bal * 100) / 100,
       });
     }
-
-    // --- Projection: next 14 days (deterministic via seeded RNG) ---
-    const seed  = transactions.length * 1000 + today.getMonth() * 100 + today.getDate();
-    const rand  = seededRandom(seed);
-    let lastBal = points[points.length - 1].balance;
-
-    for (let i = 1; i <= 14; i++) {
-      const d           = new Date(today);
-      d.setDate(d.getDate() + i);
-      const dailyChange = -(dailySpendRate) + (rand() - 0.5) * 40;
-      lastBal           = Math.round((lastBal + dailyChange) * 100) / 100;
-
-      points.push({
-        date:      d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        balance:   lastBal,
-        projected: true,
-      });
-    }
-
     return points;
+  }, [transactions, initialBalance]);
+
+  const projectionMeta = useMemo(() => {
+    const today = new Date();
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    const daysLeft = lastDay - today.getDate();
+    
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - 30);
+    const cutoffStr = cutoff.toISOString().split('T')[0];
+    const debitCount = transactions.filter(tx => tx.type === 'debit' && tx.date >= cutoffStr).length;
+
+    let quality: 'low' | 'medium' | 'high' = 'low';
+    if (debitCount > 20) quality = 'high';
+    else if (debitCount > 5) quality = 'medium';
+
+    return {
+      daysLeftInMonth: daysLeft,
+      dataQuality: quality,
+      expectedChange: Math.round((dailySpendRate * daysLeft) * 100) / 100,
+    };
   }, [transactions, dailySpendRate]);
 
-  // ── Return ──────────────────────────────────────────────────────────────────
+  const subscriptions = useMemo(() => {
+    // Basic detection: group by description and amount
+    const groups = new Map<string, Transaction[]>();
+    transactions.forEach(tx => {
+      if (tx.type === 'debit') {
+        const key = `${tx.description.toLowerCase().trim()}_${tx.amount}`;
+        const existing = groups.get(key) || [];
+        groups.set(key, [...existing, tx]);
+      }
+    });
+
+    const detected: { description: string; amount: number; frequency: string; lastDate: string }[] = [];
+    groups.forEach((txs, key) => {
+      if (txs.length >= 2) {
+        // Sort by date
+        const sorted = [...txs].sort((a, b) => a.date.localeCompare(b.date));
+        // Check for roughly monthly intervals (25-35 days)
+        let isMonthly = true;
+        for (let i = 1; i < sorted.length; i++) {
+          const d1 = new Date(sorted[i-1].date);
+          const d2 = new Date(sorted[i].date);
+          const diffDays = (d2.getTime() - d1.getTime()) / (1000 * 3600 * 24);
+          if (diffDays < 25 || diffDays > 35) {
+            isMonthly = false;
+            break;
+          }
+        }
+        if (isMonthly) {
+          detected.push({
+            description: sorted[0].description,
+            amount: sorted[0].amount,
+            frequency: 'Monthly',
+            lastDate: sorted[sorted.length - 1].date
+          });
+        }
+      }
+    });
+    return detected;
+  }, [transactions]);
 
   return {
     transactions,
@@ -332,18 +168,17 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     deleteTransaction,
     updateTransactionCategory,
     bulkReassignCategory,
-    recoverOriginalCategory,
     resetData,
-    setTransactionsAll,
     currentBalance,
     predictedEndOfMonth,
-    projectionMeta,
-    topCategory,
-    categorySpending: categorySpendingWithPercent,
+    categorySpending,
     totalSpent,
     balanceTrend,
     dailySpendRate,
     monthlyStats,
-    monthlyHistory,
+    monthlyHistory: [], // Simplified for reset
+    projectionMeta,
+    subscriptions,
+    topCategory: categorySpending[0] || null,
   };
 }

@@ -46,6 +46,13 @@
     --blue-dim:      rgba(59, 130, 246, 0.1);
     --purple:        #8b5cf6;
     --purple-dim:    rgba(139, 92, 246, 0.1);
+    --gold:          #facc15;
+    --gold-dim:      rgba(250, 204, 21, 0.15);
+
+    /* ── Glassmorphism ── */
+    --glass-bg:      rgba(255, 255, 255, 0.7);
+    --glass-border:  rgba(255, 255, 255, 0.3);
+    --glass-blur:    12px;
 
     /* ── Border ── */
     --border:        #e2e8f0;
@@ -54,6 +61,7 @@
     --accent:        #14b8a6;
     --accent-light:  #2dd4bf;
     --accent-dim:    rgba(20, 184, 166, 0.12);
+    --accent-gradient: linear-gradient(135deg, var(--teal) 0%, var(--blue) 100%);
 
     /* ── Card Shadow ── */
     --shadow-card:   0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
@@ -88,6 +96,10 @@
     --surface-card:  #1e2536;
     --surface-input: #273043;
     --surface-hover: #232c40;
+
+    /* ── Glassmorphism Dark ── */
+    --glass-bg:      rgba(30, 37, 54, 0.7);
+    --glass-border:  rgba(255, 255, 255, 0.05);
 
     /* ── Text ── */
     --text-primary:   #f8fafc;
