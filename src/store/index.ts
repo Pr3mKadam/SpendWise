@@ -1,18 +1,19 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
-import { get, set, del } from 'idb-keyval';
 import { Transaction, Category, AssetEntry, LiabilityEntry, RecurringPattern, SavingsGoal } from '../types';
+import { db } from '../db/db';
 
-// Custom storage for IndexedDB
-const idbStorage: StateStorage = {
+// Custom storage for IndexedDB using Dexie
+const dexieStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
-    return (await get(name)) || null;
+    const record = await db.keyval.get(name);
+    return record ? record.value : null;
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await set(name, value);
+    await db.keyval.put({ key: name, value });
   },
   removeItem: async (name: string): Promise<void> => {
-    await del(name);
+    await db.keyval.delete(name);
   },
 };
 
@@ -338,7 +339,7 @@ export const useStore = create<SpendWiseStore>()(
     }),
     {
       name: 'spendwise-global-store',
-      storage: createJSONStorage(() => idbStorage),
+      storage: createJSONStorage(() => dexieStorage),
     }
   )
 );

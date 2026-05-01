@@ -12,6 +12,9 @@ import { registerSW } from 'virtual:pwa-register';
 // Register the PWA service worker explicitly with auto update
 registerSW({ immediate: true });
 
+import { runDexieMigration } from './db/migration';
+runDexieMigration().catch(console.error);
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <AuthProvider>
