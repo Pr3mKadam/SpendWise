@@ -1,7 +1,7 @@
 # ROADMAP.md - SpendWise Evolution
 
 ## Status: ACTIVE
-**Current Phase**: 1.6 (DIY Local Persistence)
+**Current Phase**: 1.7 (100% Offline AI & Privacy)
 
 ---
 
@@ -14,13 +14,13 @@
 - [x] **UI Restructuring**: Reorganized components into `features/` and `views/` directories.
 - [x] **Persistence**: Basic `localStorage` synchronization for transactions and config.
 
-### Phase 1.6: DIY Local Persistence (Next) 🚀
+### Phase 1.6: DIY Local Persistence ✅
 - [ ] **Robust Storage**: Evaluate and implement IndexedDB (via Dexie.js or PouchDB) for handling larger datasets.
 - [ ] **Data Migration**: Utility to migrate from `localStorage` to the new DB.
 - [ ] **Backup/Restore**: Implement JSON export/import for user data portability.
 - [ ] **Encryption**: Add optional client-side encryption for the local database.
 
-### Phase 1.7: 100% Offline AI & Privacy 🛠️
+### Phase 1.7: 100% Offline AI & Privacy 🚀
 - [ ] **Remove Gemini**: Delete all cloud AI service calls and API key requirements.
 - [ ] **Local OCR**: Enhance Tesseract.js integration for receipt scanning.
 - [ ] **Local Voice**: Improve Regex-based parsing for voice commands.
