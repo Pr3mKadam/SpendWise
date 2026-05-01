@@ -6,6 +6,7 @@ import { Transaction } from '../../types';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { encryptData, decryptData } from '../../utils/encryption';
 import { useStore } from '../../store';
+import { downloadDatabaseBackup, importDatabase } from '../../db/backup';
 
 interface ProfileViewProps {
   config: SpendWiseConfig | null;
@@ -127,6 +128,26 @@ export default function ProfileView({
       alert('Restore failed. Invalid password or corrupted file.');
     } finally {
       setIsRestoring(false);
+    }
+  };
+
+  const handleRawDBExport = async () => {
+    try {
+      await downloadDatabaseBackup();
+    } catch (error) {
+      alert('Failed to download raw database backup.');
+    }
+  };
+
+  const handleRawDBImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (confirm('Warning: This will overwrite your current database. Proceed?')) {
+      try {
+        await importDatabase(file);
+      } catch (error) {
+        alert('Failed to import database.');
+      }
     }
   };
 
@@ -379,8 +400,32 @@ export default function ProfileView({
                 className="px-5 py-2.5 rounded-xl font-inter font-bold text-xs transition-all hover:scale-105 active:scale-95"
                 style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--teal)', cursor: 'pointer' }}
               >
-                Restore from Backup
+                Restore from Secure Backup
               </button>
+            </div>
+          </div>
+          
+          {/* Raw Database Backup */}
+          <div
+            className="flex flex-col p-5 rounded-xl md:col-span-2 mt-4"
+            style={{ border: '1.5px solid var(--border)', background: 'var(--surface-input)' }}
+          >
+            <h4 className="font-inter font-bold text-[15px] mb-2" style={{ color: 'var(--text-primary)' }}>Raw Database Export/Import (.json)</h4>
+            <p className="font-inter text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+              Export or import the raw IndexedDB database (unencrypted) for testing or moving to another device manually.
+            </p>
+            <div className="flex gap-3 items-center">
+              <button
+                onClick={handleRawDBExport}
+                className="px-4 py-2 rounded-lg font-inter font-semibold text-xs transition-colors"
+                style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)', cursor: 'pointer' }}
+              >
+                Download Raw JSON
+              </button>
+              <label className="px-4 py-2 rounded-lg font-inter font-semibold text-xs transition-colors" style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)', cursor: 'pointer' }}>
+                Import Raw JSON
+                <input type="file" accept=".json" onChange={handleRawDBImport} className="hidden" />
+              </label>
             </div>
           </div>
         </div>
