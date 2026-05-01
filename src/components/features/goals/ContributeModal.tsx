@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Zap } from 'lucide-react';
 import Portal from '../../common/Portal';
-import { SavingsGoal } from '../../types';
+import { SavingsGoal } from '../../../types';
 
 export function ContributeModal({
   goal,

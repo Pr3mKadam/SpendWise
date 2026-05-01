@@ -1,6 +1,6 @@
 import { Bell, ChevronRight, Moon, Sun, User, Search } from 'lucide-react';
-import { AppView } from '../types';
-import { SpendWiseConfig } from './OnboardingModal';
+import { AppView } from '../../types';
+import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 
 interface HeaderProps {
   activeView:            AppView;
@@ -51,7 +51,7 @@ export default function Header({
   const displayName = config?.name?.trim() || 'User';
   const initials = displayName
     .split(' ')
-    .map(n => n[0])
+    .map((n: string) => n[0])
     .join('')
     .toUpperCase()
     .slice(0, 2);

@@ -1,4 +1,4 @@
-import { AppView } from '../types';
+import { AppView } from '../../types';
 
 interface NavTabsProps {
   activeView:      AppView;

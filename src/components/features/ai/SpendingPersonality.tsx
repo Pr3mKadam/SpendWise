@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Brain, Zap, Target, Quote } from 'lucide-react';
-import { getSpendingPersonality } from '../../../utils/aiAnalyzer';
+import { getSpendingPersonality } from '../../../utils/insights/reporting';
 import { Transaction } from '../../../types';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -65,7 +65,7 @@ export default function SpendingPersonality({ transactions }: SpendingPersonalit
               <Brain size={20} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[var(--teal)]" />
             </div>
             <p className="text-xs font-inter font-medium text-[var(--text-muted)] animate-pulse">
-              Gemini AI is decoding your behavioral patterns...
+              Local AI is decoding your behavioral patterns...
             </p>
           </motion.div>
         ) : personality ? (

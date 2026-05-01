@@ -23,6 +23,8 @@ export function useBudgets() {
       return {
         category: category as Category,
         limit,
+        baseLimit: limit,
+        rolloverAmount: 0,
         spent,
         percent,
         remaining,

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Calendar, DollarSign, Plus, Edit3, Trash2 } from 'lucide-react';
-import { SavingsGoal } from '../../types';
+import { SavingsGoal } from '../../../types';
 import { ProgressRing } from './ProgressRing';
 import { STATUS_CONFIG } from './constants';
 import { daysUntil, formatDate } from './utils';

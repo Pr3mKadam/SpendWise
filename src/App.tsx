@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { SpendWiseConfig } from './components/OnboardingModal';
+import { SpendWiseConfig } from './components/features/onboarding/OnboardingModal';
 import { useAuth } from './hooks/useAuth';
 import AuthView from './components/views/AuthView';
 import { MainShell } from './components/layout/MainShell';

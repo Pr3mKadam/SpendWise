@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Plus, Trash2, Edit3, Tag as TagIcon } from 'lucide-react';
-import { CustomCategoryDef, Transaction } from '../types';
+import { CustomCategoryDef, Transaction } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
 
 interface CustomCategoriesModalProps {

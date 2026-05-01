@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { X, Bell, CheckCheck, ExternalLink, Sparkles } from 'lucide-react';
-import { AppNotification, AlertSeverity, AppView } from '../types';
+import { AppNotification, AlertSeverity, AppView } from '../../types';
 
 interface NotificationCenterProps {
   notifications: AppNotification[];

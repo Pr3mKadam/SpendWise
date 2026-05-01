@@ -557,7 +557,11 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
           </>
         ) : (
           <div className="animate-fade-in">
-            <FutureWealthSimulator financeState={financeState} currency={currency} />
+            <FutureWealthSimulator
+              currentBalance={netWorth}
+              monthlySavings={Math.max(0, monthlyIncome - monthlyExpenses)}
+              currency={currency}
+            />
           </div>
         )}
 

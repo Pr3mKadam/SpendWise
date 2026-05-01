@@ -5,12 +5,12 @@ import { useStore } from '../../../store';
 import confetti from 'canvas-confetti';
 
 export default function QuestCompletionOverlay() {
-  const { quests, updateQuest } = useStore();
+  const { quests, completeQuest } = useStore();
   const [completedQuest, setCompletedQuest] = useState<any>(null);
 
   useEffect(() => {
     // Find quests that are 100% but not yet "celebrated"
-    const newlyCompleted = quests.find(q => q.progress >= 100 && q.status === 'active');
+    const newlyCompleted = quests.find(q => q.progress >= 100 && !q.completed);
     if (newlyCompleted) {
       setCompletedQuest(newlyCompleted);
       confetti({
@@ -24,7 +24,7 @@ export default function QuestCompletionOverlay() {
 
   const handleClose = () => {
     if (completedQuest) {
-      updateQuest(completedQuest.id, { status: 'completed' });
+      completeQuest(completedQuest.id);
       setCompletedQuest(null);
     }
   };

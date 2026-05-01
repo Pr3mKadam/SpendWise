@@ -1,4 +1,4 @@
-import { GoalStatus } from '../../types';
+import { GoalStatus } from '../../../types';
 import { CheckCircle2, TrendingUp, AlertTriangle, PauseCircle } from 'lucide-react';
 
 export const STATUS_CONFIG: Record<GoalStatus, {

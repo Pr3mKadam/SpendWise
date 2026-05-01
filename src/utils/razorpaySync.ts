@@ -1,5 +1,5 @@
 import { Transaction, Category } from '../types';
-import { analyzeTransactionString } from './aiAnalyzer';
+import { analyzeTransactionString } from './parsers/nlp';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
 const MEMORY_KEY = 'spendwise_merchant_memory';

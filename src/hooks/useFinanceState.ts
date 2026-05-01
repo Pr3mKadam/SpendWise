@@ -127,7 +127,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     const groups = new Map<string, Transaction[]>();
     transactions.forEach(tx => {
       if (tx.type === 'debit') {
-        const key = `${tx.description.toLowerCase().trim()}_${tx.amount}`;
+        const key = `${(tx.description ?? '').toLowerCase().trim()}_${tx.amount}`;
         const existing = groups.get(key) || [];
         groups.set(key, [...existing, tx]);
       }
@@ -151,7 +151,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
         }
         if (isMonthly) {
           detected.push({
-            description: sorted[0].description,
+            description: sorted[0].description ?? '',
             amount: sorted[0].amount,
             frequency: 'Monthly',
             lastDate: sorted[sorted.length - 1].date

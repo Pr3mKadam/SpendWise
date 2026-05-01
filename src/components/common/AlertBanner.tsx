@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, ChevronDown, ChevronUp, AlertTriangle, Info, ShieldAlert } from 'lucide-react';
-import { SpendingAlert, AlertSeverity } from '../types';
+import { SpendingAlert, AlertSeverity } from '../../types';
 
 interface AlertBannerProps {
   alerts:       SpendingAlert[];

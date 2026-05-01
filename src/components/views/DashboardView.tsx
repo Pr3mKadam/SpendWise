@@ -7,7 +7,7 @@ import MagicInput from '../features/ai/MagicInput';
 import { useFinanceState } from '../../hooks/useFinanceState';
 import { useGamification } from '../../hooks/useGamification';
 import { WealthTree } from '../features/wealth/WealthTree';
-import { Flame, Trophy, Activity, TrendingUp } from 'lucide-react';
+import { Flame, Trophy, Activity, TrendingUp, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { SavingsChallenges } from '../features/gamification/SavingsChallenges';
 import { SubscriptionCard } from '../features/subscriptions/SubscriptionCard';
@@ -22,7 +22,7 @@ export function DashboardView({
 }: {
   financeState: ReturnType<typeof useFinanceState>;
   onCategoryChange: (id: string, newCategory: string) => void;
-  onAdd: Parameters<typeof MagicInput>[0]['onAddTransaction'];
+  onAdd: Parameters<typeof MagicInput>[0]['onAdd'];
   currency: string;
 }) {
   const {
@@ -134,7 +134,7 @@ export function DashboardView({
               />
           </div>
 
-          <SubscriptionCard currency={currency} />
+          <SubscriptionCard />
           
           <SavingsChallenges />
         </div>

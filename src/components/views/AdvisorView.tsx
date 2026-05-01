@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X } from 'lucide-react';
 import { useFinanceState } from '../../hooks/useFinanceState';
-import { getFinancialAdvice, getSpendingPersonality } from '../../utils/aiAnalyzer';
+import { getFinancialAdvice } from '../../utils/insights/advisor';
+import { getSpendingPersonality } from '../../utils/insights/reporting';
 import { Transaction } from '../../types';
 
 interface Message {
@@ -15,7 +16,7 @@ export default function AdvisorView({ transactions }: { transactions: Transactio
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      text: "Hello! I'm your SpendWise AI Advisor. I've analyzed your recent transactions. How can I help you save more today?",
+      text: "Hello! I'm your SpendWise Local Advisor. I've analyzed your recent transactions. How can I help you save more today?",
       sender: 'ai',
       timestamp: new Date().toISOString()
     }
@@ -93,7 +94,7 @@ export default function AdvisorView({ transactions }: { transactions: Transactio
             <h2 className="text-sm font-bold text-[var(--text-primary)]">AI Financial Advisor</h2>
             <div className="flex items-center gap-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] text-[var(--text-muted)]">Powered by Gemini AI</span>
+              <span className="text-[10px] text-[var(--text-muted)]">Powered by SpendWise Local AI</span>
             </div>
           </div>
         </div>

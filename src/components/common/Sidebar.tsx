@@ -1,5 +1,5 @@
 import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText } from 'lucide-react';
-import { AppView } from '../types';
+import { AppView } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 
 import { useStore } from '../../store';

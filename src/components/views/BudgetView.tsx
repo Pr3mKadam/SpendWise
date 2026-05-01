@@ -7,7 +7,7 @@ import { Category } from '../../types';
 
 export default function BudgetView({ currency = '₹' }: { currency?: string }) {
   const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent } = useBudgets();
-  const { categories } = useCategories();
+  const { allCategories: categories } = useCategories();
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [limitAmount, setLimitAmount] = useState('');

@@ -113,13 +113,22 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
   // Exclude pending-approval transactions from balance & budget calculations
   const transactions = allTransactions.filter(t => t.status !== 'pending_approval');
 
-  const budgetState = useBudgets(transactions);
+  const budgetState = useBudgets();
   const {
-    budgets, updateLimit, resetLimits, totalBudgeted, totalSpentAgainstBudget, overBudgetCount,
-    period, periodLabel, rolloverEnabled, updatePeriod, toggleRollover,
+    budgets, budgetStats, setBudget, totalBudgeted
   } = budgetState;
 
-  const alertState    = useAlerts(transactions, currentBalance, budgets, dailySpendRate, {
+  const updateLimit = setBudget;
+  const resetLimits = () => {};
+  const totalSpentAgainstBudget = budgetStats.reduce((a, b) => a + b.spent, 0);
+  const overBudgetCount = budgetStats.filter(b => b.status === 'danger').length;
+  const period: any = 'monthly';
+  const periodLabel = 'This Month';
+  const rolloverEnabled = false;
+  const updatePeriod = () => {};
+  const toggleRollover = () => {};
+
+  const alertState    = useAlerts(transactions, currentBalance, budgetStats, dailySpendRate, {
     currency,
     predictedEndOfMonth,
     daysLeftInMonth: projectionMeta.daysLeftInMonth,
@@ -156,12 +165,12 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
     generatePDFReport({
       transactions,
       monthlyStats,
-      budgets,
+      budgets: budgetStats as any,
       goals: goalsState.goals,
       currency,
       month,
     });
-  }, [transactions, monthlyStats, budgets, goalsState.goals, currency]);
+  }, [transactions, monthlyStats, budgetStats, goalsState.goals, currency]);
 
   const handleViewChange = useCallback((v: AppView) => {
     setActiveView(v);
@@ -248,7 +257,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
           {activeView === 'budget' && (
             <div className="view-enter">
               <BudgetManager
-                budgets={budgets}
+                budgets={budgetStats as any}
                 totalBudgeted={totalBudgeted}
                 totalSpentAgainstBudget={totalSpentAgainstBudget}
                 overBudgetCount={overBudgetCount}

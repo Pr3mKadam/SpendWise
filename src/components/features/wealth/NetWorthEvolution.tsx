@@ -95,7 +95,7 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
                 boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
               }}
               itemStyle={{ fontSize: '12px', fontFamily: 'var(--font-inter)' }}
-              formatter={(value: number) => [`${currency}${value.toLocaleString()}`, 'Net Worth']}
+              formatter={(value: any) => [`${currency}${Number(value).toLocaleString()}`, 'Net Worth']}
             />
             <ReferenceLine y={0} stroke="var(--border)" strokeWidth={1} />
             <Area 

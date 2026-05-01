@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCategories } from '../../hooks/useCategories';
 import { ChevronDown } from 'lucide-react';
-import { Category } from '../types';
+import { Category } from '../../types';
 
 interface CategoryDropdownProps {
   value: string;

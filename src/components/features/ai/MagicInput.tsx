@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Wand2, Sparkles, Loader2, Check, X, Mic } from 'lucide-react';
-import { processNaturalLanguageExpense } from '../../../utils/aiAnalyzer';
+import React, { useState, useRef } from 'react';
+import { Wand2, Sparkles, Loader2, Check, X, Mic, Camera, Paperclip } from 'lucide-react';
+import { processNaturalLanguageExpense } from '../../../utils/parsers/nlp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Transaction } from '../../../types';
 import { playSuccess } from '../../../utils/soundscape';
+import { AIInputTools } from './AIInputTools';
+import { compressImage } from '../../../utils/imageUtils';
+import { recognizeReceipt, parseOfflineReceipt } from '../../../utils/parsers/ocr';
+import { parseVoiceLocally } from '../../../utils/parsers/voice';
 
 interface MagicInputProps {
   onAdd: (transaction: Transaction) => void;
@@ -13,6 +17,10 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
   const [input, setInput] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [prediction, setPrediction] = useState<Partial<Transaction> | null>(null);
+  const [isScanning, setIsScanning] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [scanStatus, setScanStatus] = useState<string | undefined>();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleProcess = async () => {
     if (!input.trim()) return;
@@ -36,8 +44,72 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsScanning(true);
+    setScanStatus('📷 Compressing image...');
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Url = event.target?.result as string;
+        setScanStatus('🔍 Extracting text locally...');
+        try {
+          const compressed = await compressImage(base64Url, 800, 0.75);
+          const rawText = await recognizeReceipt(`data:${compressed.mimeType};base64,${compressed.base64}`);
+          const res = parseOfflineReceipt(rawText);
+          setPrediction(res);
+          setScanStatus('✅ Receipt scanned! Review and confirm.');
+        } catch (err) {
+          setScanStatus('❌ Scan failed. Try a clearer photo.');
+        } finally {
+          setIsScanning(false);
+          setTimeout(() => setScanStatus(undefined), 3000);
+        }
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      setIsScanning(false);
+      setScanStatus('❌ Failed to read file.');
+    }
+  };
+
+  const handleVoiceInput = () => {
+    // @ts-ignore
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      setScanStatus('🚫 Voice not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN';
+    recognition.onstart = () => {
+      setIsListening(true);
+      setScanStatus('🎙️ Listening...');
+    };
+
+    recognition.onresult = async (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setScanStatus(`✅ Heard: "${transcript}"`);
+      const today = new Date().toISOString().split('T')[0];
+      const res = parseVoiceLocally(transcript, today);
+      setPrediction(res);
+      setIsListening(false);
+      setTimeout(() => setScanStatus(undefined), 3000);
+    };
+
+    recognition.onerror = () => {
+      setIsListening(false);
+      setScanStatus('❌ Voice error. Try again.');
+    };
+
+    recognition.start();
+  };
+
   return (
-    <div className="relative w-full max-w-2xl mx-auto">
+    <div className="relative w-full max-w-2xl mx-auto space-y-4">
       <div className="relative group">
         <div className="absolute -inset-1 bg-gradient-to-r from-[var(--teal)] to-blue-500 rounded-[32px] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
         <div className="relative bg-[var(--surface-card)] border border-[var(--border)] rounded-[30px] p-2 flex items-center gap-2 shadow-xl">
@@ -62,6 +134,15 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
         </div>
       </div>
 
+      <AIInputTools 
+        isScanning={isScanning}
+        isListening={isListening}
+        scanStatus={scanStatus}
+        handleFileChange={handleFileChange}
+        handleVoiceInput={handleVoiceInput}
+        fileInputRef={fileInputRef}
+      />
+
       <AnimatePresence>
         {prediction && (
           <motion.div 
@@ -73,7 +154,7 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--teal)] to-blue-500" />
             
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-black uppercase text-[var(--teal)] tracking-widest">AI Prediction</span>
+              <span className="text-[10px] font-black uppercase text-[var(--teal)] tracking-widest">Local AI Prediction</span>
               <button onClick={() => setPrediction(null)} className="p-1 text-[var(--text-muted)] hover:text-red-500 bg-transparent border-none cursor-pointer">
                 <X size={18} />
               </button>
@@ -81,12 +162,12 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
 
             <div className="flex items-center gap-6">
               <div className="flex-1">
-                <h4 className="text-2xl font-black text-[var(--text-primary)]">{prediction.merchant}</h4>
-                <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.category}</p>
+                <h4 className="text-2xl font-black text-[var(--text-primary)]">{prediction.merchant || 'Unknown Merchant'}</h4>
+                <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.category || 'Expense'}</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-black text-[var(--teal)]">₹{prediction.amount}</p>
-                <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.type}</p>
+                <p className="text-2xl font-black text-[var(--teal)]">₹{prediction.amount || 0}</p>
+                <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.type || 'debit'}</p>
               </div>
             </div>
 
@@ -107,10 +188,6 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
           </motion.div>
         )}
       </AnimatePresence>
-      
-      <p className="text-center mt-3 text-[10px] font-bold text-[var(--text-muted)] opacity-50 uppercase tracking-widest flex items-center justify-center gap-2">
-        <Mic size={10} /> Tip: Describe your expense naturally like "Spent 40 on coffee"
-      </p>
     </div>
   );
 }

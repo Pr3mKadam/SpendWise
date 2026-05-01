@@ -1,6 +1,6 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Search, Compass, DollarSign, Activity, FileText, Target, Wallet, RefreshCw, User, PiggyBank, ArrowRight, X } from 'lucide-react';
-import { AppView, Transaction } from '../types';
+import { AppView, Transaction } from '../../types';
 import Portal from './Portal';
 
 interface CommandPaletteProps {
@@ -159,11 +159,11 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, transactio
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0" style={{ background: tx.type === 'credit' ? 'var(--green-dim)' : 'var(--surface-card)', border: '1px solid var(--border)' }}>
-                          <span style={{ fontSize: '14px' }}>{tx.type === 'credit' ? 'ðŸ’µ' : 'ðŸ›’'}</span>
+                          <span style={{ fontSize: '14px' }}>{tx.type === 'credit' ? '💵' : '🛒'}</span>
                         </div>
                         <div>
                           <p className="font-inter font-semibold text-[13px] text-[var(--text-primary)] leading-tight">{tx.merchant}</p>
-                          <p className="font-inter text-[11px] text-[var(--text-muted)]">{tx.category} â€¢ {new Date(tx.date).toLocaleDateString()}</p>
+                          <p className="font-inter text-[11px] text-[var(--text-muted)]">{tx.category} • {new Date(tx.date).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <span className="font-inter font-semibold text-[13px]" style={{ color: tx.type === 'credit' ? 'var(--green)' : 'var(--text-primary)' }}>
@@ -177,8 +177,8 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, transactio
           </div>
           
           <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--surface-input)] flex items-center gap-4 text-[11px] text-[var(--text-muted)] font-inter">
-            <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">â†‘</kbd> <kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">â†“</kbd> to navigate</span>
-            <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm font-sans">â†µ</kbd> to select</span>
+            <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">↑</kbd> <kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">↓</kbd> to navigate</span>
+            <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm font-sans">↵</kbd> to select</span>
             <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">esc</kbd> to dismiss</span>
           </div>
         </div>

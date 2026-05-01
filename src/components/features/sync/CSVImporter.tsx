@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, AlertCircle, CheckCircle2, ChevronRight, RefreshCw, FileText, X } from 'lucide-react';
 import { Transaction, Category } from '../../../types';
+import { parseCSVLocally } from '../../../utils/parsers/csv';
 
 interface CSVImporterProps {
   onImport: (transactions: Transaction[]) => void;
@@ -113,15 +114,13 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
   const buildPreview = async () => {
     setIsParsing(true);
     setError('');
-    
-    // Construct sample content for AI to understand structure
-    const sampleRows = rawRows.slice(0, 50).map(r => r.join(',')).join('\n');
+
+    const sampleRows = rawRows.slice(0, 200).map(r => r.join(',')).join('\n');
     const csvContent = headers.join(',') + '\n' + sampleRows;
 
     try {
-      const { parseCSVWithAI } = await import('../../../utils/aiAnalyzer');
-      const txs = await parseCSVWithAI(csvContent);
-      
+      const txs = parseCSVLocally(csvContent);
+
       if (txs && txs.length > 0) {
         setParsed(txs.map((tx, i) => ({
           ...tx,
@@ -129,11 +128,11 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
         })));
         setStep('preview');
       } else {
-        setError('AI failed to parse the CSV. Please try again or check the format.');
+        setError('Could not parse transactions. Check that date, merchant and amount columns are mapped correctly.');
       }
     } catch (err) {
       console.error(err);
-      setError('An error occurred during AI parsing.');
+      setError('An error occurred while parsing the CSV.');
     } finally {
       setIsParsing(false);
     }
@@ -197,7 +196,7 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
               disabled={isParsing}
               className="w-full py-2.5 rounded-xl bg-[var(--teal)] text-white font-bold text-xs border-none cursor-pointer hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isParsing ? 'AI is analyzing...' : 'Preview Data'}
+              {isParsing ? 'Parsing...' : 'Preview Data'}
             </button>
           </div>
         )}
