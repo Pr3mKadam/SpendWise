@@ -56,72 +56,79 @@ export default function FutureWealthSimulator({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Controls */}
-        <div className="space-y-6">
+        <div className="lg:col-span-4 space-y-6">
           <div className="space-y-4">
             <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase">Time Horizon</label>
-                <span className="text-xs font-bold text-[var(--teal)]">{years} Years</span>
+              <div className="flex flex-wrap justify-between items-end gap-1 mb-2">
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Time Horizon</label>
+                <span className="text-xs font-black text-[var(--teal)]">{years} Years</span>
               </div>
               <input 
                 type="range" min="1" max="40" value={years} 
                 onChange={(e) => setYears(parseInt(e.target.value))}
-                className="w-full accent-[var(--teal)]"
+                className="w-full accent-[var(--teal)] h-1.5 rounded-lg appearance-none bg-[var(--surface-input)] cursor-pointer"
               />
             </div>
 
             <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-xs font-semibold text-[var(--text-muted)] uppercase">Expected ROI (%)</label>
-                <span className="text-xs font-bold text-[var(--green)]">{expectedROI}%</span>
+              <div className="flex flex-wrap justify-between items-end gap-1 mb-2">
+                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Expected ROI (%)</label>
+                <span className="text-xs font-black text-[var(--green)]">{expectedROI}%</span>
               </div>
               <input 
                 type="range" min="1" max="15" step="0.5" value={expectedROI} 
                 onChange={(e) => setExpectedROI(parseFloat(e.target.value))}
-                className="w-full accent-[var(--green)]"
+                className="w-full accent-[var(--green)] h-1.5 rounded-lg appearance-none bg-[var(--surface-input)] cursor-pointer"
               />
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase block mb-2">Initial Investment</label>
-              <input 
-                type="number" value={initialInvestment} 
-                onChange={(e) => setInitialInvestment(Number(e.target.value))}
-                className="w-full font-inter text-sm px-4 py-3 rounded-xl bg-[var(--surface-input)] text-[var(--text-primary)] focus:outline-none border-2 border-transparent focus:border-[var(--teal)] transition-all"
-              />
+              <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block mb-2">Initial Investment</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">{currency}</span>
+                <input 
+                  type="number" value={initialInvestment} 
+                  onChange={(e) => setInitialInvestment(Number(e.target.value))}
+                  className="w-full font-inter text-sm pl-8 pr-4 py-3 rounded-xl bg-[var(--surface-input)] text-[var(--text-primary)] focus:outline-none border-2 border-transparent focus:border-[var(--teal)] transition-all"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-[var(--text-muted)] uppercase block mb-2">Monthly Savings</label>
-              <input 
-                type="number" value={monthlyContribution} 
-                onChange={(e) => setMonthlyContribution(Number(e.target.value))}
-                className="w-full font-inter text-sm px-4 py-3 rounded-xl bg-[var(--surface-input)] text-[var(--text-primary)] focus:outline-none border-2 border-transparent focus:border-[var(--teal)] transition-all"
-              />
-            </div>
-          </div>
-
-          {/* Stats Summary */}
-          <div className="p-4 rounded-xl bg-[var(--surface-input)] space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-[var(--text-muted)]">Total Contributions</span>
-              <span className="text-sm font-bold text-[var(--text-primary)]">{currency}{totalContributions.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs text-[var(--text-muted)]">Interest Earned</span>
-              <span className="text-sm font-bold text-[var(--green)]">+{currency}{totalInterest.toLocaleString()}</span>
-            </div>
-            <div className="pt-2 border-t border-[var(--border)] flex justify-between items-center">
-              <span className="text-xs font-bold text-[var(--text-primary)]">Final Wealth</span>
-              <span className="text-lg font-black text-[var(--teal)]">{currency}{finalBalance.toLocaleString()}</span>
+              <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block mb-2">Monthly Savings</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">{currency}</span>
+                <input 
+                  type="number" value={monthlyContribution} 
+                  onChange={(e) => setMonthlyContribution(Number(e.target.value))}
+                  className="w-full font-inter text-sm pl-8 pr-4 py-3 rounded-xl bg-[var(--surface-input)] text-[var(--text-primary)] focus:outline-none border-2 border-transparent focus:border-[var(--teal)] transition-all"
+                />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Chart */}
-        <div className="lg:col-span-2 h-[300px] sm:h-full min-h-[300px] relative">
+        {/* Stats Summary & Result */}
+        <div className="lg:col-span-8 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Total Contributions</span>
+              <span className="text-lg font-bold text-[var(--text-primary)]">{currency}{totalContributions.toLocaleString()}</span>
+            </div>
+            <div className="p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Interest Earned</span>
+              <span className="text-lg font-bold text-[var(--green)]">+{currency}{totalInterest.toLocaleString()}</span>
+            </div>
+            <div className="p-4 rounded-xl bg-[var(--teal-dim)] border border-[var(--teal-dim)]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--teal)] block mb-1">Final Wealth</span>
+              <span className="text-xl font-black text-[var(--teal)]">{currency}{finalBalance.toLocaleString()}</span>
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className="h-[300px] w-full relative">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data}>
               <defs>
@@ -141,6 +148,7 @@ export default function FutureWealthSimulator({
               <YAxis 
                 axisLine={false} 
                 tickLine={false} 
+                width={65}
                 tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
                 tickFormatter={(v) => `${currency}${v >= 1000 ? (v/1000).toFixed(0) + 'k' : v}`}
               />
@@ -149,7 +157,8 @@ export default function FutureWealthSimulator({
                   background: 'var(--surface-card)', 
                   border: '1.5px solid var(--border)', 
                   borderRadius: '12px',
-                  boxShadow: '0 8px 24px rgba(0,0,0,0.1)'
+                  boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
+                  zIndex: 50
                 }}
                 itemStyle={{ fontSize: '12px', fontFamily: 'var(--font-inter)' }}
               />
@@ -173,12 +182,12 @@ export default function FutureWealthSimulator({
             </AreaChart>
           </ResponsiveContainer>
           
-          <div className="absolute bottom-4 right-4 flex items-center gap-4 text-[10px] text-[var(--text-muted)] font-inter">
+          <div className="absolute top-2 right-2 flex flex-wrap justify-end gap-3 text-[10px] text-[var(--text-muted)] font-inter bg-[var(--surface-card)]/80 backdrop-blur-sm p-2 rounded-lg">
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[var(--teal)]" /> Projected Wealth
+              <div className="w-2 h-2 rounded-full bg-[var(--teal)]" /> Projected
             </div>
             <div className="flex items-center gap-1">
-              <div className="w-2 h-2 rounded-full bg-[var(--text-muted)] opacity-50" /> Principal Only
+              <div className="w-2 h-2 rounded-full bg-[var(--text-muted)] opacity-50" /> Principal
             </div>
           </div>
         </div>
@@ -191,5 +200,6 @@ export default function FutureWealthSimulator({
         </p>
       </div>
     </div>
+  </div>
   );
 }

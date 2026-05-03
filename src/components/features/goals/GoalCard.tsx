@@ -47,7 +47,7 @@ export function GoalCard({
               <ProgressRing percent={pct} color={goal.color} size={72} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-lg leading-none">{goal.emoji}</span>
-                <span className="text-[10px] font-bold text-white">{pct}%</span>
+                <span className="text-[10px] font-bold" style={{ color: 'var(--text-primary)' }}>{pct}%</span>
               </div>
             </div>
 

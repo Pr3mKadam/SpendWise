@@ -1,9 +1,10 @@
 import { useState, useMemo } from 'react';
-import { Bot } from 'lucide-react';
+import { Bot, Receipt, ArrowUpDown, Filter, Trash2, ChevronRight } from 'lucide-react';
 import { Transaction } from '../../../types';
 import { useCategories } from '../../../hooks/useCategories';
 import { useStore } from '../../../store';
 import { CategoryDropdown } from '../../common/CategoryDropdown';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface TransactionListProps {
   transactions: Transaction[];
@@ -21,11 +22,28 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
   const isKidMode = settings.isTeenMode;
   const shouldHideBalances = isKidMode && settings.hideBalances;
   const [tab, setTab] = useState<TabFilter>('all');
+  const [sortOrder, setSortOrder] = useState<'latest' | 'oldest'>('latest');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+
+  const uniqueCategories = useMemo(() => {
+    return Array.from(new Set(transactions.map(t => t.category))).sort();
+  }, [transactions]);
 
   const filtered = useMemo(() => {
-    const base = tab === 'all' ? transactions : transactions.filter(tx => tx.type === tab);
-    return base.slice(0, 12);
-  }, [transactions, tab]);
+    let base = tab === 'all' ? transactions : transactions.filter(tx => tx.type === tab);
+    
+    if (categoryFilter !== 'all') {
+      base = base.filter(tx => tx.category === categoryFilter);
+    }
+
+    const sorted = [...base].sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return sortOrder === 'latest' ? dateB - dateA : dateA - dateB;
+    });
+
+    return sorted.slice(0, 15);
+  }, [transactions, tab, sortOrder, categoryFilter]);
 
   const formatDate = (iso: string) => {
     const d = new Date(iso + 'T00:00:00');
@@ -77,103 +95,157 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
         ))}
       </div>
 
+      {/* Sort & Filter Bar */}
+      <div className="flex items-center gap-3 px-5 py-3 shrink-0" style={{ background: '#fafbfc', borderBottom: '1px solid var(--border)' }}>
+        <button
+          onClick={() => setSortOrder(s => s === 'latest' ? 'oldest' : 'latest')}
+          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold transition-colors"
+          style={{ 
+            background: 'white', 
+            border: '1px solid var(--border)',
+            color: 'var(--text-secondary)',
+            cursor: 'pointer'
+          }}
+        >
+          <ArrowUpDown size={12} className="text-[var(--teal)]" />
+          {sortOrder === 'latest' ? 'Latest' : 'Oldest'}
+        </button>
+
+        <div className="flex items-center gap-2 flex-1 min-w-0">
+          <Filter size={12} className="text-[var(--text-muted)]" />
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="flex-1 bg-transparent border-none text-[11px] font-bold text-[var(--text-secondary)] outline-none cursor-pointer p-0"
+            style={{ fontFamily: 'var(--font-inter)' }}
+          >
+            <option value="all">All Categories</option>
+            {uniqueCategories.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       {/* Transaction List */}
       <div className="flex-1 overflow-y-auto px-5 py-3">
-        {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-40 text-center bg-[var(--surface-input)] mx-2 my-2 rounded-xl border border-dashed border-[var(--border)]">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3 bg-[var(--surface-card)] shadow-sm">
-              <span className="text-xl">
-                {tab === 'credit' ? '💰' : tab === 'debit' ? '💸' : '📋'}
-              </span>
-            </div>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px' }}>
-              No transactions yet
-            </p>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>
-              Add a {tab === 'all' ? 'transaction' : tab} and it will show up here.
-            </p>
-          </div>
-        ) : (
-          filtered.map((tx, index) => {
-            const isCredit = tx.type === 'credit';
-            return (
-              <div
-                key={tx.id}
-                className={`group flex items-center gap-3 py-3 transition-colors rounded-xl px-2 -mx-2 ${
-                  tx.isNew ? 'animate-fade-in-up' : ''
-                }`}
-                style={{
-                  animationDelay: `${index * 0.03}s`,
-                  borderBottom: index < filtered.length - 1 ? '1px solid #f7f8fa' : 'none',
-                }}
+        <AnimatePresence mode="popLayout">
+          {filtered.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="flex flex-col items-center justify-center py-12 text-center"
+            >
+              <div 
+                className="w-16 h-16 rounded-3xl flex items-center justify-center mb-4"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-muted)' }}
               >
-                {/* Category Icon */}
-                <div
-                  className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0 text-base"
-                  style={{ background: '#f5f7fa' }}
-                >
-                  {mergedIcons[tx.category] || '📦'}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }} className="truncate">
-                      {tx.merchant}
-                    </p>
-                    {tx.aiParsed && (
-                      <span
-                        className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold shrink-0"
-                        style={{ background: 'var(--teal-dim)', color: 'var(--teal)' }}
-                      >
-                        <Bot size={8} />AI
-                      </span>
-                    )}
-                  </div>
-                  <div className="flex flex-wrap items-center gap-1.5 mt-0.5" style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
-                    <span>{tx.category} · {formatDate(tx.date)}</span>
-                    {tx.tags?.map(t => (
-                      <span key={t} className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: '#f1f5f9', color: 'var(--text-secondary)' }}>
-                        #{t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Amount */}
-                <div className="flex items-center gap-2 shrink-0">
-                  <div className="text-right">
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-manrope)',
-                        fontSize: '14px',
-                        fontWeight: 700,
-                        color: isCredit ? 'var(--green)' : 'var(--text-primary)',
-                        filter: shouldHideBalances ? 'blur(6px)' : 'none',
-                        opacity: shouldHideBalances ? 0.7 : 1,
-                        transition: 'filter 0.3s'
-                      }}
-                      className="tabular-nums"
-                    >
-                      {shouldHideBalances ? '****' : (isCredit ? '+' : '-') + currency + tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                    <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
-                      {formatDate(tx.date)}
-                    </p>
-                  </div>
-
-                  {/* Edit Category */}
-                  <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-36">
-                    <CategoryDropdown
-                      value={tx.category}
-                      onChange={(newCat) => onCategoryChange?.(tx.id, newCat)}
-                    />
-                  </div>
-                </div>
+                <Receipt size={32} strokeWidth={1.5} />
               </div>
-            );
-          })
-        )}
+              <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>
+                No transactions found
+              </p>
+              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', maxWidth: '240px', lineHeight: 1.5 }}>
+                {categoryFilter !== 'all' 
+                  ? `No transactions in "${categoryFilter}" category.` 
+                  : "Use the Quick Add panel to log your first expense."}
+              </p>
+            </motion.div>
+          ) : (
+            <div className="space-y-1">
+              {filtered.map((tx, index) => {
+                const isCredit = tx.type === 'credit';
+                const catColor = useCategories().mergedColors[tx.category] || 'var(--teal)';
+                
+                return (
+                  <motion.div
+                    layout
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.04, duration: 0.3 }}
+                    key={tx.id}
+                    className="group flex items-center gap-3 py-3 transition-all rounded-xl px-2 -mx-2 hover:bg-[var(--surface-hover)]"
+                  >
+                    {/* Category Icon */}
+                    <div
+                      className="flex items-center justify-center w-10 h-10 rounded-2xl shrink-0 text-lg shadow-sm"
+                      style={{ background: 'white', border: '1px solid #f1f3f5' }}
+                    >
+                      {mergedIcons[tx.category] || '📦'}
+                    </div>
+
+                    {/* Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }} className="truncate">
+                          {tx.merchant}
+                        </p>
+                        {tx.aiParsed && (
+                          <span
+                            className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider shrink-0"
+                            style={{ background: 'var(--teal-dim)', color: 'var(--teal)' }}
+                          >
+                            <Bot size={8} />AI
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span 
+                          className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
+                          style={{ background: `${catColor}15`, color: catColor }}
+                        >
+                          {tx.category}
+                        </span>
+                        <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', color: 'var(--text-muted)' }}>
+                          {formatDate(tx.date)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Amount */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <div className="text-right">
+                        <p
+                          style={{
+                            fontFamily: 'var(--font-manrope)',
+                            fontSize: '15px',
+                            fontWeight: 800,
+                            color: isCredit ? 'var(--green)' : 'var(--text-primary)',
+                            filter: shouldHideBalances ? 'blur(6px)' : 'none',
+                            opacity: shouldHideBalances ? 0.7 : 1,
+                            transition: 'filter 0.3s'
+                          }}
+                          className="tabular-nums"
+                        >
+                          {shouldHideBalances ? '****' : (isCredit ? '+' : '-') + currency + tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                        </p>
+                      </div>
+
+                      {/* Dropdown for category change */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity w-32 hidden md:block">
+                        <CategoryDropdown
+                          value={tx.category}
+                          onChange={(newCat) => onCategoryChange?.(tx.id, newCat)}
+                        />
+                      </div>
+
+                      {/* Quick delete for mobile or hover */}
+                      <button
+                        onClick={() => _onDelete?.(tx.id)}
+                        className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-50 transition-all cursor-pointer"
+                        title="Delete transaction"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );

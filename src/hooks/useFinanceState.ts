@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { CategorySpend, MonthlyStats, BalanceDataPoint, Transaction, Category } from '../types';
+import { CategorySpend, MonthlyStats, BalanceDataPoint, Transaction, Category, MonthlyHistoryPoint } from '../types';
 import { useCategories } from './useCategories';
 import { useStore } from '../store';
 
@@ -10,6 +10,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   
   const transactions = useStore(state => state.transactions);
   const addTransaction = useStore(state => state.addTransaction);
+  const addTransactions = useStore(state => state.addTransactions);
   const deleteTransaction = useStore(state => state.deleteTransaction);
   const updateTransactionCategory = useStore(state => state.updateTransactionCategory);
   const bulkReassignCategory = useStore(state => state.bulkReassignCategory);
@@ -62,21 +63,60 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   }, [currentBalance, dailySpendRate]);
 
   const monthlyStats = useMemo((): MonthlyStats => {
-    const now      = new Date();
-    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const thisMonth = transactions.filter(tx => tx.date.startsWith(monthStr));
-    const income    = thisMonth.filter(tx => tx.type === 'credit').reduce((a, tx) => a + tx.amount, 0);
-    const expenses  = thisMonth.filter(tx => tx.type === 'debit').reduce((a, tx) => a + tx.amount, 0);
-    const net       = income - expenses;
-    const savings   = income > 0 ? Math.round((net / income) * 100) : 0;
+    const now = new Date();
+    const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    
+    // Filter transactions for the current calendar month
+    const thisMonth = transactions.filter(tx => tx.date.startsWith(currentMonthStr));
+    
+    const income = thisMonth.filter(tx => tx.type === 'credit').reduce((a, tx) => a + tx.amount, 0);
+    const expenses = thisMonth.filter(tx => tx.type === 'debit').reduce((a, tx) => a + tx.amount, 0);
+    const net = income - expenses;
+    const savings = income > 0 ? Math.round((net / income) * 100) : 0;
+    
     return {
-      totalIncome:      Math.round(income * 100) / 100,
-      totalExpenses:    Math.round(expenses * 100) / 100,
-      savingsRate:      savings,
-      netCashFlow:      Math.round(net * 100) / 100,
-      avgDailySpend:    Math.round((expenses / Math.max(1, now.getDate())) * 100) / 100,
+      totalIncome: Math.round(income * 100) / 100,
+      totalExpenses: Math.round(expenses * 100) / 100,
+      savingsRate: savings,
+      netCashFlow: Math.round(net * 100) / 100,
+      avgDailySpend: Math.round((expenses / Math.max(1, now.getDate())) * 100) / 100,
       transactionCount: thisMonth.length,
     };
+  }, [transactions]);
+
+  const monthlyHistory = useMemo((): MonthlyHistoryPoint[] => {
+    const historyMap = new Map<string, { income: number; expenses: number }>();
+    
+    // Get all unique months from transactions
+    transactions.forEach(tx => {
+      const monthStr = tx.date.substring(0, 7); // YYYY-MM
+      const existing = historyMap.get(monthStr) || { income: 0, expenses: 0 };
+      
+      if (tx.type === 'credit') {
+        existing.income += tx.amount;
+      } else {
+        existing.expenses += tx.amount;
+      }
+      historyMap.set(monthStr, existing);
+    });
+
+    // Sort months and take the last 6
+    const sortedMonths = Array.from(historyMap.keys()).sort();
+    const recentMonths = sortedMonths.slice(-6);
+
+    return recentMonths.map(month => {
+      const data = historyMap.get(month)!;
+      const [year, m] = month.split('-');
+      const date = new Date(parseInt(year), parseInt(m) - 1);
+      const monthLabel = date.toLocaleDateString('en-US', { month: 'short' });
+      
+      return {
+        month: monthLabel,
+        income: Math.round(data.income * 100) / 100,
+        expenses: Math.round(data.expenses * 100) / 100,
+        savings: Math.round((data.income - data.expenses) * 100) / 100
+      };
+    });
   }, [transactions]);
 
   const balanceTrend = useMemo((): BalanceDataPoint[] => {
@@ -165,6 +205,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   return {
     transactions,
     addTransaction,
+    addTransactions,
     deleteTransaction,
     updateTransactionCategory,
     bulkReassignCategory,
@@ -176,9 +217,10 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     balanceTrend,
     dailySpendRate,
     monthlyStats,
-    monthlyHistory: [], // Simplified for reset
+    monthlyHistory,
     projectionMeta,
     subscriptions,
     topCategory: categorySpending[0] || null,
   };
 }
+

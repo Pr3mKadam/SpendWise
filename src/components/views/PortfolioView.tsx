@@ -326,13 +326,10 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
     (financeState.transactions.length > 10 ? 10 : 0)
   ));
 
-  const monthlyIncome = financeState.transactions
-    .filter((tx: any) => tx.type === 'credit')
-    .reduce((acc: number, tx: any) => acc + tx.amount, 0);
-  const monthlyExpenses = financeState.transactions
-    .filter((tx: any) => tx.type === 'debit')
-    .reduce((acc: number, tx: any) => acc + tx.amount, 0);
-  const savingsRate = monthlyIncome > 0 ? ((monthlyIncome - monthlyExpenses) / monthlyIncome) * 100 : 0;
+  // Use monthlyStats from financeState for more accurate "Monthly" numbers
+  const monthlyIncome = financeState.monthlyStats.totalIncome;
+  const monthlyExpenses = financeState.monthlyStats.totalExpenses;
+  const savingsRate = financeState.monthlyStats.savingsRate;
 
   return (
     <>

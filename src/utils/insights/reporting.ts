@@ -6,40 +6,34 @@ export async function generateMonthlyReport(month: string, transactions: Transac
   const totalSpent = debits.reduce((a, t) => a + t.amount, 0);
   const totalIncome = credits.reduce((a, t) => a + t.amount, 0);
   const net = totalIncome - totalSpent;
+  const savingsRate = totalIncome > 0 ? Math.round((net / totalIncome) * 100) : 0;
 
   const byCategory: Record<string, number> = {};
   debits.forEach(t => { byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount; });
   const sorted = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
   const topCat = sorted[0];
-  const savingsRate = totalIncome > 0 ? Math.round((net / totalIncome) * 100) : 0;
 
-  const tips = [
-    topCat ? `Cut **${topCat[0]}** by 20% to save ₹${Math.round(topCat[1] * 0.2).toLocaleString()}/mo.` : '',
-    savingsRate < 20 ? 'Automate transfers to savings on payday (pay yourself first).' : 'Great savings rate! Consider increasing your SIP contribution.',
-    debits.length > 30 ? 'High transaction volume — consolidate small purchases to reduce impulse spending.' : 'Log income sources to get a complete net-worth picture.',
-  ].filter(Boolean);
+  const report = `
+# Financial Report: ${month} 📊
 
-  return `# SpendWise Report — ${month}
+### 💎 Executive Summary
+This month, you had a total income of **₹${totalIncome.toLocaleString()}** and total expenses of **₹${totalSpent.toLocaleString()}**. 
+Your net savings for the period is **₹${net.toLocaleString()}**, resulting in a savings rate of **${savingsRate}%**.
 
-## 📊 Summary
-| | Amount |
-|---|---|
-| **Income** | ₹${totalIncome.toLocaleString()} |
-| **Expenses** | ₹${totalSpent.toLocaleString()} |
-| **Net** | ₹${net.toLocaleString()} |
-| **Savings Rate** | **${savingsRate}%** ${savingsRate >= 20 ? '🟢' : savingsRate >= 10 ? '🟡' : '🔴'} |
+### 🔍 Spending Insights
+- **Top Expense:** Your highest spending category was **${topCat ? topCat[0] : 'N/A'}**, where you spent **₹${topCat ? topCat[1].toLocaleString() : '0'}**.
+- **Transaction Volume:** You processed **${debits.length}** debit transactions this month.
+${savingsRate > 20 ? '- **Savings Performance:** Excellent! You are well above the 20% savings benchmark.' : '- **Savings Performance:** There is room for improvement. Aim to keep expenses below 80% of your income.'}
 
-## 🏆 Category of the Month
-${topCat ? `**${topCat[0]}** — ₹${topCat[1].toLocaleString()} (${Math.round((topCat[1]/totalSpent)*100)}% of expenses)` : 'No expense data yet.'}
+### 💡 Advisor Recommendations
+1. **Reduce Friction:** Your spending in **${topCat ? topCat[0] : 'miscellaneous'}** is higher than usual. Consider setting a specific budget limit for this category next month.
+2. **Automate Savings:** Since you have a surplus of **₹${net > 0 ? net.toLocaleString() : '0'}**, consider setting up an automated SIP or recurring deposit to grow your wealth.
+3. **Review Subscriptions:** Monthly reports are a great time to audit your recurring payments. Check your 'Subscriptions' view to see if anything can be trimmed.
 
-## 💡 Top 3 Tips
-${tips.map((t, i) => `${i + 1}. ${t}`).join('\n')}
+*This report was generated locally by SpendWise Advisor.*
+  `;
 
-## 📌 Observation
-${debits.length === 0
-  ? 'No expenses recorded this period. Start logging transactions to unlock insights!'
-  : `You made **${debits.length} purchases** this month. ${net >= 0 ? '🎉 You spent less than you earned — great discipline!' : '⚠️ Expenses exceeded income. Review your largest categories.'}`}
-`;
+  return report.trim();
 }
 
 export async function getSpendingPersonality(transactions: Transaction[]): Promise<{

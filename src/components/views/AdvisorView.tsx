@@ -12,7 +12,8 @@ interface Message {
   timestamp: string;
 }
 
-export default function AdvisorView({ transactions }: { transactions: Transaction[] }) {
+export default function AdvisorView({ financeState }: { financeState: any }) {
+  const { transactions, monthlyStats, currency } = financeState;
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -193,20 +194,30 @@ export default function AdvisorView({ transactions }: { transactions: Transactio
         )}
       </div>
 
-      {/* Insights (Optional Mini Sidebar/Bar) */}
+      {/* Insights Bar */}
       {transactions.length > 0 && (
         <div className="px-6 py-3 bg-[var(--surface-input)] border-t border-[var(--border)] flex gap-4 overflow-x-auto scrollbar-hide">
           <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
-            <TrendingDown size={12} className="text-red-500" />
-            <span className="text-[10px] font-medium text-[var(--text-muted)]">Spending up 12% in Food</span>
-          </div>
-          <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
             <TrendingUp size={12} className="text-[var(--teal)]" />
-            <span className="text-[10px] font-medium text-[var(--text-muted)]">Saved ₹2,400 this month</span>
+            <span className="text-[10px] font-medium text-[var(--text-muted)]">
+              Saved {currency}{monthlyStats.totalIncome - monthlyStats.totalExpenses > 0 
+                ? (monthlyStats.totalIncome - monthlyStats.totalExpenses).toLocaleString() 
+                : '0'} this month
+            </span>
           </div>
+          {monthlyStats.topCategory && (
+            <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
+              <TrendingDown size={12} className="text-red-500" />
+              <span className="text-[10px] font-medium text-[var(--text-muted)]">
+                Most spent on {monthlyStats.topCategory}
+              </span>
+            </div>
+          )}
           <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
             <AlertTriangle size={12} className="text-orange-500" />
-            <span className="text-[10px] font-medium text-[var(--text-muted)]">3 Subscriptions due soon</span>
+            <span className="text-[10px] font-medium text-[var(--text-muted)]">
+              {transactions.length} signals tracked
+            </span>
           </div>
         </div>
       )}

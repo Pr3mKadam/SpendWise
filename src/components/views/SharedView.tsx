@@ -162,7 +162,8 @@ class SharedErrorBoundary extends Component<{ children: ReactNode }, { error: Er
 export default function SharedView({ currency, userId: propUserId }: { currency: string; userId?: string | null }) {
   const { user } = useAuth();
   const userId   = propUserId ?? user?.id ?? null;
-  const sw       = useSharedWallets(userId);
+  const userEmail = user?.email ?? null;
+  const sw       = useSharedWallets(userId, userEmail);
   const userName = user?.user_metadata?.first_name || user?.email?.split('@')[0] || 'You';
 
   const [tab, setTab]               = useState<Tab>('wallet');

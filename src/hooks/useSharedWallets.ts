@@ -104,7 +104,7 @@ function saveStorage(s: SharedStorage) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* ignore */ }
 }
 
-export function useSharedWallets(userId: string | null) {
+export function useSharedWallets(userId: string | null, userEmail?: string | null) {
   const [data, setData] = useState<SharedStorage>(loadStorage);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +115,23 @@ export function useSharedWallets(userId: string | null) {
   const walletEntries = data.walletEntries.filter(w => w.group_id === selectedGroupId);
   const expenses = data.expenses.filter(e => e.group_id === selectedGroupId);
   const goals = data.goals.filter(g => g.group_id === selectedGroupId);
-  const pendingInvites: PendingInvite[] = [];
+  
+  // Calculate pending invites for the currently logged in user
+  const pendingInvites: PendingInvite[] = useMemo(() => {
+    if (!userEmail) return [];
+    const myInvites = data.members.filter(m => m.invited_email === userEmail && m.status === 'pending');
+    return myInvites.map(inv => {
+      const g = data.groups.find(x => x.id === inv.group_id);
+      if (!g) return null;
+      return {
+        memberId: inv.id,
+        groupId: g.id,
+        groupName: g.name,
+        groupPurpose: g.purpose,
+        invitedAt: inv.invited_at
+      };
+    }).filter(Boolean) as PendingInvite[];
+  }, [data.members, data.groups, userEmail]);
 
   const loading = false;
 

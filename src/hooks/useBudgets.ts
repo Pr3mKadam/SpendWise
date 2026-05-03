@@ -5,16 +5,65 @@ import { Category } from '../types';
 
 export function useBudgets() {
   const budgets = useStore(state => state.budgets);
+  const budgetSettings = useStore(state => state.budgetSettings) || { period: 'monthly', rolloverEnabled: false };
   const setBudget = useStore(state => state.setBudget);
   const removeBudget = useStore(state => state.removeBudget);
-  const { categorySpending, monthlyStats } = useFinanceState();
+  const updateBudgetSettings = useStore(state => state.updateBudgetSettings);
+  const { transactions, monthlyStats } = useFinanceState();
 
   const budgetStats = useMemo(() => {
+    // Determine the start date of the current period
+    const now = new Date();
+    let startDate = new Date();
+    let prevStartDate = new Date();
+    
+    if (budgetSettings.period === 'weekly') {
+      startDate.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+      prevStartDate = new Date(startDate);
+      prevStartDate.setDate(prevStartDate.getDate() - 7);
+    } else if (budgetSettings.period === 'biweekly') {
+      startDate.setDate(now.getDate() - 14); // Last 14 days
+      prevStartDate = new Date(startDate);
+      prevStartDate.setDate(prevStartDate.getDate() - 14);
+    } else {
+      startDate.setDate(1); // Start of month
+      prevStartDate = new Date(startDate);
+      prevStartDate.setMonth(prevStartDate.getMonth() - 1);
+    }
+    startDate.setHours(0, 0, 0, 0);
+    prevStartDate.setHours(0, 0, 0, 0);
+    
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const prevStartDateStr = prevStartDate.toISOString().split('T')[0];
+
+    // Compute period spending per category
+    const periodSpending = new Map<string, number>();
+    const prevPeriodSpending = new Map<string, number>();
+
+    transactions.forEach(tx => {
+      if (tx.type === 'debit') {
+        if (tx.date >= startDateStr) {
+          periodSpending.set(tx.category, (periodSpending.get(tx.category) || 0) + tx.amount);
+        } else if (tx.date >= prevStartDateStr && tx.date < startDateStr) {
+          prevPeriodSpending.set(tx.category, (prevPeriodSpending.get(tx.category) || 0) + tx.amount);
+        }
+      }
+    });
+
     return Object.entries(budgets).map(([category, limit]) => {
-      const spending = categorySpending.find(s => s.name === category);
-      const spent = spending?.value ?? 0;
-      const percent = limit > 0 ? (spent / limit) * 100 : 0;
-      const remaining = limit - spent;
+      const spent = periodSpending.get(category) ?? 0;
+      let limitWithRollover = limit;
+      let rolloverAmount = 0;
+      
+      if (budgetSettings.rolloverEnabled) {
+        const prevSpent = prevPeriodSpending.get(category) ?? 0;
+        const unspent = Math.max(0, limit - prevSpent);
+        rolloverAmount = unspent;
+        limitWithRollover = limit + rolloverAmount;
+      }
+      
+      const percent = limitWithRollover > 0 ? (spent / limitWithRollover) * 100 : 0;
+      const remaining = limitWithRollover - spent;
       
       let status: 'safe' | 'warning' | 'danger' = 'safe';
       if (percent >= 90) status = 'danger';
@@ -22,16 +71,16 @@ export function useBudgets() {
 
       return {
         category: category as Category,
-        limit,
+        limit: limitWithRollover,
         baseLimit: limit,
-        rolloverAmount: 0,
+        rolloverAmount,
         spent,
-        percent,
+        percent: Math.round(percent),
         remaining,
         status
       };
     });
-  }, [budgets, categorySpending]);
+  }, [budgets, transactions, budgetSettings.period, budgetSettings.rolloverEnabled]);
 
   const totalBudgeted = Object.values(budgets).reduce((a, b) => a + b, 0);
   const totalSpentInBudgeted = budgetStats.reduce((a, b) => a + b.spent, 0);
@@ -44,6 +93,8 @@ export function useBudgets() {
     removeBudget,
     totalBudgeted,
     overallBudgetPercent,
-    monthlyExpenses: monthlyStats.totalExpenses
+    monthlyExpenses: monthlyStats.totalExpenses,
+    budgetSettings,
+    updateBudgetSettings
   };
 }

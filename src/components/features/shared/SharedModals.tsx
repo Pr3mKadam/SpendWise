@@ -82,7 +82,7 @@ export function InviteModal({ show, onClose, onSubmit }: {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!email.trim()) { setErr('Enter an email address.'); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { setErr('Enter a valid email.'); return; }
+    if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(email)) { setErr('Enter a valid email address (e.g., friend@gmail.com).'); return; }
     setBusy(true); setErr('');
     try {
       await onSubmit(email.trim(), dname.trim() || email.split('@')[0], emoji);

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
   Target, AlertTriangle, CheckCircle2, TrendingUp, Edit3, RotateCcw,
-  Shield, X, Tag as TagIcon, Calendar, RefreshCw,
+  Shield, X, Tag as TagIcon, Calendar, RefreshCw, Plus, Check,
 } from 'lucide-react';
 import { Budget, BudgetPeriod, Category } from '../../../types';
 import { useCategories } from '../../../hooks/useCategories';
@@ -189,6 +189,7 @@ function PeriodSelector({ period, onChange }: { period: BudgetPeriod; onChange: 
       {PERIOD_OPTIONS.map(opt => (
         <button
           key={opt.value}
+          type="button"
           onClick={() => onChange(opt.value)}
           className="rounded-lg px-3 py-1.5 text-xs font-semibold transition-all duration-200"
           style={{
@@ -212,6 +213,7 @@ function PeriodSelector({ period, onChange }: { period: BudgetPeriod; onChange: 
 function RolloverToggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void }) {
   return (
     <button
+      type="button"
       onClick={onToggle}
       className="flex items-center gap-2.5 rounded-xl px-4 py-2.5 transition-all duration-200"
       style={{
@@ -346,6 +348,22 @@ export default function BudgetManager({
   onManageCategories, currency = '$',
 }: BudgetManagerProps) {
   const [showTip, setShowTip] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addCategory, setAddCategory] = useState<Category | ''>('');
+  const [addLimit, setAddLimit] = useState('');
+  const { allCategories } = useCategories();
+  const existingCategories = new Set(budgets.map(b => b.category));
+  const availableCategories = allCategories.filter(c => !existingCategories.has(c as Category));
+
+  const handleAddBudget = () => {
+    const parsed = parseFloat(addLimit);
+    if (addCategory && !isNaN(parsed) && parsed > 0) {
+      onUpdateLimit(addCategory as Category, parsed);
+      setAddCategory('');
+      setAddLimit('');
+      setShowAddForm(false);
+    }
+  };
 
   return (
     <div className="animate-fade-in-up">
@@ -373,9 +391,24 @@ export default function BudgetManager({
           {/* Rollover toggle */}
           <RolloverToggle enabled={rolloverEnabled} onToggle={onToggleRollover} />
 
+          {/* Add Budget button */}
+          <button
+            type="button"
+            onClick={() => setShowAddForm(v => !v)}
+            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+            style={{
+              background: showAddForm ? 'var(--teal)' : 'var(--teal-dim)',
+              color: showAddForm ? '#fff' : 'var(--teal)',
+              border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)'
+            }}
+          >
+            <Plus size={15} /> Add Budget
+          </button>
+
           {/* Categories button */}
           {onManageCategories && (
             <button
+              type="button"
               onClick={onManageCategories}
               className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
               style={{ background: 'var(--surface-card)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border)', cursor: 'pointer' }}
@@ -384,8 +417,9 @@ export default function BudgetManager({
             </button>
           )}
 
-          {/* Reset defaults */}
+          {/* Reset */}
           <button
+            type="button"
             onClick={onResetLimits}
             className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
             style={{ background: 'var(--surface-card)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', boxShadow: 'var(--shadow-card)', border: '1px solid var(--border)', cursor: 'pointer' }}
@@ -394,6 +428,74 @@ export default function BudgetManager({
           </button>
         </div>
       </div>
+
+      {/* ── Add Budget Form Panel ───────────────────────────────── */}
+      {showAddForm && (
+        <div
+          className="mb-5 rounded-2xl p-5"
+          style={{ background: 'var(--surface-card)', border: '1px solid var(--teal)', boxShadow: '0 0 0 3px var(--teal-dim)' }}
+        >
+          <p style={{ fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)', marginBottom: '14px' }}>
+            Set a new spending limit
+          </p>
+          <div className="flex flex-wrap gap-3 items-end">
+            <div style={{ flex: '1 1 160px', minWidth: '160px' }}>
+              <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', fontFamily: 'var(--font-inter)' }}>
+                Category
+              </label>
+              <select
+                value={addCategory}
+                onChange={e => setAddCategory(e.target.value as Category)}
+                style={{ width: '100%', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', outline: 'none', cursor: 'pointer' }}
+              >
+                <option value="">Select a category…</option>
+                {availableCategories.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div style={{ width: '140px' }}>
+              <label style={{ display: 'block', fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '6px', fontFamily: 'var(--font-inter)' }}>
+                Limit ({currency})
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={999999}
+                placeholder="e.g. 5000"
+                value={addLimit}
+                onChange={e => setAddLimit(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleAddBudget()}
+                style={{ width: '100%', background: 'var(--bg)', border: '1.5px solid var(--border)', borderRadius: '10px', padding: '9px 12px', fontSize: '13px', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', outline: 'none' }}
+              />
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={handleAddBudget}
+                disabled={!addCategory || !addLimit || parseFloat(addLimit) <= 0}
+                className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold transition-all"
+                style={{
+                  background: (!addCategory || !addLimit || parseFloat(addLimit) <= 0) ? 'var(--surface-input)' : 'var(--teal)',
+                  color: (!addCategory || !addLimit || parseFloat(addLimit) <= 0) ? 'var(--text-muted)' : '#fff',
+                  border: 'none', cursor: (!addCategory || !addLimit || parseFloat(addLimit) <= 0) ? 'not-allowed' : 'pointer',
+                  fontFamily: 'var(--font-inter)'
+                }}
+              >
+                <Check size={14} /> Save
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowAddForm(false); setAddCategory(''); setAddLimit(''); }}
+                className="flex items-center gap-1.5 rounded-xl px-4 py-2.5 text-sm font-bold"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-muted)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+              >
+                <X size={14} /> Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Rollover explainer tip */}
       {rolloverEnabled && showTip && (
@@ -456,18 +558,49 @@ export default function BudgetManager({
         budgets={budgets}
       />
 
+      {/* Empty state */}
+      {budgets.length === 0 && !showAddForm && (
+        <div
+          className="flex flex-col items-center justify-center rounded-2xl py-16 px-8 text-center"
+          style={{ background: 'var(--surface-card)', border: '1px dashed var(--border)' }}
+        >
+          <div
+            className="flex items-center justify-center w-16 h-16 rounded-2xl mb-4"
+            style={{ background: 'var(--teal-dim)' }}
+          >
+            <Shield size={28} style={{ color: 'var(--teal)' }} />
+          </div>
+          <p style={{ fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '16px', color: 'var(--text-primary)', marginBottom: '6px' }}>
+            No budgets set yet
+          </p>
+          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)', maxWidth: '320px', lineHeight: 1.6, marginBottom: '20px' }}>
+            Set spending limits per category to track your money and get over-budget alerts.
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2 rounded-xl px-5 py-3 text-sm font-bold"
+            style={{ background: 'var(--teal)', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+          >
+            <Plus size={16} /> Set Your First Budget
+          </button>
+        </div>
+      )}
+
       {/* Budget grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {budgets.map(budget => (
-          <BudgetRow
-            key={budget.category}
-            budget={budget}
-            onUpdate={v => onUpdateLimit(budget.category, v)}
-            currency={currency}
-            rolloverEnabled={rolloverEnabled}
-          />
-        ))}
-      </div>
+      {budgets.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {budgets.map(budget => (
+            <BudgetRow
+              key={budget.category}
+              budget={budget}
+              onUpdate={v => onUpdateLimit(budget.category, v)}
+              currency={currency}
+              rolloverEnabled={rolloverEnabled}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

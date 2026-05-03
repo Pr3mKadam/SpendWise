@@ -1,38 +1,55 @@
 import { Transaction } from "../../types";
 
+/**
+ * SpendWise Local Advisor Engine
+ * Provides contextual financial advice based on transaction history without any cloud dependency.
+ */
 export async function getFinancialAdvice(query: string, transactions: Transaction[]): Promise<string> {
-  const lower = query.toLowerCase();
-  const totalSpent = transactions.filter(t => t.type === 'debit').reduce((a, t) => a + t.amount, 0);
-  const totalIncome = transactions.filter(t => t.type === 'credit').reduce((a, t) => a + t.amount, 0);
-  const savingsRate = totalIncome > 0 ? Math.round(((totalIncome - totalSpent) / totalIncome) * 100) : 0;
+  const q = query.toLowerCase();
+  
+  const debits = transactions.filter(t => t.type === 'debit');
+  const credits = transactions.filter(t => t.type === 'credit');
+  const totalSpent = debits.reduce((a, t) => a + t.amount, 0);
+  const totalIncome = credits.reduce((a, t) => a + t.amount, 0);
+  const net = totalIncome - totalSpent;
+  const savingsRate = totalIncome > 0 ? Math.round((net / totalIncome) * 100) : 0;
 
+  // Analysis of top categories
   const byCategory: Record<string, number> = {};
-  transactions.filter(t => t.type === 'debit').forEach(t => {
+  debits.forEach(t => {
     byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
   });
-  const topCategory = Object.entries(byCategory).sort((a, b) => b[1] - a[1])[0];
+  const sortedCategories = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
+  const topCat = sortedCategories[0];
 
-  if (lower.includes('save') || lower.includes('saving')) {
-    return savingsRate >= 20
-      ? `Great discipline! You're saving **${savingsRate}%** of your income. Consider channeling surplus into an index fund or SIP for long-term growth.`
-      : `Your current savings rate is **${savingsRate}%**. Aim for at least 20%. Try the 50/30/20 rule: 50% needs, 30% wants, 20% savings.`;
+  // Logic for nonsensical or unrelated queries
+  const isFinancial = /spend|save|money|budget|cost|income|buy|expense|transaction|worth|wealth|rich|poor|tax|debt/i.test(q);
+  if (q.length < 3 || (!isFinancial && q.split(' ').length < 2)) {
+    return "I am your SpendWise financial advisor. I cannot answer non-financial questions. How can I help you with your budget or spending today?";
   }
 
-  if (lower.includes('spend') || lower.includes('budget')) {
-    return topCategory
-      ? `Your biggest expense category is **${topCategory[0]}** at ₹${topCategory[1].toFixed(0)}. Setting a monthly cap here could free up significant savings.`
-      : `Start by categorizing all your transactions consistently. Visibility is the first step to better budgeting.`;
+  // Savings Advice
+  if (q.includes('save') || q.includes('saving')) {
+    if (savingsRate < 10) {
+      return `Your current savings rate is **${savingsRate}%**. To improve this, I recommend aiming for the 50/30/20 rule: 50% for needs, 30% for wants, and **20% for savings**. Try reducing your ${topCat ? topCat[0] : 'discretionary'} spending next week.`;
+    }
+    return `Great job! Your savings rate is **${savingsRate}%**, which is above the healthy 20% benchmark. To level up, consider moving your surplus into a high-yield investment or emergency fund.`;
   }
 
-  if (lower.includes('invest') || lower.includes('investment')) {
-    return savingsRate > 10
-      ? `With a ${savingsRate}% savings rate, you have room to invest. Consider Nifty 50 index funds or PPF for tax-efficient long-term returns.`
-      : `Focus on building a 3-6 month emergency fund first before investing. Then explore mutual funds via SIP.`;
+  // Category specific queries
+  if (q.includes('spend') || q.includes('expense') || q.includes('where')) {
+    if (!topCat) return "You haven't logged enough transactions for me to analyze your spending yet. Start adding your daily expenses!";
+    return `You've spent a total of **₹${totalSpent.toLocaleString()}** recently. Your biggest expense category is **${topCat[0]}** (₹${topCat[1].toLocaleString()}), accounting for **${Math.round((topCat[1] / totalSpent) * 100)}%** of your total spending.`;
   }
 
-  if (transactions.length === 0) {
-    return `Start by logging your daily expenses. Even a week of data will reveal surprising patterns in your spending habits.`;
+  // Budget queries
+  if (q.includes('budget')) {
+    if (net < 0) {
+      return `You're currently in a deficit of **₹${Math.abs(net).toLocaleString()}**. I suggest creating a strict 'Zero-Based Budget' where every rupee is assigned a job before the month starts to stop the leak.`;
+    }
+    return `Your budget looks healthy with a **₹${net.toLocaleString()}** surplus. Have you considered setting up automated transfers to your savings goals to 'pay yourself first'?`;
   }
 
-  return `Based on your last ${transactions.length} transactions, you've spent ₹${totalSpent.toFixed(0)} against ₹${totalIncome.toFixed(0)} income — a **${savingsRate}%** savings rate. ${savingsRate >= 20 ? 'You\'re on track!' : 'Try to cut discretionary spending to hit the 20% savings target.'}`;
+  // General catch-all financial advice
+  return `Based on your **${transactions.length} transactions**, you have a net balance of **₹${net.toLocaleString()}**. Your spending is most active in **${topCat ? topCat[0] : 'various categories'}**. Would you like to set a specific savings goal for next month?`;
 }

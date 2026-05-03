@@ -98,10 +98,16 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
             <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Monthly Comparison</h3>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>6-month income vs expenses</p>
           </div>
-          {/* This week / Last week legend */}
+          {/* Chart Legend */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ background: 'var(--teal)' }} /><span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>This Week</span></div>
-            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full" style={{ background: '#cbd5e0' }} /><span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Last Week</span></div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full" style={{ background: '#14b8a6' }} />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Income</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-full" style={{ background: '#e2e8f0' }} />
+              <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Expenses</span>
+            </div>
           </div>
         </div>
         <div style={{ height: 260 }}>

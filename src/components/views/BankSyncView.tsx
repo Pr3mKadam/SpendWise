@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { Transaction, UPIAccount, UPIProvider, Category } from '../../types';
 import CSVImporter from '../features/sync/CSVImporter';
-import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/upiParser';
+import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/parsers/upi';
 import { RazorpayAuth, initiateRazorpayPayment, parseUPIPayment, rememberMerchant } from '../../utils/razorpaySync';
 
 interface BankSyncViewProps {
@@ -54,7 +54,7 @@ export default function BankSyncView({
   useEffect(() => {
     const key = localStorage.getItem('spendwise_rzp_key');
     if (key) {
-      setAccounts(p => {
+      setAccounts((p: UPIAccount[]) => {
         if (p.some(a => a.provider === 'razorpay' as any)) return p;
         return [...p, {
           id: 'rzp-auth',
@@ -94,7 +94,7 @@ export default function BankSyncView({
       localStorage.setItem('spendwise_rzp_key', rzpKeyId.trim());
       localStorage.setItem('spendwise_rzp_secret', rzpSecret.trim());
     }
-    setAccounts(p => {
+    setAccounts((p: UPIAccount[]) => {
       const filtered = p.filter(a => a.provider !== 'razorpay' as any);
       return [{
         id: 'rzp-auth',
@@ -158,7 +158,7 @@ export default function BankSyncView({
     setSyncingAccountId(acc.id);
     try {
       await new Promise(r => setTimeout(r, 1200));
-      const providerDef = UPI_PROVIDERS.find(p => p.id === acc.provider) || UPI_PROVIDERS[0];
+      const providerDef = UPI_PROVIDERS.find((p: any) => p.id === acc.provider) || UPI_PROVIDERS[0];
       const mockTxs = generateMockUPITransactions(providerDef.name, 10);
       onAutoAddTransactions(mockTxs);
       setAccounts(p => p.map(a => a.id === acc.id ? { ...a, lastSynced: new Date().toISOString() } : a));
@@ -269,7 +269,7 @@ export default function BankSyncView({
                   const isRzp = (acc.provider as string) === 'razorpay';
                   const providerDef = isRzp
                     ? { name: 'Razorpay', icon: <Zap size={18} />, color: '#3395FF' }
-                    : UPI_PROVIDERS.find(p => p.id === acc.provider) || UPI_PROVIDERS[0];
+                    : UPI_PROVIDERS.find((p: any) => p.id === acc.provider) || UPI_PROVIDERS[0];
 
                   return (
                     <div key={acc.id} className="rounded-xl p-5 relative overflow-hidden border border-[var(--border)] bg-[var(--surface-card)]">
@@ -395,7 +395,7 @@ export default function BankSyncView({
       {wizardStep === 'upi-select' && (
         <div className="space-y-4">
           <h2 className="text-2xl font-manrope font-bold text-[var(--text-primary)] mb-6">Select App</h2>
-          {UPI_PROVIDERS.map(p => (
+          {UPI_PROVIDERS.map((p: any) => (
             <button key={p.id} onClick={() => { setSelectedProvider(p); setWizardStep('upi-credentials'); }} className="w-full flex items-center gap-4 p-4 rounded-xl bg-[var(--surface-card)] border border-[var(--border)] hover:border-[var(--teal)] transition-all cursor-pointer">
               <div className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0" style={{ background: p.color }}>{p.icon}</div>
               <span className="font-inter font-bold text-[var(--text-primary)]">{p.name}</span>

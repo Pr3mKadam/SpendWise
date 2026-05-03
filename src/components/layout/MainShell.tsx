@@ -1,34 +1,34 @@
-import { useState, useCallback, useEffect, type Dispatch, type SetStateAction } from 'react';
+import { useState, useCallback, useEffect, lazy, Suspense, type Dispatch, type SetStateAction } from 'react';
 import { AppView, Transaction, Category } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 
 import Sidebar from '../common/Sidebar';
 import Header from '../common/Header';
-import BudgetManager from '../features/budgets/BudgetManager';
-import AnalyticsView from '../views/AnalyticsView';
-import HistoryView from '../views/HistoryView';
-import BudgetView from '../views/BudgetView';
 import AlertBanner from '../common/AlertBanner';
 import NotificationCenter from '../common/NotificationCenter';
-import RecurringView from '../views/RecurringView';
-import GoalsView from '../views/GoalsView';
-import SharedView from '../views/SharedView';
 import QuestCompletionOverlay from '../features/gamification/QuestCompletionOverlay';
-
 import CustomCategoriesModal from '../common/CustomCategoriesModal';
-import BankSyncView from '../views/BankSyncView';
-import ProfileView from '../views/ProfileView';
-import PortfolioView from '../views/PortfolioView';
-import SubscriptionManager from '../features/subscriptions/SubscriptionManager';
-import AdvisorView from '../views/AdvisorView';
-import ReportsView from '../views/ReportsView';
-import { generatePDFReport } from '../../utils/exportPDF';
-import { useStore } from '../../store';
-import { ParentalPinGate, KidModeBanner } from '../features/parental/ParentalControlGate';
-import ParentalView from '../views/ParentalView';
 import CommandPalette from '../common/CommandPalette';
 import { DashboardView } from '../views/DashboardView';
 import OnboardingModal, { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
+
+// Lazy loaded views
+const AnalyticsView = lazy(() => import('../views/AnalyticsView'));
+const HistoryView = lazy(() => import('../views/HistoryView'));
+const RecurringView = lazy(() => import('../views/RecurringView'));
+const GoalsView = lazy(() => import('../views/GoalsView'));
+const SharedView = lazy(() => import('../views/SharedView'));
+const BankSyncView = lazy(() => import('../views/BankSyncView'));
+const ProfileView = lazy(() => import('../views/ProfileView'));
+const PortfolioView = lazy(() => import('../views/PortfolioView'));
+const AdvisorView = lazy(() => import('../views/AdvisorView'));
+const ReportsView = lazy(() => import('../views/ReportsView'));
+const ParentalView = lazy(() => import('../views/ParentalView'));
+const BudgetManager = lazy(() => import('../features/budgets/BudgetManager'));
+const SubscriptionManager = lazy(() => import('../features/subscriptions/SubscriptionManager'));
+import { generatePDFReport } from '../../utils/exportPDF';
+import { useStore } from '../../store';
+import { ParentalPinGate, KidModeBanner } from '../features/parental/ParentalControlGate';
 
 import { useFinanceState } from '../../hooks/useFinanceState';
 import { useBudgets } from '../../hooks/useBudgets';
@@ -115,18 +115,18 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
 
   const budgetState = useBudgets();
   const {
-    budgets, budgetStats, setBudget, totalBudgeted
+    budgets, budgetStats, setBudget, totalBudgeted, budgetSettings, updateBudgetSettings
   } = budgetState;
 
   const updateLimit = setBudget;
-  const resetLimits = () => {};
+  const resetLimits = () => {}; // Could add reset logic if needed
   const totalSpentAgainstBudget = budgetStats.reduce((a, b) => a + b.spent, 0);
   const overBudgetCount = budgetStats.filter(b => b.status === 'danger').length;
-  const period: any = 'monthly';
-  const periodLabel = 'This Month';
-  const rolloverEnabled = false;
-  const updatePeriod = () => {};
-  const toggleRollover = () => {};
+  const period = budgetSettings.period;
+  const periodLabel = period === 'weekly' ? 'This Week' : period === 'biweekly' ? 'Last 14 Days' : 'This Month';
+  const rolloverEnabled = budgetSettings.rolloverEnabled;
+  const updatePeriod = (p: any) => updateBudgetSettings({ period: p });
+  const toggleRollover = () => updateBudgetSettings({ rolloverEnabled: !budgetSettings.rolloverEnabled });
 
   const alertState    = useAlerts(transactions, currentBalance, budgetStats, dailySpendRate, {
     currency,
@@ -244,159 +244,159 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
             />
           )}
 
-          {/* ... existing views ... */}
-          {activeView === 'dashboard' && (
-            <DashboardView
-              financeState={financeState}
-              onCategoryChange={handleCategoryChange}
-              onAdd={onAdd}
-              currency={currency}
-            />
-          )}
-
-          {activeView === 'budget' && (
-            <div className="view-enter">
-              <BudgetManager
-                budgets={budgetStats as any}
-                totalBudgeted={totalBudgeted}
-                totalSpentAgainstBudget={totalSpentAgainstBudget}
-                overBudgetCount={overBudgetCount}
-                period={period}
-                periodLabel={periodLabel}
-                rolloverEnabled={rolloverEnabled}
-                onUpdateLimit={updateLimit}
-                onResetLimits={resetLimits}
-                onChangePeriod={updatePeriod}
-                onToggleRollover={toggleRollover}
-                onManageCategories={() => setShowCategoriesModal(true)}
-                currency={currency}
-              />
+          <Suspense fallback={
+            <div className="flex flex-col items-center justify-center min-h-[400px] text-[var(--text-muted)] animate-pulse">
+              <div className="w-10 h-10 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin mb-4" />
+              <p className="text-xs font-bold uppercase tracking-widest">Loading View...</p>
             </div>
-          )}
-
-          {activeView === 'analytics' && (
-            <div className="view-enter space-y-6">
-              <AnalyticsView
-                monthlyHistory={monthlyHistory}
-                monthlyStats={monthlyStats}
-                categorySpending={categorySpending}
-                totalSpent={totalSpent}
-                currency={currency}
-                transactions={transactions}
-              />
-              <RecurringView patterns={recurringData} currency={currency} />
-            </div>
-          )}
-
-          {activeView === 'goals' && (
-            <div className="view-enter">
-              <GoalsView
-                goals={goals}
-                stats={goalsState.stats}
-                onAdd={(data) => {
-                  addGoal({
-                    name:                data.name,
-                    emoji:               data.emoji,
-                    targetAmount:        Number(data.targetAmount),
-                    savedAmount:         Number(data.savedAmount) || 0,
-                    targetDate:          data.targetDate,
-                    monthlyContribution: Number(data.monthlyContribution),
-                    color:               data.color,
-                  });
-                }}
-                onUpdate={goalsState.updateGoal}
-                onDelete={goalsState.deleteGoal}
-                onContribute={goalsState.addContribution}
-                currency={currency}
-              />
-            </div>
-          )}
-
-          {activeView === 'shared' && (
-            <SharedView currency={currency} userId={userId} />
-          )}
-
-          {activeView === 'budget' && (
-            <div className="view-enter">
-              <BudgetView currency={currency} />
-            </div>
-          )}
-
-          {activeView === 'history' && (
-            <div className="view-enter">
-              <HistoryView
-                transactions={transactions}
+          }>
+            {activeView === 'dashboard' && (
+              <DashboardView
+                financeState={financeState}
                 onCategoryChange={handleCategoryChange}
-                onDelete={financeState.deleteTransaction}
-                onImportClick={() => setActiveView('sync')}
-                onPDFReport={handlePDFReport}
+                onAdd={onAdd}
                 currency={currency}
               />
-            </div>
-          )}
+            )}
 
-          {activeView === 'sync' && (
-            <div className="view-enter">
-              <BankSyncView
-                onAutoAddTransactions={(txs) => {
-                  txs.forEach(onAdd);
-                }}
-                recentTransactions={transactions.filter(t =>
-                  t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
-                )}
-                currency={currency}
-              />
-            </div>
-          )}
+            {activeView === 'budget' && (
+              <div className="view-enter">
+                <BudgetManager
+                  budgets={budgetStats as any}
+                  totalBudgeted={totalBudgeted}
+                  totalSpentAgainstBudget={totalSpentAgainstBudget}
+                  overBudgetCount={overBudgetCount}
+                  period={period}
+                  periodLabel={periodLabel}
+                  rolloverEnabled={rolloverEnabled}
+                  onUpdateLimit={updateLimit}
+                  onResetLimits={resetLimits}
+                  onChangePeriod={updatePeriod}
+                  onToggleRollover={toggleRollover}
+                  onManageCategories={() => setShowCategoriesModal(true)}
+                  currency={currency}
+                />
+              </div>
+            )}
 
-          {activeView === 'profile' && (
-            <div className="view-enter">
-              <ProfileView
-                config={config}
-                onUpdateConfig={setConfig}
-                onResetData={async () => {
-                  await resetData();
-                  if (config) {
-                    const nextConfig = { ...config, initialBalance: 0 };
-                    setConfig(nextConfig);
-                    localStorage.setItem('spendwise_config_v1', JSON.stringify(nextConfig));
-                  }
-                }}
-                transactions={transactions}
-                onNavigate={handleViewChange}
-              />
-            </div>
-          )}
+            {activeView === 'analytics' && (
+              <div className="view-enter space-y-6">
+                <AnalyticsView
+                  monthlyHistory={monthlyHistory}
+                  monthlyStats={monthlyStats}
+                  categorySpending={categorySpending}
+                  totalSpent={totalSpent}
+                  currency={currency}
+                  transactions={transactions}
+                />
+                <RecurringView patterns={recurringData} currency={currency} />
+              </div>
+            )}
 
-          {activeView === 'parental' && (
-            <div className="view-enter">
-              <ParentalView />
-            </div>
-          )}
+            {activeView === 'goals' && (
+              <div className="view-enter">
+                <GoalsView
+                  goals={goals}
+                  stats={goalsState.stats}
+                  onAdd={(data) => {
+                    addGoal({
+                      name:                data.name,
+                      emoji:               data.emoji,
+                      targetAmount:        Number(data.targetAmount),
+                      savedAmount:         Number(data.savedAmount) || 0,
+                      targetDate:          data.targetDate,
+                      monthlyContribution: Number(data.monthlyContribution),
+                      color:               data.color,
+                    });
+                  }}
+                  onUpdate={goalsState.updateGoal}
+                  onDelete={goalsState.deleteGoal}
+                  onContribute={goalsState.addContribution}
+                  currency={currency}
+                />
+              </div>
+            )}
 
-          {activeView === 'portfolio' && (
-            <div className="view-enter">
-              <PortfolioView currency={currency} financeState={financeState} />
-            </div>
-          )}
+            {activeView === 'shared' && (
+              <SharedView currency={currency} userId={userId} />
+            )}
 
-          {activeView === 'subscriptions' && (
-            <div className="view-enter">
-              <SubscriptionManager patterns={recurringData} currency={currency} />
-            </div>
-          )}
+            {activeView === 'history' && (
+              <div className="view-enter">
+                <HistoryView
+                  transactions={transactions}
+                  onCategoryChange={handleCategoryChange}
+                  onDelete={financeState.deleteTransaction}
+                  onImportClick={() => setActiveView('sync')}
+                  onPDFReport={handlePDFReport}
+                  currency={currency}
+                />
+              </div>
+            )}
 
-          {activeView === 'advisor' && (
-            <div className="view-enter">
-              <AdvisorView transactions={transactions} />
-            </div>
-          )}
+            {activeView === 'sync' && (
+              <div className="view-enter">
+                <BankSyncView
+                  onAutoAddTransactions={(txs) => {
+                    financeState.addTransactions(txs);
+                  }}
+                  recentTransactions={transactions.filter(t =>
+                    t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
+                  )}
+                  currency={currency}
+                />
+              </div>
+            )}
 
-          {activeView === 'reports' && (
-            <div className="view-enter">
-              <ReportsView />
-            </div>
-          )}
+            {activeView === 'profile' && (
+              <div className="view-enter">
+                <ProfileView
+                  config={config}
+                  onUpdateConfig={setConfig}
+                  onResetData={async () => {
+                    await resetData();
+                    if (config) {
+                      const nextConfig = { ...config, initialBalance: 0 };
+                      setConfig(nextConfig);
+                      localStorage.setItem('spendwise_config_v1', JSON.stringify(nextConfig));
+                    }
+                  }}
+                  transactions={transactions}
+                  onNavigate={handleViewChange}
+                />
+              </div>
+            )}
+
+            {activeView === 'parental' && (
+              <div className="view-enter">
+                <ParentalView />
+              </div>
+            )}
+
+            {activeView === 'portfolio' && (
+              <div className="view-enter">
+                <PortfolioView currency={currency} financeState={financeState} />
+              </div>
+            )}
+
+            {activeView === 'subscriptions' && (
+              <div className="view-enter">
+                <SubscriptionManager patterns={recurringData} currency={currency} />
+              </div>
+            )}
+
+            {activeView === 'advisor' && (
+              <div className="view-enter">
+                <AdvisorView financeState={financeState} />
+              </div>
+            )}
+
+            {activeView === 'reports' && (
+              <div className="view-enter">
+                <ReportsView />
+              </div>
+            )}
+          </Suspense>
 
           <footer className="mt-12 pb-6 text-center" role="contentinfo">
             <p className="text-caption">

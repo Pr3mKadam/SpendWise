@@ -1,5 +1,5 @@
 import { Transaction, Category } from "../../types";
-import { VALID_CATEGORIES, inferCategory, inferType } from "./common";
+import { VALID_CATEGORIES, inferCategory, inferType, toTitleCase } from "./common";
 
 export function parseCSVLocally(csvContent: string): Transaction[] {
   const lines = csvContent.split(/\r?\n/).filter(l => l.trim());
@@ -67,7 +67,7 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
     else type = inferType(rawMerchant, parseFloat(rawAmount.replace(/[^0-9.\-]/g, '')));
 
     const category: Category = rawCategory
-      ? (VALID_CATEGORIES.includes(rawCategory as Category) ? rawCategory as Category : inferCategory(rawMerchant))
+      ? toTitleCase(rawCategory) as Category
       : (type === 'credit' ? 'Income' : inferCategory(rawMerchant));
 
     transactions.push({
@@ -80,6 +80,19 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
       description: rawMerchant.slice(0, 120),
       status: 'completed',
     } as Transaction);
+  }
+
+  if (transactions.length > 0) {
+    const newest = new Date(Math.max(...transactions.map(t => new Date(t.date).getTime())));
+    const now = new Date();
+    const shiftMs = now.getTime() - newest.getTime();
+    if (shiftMs > 24 * 60 * 60 * 1000) {
+      transactions.forEach(t => {
+        const d = new Date(t.date);
+        d.setTime(d.getTime() + shiftMs);
+        t.date = d.toISOString().split('T')[0];
+      });
+    }
   }
 
   return transactions;

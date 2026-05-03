@@ -2,6 +2,11 @@ import { StateCreator } from 'zustand';
 import { Transaction, Category, RecurringPattern } from '../../types';
 import { SpendWiseStore } from '../index';
 
+export interface BudgetSettings {
+  period: 'weekly' | 'biweekly' | 'monthly';
+  rolloverEnabled: boolean;
+}
+
 export interface FinanceSlice {
   transactions: Transaction[];
   indexedData: {
@@ -9,14 +14,17 @@ export interface FinanceSlice {
     byMonth: Record<string, Transaction[]>;
   };
   budgets: Record<string, number>;
+  budgetSettings: BudgetSettings;
   subscriptions: RecurringPattern[];
-  
+
   addTransaction: (tx: Transaction) => void;
+  addTransactions: (txs: Transaction[]) => void;
   deleteTransaction: (id: string) => void;
   updateTransactionCategory: (id: string, newCategory: Category) => void;
   bulkReassignCategory: (oldCategory: string, newCategory: string) => void;
   setBudget: (category: string, amount: number) => void;
   removeBudget: (category: string) => void;
+  updateBudgetSettings: (settings: Partial<BudgetSettings>) => void;
   addSubscription: (sub: RecurringPattern) => void;
   updateSubscription: (merchant: string, data: Partial<RecurringPattern>) => void;
   deleteSubscription: (merchant: string) => void;
@@ -27,31 +35,32 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
   transactions: [],
   indexedData: { byCategory: {}, byMonth: {} },
   budgets: {},
+  budgetSettings: { period: 'monthly', rolloverEnabled: false },
   subscriptions: [],
 
   reindex: () => {
     const { transactions } = get();
     const byCategory: Record<string, Transaction[]> = {};
     const byMonth: Record<string, Transaction[]> = {};
-    
+
     transactions.forEach(tx => {
       if (!byCategory[tx.category]) byCategory[tx.category] = [];
       byCategory[tx.category].push(tx);
-      
+
       const month = tx.date.substring(0, 7);
       if (!byMonth[month]) byMonth[month] = [];
       byMonth[month].push(tx);
     });
-    
+
     set({ indexedData: { byCategory, byMonth } });
   },
 
   addTransaction: (tx) => {
     const state = get();
     // Parental control logic is moved to combined store or handled via actions
-    if (state.parentalState.isTeenMode) {
+    if (state.parentalState?.isTeenMode) {
       if (state.parentalState.restrictedCategories.includes(tx.category)) {
-        state.requestTransactionApproval(tx);
+        state.requestTransactionApproval?.(tx);
         return;
       }
       if (state.parentalState.monthlyLimit !== null && tx.type === 'debit') {
@@ -59,14 +68,19 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
         const monthlySpent = state.transactions
           .filter(t => t.type === 'debit' && t.date.startsWith(currentMonthStr))
           .reduce((acc, t) => acc + t.amount, 0);
-        
+
         if (monthlySpent + tx.amount > state.parentalState.monthlyLimit) {
-          state.requestTransactionApproval(tx);
+          state.requestTransactionApproval?.(tx);
           return;
         }
       }
     }
     set((state) => ({ transactions: [tx, ...state.transactions] }));
+    get().reindex();
+  },
+
+  addTransactions: (txs) => {
+    set((state) => ({ transactions: [...txs, ...state.transactions] }));
     get().reindex();
   },
 
@@ -98,6 +112,13 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
     delete newBudgets[category];
     return { budgets: newBudgets };
   }),
+
+  updateBudgetSettings: (settings) => set((state) => ({
+    budgetSettings: { 
+      ...(state.budgetSettings || { period: 'monthly', rolloverEnabled: false }), 
+      ...settings 
+    }
+  })),
 
   addSubscription: (sub) => set((state) => ({
     subscriptions: [...state.subscriptions, sub]
