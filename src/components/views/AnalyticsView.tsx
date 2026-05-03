@@ -52,15 +52,17 @@ function SavingsTooltip({ active, payload, label, currency = '$' }: { active?: b
 
 function StatCard({ label, value, sub, color, icon: Icon }: { label: string; value: string; sub: string; color: string; icon: React.ElementType }) {
   return (
-    <div className="card px-5 py-4 transition-shadow hover:shadow-md">
+    <div className="card px-4 sm:px-5 py-4 transition-shadow hover:shadow-md flex flex-col justify-between">
       <div className="flex items-center justify-between mb-3">
-        <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
-        <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: `${color}18` }}>
+        <span className="truncate pr-2" style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{label}</span>
+        <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center" style={{ background: `${color}18` }}>
           <Icon size={15} style={{ color }} />
         </div>
       </div>
-      <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }} className="tabular-nums">{value}</p>
-      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '4px' }}>{sub}</p>
+      <div>
+        <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 800, color: 'var(--text-primary)' }} className="tabular-nums truncate">{value}</p>
+        <p className="truncate" style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>{sub}</p>
+      </div>
     </div>
   );
 }
@@ -84,7 +86,7 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
       </div>
 
       {/* Mini Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         <StatCard label="This Month Income"    value={`${currency}${monthlyStats.totalIncome.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}      sub="Total credits"         color="#14b8a6" icon={TrendingUp} />
         <StatCard label="This Month Spent"     value={`${currency}${monthlyStats.totalExpenses.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}    sub="Total debits"          color="#ef4444" icon={Wallet} />
         <StatCard label="Avg Monthly Savings"  value={`${avgSavings >= 0 ? '+' : ''}${currency}${Math.abs(avgSavings).toLocaleString('en-US')}`}            sub="Last 6 months avg"     color={avgSavings >= 0 ? '#14b8a6' : '#ef4444'} icon={PiggyBank} />
@@ -92,8 +94,8 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
       </div>
 
       {/* Income vs Expenses Bar Chart */}
-      <div className="card px-6 py-5">
-        <div className="flex items-center justify-between mb-5">
+      <div className="card px-4 sm:px-6 py-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
           <div>
             <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Monthly Comparison</h3>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>6-month income vs expenses</p>
@@ -129,14 +131,14 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
         {/* Net Savings Line */}
-        <div className="card px-6 py-5">
-          <div className="flex items-start justify-between mb-5">
+        <div className="card px-4 sm:px-6 py-5">
+          <div className="flex items-start justify-between mb-5 gap-4">
             <div>
               <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Net Savings Trend</h3>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>Monthly surplus / deficit</p>
             </div>
             {latestMonth && (
-              <div className="text-right">
+              <div className="text-right shrink-0">
                 <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', fontWeight: 600 }}>This Month</p>
                 <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px', fontWeight: 800, color: latestMonth.savings >= 0 ? 'var(--teal)' : 'var(--red)' }} className="tabular-nums">
                   {latestMonth.savings >= 0 ? '+' : ''}{currency}{latestMonth.savings.toLocaleString('en-US')}
@@ -159,10 +161,10 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
         </div>
 
         {/* Category Breakdown */}
-        <div className="card px-6 py-5">
+        <div className="card px-4 sm:px-6 py-5">
           <div className="flex items-center justify-between mb-5">
             <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Expenses Breakdown</h3>
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>*Compare to last month</span>
+            <span className="hidden sm:inline" style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', fontStyle: 'italic' }}>*Compare to last month</span>
           </div>
 
           {categorySpending.length === 0 ? (
@@ -206,16 +208,16 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
       </div>
 
       {/* Tax Liability Predictor */}
-      <div className="card px-6 py-5">
+      <div className="card px-4 sm:px-6 py-5">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0">
             <Receipt size={18} className="text-amber-500" />
           </div>
-          <div>
-            <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Tax Liability Estimator</h3>
-            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Simplified estimate based on your income and spending</p>
+          <div className="min-w-0">
+            <h3 className="truncate" style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Tax Liability Estimator</h3>
+            <p className="truncate hidden sm:block" style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Simplified estimate based on your income and spending</p>
           </div>
-          <span className="ml-auto text-[10px] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full">BETA</span>
+          <span className="ml-auto text-[10px] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full shrink-0">BETA</span>
         </div>
         <TaxPredictor income={monthlyStats.totalIncome} categorySpending={categorySpending} currency={currency} />
       </div>

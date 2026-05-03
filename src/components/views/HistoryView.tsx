@@ -103,7 +103,7 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
     
     return (
       <div
-        className="group flex items-center gap-4 px-5 py-3.5 transition-colors hover:bg-gray-50/50"
+        className="group flex items-center gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-3.5 transition-colors hover:bg-gray-50/50"
         style={{
           borderBottom: '1px solid #f7f8fa',
           background: tx.isNew ? '#f0fdfb' : selectedIds.has(tx.id) ? 'var(--teal-dim)' : undefined,
@@ -153,16 +153,16 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2 w-28 justify-end shrink-0">
+        <div className="flex items-center gap-2 w-auto sm:w-28 justify-end shrink-0 ml-auto">
           <div className="text-right">
             <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '14px', fontWeight: 700, color: isCredit ? 'var(--teal)' : 'var(--text-primary)' }} className="tabular-nums">
               {isCredit ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </p>
           </div>
-          {isCredit ? <ArrowDownLeft size={12} style={{ color: 'var(--teal)' }} /> : <ArrowUpRight size={12} style={{ color: 'var(--red)' }} />}
+          {isCredit ? <ArrowDownLeft size={12} className="hidden sm:block" style={{ color: 'var(--teal)' }} /> : <ArrowUpRight size={12} className="hidden sm:block" style={{ color: 'var(--red)' }} />}
         </div>
         {onCategoryChange && (
-          <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-36 shrink-0">
+          <div className="hidden sm:block opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-36 shrink-0">
             <CategoryDropdown
               value={tx.category}
               onChange={(newCat) => onCategoryChange(tx.id, newCat as Category)}
@@ -188,35 +188,35 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
           {onImportClick && (
             <button
               onClick={onImportClick}
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors"
               style={{ background: 'var(--surface-card)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: '1.5px solid #edf2f7', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}
             >
-              <Upload size={14} /> Import
+              <Upload size={14} /> <span className="hidden sm:inline">Import</span>
             </button>
           )}
           {onPDFReport && (
             <button
               onClick={onPDFReport}
-              className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors"
               style={{ background: 'var(--surface-card)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: '1.5px solid #edf2f7', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}
             >
-              <FileText size={14} /> PDF Report
+              <FileText size={14} /> <span className="hidden sm:inline">PDF Report</span>
             </button>
           )}
           <button
             onClick={() => exportCSV(filtered)}
             disabled={filtered.length === 0}
-            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors disabled:opacity-40"
+            className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors disabled:opacity-40"
             style={{ background: 'var(--teal-dim)', color: 'var(--teal)', fontFamily: 'var(--font-inter)', border: '1.5px solid var(--teal-glow)', cursor: filtered.length ? 'pointer' : 'not-allowed' }}
           >
-            <Download size={14} /> Export CSV
+            <Download size={14} /> <span className="hidden sm:inline">Export CSV</span>
           </button>
         </div>
       </div>
 
       {/* Filters Card */}
-      <div className="card px-5 py-4 space-y-3">
-        <div className="flex gap-2">
+      <div className="card px-3 sm:px-5 py-4 space-y-3">
+        <div className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
@@ -335,8 +335,8 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)' }}>Change Category:</span>
-              <div className="w-40 z-50">
+              <span className="hidden sm:inline text-xs font-semibold" style={{ color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)' }}>Change Category:</span>
+              <div className="w-32 sm:w-40 z-50">
                 <CategoryDropdown
                   value="All"
                   onChange={(newCat) => {

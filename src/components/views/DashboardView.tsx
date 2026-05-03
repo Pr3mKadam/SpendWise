@@ -155,22 +155,22 @@ export function DashboardView({
   const TEXT_MUTED = '#9197a6';
 
   return (
-    <div style={{ background: PAGE_BG, margin: '-24px -32px', minHeight: '100vh', padding: '28px 32px' }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+    <div className="bg-[#f4f6fb] -mx-4 -mt-6 sm:-mx-8 sm:-my-6 min-h-[calc(100vh-60px)] px-4 py-6 sm:px-8 sm:py-7">
+      <div className="max-w-[1200px] mx-auto">
 
         {/* Page Title */}
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: TEXT_PRIMARY, marginBottom: 24, fontFamily: 'var(--font-manrope)', letterSpacing: '-0.02em' }}>
+        <h1 className="text-[22px] font-extrabold mb-6" style={{ color: TEXT_PRIMARY, fontFamily: 'var(--font-manrope)', letterSpacing: '-0.02em' }}>
           Dashboard
         </h1>
 
         {/* Two-column layout */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 296px', gap: 24, alignItems: 'start' }}>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_296px] gap-6 items-start">
 
           {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="flex flex-col gap-5 min-w-0">
 
             {/* Stat Cards */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
                 label="Balance"
                 value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
@@ -282,7 +282,7 @@ export function DashboardView({
 
             {/* Transaction History */}
             <Card style={{ padding: 0, overflow: 'hidden' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '18px 20px 14px' }}>
+              <div className="flex items-center justify-between px-4 sm:px-5 pt-4 pb-3">
                 <p style={{ fontSize: 15, fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-manrope)' }}>Transaction History</p>
                 <button
                   onClick={() => onNavigate('history')}
@@ -293,10 +293,11 @@ export function DashboardView({
               </div>
 
               {/* Table header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr 1fr', padding: '0 20px 10px', gap: 8 }}>
-                {['Name', 'Type', 'Date', 'Amount'].map(h => (
-                  <span key={h} style={{ fontSize: 10, color: TEXT_MUTED, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' }}>{h}</span>
-                ))}
+              <div className="grid grid-cols-[2fr_1fr_auto] sm:grid-cols-[2fr_1fr_1fr_1fr] px-4 sm:px-5 pb-2 gap-2 sm:gap-3">
+                <span className="text-[10px] font-bold tracking-[0.08em] uppercase" style={{ color: TEXT_MUTED }}>Name</span>
+                <span className="text-[10px] font-bold tracking-[0.08em] uppercase" style={{ color: TEXT_MUTED }}>Type</span>
+                <span className="hidden sm:block text-[10px] font-bold tracking-[0.08em] uppercase" style={{ color: TEXT_MUTED }}>Date</span>
+                <span className="text-[10px] font-bold tracking-[0.08em] uppercase text-right sm:text-left" style={{ color: TEXT_MUTED }}>Amount</span>
               </div>
 
               {recentTx.length === 0 ? (
@@ -308,25 +309,24 @@ export function DashboardView({
                   const bg = avatarColor(tx.merchant);
                   const isLast = i === recentTx.length - 1;
                   return (
-                    <div key={tx.id} style={{
-                      display: 'grid',
-                      gridTemplateColumns: '2fr 1fr 1fr 1fr',
-                      padding: '10px 20px',
-                      gap: 8,
-                      alignItems: 'center',
-                      borderTop: '1px solid rgba(0,0,0,0.04)',
-                      borderBottom: isLast ? 'none' : undefined,
-                      transition: 'background 0.12s',
-                    }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#f8f9fc')}
-                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    <div key={tx.id} 
+                      className="grid grid-cols-[2fr_1fr_auto] sm:grid-cols-[2fr_1fr_1fr_1fr] px-4 sm:px-5 py-2.5 sm:py-3 gap-2 sm:gap-3 items-center transition-colors hover:bg-[#f8f9fc]"
+                      style={{
+                        borderTop: '1px solid rgba(0,0,0,0.04)',
+                        borderBottom: isLast ? 'none' : undefined,
+                      }}
                     >
                       {/* Name + avatar */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, overflow: 'hidden' }}>
-                        <div style={{ width: 32, height: 32, borderRadius: 10, background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>{initials(tx.merchant)}</span>
+                      <div className="flex items-center gap-2 sm:gap-3 overflow-hidden">
+                        <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center" style={{ background: bg }}>
+                          <span className="text-[11px] font-bold text-white">{initials(tx.merchant)}</span>
                         </div>
-                        <span style={{ fontSize: 13, fontWeight: 600, color: TEXT_PRIMARY, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tx.merchant}</span>
+                        <div className="flex flex-col overflow-hidden min-w-0">
+                          <span className="text-[13px] font-semibold truncate" style={{ color: TEXT_PRIMARY }}>{tx.merchant}</span>
+                          <span className="sm:hidden text-[10px]" style={{ color: TEXT_MUTED }}>
+                            {new Date(tx.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                          </span>
+                        </div>
                       </div>
                       {/* Type badge */}
                       <span style={{
@@ -338,12 +338,12 @@ export function DashboardView({
                       }}>
                         {tx.category}
                       </span>
-                      {/* Date */}
-                      <span style={{ fontSize: 12, color: TEXT_MUTED }}>
+                      {/* Date (Desktop) */}
+                      <span className="hidden sm:block text-[12px]" style={{ color: TEXT_MUTED }}>
                         {new Date(tx.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
                       </span>
                       {/* Amount */}
-                      <span style={{ fontSize: 13, fontWeight: 700, color: tx.type === 'credit' ? '#10b981' : '#ef4444' }}>
+                      <span className="text-[13px] font-bold text-right sm:text-left whitespace-nowrap" style={{ color: tx.type === 'credit' ? '#10b981' : '#ef4444' }}>
                         {tx.type === 'credit' ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -354,7 +354,7 @@ export function DashboardView({
           </div>
 
           {/* ── RIGHT COLUMN ─────────────────────────────────────────── */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div className="flex flex-col gap-5 min-w-0">
 
             {/* My Card */}
             <div style={{
