@@ -30,16 +30,15 @@ function avatarColor(name: string) {
 // Sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
+function Card({ children, className = "", style = {} }: { children: React.ReactNode; className?: string; style?: React.CSSProperties }) {
   return (
-    <div style={{
-      background: '#fff',
-      borderRadius: 16,
-      padding: 20,
-      boxShadow: '0 2px 12px rgba(0,0,0,0.05)',
-      border: '1px solid rgba(0,0,0,0.04)',
-      ...style,
-    }}>
+    <div 
+      className={`bg-white rounded-2xl shadow-sm border border-black/[0.04] ${className}`}
+      style={{
+        padding: 'var(--card-padding, 20px)',
+        ...style,
+      }}
+    >
       {children}
     </div>
   );
@@ -55,22 +54,22 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon, iconBg, trend }: StatCardProps) {
   return (
-    <Card>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-        <div style={{
-          width: 38, height: 38, borderRadius: 10,
-          background: iconBg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          flexShrink: 0,
-        }}>
+    <Card className="px-3 py-3 sm:px-5 sm:py-4 flex flex-col justify-between h-full">
+      <div className="flex items-start justify-between mb-2 sm:mb-3">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: iconBg }}>
           {icon}
         </div>
-        {trend === 'up' && <TrendingUp size={14} color="#10b981" />}
-        {trend === 'down' && <TrendingDown size={14} color="#f87171" />}
+        <div className="shrink-0">
+          {trend === 'up' && <TrendingUp size={14} className="text-emerald-500" />}
+          {trend === 'down' && <TrendingDown size={14} className="text-red-400" />}
+        </div>
       </div>
-      <p style={{ fontSize: 22, fontWeight: 800, color: '#0f1117', marginTop: 12, letterSpacing: '-0.02em', fontFamily: 'var(--font-manrope)' }}>
-        {value}
-      </p>
-      <p style={{ fontSize: 12, color: '#9197a6', marginTop: 2, fontWeight: 500 }}>{label}</p>
+      <div className="min-w-0">
+        <p className="text-lg sm:text-2xl font-extrabold truncate" style={{ color: '#0f1117', letterSpacing: '-0.02em', fontFamily: 'var(--font-manrope)' }}>
+          {value}
+        </p>
+        <p className="text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider" style={{ color: '#9197a6', marginTop: 2 }}>{label}</p>
+      </div>
     </Card>
   );
 }
@@ -163,39 +162,39 @@ export function DashboardView({
           Dashboard
         </h1>
 
-        {/* Two-column layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_296px] gap-6 items-start">
+        {/* Two-column layout (stacks on mobile and most tablets) */}
+        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 items-start">
 
           {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
           <div className="flex flex-col gap-5 min-w-0">
 
-            {/* Stat Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Stat Cards (2x2 on small, 4x1 on desktop) */}
+            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
               <StatCard
                 label="Balance"
                 value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<Wallet size={18} color="#6366f1" />}
+                icon={<Wallet size={16} className="sm:w-[18px] sm:h-[18px] text-[#6366f1]" />}
                 iconBg="rgba(99,102,241,0.1)"
                 trend={trendPct >= 0 ? 'up' : 'down'}
               />
               <StatCard
                 label="Income"
                 value={`${currency}${monthlyStats.totalIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<TrendingUp size={18} color="#10b981" />}
+                icon={<TrendingUp size={16} className="sm:w-[18px] sm:h-[18px] text-[#10b981]" />}
                 iconBg="rgba(16,185,129,0.1)"
                 trend="up"
               />
               <StatCard
                 label="Expenses"
                 value={`${currency}${monthlyStats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<TrendingDown size={18} color="#f87171" />}
+                icon={<TrendingDown size={16} className="sm:w-[18px] sm:h-[18px] text-[#f87171]" />}
                 iconBg="rgba(248,113,113,0.1)"
                 trend="down"
               />
               <StatCard
                 label="Savings"
                 value={`${currency}${saved.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<PiggyBank size={18} color="#f59e0b" />}
+                icon={<PiggyBank size={16} className="sm:w-[18px] sm:h-[18px] text-[#f59e0b]" />}
                 iconBg="rgba(245,158,11,0.1)"
                 trend={saved > 0 ? 'up' : 'neutral'}
               />

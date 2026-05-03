@@ -128,7 +128,7 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
       </div>
 
       {/* Two column: Savings trend + Category breakdown */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         {/* Net Savings Line */}
         <div className="card px-4 sm:px-6 py-5">
