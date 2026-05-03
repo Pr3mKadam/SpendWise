@@ -239,9 +239,9 @@ export default function ParentalView() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
         {/* Left Col: Pending Approvals & Quick Stats */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="xl:col-span-2 space-y-6">
           {/* Pending Requests */}
           <div className="card overflow-hidden">
             <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-input)]/50 flex items-center justify-between">

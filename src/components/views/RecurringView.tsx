@@ -134,7 +134,7 @@ function SummaryBar({ patterns, currency }: { patterns: RecurringPattern[]; curr
 
   const colors = ['var(--teal)', 'var(--purple)', 'var(--blue)'];
   return (
-    <div className="mb-5 grid grid-cols-3 gap-3">
+    <div className="mb-5 grid grid-cols-1 md:grid-cols-3 gap-3">
       {[
         { label: 'Total Monthly',  value: `${currency}${total.toFixed(0)}`,       icon: TrendingUp },
         { label: 'Subscriptions',  value: `${currency}${monthly.toFixed(0)}/mo`,  icon: RefreshCw  },
@@ -181,7 +181,7 @@ export default function RecurringView({ patterns, currency = '$' }: RecurringVie
       {patterns.length === 0 ? (
         <div className="card p-8"><EmptyState /></div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           {patterns.map(p => (
             <PatternCard key={`${p.merchant}-${p.frequency}`} pattern={p} currency={currency} />
           ))}

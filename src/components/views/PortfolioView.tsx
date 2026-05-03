@@ -437,8 +437,8 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
             </div>
 
             {/* ── Visual Insights ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-8 space-y-6">
+            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+              <div className="xl:col-span-8 space-y-6">
                 <NetWorthEvolution transactions={financeState.transactions} currency={currency} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <WealthTree score={healthScore} savingsRate={savingsRate} />
@@ -456,7 +456,7 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
                   </div>
                 </div>
               </div>
-              <div className="lg:col-span-4 card px-6 py-5">
+              <div className="xl:col-span-4 card px-6 py-5">
                 <h3 className="font-inter font-bold text-[12px] uppercase tracking-wider mb-5" style={{ color: 'var(--text-muted)' }}>
                   Portfolio Allocation
                 </h3>
@@ -475,7 +475,7 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
             </div>
 
             {/* ── Two-Column: Assets / Liabilities ── */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
               <div className="card px-6 py-5 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div>

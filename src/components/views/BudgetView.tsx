@@ -24,7 +24,7 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
   return (
     <div className="view-enter space-y-6">
       {/* Header Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <div className="bg-[var(--surface-card)] rounded-3xl p-6 border border-[var(--border)] shadow-sm">
           <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-1">Total Monthly Budget</p>
           <h2 className="text-3xl font-black text-[var(--text-primary)]">{currency}{totalBudgeted.toLocaleString()}</h2>
@@ -112,7 +112,7 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {budgetStats.map((b) => (
               <div key={b.category} className="group p-4 bg-[var(--surface-input)] rounded-2xl border border-[var(--border)] hover:border-[var(--teal)]/30 transition-all">
                 <div className="flex items-center justify-between mb-3">

@@ -230,8 +230,8 @@ export default function BankSyncView({
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2 space-y-6">
           {/* Connected Sources */}
           <div className="card px-6 py-6">
             <div className="flex items-center justify-between mb-4">

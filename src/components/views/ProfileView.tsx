@@ -172,7 +172,7 @@ export default function ProfileView({
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-2xl">
             {/* Display Name */}
             <div>
               <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
@@ -315,7 +315,7 @@ export default function ProfileView({
           </h3>
         </div>
 
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
           {/* Export CSV */}
           <div
             className="flex flex-col p-5 rounded-xl"
@@ -555,7 +555,7 @@ export default function ProfileView({
             <ShieldCheck size={20} />
           </div>
         </div>
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
             <button
               onClick={() => onNavigate?.('parental')}
               className="flex items-center gap-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)] hover:bg-[var(--surface-card)] transition-colors text-left"
