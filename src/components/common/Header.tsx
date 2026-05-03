@@ -58,9 +58,10 @@ export default function Header({
 
   return (
     <header
-      className="sticky top-0 z-30 flex items-center justify-between px-6 lg:px-8 shrink-0"
+      className="sticky top-0 z-30 flex items-center justify-between px-4 md:px-6 lg:px-8 shrink-0"
       style={{
-        height: '70px',
+        height: 'calc(70px + env(safe-area-inset-top))',
+        paddingTop: 'env(safe-area-inset-top)',
         background: 'var(--surface-card)',
         boxShadow: '0 1px 0 rgba(0,0,0,0.06)',
       }}

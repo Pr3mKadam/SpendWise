@@ -1,4 +1,5 @@
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X } from 'lucide-react';
 import { AppView } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -30,6 +31,12 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
   const store = useStore();
   const settings = store.parentalState;
   const isKidMode = settings.isTeenMode;
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Close mobile menu when view changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [activeView]);
 
   const navItems = ALL_NAV_ITEMS.filter(item => {
     if (isKidMode) {
@@ -38,6 +45,11 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
     }
     return true;
   });
+
+  // Mobile nav: show max 3 main items + 1 menu button
+  const mobileNavItems = navItems.filter(item => 
+    ['dashboard', 'history', 'budget'].includes(item.id)
+  );
 
   return (
     <>
@@ -163,10 +175,14 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
 
       {/* ── Mobile Bottom Nav ── */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 py-2"
-        style={{ background: 'var(--sidebar-bg)', borderTop: '1px solid rgba(255,255,255,0.08)' }}
+        className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 pt-2"
+        style={{ 
+          background: 'var(--sidebar-bg)', 
+          borderTop: '1px solid rgba(255,255,255,0.08)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)'
+        }}
       >
-        {navItems.map((item) => {
+        {mobileNavItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeView === item.id;
 
@@ -174,23 +190,118 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className="relative flex flex-col items-center justify-center w-14 h-12"
+              className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px]"
               style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)', fontFamily: 'var(--font-inter)' }}
             >
               <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-              <span style={{ fontSize: '9px', fontWeight: 600, marginTop: '2px' }}>{item.label}</span>
+              <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px' }}>{item.label}</span>
               {item.id === 'budget' && overBudgetCount > 0 && (
                 <span
-                  className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-bold"
+                  className="absolute top-0 right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] px-1 font-bold"
                   style={{ background: 'var(--red)', color: '#fff' }}
                 >
-                  {overBudgetCount}
+                  {overBudgetCount > 9 ? '9+' : overBudgetCount}
                 </span>
               )}
             </button>
           );
         })}
+        <button
+          onClick={() => setIsMobileMenuOpen(true)}
+          className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px]"
+          style={{ color: 'var(--sidebar-text)', fontFamily: 'var(--font-inter)' }}
+        >
+          <Menu size={20} strokeWidth={2} />
+          <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px' }}>Menu</span>
+        </button>
       </div>
+
+      {/* ── Mobile Drawer (Overlay) ── */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[60] md:hidden flex">
+          {/* Backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+            onClick={() => setIsMobileMenuOpen(false)}
+          />
+          {/* Drawer */}
+          <div 
+            className="relative w-[280px] h-full flex flex-col animate-slide-in-right bg-[var(--sidebar-bg)] ml-auto shadow-2xl"
+          >
+            <div className="flex items-center justify-between p-4 border-b border-white/10" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
+              <span style={{
+                fontFamily: 'var(--font-manrope)',
+                fontWeight: 800,
+                fontSize: '18px',
+                color: 'var(--text-primary)',
+              }}>
+                Spend<span className="text-[var(--teal)]">Wise</span>
+              </span>
+              <button 
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 rounded-lg bg-white/5 text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeView === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onViewChange(item.id)}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left min-h-[48px]`}
+                    style={{
+                      background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
+                      color: isActive ? '#ffffff' : 'var(--sidebar-text)',
+                      fontFamily: 'var(--font-inter)',
+                      fontSize: '15px',
+                      fontWeight: isActive ? 600 : 500,
+                    }}
+                  >
+                    <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                    <span>{item.label}</span>
+                    {item.id === 'budget' && overBudgetCount > 0 && (
+                      <span
+                        className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[10px] font-bold px-1"
+                        style={{ background: 'rgba(239,68,68,0.9)', color: '#fff' }}
+                      >
+                        {overBudgetCount}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <div className="p-4 border-t border-white/10 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+              <button
+                onClick={() => onViewChange('profile')}
+                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl min-h-[48px]`}
+                style={{ 
+                  background: activeView === 'profile' ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
+                  color: activeView === 'profile' ? '#ffffff' : 'var(--sidebar-text)', 
+                  fontFamily: 'var(--font-inter)', 
+                  fontSize: '15px', 
+                  fontWeight: activeView === 'profile' ? 600 : 500 
+                }}
+              >
+                <Settings size={18} strokeWidth={activeView === 'profile' ? 2.5 : 2} />
+                <span>Profile & Settings</span>
+              </button>
+              <button
+                onClick={signOut}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-teal-500/10 min-h-[48px]"
+                style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 500 }}
+              >
+                <LogOut size={18} strokeWidth={2} />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Sidebar spacer (Desktop) ── */}
       <div className="hidden md:block shrink-0" style={{ width: 'var(--sidebar-width, 240px)' }} />

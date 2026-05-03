@@ -28,3 +28,17 @@ dist-ssr
 *.sln
 *.sw?
 Thumbs.db
+
+# Agent / GSD Metadata
+.gsd/
+.agent/
+.agents/
+.gemini/
+.antigravity/
+
+# Progress/Debug Artifacts
+progress.md
+progress.txt
+my_tsc_errors.txt
+
+
