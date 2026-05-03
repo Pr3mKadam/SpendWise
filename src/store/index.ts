@@ -55,6 +55,8 @@ export const useStore = create<SpendWiseStore>()(
           indexedData: { byCategory: {}, byMonth: {} },
           assets: [], 
           liabilities: [], 
+          subscriptions: [],
+          recurringTransactions: [],
           parentalState: { 
             enabled: false,
             isTeenMode: false, 
@@ -81,6 +83,7 @@ export const useStore = create<SpendWiseStore>()(
           assets: data.assets || [],
           liabilities: data.liabilities || [],
           subscriptions: data.subscriptions || [],
+          recurringTransactions: data.recurringTransactions || [],
         });
         get().reindex();
       }

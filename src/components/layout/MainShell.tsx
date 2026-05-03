@@ -37,6 +37,7 @@ import { useRecurring } from '../../hooks/useRecurring';
 import { useNotifications } from '../../hooks/useNotifications';
 import { useGoals } from '../../hooks/useGoals';
 import { useCategories } from '../../hooks/useCategories';
+import { useAutomations } from '../../hooks/useAutomations';
 
 interface MainShellProps {
   config:     SpendWiseConfig | null;
@@ -45,6 +46,7 @@ interface MainShellProps {
 }
 
 export function MainShell({ config, setConfig, userId }: MainShellProps) {
+  useAutomations();
   const { user } = useAuth();
   const { customCategories, addCustomCategory, updateCustomCategory, deleteCustomCategory } = useCategories();
 
@@ -253,9 +255,9 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
             {activeView === 'dashboard' && (
               <DashboardView
                 financeState={financeState}
-                onCategoryChange={handleCategoryChange}
                 onAdd={onAdd}
                 currency={currency}
+                onNavigate={handleViewChange}
               />
             )}
 

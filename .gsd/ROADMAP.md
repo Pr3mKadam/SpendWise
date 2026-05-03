@@ -15,11 +15,15 @@
 - [x] **Wealth Tree**: High-fidelity visualization of asset growth.
 
 ### Phase 1.9: Smart Automation & Features 🔄
-- [ ] **Manual Subscriptions**: Add manual entry modal for subscriptions (identified in audit).
+- [x] **Manual Subscriptions**: Add manual entry modal for subscriptions (identified in audit).
 - [x] **Custom Categories**: Allow users to define their own spending categories/icons.
-- [ ] **Recurring Automations**: Rule engine for recurring transactions and budget resets.
+- [x] **Recurring Automations**: Local rule engine to generate transactions for recurring bills
+- [x] **Manual Subscriptions**: Let users proactively add subscription entries using client-side libraries.
 - [x] **Export Engine**: Professional PDF/CSV reports using client-side libraries.
 - [x] **Local Sync**: QR-based local data sharing (P2P wallet sync).
+
+### Phase 1.10: "Signal" Dashboard Redesign 🎨
+- [x] **Signal Layout**: Typographic command-center — dark mesh, hairline separators, 80px balance, monospace vitals strip
 
 ### Phase 2.0: Production Launch 📅
 - [ ] **Security Audit**: Final review of encryption and local storage safety.

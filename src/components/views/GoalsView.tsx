@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Target, Plus } from 'lucide-react';
 import { SavingsGoal, GoalStatus } from '../../types';
 import { GoalModal, GoalFormData } from '../features/goals/GoalModal';
@@ -29,6 +29,12 @@ interface GoalsViewProps {
 export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onContribute, currency = '$' }: GoalsViewProps) {
   const [showAdd,  setShowAdd]  = useState(false);
   const [editGoal, setEditGoal] = useState<SavingsGoal | null>(null);
+
+  useEffect(() => {
+    const handleOpenAdd = () => setShowAdd(true);
+    window.addEventListener('open-add-goal', handleOpenAdd);
+    return () => window.removeEventListener('open-add-goal', handleOpenAdd);
+  }, []);
 
   const handleAdd = (form: GoalFormData) => {
     onAdd({

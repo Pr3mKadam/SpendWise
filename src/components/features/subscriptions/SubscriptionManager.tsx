@@ -1,7 +1,9 @@
-import { useMemo } from 'react';
-import { RefreshCw, TrendingUp, AlertTriangle, DollarSign, Calendar } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { RefreshCw, TrendingUp, AlertTriangle, DollarSign, Calendar, Plus } from 'lucide-react';
 import { RecurringPattern } from '../../../types';
 import { useCategories } from '../../../hooks/useCategories';
+import { useStore } from '../../../store';
+import AddSubscriptionModal from './AddSubscriptionModal';
 
 interface SubscriptionManagerProps {
   patterns: RecurringPattern[];
@@ -35,14 +37,41 @@ function daysUntil(dateStr: string): number {
 
 export default function SubscriptionManager({ patterns, currency = '₹' }: SubscriptionManagerProps) {
   const { mergedIcons } = useCategories();
+  const recurringTransactions = useStore(s => s.recurringTransactions);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   // Pull out subscription-like patterns (Subscriptions category or recurring monthly)
-  const subscriptions = useMemo(() =>
+  const autoSubscriptions = useMemo(() =>
     patterns.filter(p =>
       p.category === 'Subscriptions' || p.frequency === 'monthly' || p.frequency === 'annual'
     ).sort((a, b) => b.avgAmount - a.avgAmount),
     [patterns]
   );
+
+  const manualSubscriptions = useMemo(() => {
+    return recurringTransactions.map(rt => ({
+      merchant: rt.merchant,
+      category: rt.category,
+      avgAmount: rt.amount,
+      frequency: rt.frequency === 'yearly' ? 'annual' : rt.frequency,
+      lastSeen: rt.lastProcessed || new Date().toISOString(),
+      nextExpected: rt.nextOccurrence,
+      occurrences: 0,
+      totalSpent: 0,
+      priceCreep: false,
+    } as RecurringPattern));
+  }, [recurringTransactions]);
+
+  const subscriptions = useMemo(() => {
+    const combined = [...autoSubscriptions];
+    // Add manual ones if not already auto-detected (simple merge by merchant name)
+    manualSubscriptions.forEach(ms => {
+      if (!combined.find(s => s.merchant.toLowerCase() === ms.merchant.toLowerCase())) {
+        combined.push(ms);
+      }
+    });
+    return combined.sort((a, b) => b.avgAmount - a.avgAmount);
+  }, [autoSubscriptions, manualSubscriptions]);
 
   const monthlyTotal = useMemo(() =>
     subscriptions.filter(s => s.frequency === 'monthly').reduce((sum, s) => sum + s.avgAmount, 0),
@@ -73,14 +102,23 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
     <div className="animate-fade-in-up space-y-6">
 
       {/* Header */}
-      <div>
-        <h2 className="flex items-center gap-2 text-headline">
-          <RefreshCw size={22} style={{ color: '#a855f7' }} />
-          Subscription Intelligence
-        </h2>
-        <p className="text-caption mt-1">
-          All recurring charges auto-detected from your transaction history.
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="flex items-center gap-2 text-headline">
+            <RefreshCw size={22} style={{ color: '#a855f7' }} />
+            Subscription Intelligence
+          </h2>
+          <p className="text-caption mt-1">
+            All recurring charges auto-detected from your transaction history.
+          </p>
+        </div>
+        <button
+          onClick={() => setShowAddModal(true)}
+          className="flex items-center gap-1.5 px-4 py-2 bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 font-bold text-sm rounded-xl hover:bg-purple-100 dark:hover:bg-purple-500/20 transition-colors"
+        >
+          <Plus size={16} />
+          Add Manual
+        </button>
       </div>
 
       {/* Stat Cards */}
@@ -215,6 +253,12 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
           </p>
         </div>
       )}
+
+      <AddSubscriptionModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        currency={currency}
+      />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { StateCreator } from 'zustand';
-import { Transaction, Category, RecurringPattern } from '../../types';
+import { Transaction, Category, RecurringPattern, RecurringTransaction } from '../../types';
 import { SpendWiseStore } from '../index';
 
 export interface BudgetSettings {
@@ -16,6 +16,7 @@ export interface FinanceSlice {
   budgets: Record<string, number>;
   budgetSettings: BudgetSettings;
   subscriptions: RecurringPattern[];
+  recurringTransactions: RecurringTransaction[];
 
   addTransaction: (tx: Transaction) => void;
   addTransactions: (txs: Transaction[]) => void;
@@ -28,6 +29,9 @@ export interface FinanceSlice {
   addSubscription: (sub: RecurringPattern) => void;
   updateSubscription: (merchant: string, data: Partial<RecurringPattern>) => void;
   deleteSubscription: (merchant: string) => void;
+  addRecurringTransaction: (rt: RecurringTransaction) => void;
+  updateRecurringTransaction: (id: string, data: Partial<RecurringTransaction>) => void;
+  removeRecurringTransaction: (id: string) => void;
   reindex: () => void;
 }
 
@@ -37,6 +41,7 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
   budgets: {},
   budgetSettings: { period: 'monthly', rolloverEnabled: false },
   subscriptions: [],
+  recurringTransactions: [],
 
   reindex: () => {
     const { transactions } = get();
@@ -130,5 +135,17 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
 
   deleteSubscription: (merchant) => set((state) => ({
     subscriptions: state.subscriptions.filter(s => s.merchant !== merchant)
+  })),
+
+  addRecurringTransaction: (rt) => set((state) => ({
+    recurringTransactions: [...state.recurringTransactions, rt]
+  })),
+
+  updateRecurringTransaction: (id, data) => set((state) => ({
+    recurringTransactions: state.recurringTransactions.map(rt => rt.id === id ? { ...rt, ...data } : rt)
+  })),
+
+  removeRecurringTransaction: (id) => set((state) => ({
+    recurringTransactions: state.recurringTransactions.filter(rt => rt.id !== id)
   })),
 });

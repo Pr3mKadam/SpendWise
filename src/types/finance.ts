@@ -73,6 +73,18 @@ export interface RecurringPattern {
   priceCreep?:   boolean;
 }
 
+export type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
+
+export interface RecurringTransaction {
+  id:            string;
+  merchant:      string;
+  amount:        number;
+  category:      Category;
+  frequency:     RecurringFrequency;
+  lastProcessed: string | null;
+  nextOccurrence: string; // ISO date string YYYY-MM-DD
+}
+
 export type GoalStatus = 'on-track' | 'at-risk' | 'achieved' | 'paused';
 
 export interface SavingsGoal {

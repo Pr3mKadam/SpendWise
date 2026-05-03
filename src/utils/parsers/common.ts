@@ -14,60 +14,202 @@ export const VALID_CATEGORIES: Category[] = [
 
 // ─── Merchant → Category map ────────────────────────────────────────────────
 export const MERCHANT_CATEGORY_MAP: Record<string, Category> = {
-  // Food & delivery
+  // ── Food delivery apps ────────────────────────────────────────────────────
   swiggy: 'Food', zomato: 'Food', dominos: 'Food', 'pizza hut': 'Food',
   mcdonalds: 'Food', mcd: 'Food', kfc: 'Food', subway: 'Food',
   starbucks: 'Food', 'cafe coffee day': 'Food', ccd: 'Food',
   blinkit: 'Food', zepto: 'Food', bigbasket: 'Food', dunzo: 'Food',
+  instamart: 'Food', jiomart: 'Food', dmart: 'Food',
+  grofers: 'Food', milkbasket: 'Food', bbnow: 'Food', naturebasket: 'Food',
+
+  // ── Generic food words ────────────────────────────────────────────────────
   grocery: 'Food', groceries: 'Food', restaurant: 'Food', cafe: 'Food',
   food: 'Food', lunch: 'Food', dinner: 'Food', breakfast: 'Food',
   coffee: 'Food', snack: 'Food', tea: 'Food', pizza: 'Food',
+  meal: 'Food', meals: 'Food', brunch: 'Food', tiffin: 'Food',
+  dabba: 'Food', canteen: 'Food', mess: 'Food', dhaba: 'Food',
+  eatery: 'Food', bakery: 'Food', sweets: 'Food',
+  mithai: 'Food', dessert: 'Food', icecream: 'Food', 'ice cream': 'Food',
+  juice: 'Food', shake: 'Food', smoothie: 'Food',
+  soda: 'Food', nimbu: 'Food', nimbooz: 'Food', tapri: 'Food',
 
-  // Transport
-  uber: 'Transport', ola: 'Transport', rapido: 'Transport',
+  // ── Indian & Maharashtra specific food ────────────────────────────────────
+  thali: 'Food', lassi: 'Food', chaas: 'Food', buttermilk: 'Food', taak: 'Food',
+  chai: 'Food', biryani: 'Food', pulao: 'Food',
+  paneer: 'Food', dal: 'Food', roti: 'Food', naan: 'Food',
+  paratha: 'Food', puri: 'Food', bhaji: 'Food', pav: 'Food',
+  'pav bhaji': 'Food', vada: 'Food', 'vada pav': 'Food', vadapav: 'Food',
+  misal: 'Food', 'misal pav': 'Food', pohe: 'Food', poha: 'Food', 'kanda pohe': 'Food', upma: 'Food', shira: 'Food',
+  idli: 'Food', dosa: 'Food', sambhar: 'Food', uttapam: 'Food',
+  appam: 'Food', rice: 'Food', curry: 'Food',
+  sabji: 'Food', sabzi: 'Food', khichdi: 'Food',
+  curd: 'Food', dahi: 'Food', raita: 'Food',
+  halwa: 'Food', kheer: 'Food', gulab: 'Food', jamun: 'Food',
+  jalebi: 'Food', samosa: 'Food', kachori: 'Food', chaat: 'Food',
+  'pani puri': 'Food', bhelpuri: 'Food', sevpuri: 'Food', dabeli: 'Food',
+  momos: 'Food', noodles: 'Food', maggi: 'Food', burger: 'Food',
+  sandwich: 'Food', wrap: 'Food', roll: 'Food', kebab: 'Food',
+  seekh: 'Food', tikka: 'Food', chicken: 'Food',
+  mutton: 'Food', fish: 'Food', prawns: 'Food', egg: 'Food', anda: 'Food',
+  fruit: 'Food', fruits: 'Food', vegetable: 'Food', vegetables: 'Food', bhaaji: 'Food',
+  atta: 'Food', milk: 'Food', bread: 'Food',
+  biscuit: 'Food', chips: 'Food', namkeen: 'Food', farsan: 'Food', chivda: 'Food',
+  chakli: 'Food', bakarwadi: 'Food', laddu: 'Food', pedha: 'Food', barfi: 'Food',
+  shrikhand: 'Food', amras: 'Food', basundi: 'Food', puranpoli: 'Food', modak: 'Food',
+  thalipeeth: 'Food', zunka: 'Food', pithla: 'Food', bhakri: 'Food',
+  solkadhi: 'Food', mastani: 'Food', 'cutting chai': 'Food', 'bun maska': 'Food', 'irani chai': 'Food',
+  chitale: 'Food', yewale: 'Food', 'amrut tulya': 'Food', kayani: 'Food', vaishali: 'Food', goodluck: 'Food', sujata: 'Food',
+
+  // ── Transport apps, operators & generic words ─────────────────────────────
+  uber: 'Transport', ola: 'Transport', rapido: 'Transport', indrive: 'Transport',
   metro: 'Transport', bus: 'Transport', train: 'Transport', auto: 'Transport',
   cab: 'Transport', taxi: 'Transport', petrol: 'Transport', fuel: 'Transport',
   irctc: 'Transport', flight: 'Transport', indigo: 'Transport',
+  'air india': 'Transport', spicejet: 'Transport', vistara: 'Transport', akasa: 'Transport',
+  makemytrip: 'Transport', goibibo: 'Transport', redbus: 'Transport',
+  abhibus: 'Transport', ixigo: 'Transport', chalo: 'Transport', 'm-indicator': 'Transport',
+  rickshaw: 'Transport', yulu: 'Transport', bounce: 'Transport',
+  parking: 'Transport', toll: 'Transport', fastag: 'Transport', puc: 'Transport', rto: 'Transport',
+  diesel: 'Transport', cng: 'Transport',
+  'kali peeli': 'Transport', 'share auto': 'Transport',
+  neeta: 'Transport', vrl: 'Transport', purple: 'Transport',
 
-  // Shopping
+  // ── Indian city bus / transit operators ──────────────────────────────────
+  pmpl: 'Transport', pmpml: 'Transport',   // Pune
+  pmt: 'Transport', pcmt: 'Transport',     // Old Pune
+  best: 'Transport',    // Mumbai BEST buses
+  nmmt: 'Transport', tmt: 'Transport', kdmt: 'Transport', // Mumbai MMR
+  brts: 'Transport',    // Bus Rapid Transit System
+  ksrtc: 'Transport',   // Karnataka / Kerala State RTC
+  msrtc: 'Transport',   // Maharashtra State RTC (ST bus)
+  'st stand': 'Transport', shivneri: 'Transport', shivshahi: 'Transport', asiad: 'Transport', 'lal dabba': 'Transport',
+  tsrtc: 'Transport',   // Telangana State RTC
+  gsrtc: 'Transport',   // Gujarat State RTC
+  upsrtc: 'Transport',  // Uttar Pradesh State RTC
+  osrtc: 'Transport',   // Odisha State RTC
+  hrtc: 'Transport',    // Himachal Pradesh RTC
+  rsrtc: 'Transport',   // Rajasthan State RTC
+  astc: 'Transport',    // Assam State Transport
+  cmrl: 'Transport',    // Chennai Metro Rail
+  bmtc: 'Transport',    // Bangalore Metropolitan Transport
+  bmrc: 'Transport',    // Bangalore Metro Rail
+  dmrc: 'Transport',    // Delhi Metro Rail
+  mmrc: 'Transport',    // Mumbai Metro Rail
+  hmrl: 'Transport',    // Hyderabad Metro
+  nmmc: 'Transport',    // Navi Mumbai Metro
+  railway: 'Transport', 'local train': 'Transport',
+  'city bus': 'Transport', 'local bus': 'Transport', 'st bus': 'Transport',
+  'bus pass': 'Transport', 'bus ticket': 'Transport',
+  'train ticket': 'Transport', 'metro card': 'Transport',
+  'metro token': 'Transport', 'metro pass': 'Transport',
+
+  // ── Shopping (Malls, Brands, Streets) ──────────────────────────────────────
   amazon: 'Shopping', flipkart: 'Shopping', myntra: 'Shopping',
   meesho: 'Shopping', nykaa: 'Shopping', ajio: 'Shopping',
+  croma: 'Shopping', vijaysales: 'Shopping', reliance: 'Shopping',
+  snapdeal: 'Shopping', shopsy: 'Shopping', firstcry: 'Shopping',
+  zudio: 'Shopping', westside: 'Shopping', pantaloons: 'Shopping', 'shoppers stop': 'Shopping',
+  'tulsi baug': 'Shopping', 'fc road': 'Shopping', 'jm road': 'Shopping', 'linking road': 'Shopping', colaba: 'Shopping',
+  'phoenix mall': 'Shopping', amanora: 'Shopping', 'seasons mall': 'Shopping', inorbit: 'Shopping', rcity: 'Shopping', palladium: 'Shopping',
+  png: 'Shopping', kalyan: 'Shopping', 'waman hari pethe': 'Shopping',
   shopping: 'Shopping', clothes: 'Shopping', shoes: 'Shopping',
   shirt: 'Shopping', dress: 'Shopping', jeans: 'Shopping',
+  jacket: 'Shopping', bag: 'Shopping', watch: 'Shopping',
+  accessories: 'Shopping', jewellery: 'Shopping', makeup: 'Shopping',
+  cosmetics: 'Shopping', perfume: 'Shopping', mobile: 'Shopping',
+  laptop: 'Shopping', electronics: 'Shopping', gadget: 'Shopping',
 
-  // Subscriptions
+  // ── Subscriptions & Telecom ───────────────────────────────────────────────
   netflix: 'Subscriptions', spotify: 'Subscriptions', hotstar: 'Subscriptions',
   'prime video': 'Subscriptions', 'amazon prime': 'Subscriptions',
   youtube: 'Subscriptions', 'youtube premium': 'Subscriptions',
   jio: 'Subscriptions', airtel: 'Subscriptions', vi: 'Subscriptions',
+  bsnl: 'Subscriptions', 'jio fiber': 'Subscriptions', 'airtel xstream': 'Subscriptions',
+  hathway: 'Subscriptions', tikona: 'Subscriptions', 'you broadband': 'Subscriptions',
   subscription: 'Subscriptions', recharge: 'Subscriptions',
+  zee5: 'Subscriptions', 'sony liv': 'Subscriptions', sonyliv: 'Subscriptions',
+  'apple music': 'Subscriptions', jiosaavn: 'Subscriptions',
+  gaana: 'Subscriptions', wynk: 'Subscriptions', ullu: 'Subscriptions', altbalaji: 'Subscriptions',
 
-  // Entertainment
+  // ── Entertainment, Movies & Tourism ───────────────────────────────────────
   movie: 'Entertainment', cinema: 'Entertainment', pvr: 'Entertainment',
   inox: 'Entertainment', bookmyshow: 'Entertainment', concert: 'Entertainment',
   game: 'Entertainment', gaming: 'Entertainment',
+  film: 'Entertainment', cricket: 'Entertainment', ipl: 'Entertainment',
+  zoo: 'Entertainment', bowling: 'Entertainment', arcade: 'Entertainment',
+  cinepolis: 'Entertainment', citypride: 'Entertainment', 'e-square': 'Entertainment', mangala: 'Entertainment',
+  'paytm movies': 'Entertainment', ticketnew: 'Entertainment',
+  natak: 'Entertainment', play: 'Entertainment', tamasha: 'Entertainment', lavani: 'Entertainment',
+  balgandharva: 'Entertainment', yashwantrao: 'Entertainment',
+  trek: 'Entertainment', sinhagad: 'Entertainment', lohagad: 'Entertainment',
+  lonavala: 'Entertainment', mahabaleshwar: 'Entertainment',
+  imagica: 'Entertainment', 'wet n joy': 'Entertainment', 'water park': 'Entertainment',
 
-  // Utilities
-  electricity: 'Utilities', water: 'Utilities', rent: 'Utilities',
+  // ── Utilities & Bills ─────────────────────────────────────────────────────
+  electricity: 'Utilities', rent: 'Utilities',
   maintenance: 'Utilities', wifi: 'Utilities', internet: 'Utilities',
-  gas: 'Utilities', lpg: 'Utilities', bill: 'Utilities',
+  gas: 'Utilities', lpg: 'Utilities', 'gas bill': 'Utilities',
+  bill: 'Utilities', society: 'Utilities',
+  cable: 'Utilities', dth: 'Utilities', tatasky: 'Utilities', 'tata play': 'Utilities',
+  bescom: 'Utilities', msedcl: 'Utilities', mahavitaran: 'Utilities',
+  'adani electricity': 'Utilities', 'tata power': 'Utilities', 'torrent power': 'Utilities',
+  'mahanagar gas': 'Utilities', igl: 'Utilities', mngl: 'Utilities',
+  pmc: 'Utilities', pcmc: 'Utilities', bmc: 'Utilities', 'property tax': 'Utilities', 'water tax': 'Utilities',
 
-  // Health
+  // ── Health, Pharmacy & Hospitals ──────────────────────────────────────────
   pharmacy: 'Health', chemist: 'Health', hospital: 'Health',
   doctor: 'Health', medicine: 'Health', gym: 'Health',
   medical: 'Health', clinic: 'Health', apollo: 'Health',
+  medplus: 'Health', '1mg': 'Health', netmeds: 'Health',
+  practo: 'Health', pharmeasy: 'Health', dental: 'Health',
+  yoga: 'Health', fitness: 'Health', cult: 'Health',
+  'wellness forever': 'Health',
+  sancheti: 'Health', ruby: 'Health', jehangir: 'Health', sahyadri: 'Health', deenanath: 'Health',
+  kem: 'Health', sassoon: 'Health', lilavati: 'Health', hinduja: 'Health', 'breach candy': 'Health', kokilaben: 'Health', fortis: 'Health',
 
-  // Income
+  // ── Income ────────────────────────────────────────────────────────────────
   salary: 'Income', 'salary received': 'Income', income: 'Income',
   freelance: 'Income', refund: 'Income', cashback: 'Income',
-  reimbursement: 'Income', transfer: 'Income', received: 'Income',
+  reimbursement: 'Income', received: 'Income', credited: 'Income',
+  dividend: 'Income', interest: 'Income', bonus: 'Income',
+  stipend: 'Income', award: 'Income', prize: 'Income',
 };
+
+// ─── Regex patterns for high-specificity matching ────────────────────────────
+const FOOD_PATTERNS: RegExp[] = [
+  /\b(?:thali|lassi|chai|biryani|paneer|dal|roti|naan|paratha|puri|vada|misal|pohe?|dosa|idli|upma|khichdi|sabzi|curd|dahi|raita|halwa|jalebi|samosa|chaat|momos|maggi|burger|sandwich|roll|kebab|tikka|chicken|mutton|fish|prawns|egg|bhakri|pithla|zunka|modak|puran\s*poli|shrikhand|basundi|amras|farsan|chivda|bakardwadi)\b/i,
+  /\b(?:punjabi|gujarati|rajasthani|maharashtrian|south[\s-]*indian|north[\s-]*indian|chinese|mughlai|continental|kokani|malvani)\s+(?:food|thali|cuisine|restaurant|dhaba|meal)\b/i,
+  /\b(?:juice|shake|lassi|smoothie|nimbu|buttermilk|chaas|taak|solkadhi|mastani)\b/i,
+];
+
+const TRANSPORT_PATTERNS: RegExp[] = [
+  /\b(?:pmpl|pmpml|pmt|pcmt|best|brts|ksrtc|msrtc|tsrtc|gsrtc|upsrtc|nmmt|tmt|kdmt|bmtc|bmrc|dmrc|cmrl|hmrl|nmmc|hrtc|rsrtc|osrtc|astc)\b/i,
+  /\b(?:bus[\s-]*pass|bus[\s-]*ticket|train[\s-]*ticket|metro[\s-]*card|metro[\s-]*token|metro[\s-]*pass|st[\s-]*bus|local[\s-]*bus|city[\s-]*bus|local[\s-]*train|shivneri|shivshahi)\b/i,
+  /\b(?:petrol|diesel|cng|fuel|toll|parking|fastag|puc)\b/i,
+];
 
 export function inferCategory(text: string): Category {
   const lower = text.toLowerCase();
+
+  // 1. Food regex patterns — catches dish names
+  for (const p of FOOD_PATTERNS) {
+    if (p.test(lower)) return 'Food';
+  }
+
+  // 2. Transport regex patterns — catches operator codes
+  for (const p of TRANSPORT_PATTERNS) {
+    if (p.test(lower)) return 'Transport';
+  }
+
+  // 3. Full keyword map — substring match
   for (const [keyword, category] of Object.entries(MERCHANT_CATEGORY_MAP)) {
     if (lower.includes(keyword)) return category as Category;
   }
+
+  // 4. Smart fallback — if no shopping signals present, lean toward Food
+  const hasShoppingSignal = /\b(?:buy|bought|purchase|order|product|item|goods|delivery)\b/.test(lower);
+  if (!hasShoppingSignal) return 'Food';
+
   return 'Shopping';
 }
 

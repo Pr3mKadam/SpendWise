@@ -23,7 +23,11 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleProcess = async () => {
-    if (!input.trim()) return;
+    if (!input.trim()) {
+      setScanStatus('⚠️ Please enter an expense description');
+      setTimeout(() => setScanStatus(undefined), 2000);
+      return;
+    }
     setIsProcessing(true);
     const result = await processNaturalLanguageExpense(input);
     setPrediction(result);
@@ -166,7 +170,9 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
                 <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.category || 'Expense'}</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-black text-[var(--teal)]">₹{prediction.amount || 0}</p>
+                <p className="text-2xl font-black text-[var(--teal)]">
+                  {prediction.type === 'debit' ? '-' : '+'}₹{prediction.amount || 0}
+                </p>
                 <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.type || 'debit'}</p>
               </div>
             </div>
