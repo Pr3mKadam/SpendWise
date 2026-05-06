@@ -5,9 +5,19 @@ import { Transaction } from '../../../types';
 
 interface QuickAddPanelProps {
   onAdd: (transaction: Transaction) => void;
+  recentMerchants?: string[];
+  onQuickInput?: (text: string) => void;
+  dashboardInput?: string;
+  setDashboardInput?: (val: string) => void;
 }
 
-export default function QuickAddPanel({ onAdd }: QuickAddPanelProps) {
+export default function QuickAddPanel({ 
+  onAdd, 
+  recentMerchants = [], 
+  onQuickInput,
+  dashboardInput,
+  setDashboardInput
+}: QuickAddPanelProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -49,7 +59,28 @@ export default function QuickAddPanel({ onAdd }: QuickAddPanelProps) {
       </div>
 
       {/* MagicInput handles all 3 modes internally */}
-      <MagicInput onAdd={onAdd} />
+      <MagicInput 
+        onAdd={onAdd} 
+        externalInput={dashboardInput}
+        onInputChange={setDashboardInput}
+      />
+
+      {recentMerchants.length > 0 && (
+        <div className="mt-4">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-3">Recently Added</p>
+          <div className="flex flex-wrap gap-2">
+            {recentMerchants.map((merchant) => (
+              <button
+                key={merchant}
+                onClick={() => onQuickInput?.(`${merchant} `)}
+                className="px-3 py-1.5 bg-[var(--surface-input)] hover:bg-[var(--teal-dim)] border border-[var(--border)] hover:border-[var(--teal)]/30 rounded-lg text-[12px] font-bold text-[var(--text-primary)] transition-all cursor-pointer"
+              >
+                + {merchant}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

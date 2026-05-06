@@ -6,6 +6,7 @@ export type DefaultCategory =
   | 'Shopping'
   | 'Utilities'
   | 'Health'
+  | 'Travel'
   | 'Income';
 
 export type Category = DefaultCategory | (string & {});

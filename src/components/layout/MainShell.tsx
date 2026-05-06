@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, lazy, Suspense, type Dispatch, type SetStateAction } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AppView, Transaction, Category } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -236,7 +237,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
         <main 
           id="main-content" 
           role="main" 
-          className="flex-1 px-4 md:px-6 lg:px-8 py-4 md:py-6 lg:py-8 max-w-[1400px] w-full"
+          className="flex-1 px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 overflow-x-hidden"
         >
           {activeView === 'dashboard' && alertState.alerts.length > 0 && (
             <AlertBanner
@@ -252,17 +253,34 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
               <p className="text-xs font-bold uppercase tracking-widest">Loading View...</p>
             </div>
           }>
+          <AnimatePresence mode="wait">
             {activeView === 'dashboard' && (
-              <DashboardView
-                financeState={financeState}
-                onAdd={onAdd}
-                currency={currency}
-                onNavigate={handleViewChange}
-              />
+              <motion.div
+                key="dashboard"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
+                <DashboardView
+                  financeState={financeState}
+                  onAdd={onAdd}
+                  currency={currency}
+                  onNavigate={handleViewChange}
+                />
+              </motion.div>
             )}
 
             {activeView === 'budget' && (
-              <div className="view-enter">
+              <motion.div
+                key="budget"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <BudgetManager
                   budgets={budgetStats as any}
                   totalBudgeted={totalBudgeted}
@@ -278,11 +296,18 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                   onManageCategories={() => setShowCategoriesModal(true)}
                   currency={currency}
                 />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'analytics' && (
-              <div className="view-enter space-y-6">
+              <motion.div
+                key="analytics"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full space-y-6"
+              >
                 <AnalyticsView
                   monthlyHistory={monthlyHistory}
                   monthlyStats={monthlyStats}
@@ -292,11 +317,18 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                   transactions={transactions}
                 />
                 <RecurringView patterns={recurringData} currency={currency} />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'goals' && (
-              <div className="view-enter">
+              <motion.div
+                key="goals"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <GoalsView
                   goals={goals}
                   stats={goalsState.stats}
@@ -316,15 +348,31 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                   onContribute={goalsState.addContribution}
                   currency={currency}
                 />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'shared' && (
-              <SharedView currency={currency} userId={userId} />
+              <motion.div
+                key="shared"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
+                <SharedView currency={currency} userId={userId} />
+              </motion.div>
             )}
 
             {activeView === 'history' && (
-              <div className="view-enter">
+              <motion.div
+                key="history"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <HistoryView
                   transactions={transactions}
                   onCategoryChange={handleCategoryChange}
@@ -333,11 +381,18 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                   onPDFReport={handlePDFReport}
                   currency={currency}
                 />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'sync' && (
-              <div className="view-enter">
+              <motion.div
+                key="sync"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <BankSyncView
                   onAutoAddTransactions={(txs) => {
                     financeState.addTransactions(txs);
@@ -347,11 +402,18 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                   )}
                   currency={currency}
                 />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'profile' && (
-              <div className="view-enter">
+              <motion.div
+                key="profile"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <ProfileView
                   config={config}
                   onUpdateConfig={setConfig}
@@ -366,38 +428,74 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                   transactions={transactions}
                   onNavigate={handleViewChange}
                 />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'parental' && (
-              <div className="view-enter">
+              <motion.div
+                key="parental"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <ParentalView />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'portfolio' && (
-              <div className="view-enter">
+              <motion.div
+                key="portfolio"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <PortfolioView currency={currency} financeState={financeState} />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'subscriptions' && (
-              <div className="view-enter">
+              <motion.div
+                key="subscriptions"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <SubscriptionManager patterns={recurringData} currency={currency} />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'advisor' && (
-              <div className="view-enter">
+              <motion.div
+                key="advisor"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
                 <AdvisorView financeState={financeState} />
-              </div>
+              </motion.div>
             )}
 
             {activeView === 'reports' && (
-              <div className="view-enter">
-                <ReportsView />
-              </div>
+              <motion.div
+                key="reports"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
+                <ReportsView transactions={transactions} currency={currency} monthlyStats={monthlyStats} />
+              </motion.div>
             )}
+          </AnimatePresence>
           </Suspense>
 
           <footer className="mt-12 pb-6 text-center" role="contentinfo">

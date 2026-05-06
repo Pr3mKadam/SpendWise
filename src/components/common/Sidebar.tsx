@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X } from 'lucide-react';
 import { AppView } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
@@ -175,11 +176,11 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
 
       {/* ── Mobile Bottom Nav ── */}
       <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 pt-2"
+        className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 pt-2 pb-safe"
         style={{ 
           background: 'var(--sidebar-bg)', 
           borderTop: '1px solid rgba(255,255,255,0.08)',
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)'
+          boxShadow: '0 -4px 12px rgba(0,0,0,0.1)'
         }}
       >
         {mobileNavItems.map((item) => {
@@ -190,15 +191,31 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px]"
-              style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)', fontFamily: 'var(--font-inter)' }}
+              className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px] outline-none"
+              style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)', transition: 'color 0.2s' }}
             >
+              {isActive && (
+                <motion.div
+                  layoutId="activeTab"
+                  className="absolute inset-0 bg-[var(--teal)]/10 rounded-xl -z-10"
+                  initial={false}
+                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                />
+              )}
               <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-              <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px' }}>{item.label}</span>
+              <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px', fontFamily: 'var(--font-inter)' }}>{item.label}</span>
+              
+              {isActive && (
+                <motion.div 
+                  layoutId="activeDot"
+                  className="absolute -bottom-1 w-1 h-1 rounded-full bg-[var(--teal)] shadow-[0_0_8px_var(--teal)]"
+                />
+              )}
+
               {item.id === 'budget' && overBudgetCount > 0 && (
                 <span
                   className="absolute top-0 right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] px-1 font-bold"
-                  style={{ background: 'var(--red)', color: '#fff' }}
+                  style={{ background: 'var(--red)', color: '#fff', boxShadow: '0 2px 4px rgba(239,68,68,0.4)' }}
                 >
                   {overBudgetCount > 9 ? '9+' : overBudgetCount}
                 </span>
@@ -209,10 +226,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
         <button
           onClick={() => setIsMobileMenuOpen(true)}
           className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px]"
-          style={{ color: 'var(--sidebar-text)', fontFamily: 'var(--font-inter)' }}
+          style={{ color: 'var(--sidebar-text)' }}
         >
           <Menu size={20} strokeWidth={2} />
-          <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px' }}>Menu</span>
+          <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px', fontFamily: 'var(--font-inter)' }}>Menu</span>
         </button>
       </div>
 

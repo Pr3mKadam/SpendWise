@@ -11,10 +11,14 @@ import { parseVoiceLocally } from '../../../utils/parsers/voice';
 
 interface MagicInputProps {
   onAdd: (transaction: Transaction) => void;
+  externalInput?: string;
+  onInputChange?: (val: string) => void;
 }
 
-export default function MagicInput({ onAdd }: MagicInputProps) {
-  const [input, setInput] = useState('');
+export default function MagicInput({ onAdd, externalInput, onInputChange }: MagicInputProps) {
+  const [localInput, setLocalInput] = useState('');
+  const input = externalInput !== undefined ? externalInput : localInput;
+  const setInput = onInputChange || setLocalInput;
   const [isProcessing, setIsProcessing] = useState(false);
   const [prediction, setPrediction] = useState<Partial<Transaction> | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -135,6 +139,23 @@ export default function MagicInput({ onAdd }: MagicInputProps) {
           >
             {isProcessing ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
           </button>
+        </div>
+
+        {/* Quick Suggestions */}
+        <div className="flex flex-wrap gap-2 px-2">
+          {[
+            { label: '💊 Medicines', prompt: 'Bought Paracetamol for 150 at Apollo' },
+            { label: '🚌 Transport', prompt: 'Paid 40 for Bus ticket to Pune' },
+            { label: '🏰 Tourist Spots', prompt: 'Spent 2000 for stay at Goa Resort' },
+          ].map((chip) => (
+            <button
+              key={chip.label}
+              onClick={() => { setInput(chip.prompt); handleProcess(); }}
+              className="px-4 py-2 bg-[var(--surface-card)] border border-[var(--border)] shadow-sm rounded-full text-xs font-semibold text-[var(--text-secondary)] hover:border-[var(--teal)] hover:text-[var(--teal)] hover:shadow-[0_4px_12px_rgba(45,212,191,0.15)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+            >
+              {chip.label}
+            </button>
+          ))}
         </div>
       </div>
 

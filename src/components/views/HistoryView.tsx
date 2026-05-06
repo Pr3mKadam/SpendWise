@@ -103,13 +103,13 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
     
     return (
       <div
-        className="group flex items-center gap-2 sm:gap-4 px-3 sm:px-5 py-3 sm:py-3.5 transition-colors hover:bg-gray-50/50"
+        className="group flex items-center gap-2 px-3 sm:px-5 py-3 transition-colors hover:bg-gray-50/50"
         style={{
           borderBottom: '1px solid #f7f8fa',
           background: tx.isNew ? '#f0fdfb' : selectedIds.has(tx.id) ? 'var(--teal-dim)' : undefined,
         }}
       >
-        <div className="w-6 flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" style={{ opacity: selectedIds.has(tx.id) ? 1 : undefined }}>
+        <div className="w-5 flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" style={{ opacity: selectedIds.has(tx.id) ? 1 : undefined }}>
           <input
             type="checkbox"
             checked={selectedIds.has(tx.id)}
@@ -122,15 +122,12 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
             className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
           />
         </div>
-        <span className="flex w-10 h-10 items-center justify-center rounded-xl text-base shrink-0" style={{ background: `${mergedColors[tx.category] || '#14b8a6'}15` }}>
+        <span className="flex w-9 h-9 items-center justify-center rounded-xl text-base shrink-0" style={{ background: `${mergedColors[tx.category] || '#14b8a6'}15` }}>
           {mergedIcons[tx.category] || '📦'}
         </span>
-        <div className="hidden sm:block w-24 shrink-0">
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>{dateStr}</p>
-        </div>
         <div className="flex-1 min-w-0">
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }} className="truncate">{tx.merchant}</p>
-          <div className="flex flex-wrap items-center gap-1.5 mt-0.5 sm:hidden" style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
+          <div className="flex flex-wrap items-center gap-1.5 mt-0.5" style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
             <span>{dateStr}</span>
             {tx.tags?.map(t => (
               <span key={t} className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: '#f1f5f9', color: 'var(--text-secondary)' }}>
@@ -139,30 +136,21 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
             ))}
           </div>
         </div>
-        <div className="hidden md:block w-28 shrink-0">
+        <div className="hidden sm:block w-24 shrink-0">
           <span className="rounded-full px-2.5 py-0.5 text-xs font-semibold" style={{ background: `${mergedColors[tx.category] || '#14b8a6'}15`, color: mergedColors[tx.category] || '#14b8a6', fontFamily: 'var(--font-inter)' }}>
             {tx.category}
           </span>
-          {tx.tags && tx.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1">
-              {tx.tags.map(t => (
-                <span key={t} className="rounded-md px-1 py-0.5 text-[9px] font-semibold" style={{ background: '#f1f5f9', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)' }}>
-                  #{t}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
-        <div className="flex items-center gap-2 w-auto sm:w-28 justify-end shrink-0 ml-auto">
+        <div className="flex items-center gap-1.5 shrink-0 ml-auto">
           <div className="text-right">
-            <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '14px', fontWeight: 700, color: isCredit ? 'var(--teal)' : 'var(--text-primary)' }} className="tabular-nums">
+            <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '13px', fontWeight: 700, color: isCredit ? 'var(--teal)' : 'var(--text-primary)' }} className="tabular-nums whitespace-nowrap">
               {isCredit ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </p>
           </div>
-          {isCredit ? <ArrowDownLeft size={12} className="hidden sm:block" style={{ color: 'var(--teal)' }} /> : <ArrowUpRight size={12} className="hidden sm:block" style={{ color: 'var(--red)' }} />}
+          {isCredit ? <ArrowDownLeft size={11} className="hidden sm:block" style={{ color: 'var(--teal)' }} /> : <ArrowUpRight size={11} className="hidden sm:block" style={{ color: 'var(--red)' }} />}
         </div>
         {onCategoryChange && (
-          <div className="hidden sm:block opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-36 shrink-0">
+          <div className="hidden md:block opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-32 shrink-0">
             <CategoryDropdown
               value={tx.category}
               onChange={(newCat) => onCategoryChange(tx.id, newCat as Category)}
@@ -215,8 +203,8 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
       </div>
 
       {/* Filters Card */}
-      <div className="card px-3 sm:px-5 py-4 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-2">
+      <div className="card px-3 sm:px-5 py-3 sm:py-4 space-y-3">
+        <div className="flex flex-col gap-2">
           <div className="relative flex-1">
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
@@ -235,7 +223,7 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
           </div>
           <button
             onClick={() => setShowDateFilter(s => !s)}
-            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all"
+            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all self-start"
             style={{
               background: showDateFilter || dateFrom || dateTo ? 'var(--teal-dim)' : 'var(--surface-input)',
               color: showDateFilter || dateFrom || dateTo ? 'var(--teal)' : 'var(--text-muted)',
@@ -276,25 +264,25 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
 
         <div className="flex flex-wrap items-center gap-2">
           <Filter size={14} style={{ color: 'var(--text-muted)' }} />
-          <div className="flex rounded-lg overflow-hidden" style={{ border: '1.5px solid #edf2f7' }}>
+          <div className="flex rounded-lg overflow-hidden shrink-0" style={{ border: '1.5px solid #edf2f7' }}>
             {(['all', 'credit', 'debit'] as TypeFilter[]).map(t => (
               <button key={t}
                 onClick={() => setTypeFilter(t)}
                 style={{
-                  fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600, padding: '5px 12px',
+                  fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, padding: '5px 10px',
                   background: typeFilter === t ? (t === 'credit' ? 'var(--teal-dim)' : t === 'debit' ? 'var(--red-dim)' : '#edf2f7') : '#fff',
                   color: typeFilter === t ? (t === 'credit' ? 'var(--teal)' : t === 'debit' ? 'var(--red)' : 'var(--text-primary)') : 'var(--text-muted)',
-                  border: 'none', cursor: 'pointer', transition: 'all 150ms',
+                  border: 'none', cursor: 'pointer', transition: 'all 150ms', whiteSpace: 'nowrap',
                 }}>
-                {t === 'all' ? 'All' : t === 'credit' ? '+ Income' : '− Expense'}
+                {t === 'all' ? 'All' : t === 'credit' ? '+ Inc' : '− Exp'}
               </button>
             ))}
           </div>
-          <div className="flex gap-1.5 overflow-x-auto pb-0.5 flex-1">
+          <div className="flex gap-1.5 overflow-x-auto pb-0.5 flex-1 min-w-0">
             {['All', ...allCategories].map(cat => (
               <button key={cat}
                 onClick={() => setCategoryFilter(cat)}
-                className="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold transition-all"
+                className="shrink-0 rounded-full px-2.5 py-1 text-[10px] sm:text-xs font-semibold transition-all"
                 style={{
                   fontFamily: 'var(--font-inter)',
                   background: categoryFilter === cat ? 'var(--teal-dim)' : '#f5f7fa',
@@ -307,7 +295,7 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
             ))}
           </div>
           {hasFilters && (
-            <button onClick={clearFilters} className="flex items-center gap-1 text-xs font-semibold"
+            <button onClick={clearFilters} className="flex items-center gap-1 text-xs font-semibold shrink-0"
               style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', background: 'none', border: 'none', cursor: 'pointer' }}>
               <X size={12} /> Clear
             </button>
@@ -316,7 +304,7 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
       </div>
 
       {/* Table Card */}
-      <div className="card overflow-hidden flex flex-col" style={{ height: '70vh' }}>
+      <div className="card overflow-hidden flex flex-col" style={{ height: '65vh', minHeight: 320 }}>
         {/* Bulk Action Header */}
         {selectedIds.size > 0 && onCategoryChange && (
           <div className="shrink-0 w-full h-12 bg-[var(--teal-dim)] flex items-center justify-between px-5 z-10" style={{ borderBottom: '1px solid var(--teal-glow)' }}>

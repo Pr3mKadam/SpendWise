@@ -1,15 +1,16 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { AppView, Transaction } from '../../types';
 import { useFinanceState } from '../../hooks/useFinanceState';
 import { useGamification } from '../../hooks/useGamification';
 import { useGoals } from '../../hooks/useGoals';
+import { usePortfolio } from '../../hooks/usePortfolio';
 import QuickAddPanel from '../features/dashboard/QuickAddPanel';
 import MagicInput from '../features/ai/MagicInput';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { TrendingUp, TrendingDown, Wallet, PiggyBank, Plus, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet, PiggyBank, Plus, Target, Sparkles } from 'lucide-react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
@@ -35,7 +36,7 @@ function Card({ children, className = "", style = {} }: { children: React.ReactN
     <div 
       className={`bg-white rounded-2xl shadow-sm border border-black/[0.04] ${className}`}
       style={{
-        padding: 'var(--card-padding, 20px)',
+        padding: 'var(--card-padding, 16px)',
         ...style,
       }}
     >
@@ -54,21 +55,21 @@ interface StatCardProps {
 
 function StatCard({ label, value, icon, iconBg, trend }: StatCardProps) {
   return (
-    <Card className="px-3 py-3 sm:px-5 sm:py-4 flex flex-col justify-between h-full">
-      <div className="flex items-start justify-between mb-2 sm:mb-3">
-        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: iconBg }}>
+    <Card className="flex flex-col justify-between h-full" style={{ padding: '12px 14px' }}>
+      <div className="flex items-start justify-between mb-2">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: iconBg }}>
           {icon}
         </div>
         <div className="shrink-0">
-          {trend === 'up' && <TrendingUp size={14} className="text-emerald-500" />}
-          {trend === 'down' && <TrendingDown size={14} className="text-red-400" />}
+          {trend === 'up' && <TrendingUp size={13} className="text-emerald-500" />}
+          {trend === 'down' && <TrendingDown size={13} className="text-red-400" />}
         </div>
       </div>
       <div className="min-w-0">
-        <p className="text-lg sm:text-2xl font-extrabold truncate" style={{ color: '#0f1117', letterSpacing: '-0.02em', fontFamily: 'var(--font-manrope)' }}>
+        <p className="text-base sm:text-xl font-extrabold truncate" style={{ color: '#0f1117', letterSpacing: '-0.02em', fontFamily: 'var(--font-manrope)' }}>
           {value}
         </p>
-        <p className="text-[10px] sm:text-xs font-semibold truncate uppercase tracking-wider" style={{ color: '#9197a6', marginTop: 2 }}>{label}</p>
+        <p className="text-[10px] font-semibold truncate uppercase tracking-wider" style={{ color: '#9197a6', marginTop: 2 }}>{label}</p>
       </div>
     </Card>
   );
@@ -111,8 +112,10 @@ export function DashboardView({
   onNavigate: (view: AppView) => void;
 }) {
   const { transactions, currentBalance, monthlyStats, monthlyHistory, dailySpendRate, balanceTrend } = financeState;
-  const { streak } = useGamification(transactions);
+  const { streak, healthScore } = useGamification(transactions);
   const { goals } = useGoals();
+  const { netWorth } = usePortfolio();
+  const [dashboardInput, setDashboardInput] = useState('');
 
   // Chart data — last 6 months
   const chartData = useMemo(() => {
@@ -154,22 +157,28 @@ export function DashboardView({
   const TEXT_MUTED = '#9197a6';
 
   return (
-    <div className="bg-[#f4f6fb] -mx-4 -mt-6 sm:-mx-8 sm:-my-6 min-h-[calc(100vh-60px)] px-4 py-6 sm:px-8 sm:py-7">
+    <div className="bg-[#f4f6fb] -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8 min-h-[calc(100vh-60px)] px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
       <div className="max-w-[1200px] mx-auto">
 
-        {/* Page Title */}
-        <h1 className="text-[22px] font-extrabold mb-6" style={{ color: TEXT_PRIMARY, fontFamily: 'var(--font-manrope)', letterSpacing: '-0.02em' }}>
-          Dashboard
-        </h1>
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <h1 className="text-lg sm:text-2xl font-extrabold" style={{ color: TEXT_PRIMARY, fontFamily: 'var(--font-manrope)', letterSpacing: '-0.02em' }}>
+            Dashboard
+          </h1>
+          {streak > 0 && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-full">
+              <span className="text-xs font-black text-orange-500">🔥 {streak} DAY STREAK</span>
+            </div>
+          )}
+        </div>
 
         {/* Two-column layout (stacks on mobile and most tablets) */}
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-6 items-start">
+        <div className="flex flex-col xl:flex-row gap-5 xl:gap-6 items-start">
 
           {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
-          <div className="flex flex-col gap-5 min-w-0">
+          <div className="flex flex-col gap-4 min-w-0 w-full xl:flex-1">
 
-            {/* Stat Cards (2x2 on small, 4x1 on desktop) */}
-            <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+            {/* Stat Cards (2x2 on mobile, 4x1 on xl desktop) */}
+            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3">
               <StatCard
                 label="Balance"
                 value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
@@ -192,12 +201,21 @@ export function DashboardView({
                 trend="down"
               />
               <StatCard
-                label="Savings"
-                value={`${currency}${saved.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<PiggyBank size={16} className="sm:w-[18px] sm:h-[18px] text-[#f59e0b]" />}
-                iconBg="rgba(245,158,11,0.1)"
-                trend={saved > 0 ? 'up' : 'neutral'}
+                label="Net Worth"
+                value={`${currency}${Math.abs(netWorth).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                icon={<Target size={16} className="sm:w-[18px] sm:h-[18px] text-[#8b5cf6]" />}
+                iconBg="rgba(139,92,246,0.1)"
+                trend={netWorth >= 0 ? 'up' : 'down'}
               />
+              <div className="col-span-2 sm:col-span-1">
+                <StatCard
+                  label="Health Score"
+                  value={`${healthScore}/100`}
+                  icon={<Sparkles size={16} className="sm:w-[18px] sm:h-[18px] text-[#14b8a6]" />}
+                  iconBg="rgba(20,184,166,0.1)"
+                  trend={healthScore > 70 ? 'up' : 'neutral'}
+                />
+              </div>
             </div>
 
             {/* Finance Chart */}
@@ -246,57 +264,28 @@ export function DashboardView({
             </Card>
 
             {/* ── Quick Add — between chart and history ─────────── */}
-            <Card style={{ padding: 18 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: recentMerchants.length > 0 ? 14 : 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-manrope)' }}>Add Transaction</p>
-              </div>
+            <div className="w-full">
+              <QuickAddPanel 
+                onAdd={onAdd} 
+                recentMerchants={recentMerchants}
+                onQuickInput={(val) => setDashboardInput(val)}
+                dashboardInput={dashboardInput}
+                setDashboardInput={setDashboardInput}
+              />
+            </div>
 
-              {/* Recent merchants as avatar row */}
-              {recentMerchants.length > 0 && (
-                <div style={{ display: 'flex', gap: 12, marginBottom: 16, flexWrap: 'wrap', alignItems: 'center' }}>
-                  {recentMerchants.map(m => (
-                    <div key={m} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-                      <div style={{
-                        width: 38, height: 38, borderRadius: '50%',
-                        background: avatarColor(m),
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        cursor: 'pointer', transition: 'transform 0.15s',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.12)',
-                      }}
-                        onMouseEnter={e => (e.currentTarget.style.transform = 'scale(1.1)')}
-                        onMouseLeave={e => (e.currentTarget.style.transform = 'scale(1)')}
-                      >
-                        <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>{initials(m)}</span>
-                      </div>
-                      <span style={{ fontSize: 9, color: TEXT_MUTED, maxWidth: 44, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
-                        {m.split(' ')[0]}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
 
-              <QuickAddPanel onAdd={onAdd} />
-            </Card>
 
             {/* Transaction History */}
             <Card style={{ padding: 0, overflow: 'hidden' }}>
-              <div className="flex items-center justify-between px-4 sm:px-5 pt-4 pb-3">
-                <p style={{ fontSize: 15, fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-manrope)' }}>Transaction History</p>
+              <div className="flex items-center justify-between px-3 sm:px-5 pt-4 pb-3">
+                <p style={{ fontSize: 14, fontWeight: 700, color: TEXT_PRIMARY, fontFamily: 'var(--font-manrope)' }}>Transaction History</p>
                 <button
                   onClick={() => onNavigate('history')}
-                  style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                  style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, whiteSpace: 'nowrap' }}
                 >
                   View all →
                 </button>
-              </div>
-
-              {/* Table header */}
-              <div className="grid grid-cols-[2fr_1fr_auto] sm:grid-cols-[2fr_1fr_1fr_1fr] px-4 sm:px-5 pb-2 gap-2 sm:gap-3">
-                <span className="text-[10px] font-bold tracking-[0.08em] uppercase" style={{ color: TEXT_MUTED }}>Name</span>
-                <span className="text-[10px] font-bold tracking-[0.08em] uppercase" style={{ color: TEXT_MUTED }}>Type</span>
-                <span className="hidden sm:block text-[10px] font-bold tracking-[0.08em] uppercase" style={{ color: TEXT_MUTED }}>Date</span>
-                <span className="text-[10px] font-bold tracking-[0.08em] uppercase text-right sm:text-left" style={{ color: TEXT_MUTED }}>Amount</span>
               </div>
 
               {recentTx.length === 0 ? (
@@ -308,41 +297,35 @@ export function DashboardView({
                   const bg = avatarColor(tx.merchant);
                   const isLast = i === recentTx.length - 1;
                   return (
-                    <div key={tx.id} 
-                      className="grid grid-cols-[2fr_1fr_auto] sm:grid-cols-[2fr_1fr_1fr_1fr] px-4 sm:px-5 py-2.5 sm:py-3 gap-2 sm:gap-3 items-center transition-colors hover:bg-[#f8f9fc]"
+                    <div key={tx.id}
+                      className="flex items-center px-3 sm:px-5 py-2.5 gap-2 sm:gap-3 transition-colors hover:bg-[#f8f9fc]"
                       style={{
                         borderTop: '1px solid rgba(0,0,0,0.04)',
                         borderBottom: isLast ? 'none' : undefined,
                       }}
                     >
-                      {/* Name + avatar */}
-                      <div className="flex items-center gap-2 sm:gap-3 overflow-hidden">
-                        <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center" style={{ background: bg }}>
-                          <span className="text-[11px] font-bold text-white">{initials(tx.merchant)}</span>
-                        </div>
-                        <div className="flex flex-col overflow-hidden min-w-0">
-                          <span className="text-[13px] font-semibold truncate" style={{ color: TEXT_PRIMARY }}>{tx.merchant}</span>
-                          <span className="sm:hidden text-[10px]" style={{ color: TEXT_MUTED }}>
-                            {new Date(tx.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
-                          </span>
-                        </div>
+                      {/* Avatar */}
+                      <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center" style={{ background: bg }}>
+                        <span className="text-[11px] font-bold text-white">{initials(tx.merchant)}</span>
                       </div>
-                      {/* Type badge */}
-                      <span style={{
+                      {/* Name + date (mobile) */}
+                      <div className="flex flex-col overflow-hidden min-w-0 flex-1">
+                        <span className="text-[13px] font-semibold truncate" style={{ color: TEXT_PRIMARY }}>{tx.merchant}</span>
+                        <span className="text-[10px]" style={{ color: TEXT_MUTED }}>
+                          {new Date(tx.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
+                        </span>
+                      </div>
+                      {/* Category badge - hidden on tiny screens */}
+                      <span className="hidden sm:inline-block shrink-0" style={{
                         fontSize: 10, fontWeight: 700, padding: '3px 8px', borderRadius: 20,
                         background: tx.type === 'credit' ? 'rgba(16,185,129,0.1)' : 'rgba(248,113,113,0.1)',
                         color: tx.type === 'credit' ? '#059669' : '#dc2626',
-                        width: 'fit-content',
                         textTransform: 'capitalize',
                       }}>
                         {tx.category}
                       </span>
-                      {/* Date (Desktop) */}
-                      <span className="hidden sm:block text-[12px]" style={{ color: TEXT_MUTED }}>
-                        {new Date(tx.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
-                      </span>
                       {/* Amount */}
-                      <span className="text-[13px] font-bold text-right sm:text-left whitespace-nowrap" style={{ color: tx.type === 'credit' ? '#10b981' : '#ef4444' }}>
+                      <span className="text-[13px] font-bold whitespace-nowrap shrink-0 ml-auto" style={{ color: tx.type === 'credit' ? '#10b981' : '#ef4444' }}>
                         {tx.type === 'credit' ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-IN')}
                       </span>
                     </div>
@@ -353,7 +336,7 @@ export function DashboardView({
           </div>
 
           {/* ── RIGHT COLUMN ─────────────────────────────────────────── */}
-          <div className="flex flex-col gap-5 min-w-0">
+          <div className="flex flex-col gap-4 min-w-0 w-full xl:w-[300px] xl:shrink-0">
 
             {/* My Card */}
             <div style={{

@@ -29,6 +29,7 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   Shopping:      '#3b82f6',
   Utilities:     '#06b6d4',
   Health:        '#10b981',
+  Travel:        '#0ea5e9',
   Income:        '#3b82f6',
 };
 
@@ -39,53 +40,39 @@ export const CATEGORY_ICONS: Record<Category, string> = {
   Entertainment: '🎮',
   Shopping:      '🛍️',
   Utilities:     '💡',
-  Health:        '🏥',
+  Health:        '💊',
+  Travel:        '✈️',
   Income:        '💰',
 };
 
 // ─── Initial Mock Transactions ─────────────────────────────────────────────────
 
 export const initialTransactions: Transaction[] = [
-  { id: '1',  date: daysAgo(0),  amount: 12.99,  category: 'Food',          merchant: 'Chipotle',        type: 'debit'  },
-  { id: '2',  date: daysAgo(0),  amount: 2500.00, category: 'Income',        merchant: 'Salary Deposit',  type: 'credit' },
-  { id: '3',  date: daysAgo(1),  amount: 9.99,   category: 'Subscriptions', merchant: 'Netflix',         type: 'debit'  },
-  { id: '4',  date: daysAgo(1),  amount: 34.50,  category: 'Transport',     merchant: 'Shell Gas',       type: 'debit'  },
-  { id: '5',  date: daysAgo(2),  amount: 67.23,  category: 'Shopping',      merchant: 'Amazon',          type: 'debit'  },
-  { id: '6',  date: daysAgo(2),  amount: 15.99,  category: 'Entertainment', merchant: 'Spotify',         type: 'debit'  },
-  { id: '7',  date: daysAgo(3),  amount: 42.80,  category: 'Food',          merchant: 'Whole Foods',     type: 'debit'  },
-  { id: '8',  date: daysAgo(4),  amount: 120.00, category: 'Utilities',     merchant: 'Electric Co.',    type: 'debit'  },
-  { id: '9',  date: daysAgo(5),  amount: 28.50,  category: 'Food',          merchant: 'DoorDash',        type: 'debit'  },
-  { id: '10', date: daysAgo(5),  amount: 85.00,  category: 'Health',        merchant: 'CVS Pharmacy',    type: 'debit'  },
-  { id: '11', date: daysAgo(6),  amount: 19.99,  category: 'Entertainment', merchant: 'Steam',           type: 'debit'  },
-  { id: '12', date: daysAgo(7),  amount: 55.00,  category: 'Transport',     merchant: 'Uber',            type: 'debit'  },
-  { id: '13', date: daysAgo(8),  amount: 23.45,  category: 'Food',          merchant: 'Starbucks',       type: 'debit'  },
-  { id: '14', date: daysAgo(9),  amount: 149.99, category: 'Shopping',      merchant: 'Nike Store',      type: 'debit'  },
-  { id: '15', date: daysAgo(10), amount: 8.99,   category: 'Subscriptions', merchant: 'iCloud',          type: 'debit'  },
-  { id: '16', date: daysAgo(11), amount: 31.20,  category: 'Food',          merchant: 'Panera Bread',    type: 'debit'  },
-  { id: '17', date: daysAgo(12), amount: 500.00, category: 'Income',        merchant: 'Freelance Pay',   type: 'credit' },
-  { id: '18', date: daysAgo(13), amount: 45.00,  category: 'Transport',     merchant: 'Lyft',            type: 'debit'  },
+  { id: '1', date: daysAgo(0), amount: 45.00,  category: 'Food',          merchant: 'Chipotle',      type: 'debit',  description: 'Dinner with friends at Chipotle' },
+  { id: '2', date: daysAgo(1), amount: 15.99,  category: 'Subscriptions', merchant: 'Netflix',       type: 'debit',  description: 'Monthly streaming subscription' },
+  { id: '3', date: daysAgo(2), amount: 120.50, category: 'Transport',     merchant: 'Shell Gas',     type: 'debit',  description: 'Fuel for the weekend trip' },
+  { id: '4', date: daysAgo(3), amount: 2400.00,category: 'Income',        merchant: 'Salary',        type: 'credit', description: 'Monthly paycheck' },
+  { id: '5', date: daysAgo(4), amount: 65.20,  category: 'Shopping',      merchant: 'Amazon',        type: 'debit',  description: 'New wireless mouse' },
+  { id: '6', date: daysAgo(5), amount: 250.00, category: 'Travel',        merchant: 'Airbnb',        type: 'debit',  description: 'Goa staycation booking' },
+  { id: '7', date: daysAgo(6), amount: 45.50,  category: 'Health',        merchant: 'Apollo Pharmacy', type: 'debit', description: 'Medicines and vitamins' },
 ];
 
 /** Net effect of bundled demo transactions (for balance anchor when using sample data). */
-export const INITIAL_TRANSACTIONS_NET = initialTransactions.reduce(
-  (acc, tx) => (tx.type === 'credit' ? acc + tx.amount : acc - tx.amount),
-  0
-);
-
-// ─── Parser Helpers ────────────────────────────────────────────────────────────
+export const INITIAL_NET_WORTH = 4500.00;
 
 export const DEBIT_CATEGORIES: Category[] = [
-  'Food', 'Subscriptions', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Health',
+  'Food', 'Subscriptions', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Health', 'Travel',
 ];
 
 export const MERCHANT_MAP: Record<Category, string[]> = {
   Food:          ['Chipotle', 'DoorDash', 'Starbucks', 'Whole Foods', 'Panera Bread', 'McDonalds', 'Shake Shack'],
   Subscriptions: ['Netflix', 'Spotify', 'iCloud', 'YouTube Premium', 'ChatGPT Plus', 'Adobe CC', 'Notion Pro'],
-  Transport:     ['Uber', 'Lyft', 'Shell Gas', 'Chevron', 'Parking Meter', 'Metro Transit'],
-  Entertainment: ['Steam', 'AMC Theaters', 'Xbox Store', 'PlayStation Store', 'Regal Cinemas'],
+  Transport:     ['Uber', 'Lyft', 'Shell Gas', 'Chevron', 'Parking Meter', 'Metro Transit', 'Indigo Flight', 'OLA Cab'],
+  Entertainment: ['Steam', 'AMC Theaters', 'Xbox Store', 'PlayStation Store', 'Regal Cinemas', 'Imagica'],
   Shopping:      ['Amazon', 'Nike Store', 'Target', 'Best Buy', 'IKEA', 'Costco', 'eBay'],
   Utilities:     ['Electric Co.', 'Water Bill', 'Comcast Internet', 'Gas Company', 'AT&T'],
-  Health:        ['CVS Pharmacy', 'Walgreens', 'Planet Fitness', 'Doctor Visit', 'Dental Care'],
+  Health:        ['CVS Pharmacy', 'Walgreens', 'Planet Fitness', 'Apollo Pharmacy', 'Wellness Forever', 'Practo'],
+  Travel:        ['MakeMyTrip', 'Airbnb', 'Goibibo', 'Hotels.com', 'Booking.com', 'IRCTC', 'Indigo'],
   Income:        ['Salary Deposit', 'Freelance Payment', 'Direct Deposit', 'Bank Refund'],
 };
 
@@ -95,37 +82,45 @@ const CATEGORY_KEYWORDS: Record<Category, string[]> = {
     'food', 'restaurant', 'eat', 'lunch', 'dinner', 'breakfast', 'coffee',
     'chipotle', 'starbucks', 'doordash', 'ubereats', 'grubhub', 'pizza',
     'burger', 'sushi', 'taco', 'mcdonalds', 'wendys', 'subway', 'panera',
-    'shake shack', 'chick-fil-a', 'cafe', 'bakery', 'diner',
+    'shake shack', 'chick-fil-a', 'cafe', 'bakery', 'diner', 'zomato', 'swiggy',
   ],
   Transport: [
     'uber', 'lyft', 'gas', 'fuel', 'taxi', 'parking', 'transit', 'bus',
     'train', 'flight', 'airline', 'metro', 'toll', 'shell', 'chevron', 'bp',
-    'zip car', 'bird scooter', 'lime',
+    'zip car', 'bird scooter', 'lime', 'ola', 'rapido', 'rickshaw', 'auto',
+    'petrol', 'diesel', 'cng', 'fastag', 'cab', 'ferry', 'boat',
   ],
   Subscriptions: [
     'netflix', 'spotify', 'subscription', 'premium', 'monthly', 'icloud',
     'youtube', 'hulu', 'disney+', 'apple tv', 'chatgpt', 'openai', 'adobe',
-    'dropbox', 'slack', 'notion', 'annual plan', 'membership fee',
+    'dropbox', 'slack', 'notion', 'annual plan', 'membership fee', 'jio', 'airtel',
   ],
   Entertainment: [
     'movie', 'game', 'concert', 'ticket', 'steam', 'xbox', 'playstation',
     'theater', 'amc', 'regal', 'bowling', 'escape room', 'arcade', 'bar',
-    'nightclub', 'comedy', 'show',
+    'nightclub', 'comedy', 'show', 'trek', 'hiking', 'pvr', 'inox',
   ],
   Shopping: [
     'amazon', 'shopping', 'buy', 'bought', 'store', 'nike', 'target',
     'walmart', 'ikea', 'best buy', 'costco', 'ebay', 'etsy', 'zara',
-    'h&m', 'uniqlo', 'purchase', 'ordered',
+    'h&m', 'uniqlo', 'purchase', 'ordered', 'flipkart', 'myntra', 'zudio',
   ],
   Utilities: [
     'electric', 'water', 'internet', 'utility', 'bill', 'cable',
     'heating', 'at&t', 'verizon', 'comcast', 't-mobile', 'power',
-    'broadband', 'wifi',
+    'broadband', 'wifi', 'rent', 'gas bill',
   ],
   Health: [
     'pharmacy', 'doctor', 'hospital', 'cvs', 'walgreens', 'medicine',
     'gym', 'health', 'dental', 'vision', 'therapy', 'peloton', 'planet fitness',
-    'prescription', 'clinic', 'urgent care',
+    'prescription', 'clinic', 'urgent care', 'tablet', 'syrup', 'capsule',
+    'bandage', 'chemist', 'apollo', 'medplus', '1mg', 'pharmeasy',
+  ],
+  Travel: [
+    'makemytrip', 'goibibo', 'cleartrip', 'airbnb', 'hotel', 'resort',
+    'stay', 'vacation', 'holiday', 'trip', 'tour', 'sightseeing', 'museum',
+    'fort', 'beach', 'mountains', 'goa', 'manali', 'shimla', 'ooty',
+    'staycation', 'check-in', 'visa', 'passport', 'trivago', 'booking.com',
   ],
   Income: [],
 };

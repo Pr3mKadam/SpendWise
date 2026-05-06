@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { FileText, Sparkles, Download, Share2, Calendar, Loader2 } from 'lucide-react';
 import { generateMonthlyReport } from '../../utils/insights/reporting';
-import { useFinanceState } from '../../hooks/useFinanceState';
+
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';
+import { Transaction, MonthlyStats } from '../../types';
 
-export default function ReportsView() {
-  const { transactions } = useFinanceState();
+interface ReportsViewProps {
+  transactions: Transaction[];
+  currency: string;
+  monthlyStats: MonthlyStats;
+}
+
+export default function ReportsView({ transactions, currency, monthlyStats }: ReportsViewProps) {
   const [report, setReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   
@@ -22,6 +28,19 @@ export default function ReportsView() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownload = () => {
+    if (!report) return;
+    const blob = new Blob([report], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `SpendWise-Report-${currentMonth.replace(' ', '-')}.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -86,10 +105,14 @@ export default function ReportsView() {
               </div>
             </div>
             <div className="flex gap-2">
-              <button className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)]">
+              <button 
+                onClick={handleDownload}
+                className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)] transition-colors"
+                title="Download as Markdown"
+              >
                 <Download size={18} />
               </button>
-              <button className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)]">
+              <button className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)] transition-colors">
                 <Share2 size={18} />
               </button>
             </div>

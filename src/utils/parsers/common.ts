@@ -8,21 +8,20 @@ export const VALID_CATEGORIES: Category[] = [
   'Shopping',
   'Utilities',
   'Health',
+  'Travel',
   'Income',
   'Transfer',
 ];
 
 // ─── Merchant → Category map ────────────────────────────────────────────────
 export const MERCHANT_CATEGORY_MAP: Record<string, Category> = {
-  // ── Food delivery apps ────────────────────────────────────────────────────
+  // ... (rest of food remains same)
   swiggy: 'Food', zomato: 'Food', dominos: 'Food', 'pizza hut': 'Food',
   mcdonalds: 'Food', mcd: 'Food', kfc: 'Food', subway: 'Food',
   starbucks: 'Food', 'cafe coffee day': 'Food', ccd: 'Food',
   blinkit: 'Food', zepto: 'Food', bigbasket: 'Food', dunzo: 'Food',
   instamart: 'Food', jiomart: 'Food', dmart: 'Food',
   grofers: 'Food', milkbasket: 'Food', bbnow: 'Food', naturebasket: 'Food',
-
-  // ── Generic food words ────────────────────────────────────────────────────
   grocery: 'Food', groceries: 'Food', restaurant: 'Food', cafe: 'Food',
   food: 'Food', lunch: 'Food', dinner: 'Food', breakfast: 'Food',
   coffee: 'Food', snack: 'Food', tea: 'Food', pizza: 'Food',
@@ -32,8 +31,6 @@ export const MERCHANT_CATEGORY_MAP: Record<string, Category> = {
   mithai: 'Food', dessert: 'Food', icecream: 'Food', 'ice cream': 'Food',
   juice: 'Food', shake: 'Food', smoothie: 'Food',
   soda: 'Food', nimbu: 'Food', nimbooz: 'Food', tapri: 'Food',
-
-  // ── Indian & Maharashtra specific food ────────────────────────────────────
   thali: 'Food', lassi: 'Food', chaas: 'Food', buttermilk: 'Food', taak: 'Food',
   chai: 'Food', biryani: 'Food', pulao: 'Food',
   paneer: 'Food', dal: 'Food', roti: 'Food', naan: 'Food',
@@ -60,50 +57,30 @@ export const MERCHANT_CATEGORY_MAP: Record<string, Category> = {
   solkadhi: 'Food', mastani: 'Food', 'cutting chai': 'Food', 'bun maska': 'Food', 'irani chai': 'Food',
   chitale: 'Food', yewale: 'Food', 'amrut tulya': 'Food', kayani: 'Food', vaishali: 'Food', goodluck: 'Food', sujata: 'Food',
 
-  // ── Transport apps, operators & generic words ─────────────────────────────
+  // ── Transport ─────────────────────────────────────────────────────────────
   uber: 'Transport', ola: 'Transport', rapido: 'Transport', indrive: 'Transport',
   metro: 'Transport', bus: 'Transport', train: 'Transport', auto: 'Transport',
   cab: 'Transport', taxi: 'Transport', petrol: 'Transport', fuel: 'Transport',
   irctc: 'Transport', flight: 'Transport', indigo: 'Transport',
   'air india': 'Transport', spicejet: 'Transport', vistara: 'Transport', akasa: 'Transport',
-  makemytrip: 'Transport', goibibo: 'Transport', redbus: 'Transport',
-  abhibus: 'Transport', ixigo: 'Transport', chalo: 'Transport', 'm-indicator': 'Transport',
+  redbus: 'Transport', abhibus: 'Transport', ixigo: 'Transport', 
+  chalo: 'Transport', 'm-indicator': 'Transport',
   rickshaw: 'Transport', yulu: 'Transport', bounce: 'Transport',
   parking: 'Transport', toll: 'Transport', fastag: 'Transport', puc: 'Transport', rto: 'Transport',
-  diesel: 'Transport', cng: 'Transport',
-  'kali peeli': 'Transport', 'share auto': 'Transport',
-  neeta: 'Transport', vrl: 'Transport', purple: 'Transport',
+  diesel: 'Transport', cng: 'Transport', 'intercity': 'Transport', 'commute': 'Transport',
+  'shuttle': 'Transport', 'ferry': 'Transport', 'boat': 'Transport', 'tram': 'Transport',
 
-  // ── Indian city bus / transit operators ──────────────────────────────────
-  pmpl: 'Transport', pmpml: 'Transport',   // Pune
-  pmt: 'Transport', pcmt: 'Transport',     // Old Pune
-  best: 'Transport',    // Mumbai BEST buses
-  nmmt: 'Transport', tmt: 'Transport', kdmt: 'Transport', // Mumbai MMR
-  brts: 'Transport',    // Bus Rapid Transit System
-  ksrtc: 'Transport',   // Karnataka / Kerala State RTC
-  msrtc: 'Transport',   // Maharashtra State RTC (ST bus)
-  'st stand': 'Transport', shivneri: 'Transport', shivshahi: 'Transport', asiad: 'Transport', 'lal dabba': 'Transport',
-  tsrtc: 'Transport',   // Telangana State RTC
-  gsrtc: 'Transport',   // Gujarat State RTC
-  upsrtc: 'Transport',  // Uttar Pradesh State RTC
-  osrtc: 'Transport',   // Odisha State RTC
-  hrtc: 'Transport',    // Himachal Pradesh RTC
-  rsrtc: 'Transport',   // Rajasthan State RTC
-  astc: 'Transport',    // Assam State Transport
-  cmrl: 'Transport',    // Chennai Metro Rail
-  bmtc: 'Transport',    // Bangalore Metropolitan Transport
-  bmrc: 'Transport',    // Bangalore Metro Rail
-  dmrc: 'Transport',    // Delhi Metro Rail
-  mmrc: 'Transport',    // Mumbai Metro Rail
-  hmrl: 'Transport',    // Hyderabad Metro
-  nmmc: 'Transport',    // Navi Mumbai Metro
-  railway: 'Transport', 'local train': 'Transport',
-  'city bus': 'Transport', 'local bus': 'Transport', 'st bus': 'Transport',
-  'bus pass': 'Transport', 'bus ticket': 'Transport',
-  'train ticket': 'Transport', 'metro card': 'Transport',
-  'metro token': 'Transport', 'metro pass': 'Transport',
+  // ── Travel (Tourist Places, Hotels, etc.) ──────────────────────────────────
+  makemytrip: 'Travel', goibibo: 'Travel', clearTrip: 'Travel', trivago: 'Travel',
+  agoda: 'Travel', booking: 'Travel', expedia: 'Travel', airbnb: 'Travel',
+  hotel: 'Travel', resort: 'Travel', stay: 'Travel', vacation: 'Travel',
+  holiday: 'Travel', trip: 'Travel', tour: 'Travel', 'sightseeing': 'Travel',
+  'entrance ticket': 'Travel', museum: 'Travel', fort: 'Travel', beach: 'Travel',
+  mountains: 'Travel', goa: 'Travel', manali: 'Travel', shimla: 'Travel',
+  ooty: 'Travel', 'staycation': 'Travel', 'check-in': 'Travel', 'visa': 'Travel',
+  passport: 'Travel', 'travel insurance': 'Travel',
 
-  // ── Shopping (Malls, Brands, Streets) ──────────────────────────────────────
+  // ── Shopping ──────────────────────────────────────────────────────────────
   amazon: 'Shopping', flipkart: 'Shopping', myntra: 'Shopping',
   meesho: 'Shopping', nykaa: 'Shopping', ajio: 'Shopping',
   croma: 'Shopping', vijaysales: 'Shopping', reliance: 'Shopping',
@@ -131,7 +108,7 @@ export const MERCHANT_CATEGORY_MAP: Record<string, Category> = {
   'apple music': 'Subscriptions', jiosaavn: 'Subscriptions',
   gaana: 'Subscriptions', wynk: 'Subscriptions', ullu: 'Subscriptions', altbalaji: 'Subscriptions',
 
-  // ── Entertainment, Movies & Tourism ───────────────────────────────────────
+  // ── Entertainment & Movies ────────────────────────────────────────────────
   movie: 'Entertainment', cinema: 'Entertainment', pvr: 'Entertainment',
   inox: 'Entertainment', bookmyshow: 'Entertainment', concert: 'Entertainment',
   game: 'Entertainment', gaming: 'Entertainment',
@@ -141,9 +118,7 @@ export const MERCHANT_CATEGORY_MAP: Record<string, Category> = {
   'paytm movies': 'Entertainment', ticketnew: 'Entertainment',
   natak: 'Entertainment', play: 'Entertainment', tamasha: 'Entertainment', lavani: 'Entertainment',
   balgandharva: 'Entertainment', yashwantrao: 'Entertainment',
-  trek: 'Entertainment', sinhagad: 'Entertainment', lohagad: 'Entertainment',
-  lonavala: 'Entertainment', mahabaleshwar: 'Entertainment',
-  imagica: 'Entertainment', 'wet n joy': 'Entertainment', 'water park': 'Entertainment',
+  trek: 'Entertainment', imagica: 'Entertainment', 'wet n joy': 'Entertainment', 'water park': 'Entertainment',
 
   // ── Utilities & Bills ─────────────────────────────────────────────────────
   electricity: 'Utilities', rent: 'Utilities',
@@ -156,14 +131,18 @@ export const MERCHANT_CATEGORY_MAP: Record<string, Category> = {
   'mahanagar gas': 'Utilities', igl: 'Utilities', mngl: 'Utilities',
   pmc: 'Utilities', pcmc: 'Utilities', bmc: 'Utilities', 'property tax': 'Utilities', 'water tax': 'Utilities',
 
-  // ── Health, Pharmacy & Hospitals ──────────────────────────────────────────
+  // ── Health, Medical & Pharmacy ──────────────────────────────────────────
   pharmacy: 'Health', chemist: 'Health', hospital: 'Health',
   doctor: 'Health', medicine: 'Health', gym: 'Health',
   medical: 'Health', clinic: 'Health', apollo: 'Health',
   medplus: 'Health', '1mg': 'Health', netmeds: 'Health',
   practo: 'Health', pharmeasy: 'Health', dental: 'Health',
   yoga: 'Health', fitness: 'Health', cult: 'Health',
-  'wellness forever': 'Health',
+  'wellness forever': 'Health', 'blood test': 'Health', 'lab': 'Health',
+  'diagnostic': 'Health', 'tablet': 'Health', 'syrup': 'Health',
+  'capsule': 'Health', 'ointment': 'Health', 'bandage': 'Health',
+  'consultation': 'Health', 'eye care': 'Health', 'skin care': 'Health',
+  'ayurveda': 'Health', 'homeopathy': 'Health',
   sancheti: 'Health', ruby: 'Health', jehangir: 'Health', sahyadri: 'Health', deenanath: 'Health',
   kem: 'Health', sassoon: 'Health', lilavati: 'Health', hinduja: 'Health', 'breach candy': 'Health', kokilaben: 'Health', fortis: 'Health',
 
@@ -188,6 +167,15 @@ const TRANSPORT_PATTERNS: RegExp[] = [
   /\b(?:petrol|diesel|cng|fuel|toll|parking|fastag|puc)\b/i,
 ];
 
+const TRAVEL_PATTERNS: RegExp[] = [
+  /\b(?:hotel|resort|stay|vacation|holiday|trip|tour|sightseeing|museum|fort|beach|mountains|staycation|check-in|visa|passport)\b/i,
+  /\b(?:goa|manali|shimla|ooty|mumbai|pune|delhi|bangalore|hyderabad|chennai|kolkata|jaipur|udaipur|coorg|munnar|leh|ladakh)\b/i,
+];
+
+const MEDICAL_PATTERNS: RegExp[] = [
+  /\b(?:pharmacy|chemist|hospital|doctor|medicine|medical|clinic|dental|prescript|tablet|syrup|capsule|ointment|bandage|consultation|blood[\s-]*test|lab|diagnostic|ayurveda|homeopathy)\b/i,
+];
+
 export function inferCategory(text: string): Category {
   const lower = text.toLowerCase();
 
@@ -201,7 +189,17 @@ export function inferCategory(text: string): Category {
     if (p.test(lower)) return 'Transport';
   }
 
-  // 3. Full keyword map — substring match
+  // 3. Travel regex patterns
+  for (const p of TRAVEL_PATTERNS) {
+    if (p.test(lower)) return 'Travel';
+  }
+
+  // 4. Medical regex patterns
+  for (const p of MEDICAL_PATTERNS) {
+    if (p.test(lower)) return 'Health';
+  }
+
+  // 5. Full keyword map — substring match
   for (const [keyword, category] of Object.entries(MERCHANT_CATEGORY_MAP)) {
     if (lower.includes(keyword)) return category as Category;
   }
