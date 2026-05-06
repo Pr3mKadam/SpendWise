@@ -122,14 +122,14 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
   } = budgetState;
 
   const updateLimit = setBudget;
-  const resetLimits = () => {}; // Could add reset logic if needed
+  const resetLimits = useCallback(() => {}, []); // Could add reset logic if needed
   const totalSpentAgainstBudget = budgetStats.reduce((a, b) => a + b.spent, 0);
   const overBudgetCount = budgetStats.filter(b => b.status === 'danger').length;
   const period = budgetSettings.period;
   const periodLabel = period === 'weekly' ? 'This Week' : period === 'biweekly' ? 'Last 14 Days' : 'This Month';
   const rolloverEnabled = budgetSettings.rolloverEnabled;
-  const updatePeriod = (p: any) => updateBudgetSettings({ period: p });
-  const toggleRollover = () => updateBudgetSettings({ rolloverEnabled: !budgetSettings.rolloverEnabled });
+  const updatePeriod = useCallback((p: any) => updateBudgetSettings({ period: p }), [updateBudgetSettings]);
+  const toggleRollover = useCallback(() => updateBudgetSettings({ rolloverEnabled: !budgetSettings.rolloverEnabled }), [updateBudgetSettings, budgetSettings.rolloverEnabled]);
 
   const alertState    = useAlerts(transactions, currentBalance, budgetStats, dailySpendRate, {
     currency,

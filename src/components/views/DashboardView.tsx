@@ -100,6 +100,10 @@ function ChartTooltip({ active, payload, label, currency }: any) {
 // Main DashboardView
 // ─────────────────────────────────────────────────────────────────────────────
 
+const PAGE_BG = '#f4f6fb';
+const TEXT_PRIMARY = '#0f1117';
+const TEXT_MUTED = '#9197a6';
+
 export function DashboardView({
   financeState,
   onAdd,
@@ -139,9 +143,9 @@ export function DashboardView({
     return result;
   }, [transactions]);
 
-  const recentTx = transactions.slice(0, 6);
+  const recentTx = useMemo(() => transactions.slice(0, 6), [transactions]);
 
-  const saved = Math.max(0, monthlyStats.totalIncome - monthlyStats.totalExpenses);
+  const saved = useMemo(() => Math.max(0, monthlyStats.totalIncome - monthlyStats.totalExpenses), [monthlyStats.totalIncome, monthlyStats.totalExpenses]);
 
   // Trend % from balanceTrend array
   const trendPct = useMemo(() => {
@@ -151,10 +155,6 @@ export function DashboardView({
     if (first === 0) return 0;
     return ((last - first) / Math.abs(first)) * 100;
   }, [balanceTrend]);
-
-  const PAGE_BG = '#f4f6fb';
-  const TEXT_PRIMARY = '#0f1117';
-  const TEXT_MUTED = '#9197a6';
 
   return (
     <div className="bg-[#f4f6fb] -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8 min-h-[calc(100vh-60px)] px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">

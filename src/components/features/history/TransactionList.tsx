@@ -15,8 +15,19 @@ interface TransactionListProps {
 
 type TabFilter = 'all' | 'credit' | 'debit';
 
+const formatDate = (iso: string) => {
+  const d = new Date(iso + 'T00:00:00');
+  return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: '2-digit' }).format(d);
+};
+
+const tabs: { key: TabFilter; label: string }[] = [
+  { key: 'all',    label: 'All' },
+  { key: 'credit', label: 'Revenue' },
+  { key: 'debit',  label: 'Expenses' },
+];
+
 export default function TransactionList({ transactions, onCategoryChange, onDelete: _onDelete, currency = '$' }: TransactionListProps) {
-  const { mergedIcons } = useCategories();
+  const { mergedIcons, mergedColors } = useCategories();
   const store = useStore();
   const settings = store.parentalState;
   const isKidMode = settings.isTeenMode;
@@ -45,16 +56,6 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
     return sorted.slice(0, 15);
   }, [transactions, tab, sortOrder, categoryFilter]);
 
-  const formatDate = (iso: string) => {
-    const d = new Date(iso + 'T00:00:00');
-    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: '2-digit' }).format(d);
-  };
-
-  const tabs: { key: TabFilter; label: string }[] = [
-    { key: 'all',    label: 'All' },
-    { key: 'credit', label: 'Revenue' },
-    { key: 'debit',  label: 'Expenses' },
-  ];
 
   return (
     <div className="card flex flex-col overflow-hidden" style={{ maxHeight: '700px' }}>
@@ -156,7 +157,7 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
             <div className="space-y-1">
               {filtered.map((tx, index) => {
                 const isCredit = tx.type === 'credit';
-                const catColor = useCategories().mergedColors[tx.category] || 'var(--teal)';
+                const catColor = mergedColors[tx.category] || 'var(--teal)';
                 
                 return (
                   <motion.div
