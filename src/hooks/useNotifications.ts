@@ -39,6 +39,7 @@ export function useNotifications(
   goals:     SavingsGoal[],
 ) {
   const [readIds, setReadIds] = useState<Set<string>>(loadRead);
+  const [customNotifications, setCustomNotifications] = useState<AppNotification[]>([]);
 
   // ── Build unified notification list ────────────────────────────────────────
 
@@ -105,12 +106,20 @@ export function useNotifications(
       });
     });
 
+    // 4. Custom transient notifications
+    customNotifications.forEach(cn => {
+      list.push({
+        ...cn,
+        read: readIds.has(cn.id),
+      });
+    });
+
     // Sort: unread first, then by timestamp desc
     return list.sort((a, b) => {
       if (a.read !== b.read) return a.read ? 1 : -1;
       return b.timestamp - a.timestamp;
     });
-  }, [alerts, recurring, goals, readIds]);
+  }, [alerts, recurring, goals, readIds, customNotifications]);
 
   const unreadCount = useMemo(
     () => notifications.filter(n => !n.read).length,
@@ -134,5 +143,15 @@ export function useNotifications(
     setReadIds(ids);
   }, [notifications]);
 
-  return { notifications, unreadCount, markRead, markAllRead };
+  const addNotification = useCallback((notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
+    const newNotif: AppNotification = {
+      ...notif,
+      id: `custom-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      timestamp: Date.now(),
+      read: false
+    };
+    setCustomNotifications(prev => [...prev, newNotif]);
+  }, []);
+
+  return { notifications, unreadCount, markRead, markAllRead, addNotification };
 }

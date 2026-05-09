@@ -7,6 +7,7 @@ import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { encryptData, decryptData } from '../../utils/encryption';
 import { useStore } from '../../store';
 import { downloadDatabaseBackup, importDatabase } from '../../db/backup';
+import { useCurrency, CurrencyCode } from '../../contexts/CurrencyContext';
 
 interface ProfileViewProps {
   config: SpendWiseConfig | null;
@@ -45,6 +46,7 @@ export default function ProfileView({
   const [monthlyGoal, setMonthlyGoal] = useState(config?.monthlyGoal !== undefined ? String(config.monthlyGoal) : '');
   
   const [currency, setCurrency] = useState(config?.currency ?? '$');
+  const { activeCurrency, setActiveCurrency, rates, baseCurrency } = useCurrency();
   const [showSavedMsg, setShowSavedMsg] = useState(false);
 
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -262,29 +264,42 @@ export default function ProfileView({
           {/* Currency Selector */}
           <div className="max-w-md">
             <label className="flex items-center gap-1.5 font-inter text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
-              <Globe size={13} /> Currency
+              <Globe size={13} /> Global Display Currency
             </label>
+            <p className="text-[10px] text-[var(--text-muted)] mb-4 font-inter leading-relaxed italic">
+              SpendWise uses real-time simulated rates to convert your base currency ({baseCurrency}) to your preferred display currency.
+            </p>
             <div className="grid grid-cols-2 gap-2">
-              {COMMON_CURRENCIES.map(c => (
-                <button
-                  key={c.code}
-                  onClick={() => setCurrency(c.code)}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all"
-                  style={{
-                    background: currency === c.code ? 'var(--teal-dim)' : 'var(--surface-input)',
-                    border: `2px solid ${currency === c.code ? 'var(--teal)' : 'transparent'}`,
-                    cursor: 'pointer'
-                  }}
-                >
-                  <span className="text-xl shrink-0">{c.flag}</span>
-                  <div className="min-w-0">
-                    <p className="font-inter font-bold text-sm" style={{ color: currency === c.code ? 'var(--teal)' : 'var(--text-primary)' }}>
-                      {c.code}
-                    </p>
-                    <p className="font-inter text-[10px] truncate" style={{ color: 'var(--text-muted)' }}>{c.name}</p>
-                  </div>
-                </button>
-              ))}
+              {COMMON_CURRENCIES.map(c => {
+                const isSelected = activeCurrency === c.code;
+                const rate = (rates[c.code as CurrencyCode] / rates[baseCurrency as CurrencyCode]).toFixed(2);
+                
+                return (
+                  <button
+                    key={c.code}
+                    onClick={() => {
+                      setActiveCurrency(c.code as any);
+                      setCurrency(c.code);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all group"
+                    style={{
+                      background: isSelected ? 'var(--teal-dim)' : 'var(--surface-input)',
+                      border: `2px solid ${isSelected ? 'var(--teal)' : 'transparent'}`,
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <span className="text-xl shrink-0 group-hover:scale-110 transition-transform">{c.flag}</span>
+                    <div className="min-w-0">
+                      <p className="font-inter font-bold text-sm" style={{ color: isSelected ? 'var(--teal)' : 'var(--text-primary)' }}>
+                        {c.code}
+                      </p>
+                      <p className="font-inter text-[9px] truncate opacity-60" style={{ color: 'var(--text-muted)' }}>
+                        1 {baseCurrency} ≈ {rate} {c.code}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 

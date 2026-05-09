@@ -78,8 +78,7 @@ export default function MetricCards({
 
   const store = useStore();
   const settings = store.parentalState;
-  const isKidMode = settings.isTeenMode;
-  const shouldHideBalances = isKidMode && settings.hideBalances;
+  const shouldHideBalances = settings.hideBalances;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">

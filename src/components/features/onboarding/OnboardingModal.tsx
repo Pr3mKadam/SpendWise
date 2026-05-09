@@ -126,17 +126,14 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
 
         {/* ── Left Panel — Dark sidebar (Finebank style) ── */}
         <div
-          className="flex-shrink-0 flex flex-col justify-between p-8 md:p-10"
+          className="flex-shrink-0 flex flex-col justify-between p-6 md:p-10 w-full md:max-w-[280px] md:min-h-[400px]"
           style={{
             background: 'var(--sidebar-bg)',
-            width: '100%',
-            maxWidth: '280px',
-            minHeight: '400px',
           }}
         >
           {/* Brand */}
           <div>
-            <div className="mb-8">
+            <div className="mb-4 md:mb-8">
               <span style={{ fontFamily: 'var(--font-manrope)', fontWeight: 800, fontSize: '20px', color: '#ffffff', letterSpacing: '-0.5px' }}>
                 SpendWise
               </span>
@@ -151,7 +148,7 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
           </div>
 
           {/* Feature list */}
-          <div className="mt-8 space-y-3">
+          <div className="mt-8 space-y-3 hidden md:block">
             {FEATURES.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-3">
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg shrink-0" style={{ background: 'var(--teal-dim)' }}>
@@ -163,7 +160,7 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
           </div>
 
           {/* Privacy */}
-          <div className="mt-8 flex items-center gap-2">
+          <div className="mt-6 md:mt-8 flex items-center gap-2">
             <Shield size={13} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
             <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>
               All data stored locally on your device
@@ -172,7 +169,7 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
         </div>
 
         {/* ── Right Panel — White form ── */}
-        <div className="flex-1 p-8 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 1 ? 'block' : 'none' }}>
+        <div className="flex-1 p-6 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 1 ? 'block' : 'none' }}>
 
           <div className="mb-7">
             <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
@@ -313,7 +310,7 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
         </div>
         
         {/* Step 2 Panel */}
-        <div className="flex-1 p-8 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 2 ? 'block' : 'none' }}>
+        <div className="flex-1 p-6 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 2 ? 'block' : 'none' }}>
            <div className="mb-7">
             <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
               {preferredName ? `Welcome, ${preferredName}!` : "Tell us about yourself"}

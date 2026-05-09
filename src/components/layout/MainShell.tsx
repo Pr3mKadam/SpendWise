@@ -10,8 +10,13 @@ import NotificationCenter from '../common/NotificationCenter';
 import QuestCompletionOverlay from '../features/gamification/QuestCompletionOverlay';
 import CustomCategoriesModal from '../common/CustomCategoriesModal';
 import CommandPalette from '../common/CommandPalette';
+import LevelUpModal from '../features/gamification/LevelUpModal';
+import Soundscape from '../features/audio/Soundscape';
 import { DashboardView } from '../views/DashboardView';
 import OnboardingModal, { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
+import { SkeletonLoader } from '../common/SkeletonLoader';
+import PrivacyShield from '../common/PrivacyShield';
+
 
 // Lazy loaded views
 const AnalyticsView = lazy(() => import('../views/AnalyticsView'));
@@ -27,6 +32,7 @@ const ReportsView = lazy(() => import('../views/ReportsView'));
 const ParentalView = lazy(() => import('../views/ParentalView'));
 const BudgetManager = lazy(() => import('../features/budgets/BudgetManager'));
 const SubscriptionManager = lazy(() => import('../features/subscriptions/SubscriptionManager'));
+const EducationView = lazy(() => import('../views/EducationView'));
 import { generatePDFReport } from '../../utils/exportPDF';
 import { useStore } from '../../store';
 import { ParentalPinGate, KidModeBanner } from '../features/parental/ParentalControlGate';
@@ -101,6 +107,8 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
     addTransaction,
     deleteTransaction: _deleteTransaction,
     updateTransactionCategory,
+    bulkUpdateTransactionsCategory,
+    bulkDeleteTransactions,
     bulkReassignCategory,
     resetData,
     categorySpending,
@@ -152,7 +160,12 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
   );
 
   const onAdd = useCallback((tx: Transaction) => {
-    addTransaction(tx);
+    // Safety check: ensure tx is a valid transaction object, not a browser event
+    if (tx && typeof tx === 'object' && 'amount' in tx && typeof tx.amount === 'number') {
+      addTransaction(tx);
+    } else {
+      console.warn('MainShell: Attempted to add invalid transaction object:', tx);
+    }
   }, [addTransaction]);
 
   const handleCategoryChange = useCallback(
@@ -205,7 +218,19 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
         />
       )}
 
+      <PrivacyShield />
+
+      <LevelUpModal
+        isOpen={store.showLevelUp}
+        onClose={store.dismissLevelUp}
+        level={store.level}
+        rank={store.rank}
+      />
+
+      <Soundscape />
+
       <div className="flex flex-1 min-h-0">
+
       {!isOnboarded && (
         <OnboardingModal 
           onComplete={handleOnboardingComplete} 
@@ -237,7 +262,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
         <main 
           id="main-content" 
           role="main" 
-          className="flex-1 px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 overflow-x-hidden"
+          className="flex-1 px-2 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 overflow-x-hidden"
         >
           {activeView === 'dashboard' && alertState.alerts.length > 0 && (
             <AlertBanner
@@ -247,12 +272,6 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
             />
           )}
 
-          <Suspense fallback={
-            <div className="flex flex-col items-center justify-center min-h-[400px] text-[var(--text-muted)] animate-pulse">
-              <div className="w-10 h-10 border-4 border-teal-500/20 border-t-teal-500 rounded-full animate-spin mb-4" />
-              <p className="text-xs font-bold uppercase tracking-widest">Loading View...</p>
-            </div>
-          }>
           <AnimatePresence mode="wait">
             {activeView === 'dashboard' && (
               <motion.div
@@ -263,12 +282,20 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <DashboardView
-                  financeState={financeState}
-                  onAdd={onAdd}
-                  currency={currency}
-                  onNavigate={handleViewChange}
-                />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <DashboardView
+                    financeState={financeState}
+                    onAdd={onAdd}
+                    onOpenAdd={() => {
+                      const el = document.getElementById('magic-input-textarea');
+                      if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                    }}
+                    currency={currency}
+                    onNavigate={handleViewChange}
+                    hideBalances={pcSettings.hideBalances}
+                    onTogglePrivacy={store.togglePrivacy}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -281,21 +308,23 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <BudgetManager
-                  budgets={budgetStats as any}
-                  totalBudgeted={totalBudgeted}
-                  totalSpentAgainstBudget={totalSpentAgainstBudget}
-                  overBudgetCount={overBudgetCount}
-                  period={period}
-                  periodLabel={periodLabel}
-                  rolloverEnabled={rolloverEnabled}
-                  onUpdateLimit={updateLimit}
-                  onResetLimits={resetLimits}
-                  onChangePeriod={updatePeriod}
-                  onToggleRollover={toggleRollover}
-                  onManageCategories={() => setShowCategoriesModal(true)}
-                  currency={currency}
-                />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <BudgetManager
+                    budgets={budgetStats as any}
+                    totalBudgeted={totalBudgeted}
+                    totalSpentAgainstBudget={totalSpentAgainstBudget}
+                    overBudgetCount={overBudgetCount}
+                    period={period}
+                    periodLabel={periodLabel}
+                    rolloverEnabled={rolloverEnabled}
+                    onUpdateLimit={updateLimit}
+                    onResetLimits={resetLimits}
+                    onChangePeriod={updatePeriod}
+                    onToggleRollover={toggleRollover}
+                    onManageCategories={() => setShowCategoriesModal(true)}
+                    currency={currency}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -308,15 +337,17 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full space-y-6"
               >
-                <AnalyticsView
-                  monthlyHistory={monthlyHistory}
-                  monthlyStats={monthlyStats}
-                  categorySpending={categorySpending}
-                  totalSpent={totalSpent}
-                  currency={currency}
-                  transactions={transactions}
-                />
-                <RecurringView patterns={recurringData} currency={currency} />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <AnalyticsView
+                    monthlyHistory={monthlyHistory}
+                    monthlyStats={monthlyStats}
+                    categorySpending={categorySpending}
+                    totalSpent={totalSpent}
+                    currency={currency}
+                    transactions={transactions}
+                  />
+                  <RecurringView patterns={recurringData} currency={currency} />
+                </Suspense>
               </motion.div>
             )}
 
@@ -329,25 +360,27 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <GoalsView
-                  goals={goals}
-                  stats={goalsState.stats}
-                  onAdd={(data) => {
-                    addGoal({
-                      name:                data.name,
-                      emoji:               data.emoji,
-                      targetAmount:        Number(data.targetAmount),
-                      savedAmount:         Number(data.savedAmount) || 0,
-                      targetDate:          data.targetDate,
-                      monthlyContribution: Number(data.monthlyContribution),
-                      color:               data.color,
-                    });
-                  }}
-                  onUpdate={goalsState.updateGoal}
-                  onDelete={goalsState.deleteGoal}
-                  onContribute={goalsState.addContribution}
-                  currency={currency}
-                />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <GoalsView
+                    goals={goals}
+                    stats={goalsState.stats}
+                    onAdd={(data) => {
+                      addGoal({
+                        name:                data.name,
+                        emoji:               data.emoji,
+                        targetAmount:        Number(data.targetAmount),
+                        savedAmount:         Number(data.savedAmount) || 0,
+                        targetDate:          data.targetDate,
+                        monthlyContribution: Number(data.monthlyContribution),
+                        color:               data.color,
+                      });
+                    }}
+                    onUpdate={goalsState.updateGoal}
+                    onDelete={goalsState.deleteGoal}
+                    onContribute={goalsState.addContribution}
+                    currency={currency}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -360,7 +393,9 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <SharedView currency={currency} userId={userId} />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <SharedView currency={currency} userId={userId} />
+                </Suspense>
               </motion.div>
             )}
 
@@ -373,14 +408,18 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <HistoryView
-                  transactions={transactions}
-                  onCategoryChange={handleCategoryChange}
-                  onDelete={financeState.deleteTransaction}
-                  onImportClick={() => setActiveView('sync')}
-                  onPDFReport={handlePDFReport}
-                  currency={currency}
-                />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <HistoryView
+                    transactions={transactions}
+                    onCategoryChange={handleCategoryChange}
+                    onDelete={financeState.deleteTransaction}
+                    onBulkDelete={financeState.bulkDeleteTransactions}
+                    onBulkCategoryChange={financeState.bulkUpdateTransactionsCategory}
+                    onImportClick={() => setActiveView('sync')}
+                    onPDFReport={handlePDFReport}
+                    currency={currency}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -393,15 +432,17 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <BankSyncView
-                  onAutoAddTransactions={(txs) => {
-                    financeState.addTransactions(txs);
-                  }}
-                  recentTransactions={transactions.filter(t =>
-                    t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
-                  )}
-                  currency={currency}
-                />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <BankSyncView
+                    onAutoAddTransactions={(txs) => {
+                      financeState.addTransactions(txs);
+                    }}
+                    recentTransactions={transactions.filter(t =>
+                      t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
+                    )}
+                    currency={currency}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -414,20 +455,22 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <ProfileView
-                  config={config}
-                  onUpdateConfig={setConfig}
-                  onResetData={async () => {
-                    await resetData();
-                    if (config) {
-                      const nextConfig = { ...config, initialBalance: 0 };
-                      setConfig(nextConfig);
-                      localStorage.setItem('spendwise_config_v1', JSON.stringify(nextConfig));
-                    }
-                  }}
-                  transactions={transactions}
-                  onNavigate={handleViewChange}
-                />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <ProfileView
+                    config={config}
+                    onUpdateConfig={setConfig}
+                    onResetData={async () => {
+                      await resetData();
+                      if (config) {
+                        const nextConfig = { ...config, initialBalance: 0 };
+                        setConfig(nextConfig);
+                        localStorage.setItem('spendwise_config_v1', JSON.stringify(nextConfig));
+                      }
+                    }}
+                    transactions={transactions}
+                    onNavigate={handleViewChange}
+                  />
+                </Suspense>
               </motion.div>
             )}
 
@@ -440,7 +483,9 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <ParentalView />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <ParentalView />
+                </Suspense>
               </motion.div>
             )}
 
@@ -453,7 +498,9 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <PortfolioView currency={currency} financeState={financeState} />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <PortfolioView currency={currency} financeState={financeState} />
+                </Suspense>
               </motion.div>
             )}
 
@@ -466,7 +513,9 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <SubscriptionManager patterns={recurringData} currency={currency} />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <SubscriptionManager patterns={recurringData} currency={currency} />
+                </Suspense>
               </motion.div>
             )}
 
@@ -479,7 +528,24 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <AdvisorView financeState={financeState} />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <AdvisorView />
+                </Suspense>
+              </motion.div>
+            )}
+
+            {activeView === 'education' && (
+              <motion.div
+                key="education"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
+                className="w-full h-full"
+              >
+                <Suspense fallback={<SkeletonLoader />}>
+                  <EducationView currency={currency} financeState={financeState} addNotification={notifState.addNotification} />
+                </Suspense>
               </motion.div>
             )}
 
@@ -492,11 +558,12 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 transition={{ duration: 0.3 }}
                 className="w-full h-full"
               >
-                <ReportsView transactions={transactions} currency={currency} monthlyStats={monthlyStats} />
+                <Suspense fallback={<SkeletonLoader />}>
+                  <ReportsView transactions={transactions} currency={currency} monthlyStats={monthlyStats} />
+                </Suspense>
               </motion.div>
             )}
           </AnimatePresence>
-          </Suspense>
 
           <footer className="mt-12 pb-6 text-center" role="contentinfo">
             <p className="text-caption">

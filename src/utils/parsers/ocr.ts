@@ -10,7 +10,7 @@ export async function recognizeReceipt(imageBase64: string): Promise<string> {
       {
         logger: m => {
           if (m.status === 'recognizing text') {
-            console.log(`OCR Progress: ${Math.round(m.progress * 100)}%`);
+            // Optional: You could emit progress to a global state or callback
           }
         }
       }
@@ -27,11 +27,15 @@ export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { s
   let totalAmount = 0;
   const items: { label: string; amount: number; category: string }[] = [];
 
+  // Enhanced amount detection
+  const amountRegex = /(?:total|amount|sum|due|pay|grand total)?\s*[:$₹Rs]?\s*(\d+[.,]\d{2})/i;
+  
   for (const line of lines) {
-    const amountMatch = line.match(/(?:[\s\₹\Rs]*)\s*(\d+(?:[.,]\d{2}))(?:\s|$)/);
-    if (amountMatch) {
-      const amt = parseFloat(amountMatch[1].replace(',', '.'));
-      const desc = line.replace(amountMatch[0], '').trim().replace(/[^a-zA-Z0-9\s]/g, '');
+    // Look for individual line items
+    const match = line.match(/(\d+(?:[.,]\d{2}))(?:\s|$)/);
+    if (match) {
+      const amt = parseFloat(match[1].replace(',', '.'));
+      const desc = line.replace(match[0], '').trim().replace(/[^a-zA-Z0-9\s]/g, '');
       if (amt > 0 && desc.length > 2) {
         let cat = 'Other';
         const lowerDesc = desc.toLowerCase();
@@ -43,39 +47,43 @@ export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { s
     }
   }
 
-  const totalKeywords = ['total', 'amount', 'due', 'pay', 'sum', 'net', 'final'];
+  // Find Total Amount (Look for largest amount near "total" keywords)
+  const totalKeywords = ['total', 'amount', 'due', 'pay', 'sum', 'net', 'final', 'grand total'];
   for (const line of lines) {
     const lowerLine = line.toLowerCase();
     if (totalKeywords.some(kw => lowerLine.includes(kw))) {
-      const numbers = line.match(/\d+(?:[.,]\d{2})/g);
-      if (numbers) {
-        const parsed = numbers.map(n => parseFloat(n.replace(',', '.')));
-        const maxOnLine = Math.max(...parsed.filter(n => !isNaN(n)));
-        if (maxOnLine > totalAmount) totalAmount = maxOnLine;
+      const match = line.match(amountRegex);
+      if (match) {
+        const parsed = parseFloat(match[1].replace(',', '.'));
+        if (parsed > totalAmount) totalAmount = parsed;
       }
     }
   }
 
+  // Fallback: If no "total" keyword found, use the maximum amount found in the receipt
   if (totalAmount === 0) {
     const allNums = items.map(i => i.amount);
     totalAmount = allNums.length > 0 ? Math.max(...allNums) : 0;
   }
 
-  const finalSplits = items.filter(i => Math.abs(i.amount - totalAmount) > 0.01 && !totalKeywords.some(kw => i.label.toLowerCase().includes(kw)));
-
+  // Merchant Detection (Premium: Check top 5 lines, exclude common receipt words)
   let merchant = 'Receipt';
-  for (const line of lines.slice(0, 5)) {
-    if (line.length > 3 && !line.match(/\d/) && !/total|tax|invoice|receipt|date|order/i.test(line)) {
+  const excludeWords = /total|tax|invoice|receipt|date|order|tel|phone|store|cashier|item|qty|price/i;
+  for (const line of lines.slice(0, 8)) {
+    if (line.length > 3 && !line.match(/\d{3,}/) && !excludeWords.test(line)) {
       merchant = line.replace(/[^a-zA-Z\s]/g, '').trim();
       if (merchant.length > 2) break;
     }
   }
 
+  // Final mapping check
   let category = 'Other';
   for (const [merch, cat] of Object.entries(MERCHANT_CATEGORY_MAP)) {
     if (rawText.toLowerCase().includes(merch)) {
       category = cat;
-      if (merchant === 'Receipt') merchant = merch.charAt(0).toUpperCase() + merch.slice(1);
+      if (merchant === 'Receipt' || merchant.length < 3) {
+        merchant = merch.charAt(0).toUpperCase() + merch.slice(1);
+      }
       break;
     }
   }
@@ -86,7 +94,7 @@ export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { s
     category,
     date: new Date().toISOString().split('T')[0],
     type: 'debit',
-    description: 'Scanned offline receipt',
-    splits: finalSplits.length > 1 ? finalSplits : undefined
+    description: 'Scanned via SpendWise Vision',
+    splits: items.length > 1 ? items.filter(i => i.amount < totalAmount * 0.9) : undefined
   };
 }

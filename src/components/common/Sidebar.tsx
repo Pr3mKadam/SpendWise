@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X } from 'lucide-react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X, GraduationCap } from 'lucide-react';
 import { AppView } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -16,15 +16,15 @@ const ALL_NAV_ITEMS = [
   { id: 'dashboard'     as AppView, label: 'Overview',         icon: LayoutDashboard },
   { id: 'analytics'     as AppView, label: 'Statistics',       icon: PieChart },
   { id: 'budget'        as AppView, label: 'Budget',           icon: Target },
-  { id: 'advisor'       as AppView, label: 'AI Advisor',       icon: Bot },
+  { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
   { id: 'goals'         as AppView, label: 'Goals',            icon: CreditCard },
-  { id: 'shared'        as AppView, label: 'Shared',           icon: Users },
-  { id: 'parental'      as AppView, label: 'Parental',         icon: Shield },
   { id: 'portfolio'     as AppView, label: 'Net Worth',        icon: TrendingUp },
   { id: 'subscriptions' as AppView, label: 'Subscriptions',    icon: RefreshCw },
-  { id: 'reports'       as AppView, label: 'Reports',          icon: FileText },
+  { id: 'shared'        as AppView, label: 'Shared',           icon: Users },
   { id: 'sync'          as AppView, label: 'UPI Sync',         icon: Landmark },
-  { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
+  { id: 'advisor'       as AppView, label: 'AI Advisor',       icon: Bot },
+  { id: 'education'     as AppView, label: 'Learn',            icon: GraduationCap },
+  { id: 'reports'       as AppView, label: 'Reports',          icon: FileText },
 ];
 
 export default function Sidebar({ activeView, onViewChange, overBudgetCount }: SidebarProps) {
@@ -38,6 +38,18 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [activeView]);
+
+  // Lock body scroll when mobile menu is open to prevent background scrolling and fixed height issues on mobile
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
 
   const navItems = ALL_NAV_ITEMS.filter(item => {
     if (isKidMode) {
@@ -81,7 +93,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" role="navigation" aria-label="Main Desktop Navigation">
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
@@ -90,8 +102,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
               <button
                 key={item.id}
                 onClick={() => onViewChange(item.id)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewChange(item.id); } }}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={`Navigate to ${item.label}`}
+                role="menuitem"
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left relative group ${isActive ? 'shadow-md shadow-teal-500/10' : ''}`}
                 style={{
                   background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
@@ -261,7 +275,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
                 <X size={20} />
               </button>
             </div>
-            <div className="flex-1 overflow-y-auto p-4 space-y-2">
+            <div className="flex-1 overflow-y-auto p-3 space-y-1">
               {navItems.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeView === item.id;
@@ -269,16 +283,16 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
                   <button
                     key={item.id}
                     onClick={() => onViewChange(item.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left min-h-[48px]`}
+                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-left min-h-[44px]`}
                     style={{
                       background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
                       color: isActive ? '#ffffff' : 'var(--sidebar-text)',
                       fontFamily: 'var(--font-inter)',
-                      fontSize: '15px',
+                      fontSize: '14px',
                       fontWeight: isActive ? 600 : 500,
                     }}
                   >
-                    <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                    <Icon size={17} strokeWidth={isActive ? 2.5 : 2} />
                     <span>{item.label}</span>
                     {item.id === 'budget' && overBudgetCount > 0 && (
                       <span

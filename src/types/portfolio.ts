@@ -18,6 +18,8 @@ export interface LiabilityEntry {
   name: string;
   type: LiabilityType;
   balance: number;
+  interestRate?: number; // Annual percentage rate
+  minPayment?: number;
   currency?: string;
   icon?: string;
   lastUpdated: string;

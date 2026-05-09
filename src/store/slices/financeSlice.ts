@@ -22,6 +22,8 @@ export interface FinanceSlice {
   addTransactions: (txs: Transaction[]) => void;
   deleteTransaction: (id: string) => void;
   updateTransactionCategory: (id: string, newCategory: Category) => void;
+  bulkUpdateTransactionsCategory: (ids: string[], newCategory: Category) => void;
+  bulkDeleteTransactions: (ids: string[]) => void;
   bulkReassignCategory: (oldCategory: string, newCategory: string) => void;
   setBudget: (category: string, amount: number) => void;
   removeBudget: (category: string) => void;
@@ -97,6 +99,22 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
   updateTransactionCategory: (id, newCategory) => {
     set((state) => ({
       transactions: state.transactions.map(t => t.id === id ? { ...t, category: newCategory } : t)
+    }));
+    get().reindex();
+  },
+
+  bulkUpdateTransactionsCategory: (ids, newCategory) => {
+    const idSet = new Set(ids);
+    set((state) => ({
+      transactions: state.transactions.map(t => idSet.has(t.id) ? { ...t, category: newCategory } : t)
+    }));
+    get().reindex();
+  },
+
+  bulkDeleteTransactions: (ids) => {
+    const idSet = new Set(ids);
+    set((state) => ({
+      transactions: state.transactions.filter(t => !idSet.has(t.id))
     }));
     get().reindex();
   },

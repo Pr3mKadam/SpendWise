@@ -30,8 +30,7 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
   const { mergedIcons, mergedColors } = useCategories();
   const store = useStore();
   const settings = store.parentalState;
-  const isKidMode = settings.isTeenMode;
-  const shouldHideBalances = isKidMode && settings.hideBalances;
+  const shouldHideBalances = settings.hideBalances;
   const [tab, setTab] = useState<TabFilter>('all');
   const [sortOrder, setSortOrder] = useState<'latest' | 'oldest'>('latest');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');

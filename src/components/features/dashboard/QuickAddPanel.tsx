@@ -9,6 +9,7 @@ interface QuickAddPanelProps {
   onQuickInput?: (text: string) => void;
   dashboardInput?: string;
   setDashboardInput?: (val: string) => void;
+  transactions?: Transaction[];
 }
 
 export default function QuickAddPanel({ 
@@ -16,7 +17,8 @@ export default function QuickAddPanel({
   recentMerchants = [], 
   onQuickInput,
   dashboardInput,
-  setDashboardInput
+  setDashboardInput,
+  transactions
 }: QuickAddPanelProps) {
   return (
     <motion.div
@@ -63,6 +65,7 @@ export default function QuickAddPanel({
         onAdd={onAdd} 
         externalInput={dashboardInput}
         onInputChange={setDashboardInput}
+        transactions={transactions}
       />
 
       {recentMerchants.length > 0 && (

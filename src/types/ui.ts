@@ -13,6 +13,7 @@ export type AppView =
   | 'portfolio'
   | 'subscriptions'
   | 'advisor'
+  | 'education'
   | 'reports';
 
 export type AlertSeverity = 'info' | 'warning' | 'danger';

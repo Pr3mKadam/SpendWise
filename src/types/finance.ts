@@ -53,6 +53,8 @@ export interface MonthlyStats {
   netCashFlow:      number;
   avgDailySpend:    number;
   transactionCount: number;
+  topCategory?:      string;
+  categoryDistribution?: Record<string, number>;
 }
 
 export interface MonthlyHistoryPoint {
@@ -72,6 +74,8 @@ export interface RecurringPattern {
   occurrences:   number;
   totalSpent:    number;
   priceCreep?:   boolean;
+  isTrial?:      boolean;
+  trialEndsAt?:  string;
 }
 
 export type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -84,6 +88,8 @@ export interface RecurringTransaction {
   frequency:     RecurringFrequency;
   lastProcessed: string | null;
   nextOccurrence: string; // ISO date string YYYY-MM-DD
+  isTrial?:      boolean;
+  trialEndsAt?:  string;
 }
 
 export type GoalStatus = 'on-track' | 'at-risk' | 'achieved' | 'paused';

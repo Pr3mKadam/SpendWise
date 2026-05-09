@@ -8,8 +8,9 @@ export function ParentalPinGate({ onContinueAsKid, onUnlocked }: { onContinueAsK
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
 
-  const handleUnlock = () => {
-    if (store.verifyPin(pin)) {
+  const handleUnlock = async () => {
+    const isValid = await store.verifyPin(pin);
+    if (isValid) {
       store.unlockSession();
       onUnlocked?.();
     } else {

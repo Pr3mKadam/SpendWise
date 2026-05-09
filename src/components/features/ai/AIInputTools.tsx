@@ -35,6 +35,7 @@ export function AIInputTools({
   scanStatus,
   handleFileChange,
   handleVoiceInput,
+  onOpenScanner,
   fileInputRef,
 }: {
   isScanning: boolean;
@@ -42,18 +43,22 @@ export function AIInputTools({
   scanStatus?: string;
   handleFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleVoiceInput: () => void;
+  onOpenScanner?: () => void;
   fileInputRef: RefObject<HTMLInputElement | null>;
 }) {
   return (
     <div className="mt-4 border-t border-[var(--border-subtle,#e2e8f0)] pt-4 flex flex-col gap-2">
       <div className="flex gap-2">
         {/* ── Snap Receipt ─────────────────────────────────────────── */}
-        <label
-          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-all"
+        <button
+          type="button"
+          onClick={() => onOpenScanner?.()}
+          disabled={isScanning || isListening}
+          className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-all active:scale-95"
           style={{
-            background: isScanning ? 'var(--teal-dim)' : 'var(--teal-dim)',
+            background: 'var(--teal-dim)',
             color: 'var(--teal)',
-            border: `1.5px dashed ${isScanning ? 'var(--teal)' : 'var(--teal-glow)'}`,
+            border: `1.5px dashed var(--teal-glow)`,
             fontFamily: 'var(--font-inter)',
             cursor: isScanning || isListening ? 'not-allowed' : 'pointer',
             opacity: isListening ? 0.5 : 1,
@@ -62,16 +67,7 @@ export function AIInputTools({
           {isScanning
             ? <><Loader2 size={15} className="animate-spin" /> Scanning…</>
             : <><Camera size={15} /> Snap Receipt</>}
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            disabled={isScanning || isListening}
-          />
-        </label>
+        </button>
 
         {/* ── Magic Mic ─────────────────────────────────────────────── */}
         <button

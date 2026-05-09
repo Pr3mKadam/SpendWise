@@ -1,6 +1,8 @@
 import { StateCreator } from 'zustand';
 import { Transaction, Category } from '../../types';
 import { SpendWiseStore, ParentalControlState } from '../index';
+import { hashPin, verifyPinHash } from '../../utils/security';
+
 
 export interface ParentalSlice {
   parentalState: ParentalControlState;
@@ -8,23 +10,26 @@ export interface ParentalSlice {
   setMonthlyLimit: (limit: number | null) => void;
   toggleRestrictedCategory: (category: Category) => void;
   updateParentalSettings: (updates: Partial<ParentalControlState>) => void;
-  setupPin: (pin: string) => void;
   removePin: () => void;
   unlockSession: () => void;
   lockSession: () => void;
   requestTransactionApproval: (tx: Transaction) => void;
   approveTransaction: (id: string) => void;
   denyTransaction: (id: string) => void;
-  verifyPin: (pin: string) => boolean;
+  verifyPin: (pin: string) => Promise<boolean>;
+  setupPin: (pin: string) => Promise<void>;
+  togglePrivacy: () => void;
 }
+
 
 export const createParentalSlice: StateCreator<SpendWiseStore, [["zustand/persist", unknown]], [], ParentalSlice> = (set, get) => ({
   parentalState: {
     enabled: false,
     isTeenMode: false,
     ageGroup: 'teen',
-    parentPin: null,
+    parentPinHash: null,
     monthlyLimit: null,
+
     restrictedCategories: [],
     pendingTransactions: [],
     hideBalances: false,
@@ -33,9 +38,10 @@ export const createParentalSlice: StateCreator<SpendWiseStore, [["zustand/persis
     sessionUnlocked: false,
     requireApproval: false,
   },
-  setTeenMode: (enabled, pin) => set((state) => ({
-    parentalState: { ...state.parentalState, isTeenMode: enabled, parentPin: pin ?? state.parentalState.parentPin }
+  setTeenMode: (enabled, pinHash) => set((state) => ({
+    parentalState: { ...state.parentalState, isTeenMode: enabled, parentPinHash: pinHash ?? state.parentalState.parentPinHash }
   })),
+
   setMonthlyLimit: (limit) => set((state) => ({
     parentalState: { ...state.parentalState, monthlyLimit: limit }
   })),
@@ -49,24 +55,29 @@ export const createParentalSlice: StateCreator<SpendWiseStore, [["zustand/persis
   updateParentalSettings: (updates) => set((state) => ({
     parentalState: { ...state.parentalState, ...updates }
   })),
-  setupPin: (pin) => set((state) => ({
-    parentalState: { 
-      ...state.parentalState, 
-      enabled: true, 
-      parentPin: pin, 
-      isTeenMode: true, 
-      sessionUnlocked: true 
-    }
-  })),
+  setupPin: async (pin) => {
+    const pinHash = await hashPin(pin);
+    set((state) => ({
+      parentalState: { 
+        ...state.parentalState, 
+        enabled: true, 
+        parentPinHash: pinHash, 
+        isTeenMode: true, 
+        sessionUnlocked: true 
+      }
+    }));
+  },
+
   removePin: () => set((state) => ({
     parentalState: { 
       ...state.parentalState, 
       enabled: false, 
-      parentPin: null, 
+      parentPinHash: null, 
       isTeenMode: false, 
       sessionUnlocked: false 
     }
   })),
+
   unlockSession: () => set((state) => ({
     parentalState: { ...state.parentalState, sessionUnlocked: true, isTeenMode: false }
   })),
@@ -87,8 +98,13 @@ export const createParentalSlice: StateCreator<SpendWiseStore, [["zustand/persis
   denyTransaction: (id) => set((state) => ({
     parentalState: { ...state.parentalState, pendingTransactions: state.parentalState.pendingTransactions.filter(t => t.id !== id) }
   })),
-  verifyPin: (pin) => {
+  verifyPin: async (pin) => {
     const state = get();
-    return state.parentalState.parentPin === pin;
+    if (!state.parentalState.parentPinHash) return false;
+    return await verifyPinHash(pin, state.parentalState.parentPinHash);
   },
+
+  togglePrivacy: () => set((state) => ({
+    parentalState: { ...state.parentalState, hideBalances: !state.parentalState.hideBalances }
+  })),
 });

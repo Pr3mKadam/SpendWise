@@ -117,38 +117,39 @@ export default function Header({
       />
 
       {/* ─── Content row ─── */}
-      <div className="relative flex items-center justify-between h-full px-4 md:px-6 lg:px-8">
+      <div className="relative flex items-center justify-between h-full px-3 md:px-6 lg:px-8">
 
         {/* Left — Greeting / Page Title */}
-        <div className="flex items-center gap-2 min-w-0">
+        <div className="flex items-center gap-1.5 min-w-0">
           {activeView !== 'dashboard' && (
             <>
               <button
                 onClick={() => onNavigate('dashboard')}
+                aria-label="Go to Dashboard"
                 style={{
-                  fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 500,
+                  fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 500,
                   color: 'var(--text-muted)',
                   background: 'none', border: 'none', cursor: 'pointer', padding: 0,
                 }}
               >
                 Home
               </button>
-              <ChevronRight size={14} style={{ color: 'var(--text-dim)' }} />
+              <ChevronRight size={12} style={{ color: 'var(--text-dim)' }} />
             </>
           )}
           <div className="min-w-0">
-            {/* Mobile: white bold text */}
+            {/* Mobile: white bold text - Simplified for Dashboard to save space */}
             <div
               className="md:hidden truncate"
               style={{
-                fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '17px',
+                fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '16px',
                 color: '#ffffff',
                 lineHeight: 1.2,
                 textShadow: '0 1px 8px rgba(0,0,0,0.4)',
               }}
             >
               {activeView === 'dashboard'
-                ? `${getGreeting()}, ${displayName} 👋`
+                ? `Hi, ${displayName.split(' ')[0]} 👋`
                 : VIEW_TITLES[activeView] ?? activeView}
             </div>
             {/* Desktop: themed text */}
@@ -192,7 +193,7 @@ export default function Header({
           <button
             onClick={onToggleTheme}
             className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
-            title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             /* Mobile style applied via wrapper; desktop overrides inline */
             style={{ padding: 0, border: 'none' }}
           >
@@ -211,7 +212,7 @@ export default function Header({
             <button
               onClick={onOpenSearch}
               className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
-              title="Search (Cmd+K)"
+              aria-label="Search transactions and settings (Cmd+K)"
               style={{ padding: 0, border: 'none' }}
             >
               <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
@@ -227,7 +228,7 @@ export default function Header({
           <button
             onClick={onToggleNotifications}
             className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
-            title="Notifications"
+            aria-label={`View notifications, ${unreadCount} unread`}
             style={{ padding: 0, border: 'none' }}
           >
             <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
@@ -249,7 +250,7 @@ export default function Header({
           {/* User Avatar */}
           <button
             onClick={() => onNavigate('profile')}
-            title="Profile & Settings"
+            aria-label="View Profile and Settings"
             className="group relative flex h-9 w-9 items-center justify-center rounded-full text-white font-bold text-sm shrink-0 transition-all hover:scale-105"
             style={{
               background: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',

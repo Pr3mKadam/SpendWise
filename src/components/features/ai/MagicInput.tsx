@@ -8,14 +8,20 @@ import { AIInputTools } from './AIInputTools';
 import { compressImage } from '../../../utils/imageUtils';
 import { recognizeReceipt, parseOfflineReceipt } from '../../../utils/parsers/ocr';
 import { parseVoiceLocally } from '../../../utils/parsers/voice';
+import { parseVoiceWithGemini } from '../../../services/VoiceService';
+import { useCurrency } from '../../../contexts/CurrencyContext';
+import ReceiptScanner from './ReceiptScanner';
 
 interface MagicInputProps {
   onAdd: (transaction: Transaction) => void;
   externalInput?: string;
   onInputChange?: (val: string) => void;
+  transactions?: Transaction[];
+  onFocus?: () => void;
 }
 
-export default function MagicInput({ onAdd, externalInput, onInputChange }: MagicInputProps) {
+export default function MagicInput({ onAdd, externalInput, onInputChange, transactions, onFocus }: MagicInputProps) {
+  const { activeCurrency } = useCurrency();
   const [localInput, setLocalInput] = useState('');
   const input = externalInput !== undefined ? externalInput : localInput;
   const setInput = onInputChange || setLocalInput;
@@ -24,6 +30,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange }: Magi
   const [isScanning, setIsScanning] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [scanStatus, setScanStatus] = useState<string | undefined>();
+  const [showScanner, setShowScanner] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleProcess = async () => {
@@ -34,12 +41,26 @@ export default function MagicInput({ onAdd, externalInput, onInputChange }: Magi
     }
     setIsProcessing(true);
     const result = await processNaturalLanguageExpense(input);
+    
+    // Intelligent Default: If merchant matches history, suggest previous category
+    if (result && result.merchant && transactions) {
+      const match = transactions.find(t => t.merchant.toLowerCase() === result.merchant?.toLowerCase());
+      if (match) {
+        result.category = match.category;
+      }
+    }
+
     setPrediction(result);
     setIsProcessing(false);
   };
 
   const handleConfirm = () => {
     if (prediction) {
+      if (!prediction.amount || prediction.amount <= 0) {
+        setScanStatus('⚠️ Amount must be greater than 0');
+        setTimeout(() => setScanStatus(undefined), 2000);
+        return;
+      }
       onAdd({
         ...prediction as Transaction,
         id: `magic-${Date.now()}`,
@@ -102,8 +123,21 @@ export default function MagicInput({ onAdd, externalInput, onInputChange }: Magi
       const transcript = event.results[0][0].transcript;
       setScanStatus(`✅ Heard: "${transcript}"`);
       const today = new Date().toISOString().split('T')[0];
-      const res = parseVoiceLocally(transcript, today);
-      setPrediction(res);
+      
+      try {
+        const res = await parseVoiceWithGemini(transcript, today);
+        setPrediction({
+          ...res,
+          confidence: 0.9,
+          split: null,
+          source: 'local'
+        });
+      } catch (err) {
+        console.error('Gemini voice parsing failed, falling back to local:', err);
+        const res = parseVoiceLocally(transcript, today);
+        setPrediction(res);
+      }
+      
       setIsListening(false);
       setTimeout(() => setScanStatus(undefined), 3000);
     };
@@ -129,20 +163,39 @@ export default function MagicInput({ onAdd, externalInput, onInputChange }: Magi
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleProcess()}
+            onFocus={onFocus}
             placeholder="I spent 500 on dinner at Starbucks..."
             className="flex-1 bg-transparent border-none py-4 px-2 text-[var(--text-primary)] font-medium outline-none placeholder:text-[var(--text-muted)] placeholder:opacity-50"
           />
           <button 
             onClick={handleProcess}
             disabled={isProcessing || !input.trim()}
-            className="p-3 bg-[var(--teal)] text-white border-none rounded-2xl cursor-pointer shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-30"
+            className="p-3 bg-[var(--teal)] text-white border-none rounded-2xl cursor-pointer shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center min-w-[48px]"
           >
             {isProcessing ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
           </button>
         </div>
 
+        {/* Scan Status Overlay */}
+        <AnimatePresence>
+          {scanStatus && (
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute left-0 right-0 -top-12 flex justify-center z-50 pointer-events-none"
+            >
+              <div className="bg-[var(--surface-card)] border border-[var(--border)] rounded-full px-4 py-2 shadow-xl flex items-center gap-2">
+                {isScanning ? <Loader2 size={14} className="animate-spin text-[var(--teal)]" /> : null}
+                <span className="text-[10px] font-bold font-inter text-[var(--text-primary)]">{scanStatus}</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
         {/* Quick Suggestions */}
-        <div className="flex flex-wrap gap-2 px-2">
+        <div className="flex flex-wrap gap-2 px-2 mt-3">
           {[
             { label: '💊 Medicines', prompt: 'Bought Paracetamol for 150 at Apollo' },
             { label: '🚌 Transport', prompt: 'Paid 40 for Bus ticket to Pune' },
@@ -157,7 +210,6 @@ export default function MagicInput({ onAdd, externalInput, onInputChange }: Magi
             </button>
           ))}
         </div>
-      </div>
 
       <AIInputTools 
         isScanning={isScanning}
@@ -165,7 +217,26 @@ export default function MagicInput({ onAdd, externalInput, onInputChange }: Magi
         scanStatus={scanStatus}
         handleFileChange={handleFileChange}
         handleVoiceInput={handleVoiceInput}
+        onOpenScanner={() => setShowScanner(true)}
         fileInputRef={fileInputRef}
+      />
+
+      <ReceiptScanner 
+        isOpen={showScanner}
+        onClose={() => setShowScanner(false)}
+        onExtracted={(data) => {
+          onAdd({
+            id: `magic-${Date.now()}`,
+            amount: data.amount,
+            merchant: data.merchant,
+            category: 'Uncategorized',
+            date: data.date,
+            type: 'debit',
+            status: 'completed',
+            tags: ['ocr']
+          });
+          setShowScanner(false);
+        }}
       />
 
       <AnimatePresence>
@@ -192,7 +263,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange }: Magi
               </div>
               <div className="text-right">
                 <p className="text-2xl font-black text-[var(--teal)]">
-                  {prediction.type === 'debit' ? '-' : '+'}₹{prediction.amount || 0}
+                  {prediction.type === 'debit' ? '-' : '+'}{activeCurrency}{prediction.amount || 0}
                 </p>
                 <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.type || 'debit'}</p>
               </div>

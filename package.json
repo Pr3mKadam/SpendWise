@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.4",
     "clsx": "2.1.1",
     "dexie": "^4.4.2",
     "dexie-export-import": "^4.4.0",

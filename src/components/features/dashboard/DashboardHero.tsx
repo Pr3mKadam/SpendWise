@@ -12,6 +12,8 @@ interface DashboardHeroProps {
   balanceTrend: BalanceDataPoint[];
   healthScore: number;
   currency?: string;
+  hideBalances?: boolean;
+  onTogglePrivacy?: () => void;
 }
 
 function getGreeting(): string {
@@ -35,6 +37,8 @@ export default function DashboardHero({
   balanceTrend,
   healthScore,
   currency = '₹',
+  hideBalances = false,
+  onTogglePrivacy,
 }: DashboardHeroProps) {
   const displayBalance = useCountUp(currentBalance, 800);
   const displayIncome = useCountUp(monthlyStats.totalIncome, 600);
@@ -128,7 +132,7 @@ export default function DashboardHero({
 
             {/* Big animated number */}
             <div
-              className="tabular-nums"
+              className={`tabular-nums transition-all duration-500 ${hideBalances ? 'blur-lg select-none' : ''}`}
               style={{ fontFamily: 'var(--font-manrope)', fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-0.02em' }}
             >
               {currency}{displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -146,38 +150,57 @@ export default function DashboardHero({
             </div>
           </div>
 
-          {/* Sparkline */}
-          <div className="flex-shrink-0 w-[180px] h-[80px] bg-white/5 rounded-2xl p-2 border border-white/10 backdrop-blur-sm">
-            {sparkData.length > 1 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={sparkData}>
-                  <Line
-                    type="monotone"
-                    dataKey="balance"
-                    stroke={isTrendUp ? '#2dd4bf' : '#fbbf24'}
-                    strokeWidth={3}
-                    dot={false}
-                    strokeLinecap="round"
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (!active || !payload?.length) return null;
-                      const val = payload[0].value as number;
-                      return (
-                        <div style={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px 12px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)' }}>
-                          <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff', fontFamily: 'var(--font-manrope)' }}>
-                            {currency}{val.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
-                          </span>
-                        </div>
-                      );
-                    }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>No trend data</span>
-              </div>
+          {/* Sparkline & Privacy Toggle */}
+          <div className="flex flex-col gap-2">
+            <div className="flex-shrink-0 w-[180px] h-[80px] bg-white/5 rounded-2xl p-2 border border-white/10 backdrop-blur-sm">
+              {sparkData.length > 1 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={sparkData}>
+                    <Line
+                      type="monotone"
+                      dataKey="balance"
+                      stroke={isTrendUp ? '#2dd4bf' : '#fbbf24'}
+                      strokeWidth={3}
+                      dot={false}
+                      strokeLinecap="round"
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (!active || !payload?.length || hideBalances) return null;
+                        const val = payload[0].value as number;
+                        return (
+                          <div style={{ background: 'rgba(15,23,42,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', padding: '8px 12px', boxShadow: '0 10px 25px -5px rgba(0,0,0,0.3)' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 800, color: '#fff', fontFamily: 'var(--font-manrope)' }}>
+                              {currency}{val.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                            </span>
+                          </div>
+                        );
+                      }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.3)' }}>No trend data</span>
+                </div>
+              )}
+            </div>
+            
+            {onTogglePrivacy && (
+              <button
+                onClick={onTogglePrivacy}
+                className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl border transition-all hover:scale-105 active:scale-95"
+                style={{ 
+                  background: hideBalances ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)', 
+                  borderColor: hideBalances ? '#14b8a6' : 'rgba(255,255,255,0.1)',
+                  color: hideBalances ? '#14b8a6' : 'rgba(255,255,255,0.6)'
+                }}
+              >
+                <Shield size={12} fill={hideBalances ? '#14b8a6' : 'none'} />
+                <span style={{ fontSize: '10px', fontWeight: 800, fontFamily: 'var(--font-inter)', textTransform: 'uppercase' }}>
+                  {hideBalances ? 'Shield Active' : 'Privacy Mode'}
+                </span>
+              </button>
             )}
           </div>
         </div>
@@ -196,7 +219,7 @@ export default function DashboardHero({
               </div>
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Income</div>
-                <div className="tabular-nums" style={{ fontSize: '14px', fontWeight: 800, color: '#10b981', fontFamily: 'var(--font-manrope)' }}>
+                <div className={`tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '14px', fontWeight: 800, color: '#10b981', fontFamily: 'var(--font-manrope)' }}>
                   +{currency}{displayIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                 </div>
               </div>
@@ -212,7 +235,7 @@ export default function DashboardHero({
               </div>
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Expenses</div>
-                <div className="tabular-nums" style={{ fontSize: '14px', fontWeight: 800, color: '#ef4444', fontFamily: 'var(--font-manrope)' }}>
+                <div className={`tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '14px', fontWeight: 800, color: '#ef4444', fontFamily: 'var(--font-manrope)' }}>
                   -{currency}{displayExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                 </div>
               </div>
@@ -228,7 +251,7 @@ export default function DashboardHero({
               </div>
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Net</div>
-                <div className="tabular-nums" style={{ fontSize: '14px', fontWeight: 800, color: isPositive ? '#14b8a6' : '#f59e0b', fontFamily: 'var(--font-manrope)' }}>
+                <div className={`tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '14px', fontWeight: 800, color: isPositive ? '#14b8a6' : '#f59e0b', fontFamily: 'var(--font-manrope)' }}>
                   {isPositive ? '+' : '-'}{currency}{displayNet.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                 </div>
               </div>

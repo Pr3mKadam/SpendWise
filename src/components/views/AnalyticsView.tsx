@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   LineChart, Line, ReferenceLine, CartesianGrid,
@@ -6,6 +7,9 @@ import { TrendingUp, Wallet, PiggyBank, ArrowUpRight, Receipt } from 'lucide-rea
 import { MonthlyHistoryPoint, MonthlyStats, CategorySpend } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
 import { TaxPredictor } from '../features/analytics/TaxPredictor';
+import { calculateHealthScore } from '../../utils/insights/healthScore';
+import { ShieldCheck, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface AnalyticsViewProps {
   monthlyHistory:   MonthlyHistoryPoint[];
@@ -69,20 +73,104 @@ function StatCard({ label, value, sub, color, icon: Icon }: { label: string; val
 
 export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySpending, totalSpent, currency = '$', transactions = [] }: AnalyticsViewProps) {
   const { mergedColors, mergedIcons } = useCategories();
-  const latestMonth = monthlyHistory[monthlyHistory.length - 1];
+  
+  const currentBalance = useMemo(() => {
+    return transactions.reduce((acc, tx) => {
+      return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
+    }, 5200); // Using default balance as fallback
+  }, [transactions]);
+
+  const health = useMemo(() => 
+    calculateHealthScore(transactions, monthlyStats, categorySpending, currentBalance),
+    [transactions, monthlyStats, categorySpending, currentBalance]
+  );
+
+  const latestMonth = monthlyHistory.length > 0 ? monthlyHistory[monthlyHistory.length - 1] : null;
   const avgSavings  = monthlyHistory.length > 0
     ? Math.round(monthlyHistory.reduce((a, m) => a + m.savings, 0) / monthlyHistory.length) : 0;
-  const bestMonth   = [...monthlyHistory].sort((a, b) => b.savings - a.savings)[0];
+  const bestMonth   = monthlyHistory.length > 0 
+    ? [...monthlyHistory].sort((a, b) => b.savings - a.savings)[0] : null;
 
   const axisStyle = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
 
   return (
     <div className="animate-fade-in-up space-y-6">
 
+      {/* AI Financial Health Index */}
+      <div className="card p-0 overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+        <div className="p-6 sm:p-8 flex flex-col lg:flex-row gap-8 items-center relative z-10">
+          {/* Gauge */}
+          <div className="relative w-40 h-40 shrink-0">
+            <svg className="w-full h-full transform -rotate-90">
+              <circle
+                cx="80" cy="80" r="70"
+                fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12"
+              />
+              <motion.circle
+                initial={{ strokeDasharray: "0 440" }}
+                animate={{ strokeDasharray: `${(health.score / 100) * 440} 440` }}
+                transition={{ duration: 1.5, ease: "easeOut" }}
+                cx="80" cy="80" r="70"
+                fill="none" stroke={health.color} strokeWidth="12"
+                strokeLinecap="round"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+              <span className="text-4xl font-black text-white leading-none">{health.score}</span>
+              <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mt-1">Health Index</span>
+            </div>
+          </div>
+
+          <div className="flex-1 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+                <ShieldCheck className="text-teal-400" size={20} />
+              </div>
+              <div>
+                <h3 className="text-white text-lg font-bold">AI Financial Health: {health.grade}</h3>
+                <p className="text-gray-400 text-sm">Based on your spending discipline, stability, and savings rate.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {Object.entries(health.breakdown).map(([key, val]) => (
+                <div key={key}>
+                  <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                    <span>{key}</span>
+                    <span>{val}%</span>
+                  </div>
+                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className="h-full bg-teal-500/50 transition-all duration-1000" style={{ width: `${val}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2">
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-teal-500/10 border border-teal-500/20">
+                <Info size={14} className="text-teal-400 mt-0.5 shrink-0" />
+                <div className="space-y-1">
+                  {health.recommendations.map((rec, i) => (
+                    <p key={i} className="text-xs text-teal-100/90 leading-relaxed font-medium">
+                      {rec}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Background blobs */}
+        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-teal-500/10 blur-[100px] rounded-full" />
+        <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-blue-500/10 blur-[100px] rounded-full" />
+      </div>
+
       {/* Page Header */}
-      <div>
-        <h2 className="text-headline">Expenses Comparison</h2>
-        <p className="text-caption mt-1">6-month overview · Income, expenses & savings trends</p>
+      <div className="flex items-end justify-between">
+        <div>
+          <h2 className="text-headline">Expenses Comparison</h2>
+          <p className="text-caption mt-1">6-month overview · Income, expenses & savings trends</p>
+        </div>
       </div>
 
       {/* Mini Stats */}
@@ -90,7 +178,7 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
         <StatCard label="This Month Income"    value={`${currency}${monthlyStats.totalIncome.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}      sub="Total credits"         color="#14b8a6" icon={TrendingUp} />
         <StatCard label="This Month Spent"     value={`${currency}${monthlyStats.totalExpenses.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}    sub="Total debits"          color="#ef4444" icon={Wallet} />
         <StatCard label="Avg Monthly Savings"  value={`${avgSavings >= 0 ? '+' : ''}${currency}${Math.abs(avgSavings).toLocaleString('en-US')}`}            sub="Last 6 months avg"     color={avgSavings >= 0 ? '#14b8a6' : '#ef4444'} icon={PiggyBank} />
-        <StatCard label="Best Month"           value={bestMonth ? bestMonth.month : '—'}                                                                    sub={bestMonth ? `${currency}${bestMonth.savings.toLocaleString()} saved` : 'No data'} color="#f59e0b" icon={ArrowUpRight} />
+        <StatCard label="Best Month"           value={bestMonth ? bestMonth.month : '—'}                                                                    sub={bestMonth ? `${currency}${bestMonth.savings.toLocaleString()} saved` : 'No history yet'} color="#f59e0b" icon={ArrowUpRight} />
       </div>
 
       {/* Income vs Expenses Bar Chart */}

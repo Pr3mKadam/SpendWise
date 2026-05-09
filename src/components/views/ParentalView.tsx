@@ -26,8 +26,9 @@ export default function ParentalView() {
   const [unlockPin, setUnlockPin] = useState('');
   const [unlockError, setUnlockError] = useState('');
 
-  const isSetup = settings.enabled && settings.parentPin;
+  const isSetup = settings.enabled && settings.parentPinHash;
   const isLocked = settings.enabled && !settings.sessionUnlocked;
+
 
   // Filtered transactions for approval
   const pendingTransactions = useMemo(() => 
@@ -35,8 +36,9 @@ export default function ParentalView() {
     [transactions]
   );
 
-  const handleUnlock = () => {
-    if (store.verifyPin(unlockPin)) {
+  const handleUnlock = async () => {
+    const isValid = await store.verifyPin(unlockPin);
+    if (isValid) {
       store.unlockSession();
       setUnlockPin('');
       setUnlockError('');
@@ -46,12 +48,14 @@ export default function ParentalView() {
     }
   };
 
-  const handleSetPin = () => {
+
+  const handleSetPin = async () => {
     if (newPin.length === 4) {
-      store.updateParentalSettings({ parentPin: newPin });
+      await store.setupPin(newPin);
       setSetupStep('limits');
     }
   };
+
 
   const handleApprove = (id: string) => {
     store.approveTransaction(id);
@@ -408,8 +412,9 @@ export default function ParentalView() {
              <button 
               onClick={() => {
                 if (window.confirm('Are you sure you want to disable all parental controls?')) {
-                  store.updateParentalSettings({ enabled: false, parentPin: undefined, isTeenMode: false });
+                  store.removePin();
                 }
+
               }}
               className="w-full py-2.5 rounded-xl bg-red-500/10 text-red-500 font-bold text-[11px] hover:bg-red-500/20 transition-all flex items-center justify-center gap-2 border border-red-500/10"
              >

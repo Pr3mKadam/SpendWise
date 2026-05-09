@@ -23,6 +23,9 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
     return d.toISOString().split('T')[0];
   });
 
+  const [isTrial, setIsTrial] = useState(false);
+  const [trialEndsAt, setTrialEndsAt] = useState('');
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -37,6 +40,8 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
       frequency,
       lastProcessed: null,
       nextOccurrence,
+      isTrial,
+      trialEndsAt: isTrial ? trialEndsAt : undefined,
     });
     
     // Reset and close
@@ -44,6 +49,8 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
     setAmount('');
     setCategory('Subscriptions');
     setFrequency('monthly');
+    setIsTrial(false);
+    setTrialEndsAt('');
     onClose();
   };
 
@@ -109,32 +116,62 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-              Category
+          <div className="flex items-center gap-2 py-1">
+            <input
+              type="checkbox"
+              id="isTrial"
+              checked={isTrial}
+              onChange={(e) => setIsTrial(e.target.checked)}
+              className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+            />
+            <label htmlFor="isTrial" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              This is a free trial
             </label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
-            >
-              {allCategories.map((cat: string) => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
           </div>
 
-          <div>
-            <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
-              Next Billing Date
-            </label>
-            <input
-              type="date"
-              value={nextOccurrence}
-              onChange={(e) => setNextOccurrence(e.target.value)}
-              className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
-              required
-            />
+          {isTrial && (
+            <div className="animate-fade-in">
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                Trial Ends At
+              </label>
+              <input
+                type="date"
+                value={trialEndsAt}
+                onChange={(e) => setTrialEndsAt(e.target.value)}
+                className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
+                required={isTrial}
+              />
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                Category
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
+              >
+                {allCategories.map((cat: string) => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5">
+                Next Billing Date
+              </label>
+              <input
+                type="date"
+                value={nextOccurrence}
+                onChange={(e) => setNextOccurrence(e.target.value)}
+                className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
+                required
+              />
+            </div>
           </div>
 
           <div className="pt-4">

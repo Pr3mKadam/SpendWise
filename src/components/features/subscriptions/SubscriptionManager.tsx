@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { RefreshCw, TrendingUp, AlertTriangle, DollarSign, Calendar, Plus } from 'lucide-react';
+import { RefreshCw, TrendingUp, AlertTriangle, DollarSign, Calendar, Plus, Zap, Clock } from 'lucide-react';
 import { RecurringPattern } from '../../../types';
 import { useCategories } from '../../../hooks/useCategories';
 import { useStore } from '../../../store';
 import AddSubscriptionModal from './AddSubscriptionModal';
+import { useCurrency } from '../../../contexts/CurrencyContext';
 
 interface SubscriptionManagerProps {
   patterns: RecurringPattern[];
@@ -37,6 +38,7 @@ function daysUntil(dateStr: string): number {
 
 export default function SubscriptionManager({ patterns, currency = '₹' }: SubscriptionManagerProps) {
   const { mergedIcons } = useCategories();
+  const { format, activeCurrency } = useCurrency();
   const recurringTransactions = useStore(s => s.recurringTransactions);
   const [showAddModal, setShowAddModal] = useState(false);
 
@@ -59,6 +61,8 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
       occurrences: 0,
       totalSpent: 0,
       priceCreep: false,
+      isTrial: rt.isTrial,
+      trialEndsAt: rt.trialEndsAt,
     } as RecurringPattern));
   }, [recurringTransactions]);
 
@@ -92,8 +96,8 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
   );
 
   const statsCards = [
-    { label: 'Monthly Burn',    value: `${currency}${monthlyTotal.toFixed(0)}`, color: 'var(--teal)',   icon: <RefreshCw size={16} /> },
-    { label: 'Annual Spend',    value: `${currency}${annualTotal.toFixed(0)}`,  color: 'var(--purple)', icon: <TrendingUp size={16} /> },
+    { label: 'Monthly Burn',    value: format(monthlyTotal), color: 'var(--teal)',   icon: <RefreshCw size={16} /> },
+    { label: 'Annual Spend',    value: format(annualTotal),  color: 'var(--purple)', icon: <TrendingUp size={16} /> },
     { label: 'Active Services', value: `${subscriptions.length}`,               color: 'var(--blue)',   icon: <DollarSign size={16} /> },
     { label: 'Due This Week',   value: `${upcoming.length}`,                    color: 'var(--amber)',  icon: <AlertTriangle size={16} /> },
   ];
@@ -184,10 +188,17 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                         <span className="text-lg">{mergedIcons[sub.category]}</span>
                       ) : initials}
                     </div>
-                    <span className="font-inter text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
-                      style={{ background: color + '15', color }}>
-                      {sub.frequency}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="font-inter text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                        style={{ background: color + '15', color }}>
+                        {sub.frequency}
+                      </span>
+                      {sub.isTrial && (
+                        <span className="flex items-center gap-1 font-inter text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 rounded-full px-2 py-0.5 border border-amber-500/20">
+                          <Zap size={10} /> Trial
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {/* Name + Amount */}
@@ -195,11 +206,21 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                     {sub.merchant}
                   </p>
                   <p className="font-manrope font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
-                    {currency}{sub.avgAmount.toFixed(0)}
+                    {format(sub.avgAmount)}
                     <span className="font-inter text-[11px] font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
                       /{sub.frequency === 'monthly' ? 'mo' : 'yr'}
                     </span>
                   </p>
+
+                  {/* Trial Info */}
+                  {sub.isTrial && sub.trialEndsAt && (
+                    <div className="flex items-center gap-1.5 mt-1">
+                      <Clock size={11} className="text-amber-500" />
+                      <span className="font-inter text-[10px] text-amber-600 font-medium">
+                        Ends {new Date(sub.trialEndsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Price Creep Alert */}
                   {sub.priceCreep && (
@@ -211,7 +232,7 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
 
                   {/* Annual cost */}
                   <p className="font-inter text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
-                    {currency}{annualCost.toFixed(0)} / year
+                    {format(annualCost)} / year
                   </p>
 
                   {/* Next billing */}
@@ -246,7 +267,7 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
         <div className="card px-6 py-5" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)', border: 'none' }}>
           <p className="font-inter text-[12px] font-semibold text-white/70 uppercase tracking-wider mb-2">Total Annual Subscription Cost</p>
           <p className="font-manrope font-bold text-4xl text-white">
-            {currency}{annualTotal.toLocaleString('en-IN', { minimumFractionDigits: 0 })}
+            {format(annualTotal)}
           </p>
           <p className="font-inter text-[13px] text-white/70 mt-2">
             across {subscriptions.length} recurring service{subscriptions.length !== 1 ? 's' : ''}

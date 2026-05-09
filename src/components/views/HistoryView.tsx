@@ -8,7 +8,9 @@ import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
 interface HistoryViewProps {
   transactions: Transaction[];
   onCategoryChange?: (id: string, newCategory: Category) => void;
+  onBulkCategoryChange?: (ids: string[], newCategory: Category) => void;
   onDelete?: (id: string) => void;
+  onBulkDelete?: (ids: string[]) => void;
   onImportClick?: () => void;
   onPDFReport?:   () => void;
   currency?:    string;
@@ -38,6 +40,17 @@ function exportCSV(transactions: Transaction[]) {
   a.click(); URL.revokeObjectURL(url);
 }
 
+function exportJSON(transactions: Transaction[]) {
+  const data = JSON.stringify(transactions, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), {
+    href: url,
+    download: `spendwise-export-${new Date().toISOString().split('T')[0]}.json`,
+  });
+  a.click(); URL.revokeObjectURL(url);
+}
+
 function SortBtn({ label, field, sortKey, sortDir, onSort }: { label: string; field: SortKey; sortKey: SortKey; sortDir: SortDir; onSort: (k: SortKey) => void }) {
   const active = sortKey === field;
   return (
@@ -52,7 +65,16 @@ function SortBtn({ label, field, sortKey, sortDir, onSort }: { label: string; fi
   );
 }
 
-export default function HistoryView({ transactions, onCategoryChange, onDelete, onImportClick, onPDFReport, currency = '$' }: HistoryViewProps) {
+export default function HistoryView({ 
+  transactions, 
+  onCategoryChange, 
+  onBulkCategoryChange,
+  onDelete, 
+  onBulkDelete,
+  onImportClick, 
+  onPDFReport, 
+  currency = '$' 
+}: HistoryViewProps) {
   const { allCategories, mergedIcons, mergedColors } = useCategories();
   const [search, setSearch]               = useState('');
   const [categoryFilter, setCategoryFilter] = useState<Category | 'All'>('All');
@@ -63,7 +85,26 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
   const [dateTo, setDateTo]               = useState('');
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [selectedIds, setSelectedIds]     = useState<Set<string>>(new Set());
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
+
+  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const data = JSON.parse(event.target?.result as string);
+        if (Array.isArray(data)) {
+          // In a real app, we'd call an onImport prop
+          alert(`Imported ${data.length} transactions (simulation)`);
+        }
+      } catch (err) {
+        alert('Invalid JSON file');
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const handleSort = (key: SortKey) => {
     setSortKey(k => { if (k === key) { setSortDir(d => d === 'desc' ? 'asc' : 'desc'); return k; } setSortDir('desc'); return key; });
@@ -104,11 +145,14 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
     return (
       <div
         className="group flex items-center gap-2 px-3 sm:px-5 py-3 transition-colors hover:bg-gray-50/50"
+        role="row"
+        aria-selected={selectedIds.has(tx.id)}
         style={{
           borderBottom: '1px solid #f7f8fa',
           background: tx.isNew ? '#f0fdfb' : selectedIds.has(tx.id) ? 'var(--teal-dim)' : undefined,
         }}
       >
+
         <div className="w-5 flex items-center justify-center shrink-0 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity" style={{ opacity: selectedIds.has(tx.id) ? 1 : undefined }}>
           <input
             type="checkbox"
@@ -119,8 +163,10 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
               else newSet.delete(tx.id);
               setSelectedIds(newSet);
             }}
+            aria-label={`Select transaction with ${tx.merchant}`}
             className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
           />
+
         </div>
         <span className="flex w-9 h-9 items-center justify-center rounded-xl text-base shrink-0" style={{ background: `${mergedColors[tx.category] || '#14b8a6'}15` }}>
           {mergedIcons[tx.category] || '📦'}
@@ -176,29 +222,61 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
           {onImportClick && (
             <button
               onClick={onImportClick}
+              aria-label="Import transactions from external source"
               className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors"
               style={{ background: 'var(--surface-card)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: '1.5px solid #edf2f7', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}
             >
               <Upload size={14} /> <span className="hidden sm:inline">Import</span>
             </button>
+
           )}
           {onPDFReport && (
             <button
               onClick={onPDFReport}
+              aria-label="Generate PDF report of history"
               className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors"
               style={{ background: 'var(--surface-card)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: '1.5px solid #edf2f7', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}
             >
               <FileText size={14} /> <span className="hidden sm:inline">PDF Report</span>
             </button>
+
           )}
           <button
             onClick={() => exportCSV(filtered)}
             disabled={filtered.length === 0}
+            aria-label="Export history to CSV file"
             className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors disabled:opacity-40"
             style={{ background: 'var(--teal-dim)', color: 'var(--teal)', fontFamily: 'var(--font-inter)', border: '1.5px solid var(--teal-glow)', cursor: filtered.length ? 'pointer' : 'not-allowed' }}
           >
             <Download size={14} /> <span className="hidden sm:inline">Export CSV</span>
           </button>
+
+          <button
+            onClick={() => exportJSON(filtered)}
+            disabled={filtered.length === 0}
+            aria-label="Export history to JSON file"
+            className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors disabled:opacity-40"
+            style={{ background: 'var(--teal-dim)', color: 'var(--teal)', fontFamily: 'var(--font-inter)', border: '1.5px solid var(--teal-glow)', cursor: filtered.length ? 'pointer' : 'not-allowed' }}
+          >
+            <Download size={14} /> <span className="hidden sm:inline">Export JSON</span>
+          </button>
+
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            aria-label="Import history from JSON file"
+            className="flex items-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-semibold transition-colors"
+            style={{ background: 'var(--surface-card)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: '1.5px solid #edf2f7', cursor: 'pointer', boxShadow: 'var(--shadow-card)' }}
+          >
+            <Upload size={14} /> <span className="hidden sm:inline">Import JSON</span>
+          </button>
+
+          <input 
+            type="file" 
+            ref={fileInputRef} 
+            onChange={handleImportJSON} 
+            accept=".json" 
+            className="hidden" 
+          />
         </div>
       </div>
 
@@ -209,7 +287,9 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
             <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
               type="text" placeholder="Search merchant, category, amount…"
+              aria-label="Search transactions"
               value={search} onChange={e => setSearch(e.target.value)}
+
               className="w-full rounded-xl py-2.5 pl-9 pr-9 text-sm focus:outline-none transition-all"
               style={{ background: 'var(--surface-input)', border: '2px solid transparent', fontFamily: 'var(--font-inter)', color: 'var(--text-primary)' }}
               onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
@@ -223,6 +303,8 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
           </div>
           <button
             onClick={() => setShowDateFilter(s => !s)}
+            aria-label="Toggle date range filter"
+            aria-expanded={showDateFilter}
             className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all self-start"
             style={{
               background: showDateFilter || dateFrom || dateTo ? 'var(--teal-dim)' : 'var(--surface-input)',
@@ -329,7 +411,11 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
                   value="All"
                   onChange={(newCat) => {
                     const ids = Array.from(selectedIds);
-                    ids.forEach(id => onCategoryChange(id, newCat as Category));
+                    if (onBulkCategoryChange) {
+                      onBulkCategoryChange(ids, newCat as Category);
+                    } else if (onCategoryChange) {
+                      ids.forEach(id => onCategoryChange(id, newCat as Category));
+                    }
                     setSelectedIds(new Set());
                   }}
                 />
@@ -339,7 +425,11 @@ export default function HistoryView({ transactions, onCategoryChange, onDelete, 
                   onClick={() => {
                     if (window.confirm(`Delete ${selectedIds.size} transactions?`)) {
                       const ids = Array.from(selectedIds);
-                      ids.forEach(id => onDelete(id));
+                      if (onBulkDelete) {
+                        onBulkDelete(ids);
+                      } else if (onDelete) {
+                        ids.forEach(id => onDelete(id));
+                      }
                       setSelectedIds(new Set());
                     }
                   }}

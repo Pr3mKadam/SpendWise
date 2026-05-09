@@ -7,14 +7,105 @@ import { createPortfolioSlice, PortfolioSlice } from './slices/portfolioSlice';
 import { createGamificationSlice, GamificationSlice } from './slices/gamificationSlice';
 import { createParentalSlice, ParentalSlice } from './slices/parentalSlice';
 
+// Helper functions for base64 conversion
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  const binary_string = atob(base64);
+  const len = binary_string.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
+
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+// Derive Key from Password
+async function deriveKey(password: string, salt: Uint8Array) {
+  const baseKey = await crypto.subtle.importKey(
+    "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]
+  );
+  return crypto.subtle.deriveKey(
+    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    baseKey,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function encryptString(text: string, password: string): Promise<string> {
+  const salt = crypto.getRandomValues(new Uint8Array(16));
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(password, salt);
+
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    enc.encode(text)
+  );
+
+  return JSON.stringify({
+    salt: arrayBufferToBase64(salt),
+    iv: arrayBufferToBase64(iv),
+    ciphertext: arrayBufferToBase64(ciphertext)
+  });
+}
+
+async function decryptString(encryptedJson: string, password: string): Promise<string> {
+  const { salt, iv, ciphertext } = JSON.parse(encryptedJson);
+  const saltArr = new Uint8Array(base64ToArrayBuffer(salt));
+  const ivArr = new Uint8Array(base64ToArrayBuffer(iv));
+  const cipherArr = base64ToArrayBuffer(ciphertext);
+
+  const key = await deriveKey(password, saltArr);
+  const decrypted = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: ivArr },
+    key,
+    cipherArr
+  );
+  return dec.decode(decrypted);
+}
+
+// Get or create key
+const ENCRYPTION_KEY_NAME = 'spendwise_encryption_key';
+let encryptionPassword = localStorage.getItem(ENCRYPTION_KEY_NAME);
+if (!encryptionPassword) {
+  encryptionPassword = crypto.randomUUID(); // Good enough for a random string
+  localStorage.setItem(ENCRYPTION_KEY_NAME, encryptionPassword);
+}
+
 // Custom storage for IndexedDB using Dexie
 const dexieStorage: StateStorage = {
   getItem: async (name: string): Promise<string | null> => {
     const record = await db.keyval.get(name);
-    return record ? record.value : null;
+    if (!record) return null;
+    try {
+      return await decryptString(record.value, encryptionPassword!);
+    } catch (e) {
+      console.error('Failed to decrypt data:', e);
+      // Fallback: if it's not JSON or decryption fails, maybe it was unencrypted before?
+      try {
+        JSON.parse(record.value);
+        return record.value; // It was unencrypted
+      } catch {
+        return null; // Corrupted or encrypted with wrong key
+      }
+    }
   },
   setItem: async (name: string, value: string): Promise<void> => {
-    await db.keyval.put({ key: name, value });
+    const encrypted = await encryptString(value, encryptionPassword!);
+    await db.keyval.put({ key: name, value: encrypted });
   },
   removeItem: async (name: string): Promise<void> => {
     await db.keyval.delete(name);
@@ -25,7 +116,7 @@ export interface ParentalControlState {
   enabled: boolean;
   isTeenMode: boolean;
   ageGroup: 'child' | 'teen' | 'adult';
-  parentPin: string | null;
+  parentPinHash: string | null;
   monthlyLimit: number | null;
   restrictedCategories: Category[];
   pendingTransactions: Transaction[];
@@ -61,7 +152,7 @@ export const useStore = create<SpendWiseStore>()(
             enabled: false,
             isTeenMode: false, 
             ageGroup: 'teen',
-            parentPin: null, 
+            parentPinHash: null, 
             monthlyLimit: null, 
             restrictedCategories: [], 
             pendingTransactions: [],

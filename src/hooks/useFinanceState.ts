@@ -13,6 +13,8 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   const addTransactions = useStore(state => state.addTransactions);
   const deleteTransaction = useStore(state => state.deleteTransaction);
   const updateTransactionCategory = useStore(state => state.updateTransactionCategory);
+  const bulkUpdateTransactionsCategory = useStore(state => state.bulkUpdateTransactionsCategory);
+  const bulkDeleteTransactions = useStore(state => state.bulkDeleteTransactions);
   const bulkReassignCategory = useStore(state => state.bulkReassignCategory);
   const resetData = useStore(state => state.resetData);
 
@@ -122,24 +124,32 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   const balanceTrend = useMemo((): BalanceDataPoint[] => {
     const points: BalanceDataPoint[] = [];
     const today = new Date();
-    const startingPoint = initialBalance;
-    for (let i = 13; i >= 0; i--) {
-      const d       = new Date(today);
+    
+    // Sort transactions by date once
+    const sortedTx = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
+    
+    let runningBalance = currentBalance;
+    let txIdx = 0;
+
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      let bal = startingPoint;
-      transactions.forEach(tx => {
-        if (tx.date <= dateStr) {
-          bal += tx.type === 'credit' ? tx.amount : -tx.amount;
-        }
-      });
+
+      // While the transaction date is after the current day, subtract/add it back from running balance
+      while (txIdx < sortedTx.length && sortedTx[txIdx].date > dateStr) {
+        const tx = sortedTx[txIdx];
+        runningBalance -= (tx.type === 'credit' ? tx.amount : -tx.amount);
+        txIdx++;
+      }
+
       points.push({
-        date:    d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        balance: Math.round(bal * 100) / 100,
+        date: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        balance: Math.round(runningBalance * 100) / 100,
       });
     }
-    return points;
-  }, [transactions, initialBalance]);
+    return points.reverse();
+  }, [transactions, currentBalance]);
 
   const projectionMeta = useMemo(() => {
     const today = new Date();
@@ -208,6 +218,8 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     addTransactions,
     deleteTransaction,
     updateTransactionCategory,
+    bulkUpdateTransactionsCategory,
+    bulkDeleteTransactions,
     bulkReassignCategory,
     resetData,
     currentBalance,

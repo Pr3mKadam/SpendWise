@@ -5,6 +5,7 @@ import { ProgressRing } from './ProgressRing';
 import { STATUS_CONFIG } from './constants';
 import { daysUntil, formatDate } from './utils';
 import { ContributeModal } from './ContributeModal';
+import confetti from 'canvas-confetti';
 
 export function GoalCard({
   goal,
@@ -20,6 +21,19 @@ export function GoalCard({
   currency:     string;
 }) {
   const [showContribute, setShowContribute] = useState(false);
+
+  const handleContribute = (amount: number) => {
+    onContribute(amount);
+    if (goal.savedAmount + amount >= goal.targetAmount) {
+      confetti({
+        particleCount: 150,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: [goal.color, '#2dd4bf', '#3b82f6']
+      });
+    }
+  };
+
   const statusCfg = STATUS_CONFIG[goal.status];
   const StatusIcon = statusCfg.icon;
   const pct        = goal.targetAmount > 0
@@ -117,7 +131,7 @@ export function GoalCard({
       {showContribute && (
         <ContributeModal
           goal={goal}
-          onContribute={onContribute}
+          onContribute={handleContribute}
           onClose={() => setShowContribute(false)}
           currency={currency}
         />

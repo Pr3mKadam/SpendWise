@@ -1,44 +1,21 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Transaction } from '../types';
+import { useStore } from '../store';
 
 export function useGamification(transactions: Transaction[]) {
-  const [streak, setStreak] = useState(0);
+  const store = useStore();
+  const streak = store.streak;
   const [healthScore, setHealthScore] = useState(0);
 
-  // 1. Calculate Daily Streak
+  // 1. Calculate Daily Streak (delegated to store)
   useEffect(() => {
-    const lastLogin = localStorage.getItem('last_login_date');
-    const today = new Date().toISOString().split('T')[0];
-    const currentStreak = parseInt(localStorage.getItem('daily_streak') || '0', 10);
-
-    if (lastLogin === today) {
-      setStreak(currentStreak);
-    } else {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-      if (lastLogin === yesterdayStr) {
-        const newStreak = currentStreak + 1;
-        localStorage.setItem('daily_streak', newStreak.toString());
-        localStorage.setItem('last_login_date', today);
-        setStreak(newStreak);
-      } else {
-        localStorage.setItem('daily_streak', '1');
-        localStorage.setItem('last_login_date', today);
-        setStreak(1);
-      }
-    }
-  }, []);
+    store.checkStreak();
+  }, [store]);
 
   // 2. Calculate Health Score (0-100)
-  // Factors: 
-  // - Savings Rate (Income vs Spend)
-  // - Budget Adherence (not implemented yet, so we use spending vs income)
-  // - Logging Consistency (Streak)
   useEffect(() => {
     if (transactions.length === 0) {
-      setHealthScore(50); // Neutral starting point
+      setHealthScore(50);
       return;
     }
 
@@ -56,29 +33,52 @@ export function useGamification(transactions: Transaction[]) {
 
     let score = 50;
 
-    // Savings Rate Factor (Max 40 points)
     if (income > 0) {
       const savingsRate = (income - spend) / income;
       if (savingsRate > 0.5) score += 40;
       else if (savingsRate > 0.3) score += 30;
       else if (savingsRate > 0.1) score += 20;
       else if (savingsRate > 0) score += 10;
-      else score -= 20; // Negative savings rate
+      else score -= 20;
     }
 
-    // Streak Factor (Max 20 points)
     score += Math.min(streak * 2, 20);
-
-    // Transaction Count (Active user) (Max 20 points)
     score += Math.min(monthlyTxs.length * 2, 20);
 
-    // Data Quality (Categorization completeness) (Max 20 points)
     const categorized = monthlyTxs.filter(t => t.category !== 'Other').length;
     const catRatio = categorized / (monthlyTxs.length || 1);
     score += catRatio * 20;
 
     setHealthScore(Math.min(Math.max(Math.round(score), 0), 100));
   }, [transactions, streak]);
+
+  // 3. Calculate XP and Levels
+  const { xp, level, xpToNextLevel, progress } = useMemo(() => {
+    // Base XP from historical actions
+    const transactionXP = transactions.length * 15;
+    const streakXP = streak * 100;
+    const healthXP = healthScore * 10;
+    
+    const totalXp = transactionXP + streakXP + healthXP;
+    
+    // Level = floor(sqrt(xp / 250)) + 1
+    const currentLevel = Math.floor(Math.sqrt(totalXp / 250)) + 1;
+    
+    // XP math for progress bar
+    const currentLevelBaseXP = 250 * Math.pow(currentLevel - 1, 2);
+    const nextLevelBaseXP = 250 * Math.pow(currentLevel, 2);
+    const xpGainedInLevel = totalXp - currentLevelBaseXP;
+    const xpNeededForLevel = nextLevelBaseXP - currentLevelBaseXP;
+    
+    const levelProgress = Math.min(Math.max((xpGainedInLevel / xpNeededForLevel) * 100, 0), 100);
+
+    return {
+      xp: totalXp,
+      level: currentLevel,
+      xpToNextLevel: nextLevelBaseXP - totalXp,
+      progress: Math.round(levelProgress)
+    };
+  }, [transactions, streak, healthScore]);
 
   const savingsRate = useMemo(() => {
     const income = transactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
@@ -87,5 +87,13 @@ export function useGamification(transactions: Transaction[]) {
     return Math.round(((income - spend) / income) * 100);
   }, [transactions]);
 
-  return { streak, healthScore, savingsRate };
+  const levelName = useMemo(() => {
+    if (level >= 20) return 'Wealth Titan';
+    if (level >= 15) return 'Financial Sage';
+    if (level >= 10) return 'Money Master';
+    if (level >= 5) return 'Smart Saver';
+    return 'Budget Novice';
+  }, [level]);
+
+  return { streak, healthScore, savingsRate, xp, level, xpToNextLevel, progress, levelName };
 }

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { TrendingUp, Plus, Trash2, X, Landmark, BarChart2, ShieldAlert, Sparkles, BrainCircuit } from 'lucide-react';
+import { TrendingUp, Plus, Trash2, X, Landmark, BarChart2, ShieldAlert, Sparkles, BrainCircuit, Zap } from 'lucide-react';
 import { AssetType, LiabilityType } from '../../types';
 import { usePortfolio } from '../../hooks/usePortfolio';
 import Portal from '../common/Portal';
 import NetWorthEvolution from '../features/wealth/NetWorthEvolution';
 import FutureWealthSimulator from '../features/wealth/FutureWealthSimulator';
 import { WealthTree } from '../features/wealth/WealthTree';
+import DebtPlanner from '../features/wealth/DebtPlanner';
 
 // ─── Config ────────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,8 @@ function AddModal({
   const [selectedType, setSelectedType] = useState(types[0].value);
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('');
+  const [interestRate, setInterestRate] = useState('');
+  const [minPayment, setMinPayment] = useState('');
   const [error, setError] = useState('');
 
   const selected = types.find(t => t.value === selectedType)!;
@@ -61,7 +64,23 @@ function AddModal({
     if (!name.trim()) { setError('Please enter a name'); return; }
     const bal = parseFloat(balance.replace(/,/g, ''));
     if (isNaN(bal) || bal <= 0) { setError('Please enter a valid positive amount'); return; }
-    onAdd({ name: name.trim(), type: selectedType, balance: bal, icon: selected.icon, color: selected.color });
+    
+    const data: any = { 
+      name: name.trim(), 
+      type: selectedType, 
+      balance: bal, 
+      icon: selected.icon, 
+      color: selected.color 
+    };
+
+    if (mode === 'liability') {
+      const rate = parseFloat(interestRate);
+      const min = parseFloat(minPayment);
+      if (!isNaN(rate)) data.interestRate = rate;
+      if (!isNaN(min)) data.minPayment = min;
+    }
+
+    onAdd(data);
     onClose();
   };
 
@@ -160,6 +179,41 @@ function AddModal({
             </div>
           </div>
 
+          {mode === 'liability' && (
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Interest Rate (%)
+                </label>
+                <input
+                  type="text"
+                  value={interestRate}
+                  onChange={e => setInterestRate(e.target.value.replace(/[^0-9.]/g, ''))}
+                  placeholder="e.g. 12"
+                  className="w-full rounded-xl px-4 py-3 font-inter text-sm focus:outline-none transition-colors"
+                  style={{ background: 'var(--surface-input)', border: '2px solid transparent', color: 'var(--text-primary)' }}
+                  onFocus={e => e.target.style.borderColor = selected.color}
+                  onBlur={e => e.target.style.borderColor = 'transparent'}
+                />
+              </div>
+              <div>
+                <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+                  Min Payment
+                </label>
+                <input
+                  type="text"
+                  value={minPayment}
+                  onChange={e => setMinPayment(e.target.value.replace(/[^0-9.]/g, ''))}
+                  placeholder="e.g. 500"
+                  className="w-full rounded-xl px-4 py-3 font-inter text-sm focus:outline-none transition-colors"
+                  style={{ background: 'var(--surface-input)', border: '2px solid transparent', color: 'var(--text-primary)' }}
+                  onFocus={e => e.target.style.borderColor = selected.color}
+                  onBlur={e => e.target.style.borderColor = 'transparent'}
+                />
+              </div>
+            </div>
+          )}
+
           {error && (
             <p className="font-inter text-xs font-semibold" style={{ color: 'var(--red)' }}>⚠ {error}</p>
           )}
@@ -192,6 +246,15 @@ function AddModal({
   );
 }
 
+function getConsistentTrend(label: string): string {
+  let hash = 0;
+  for (let i = 0; i < label.length; i++) {
+    hash = label.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const value = (Math.abs(hash % 500) / 100) - 1.5; // -1.5 to 3.5
+  return value.toFixed(2);
+}
+
 // ─── Entry Card ────────────────────────────────────────────────────────────────
 
 function EntryCard({
@@ -200,7 +263,7 @@ function EntryCard({
   label: string; icon: React.ReactNode; iconEmoji?: string; color: string; balance: number; currency: string; type?: string; onDelete: () => void;
 }) {
   const isInvestment = type === 'investment' || type === 'crypto';
-  const simulatedTrend = isInvestment ? (Math.random() * 4 - 1).toFixed(2) : null;
+  const simulatedTrend = isInvestment ? getConsistentTrend(label) : null;
 
   return (
     <div
@@ -316,7 +379,7 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
   } = usePortfolio();
 
   const [modal, setModal] = useState<'asset' | 'liability' | null>(null);
-  const [activeTab, setActiveTab] = useState<'overview' | 'simulation'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'simulation' | 'debt'>('overview');
   const positive = netWorth >= 0;
 
   // Calculate Wealth Health Score (simplified)
@@ -376,6 +439,17 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
               }}
             >
               <BrainCircuit size={14} /> Wealth Sim
+            </button>
+            <button
+              onClick={() => setActiveTab('debt')}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-inter font-bold text-[12px] transition-all"
+              style={{ 
+                background: activeTab === 'debt' ? 'var(--teal)' : 'transparent',
+                color: activeTab === 'debt' ? 'white' : 'var(--text-muted)',
+                cursor: 'pointer'
+              }}
+            >
+              <Zap size={14} /> Debt Lab
             </button>
           </div>
 
@@ -552,13 +626,17 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
               </div>
             </div>
           </>
-        ) : (
+        ) : activeTab === 'simulation' ? (
           <div className="animate-fade-in">
             <FutureWealthSimulator
               currentBalance={netWorth}
               monthlySavings={Math.max(0, monthlyIncome - monthlyExpenses)}
               currency={currency}
             />
+          </div>
+        ) : (
+          <div className="animate-fade-in">
+            <DebtPlanner liabilities={liabilities} currency={currency} />
           </div>
         )}
 
