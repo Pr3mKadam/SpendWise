@@ -292,6 +292,7 @@ export default function ParentalView() {
                           onClick={() => handleReject(tx.id)}
                           className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all"
                           title="Reject"
+                          aria-label="Reject transaction"
                         >
                           <XCircle size={18} />
                         </button>
@@ -299,6 +300,7 @@ export default function ParentalView() {
                           onClick={() => handleApprove(tx.id)}
                           className="w-8 h-8 rounded-lg flex items-center justify-center bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-all"
                           title="Approve"
+                          aria-label="Approve transaction"
                         >
                           <CheckCircle size={18} />
                         </button>

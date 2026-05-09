@@ -109,10 +109,15 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
                 onClick={handleDownload}
                 className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)] transition-colors"
                 title="Download as Markdown"
+                aria-label="Download report as Markdown"
               >
                 <Download size={18} />
               </button>
-              <button className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)] transition-colors">
+              <button 
+                className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)] transition-colors"
+                title="Share Report"
+                aria-label="Share report"
+              >
                 <Share2 size={18} />
               </button>
             </div>
