@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef, memo } from 'react';
 import { AppView, Transaction } from '../../types';
 import { useFinanceState } from '../../hooks/useFinanceState';
 import { useGamification } from '../../hooks/useGamification';
@@ -36,7 +36,7 @@ function avatarColor(name: string) {
 // Sub-components
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Card({ children, className = "", style = {}, glass = false }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; glass?: boolean }) {
+const Card = memo(function Card({ children, className = "", style = {}, glass = false }: { children: React.ReactNode; className?: string; style?: React.CSSProperties; glass?: boolean }) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -51,18 +51,19 @@ function Card({ children, className = "", style = {}, glass = false }: { childre
       {children}
     </motion.div>
   );
-}
+});
 
 interface StatCardProps {
   label: string;
   value: string;
-  icon: React.ReactNode;
+  icon: React.ComponentType<{ size?: number; className?: string }>;
+  iconColor: string;
   iconBg: string;
   trend?: 'up' | 'down' | 'neutral';
   hideBalances?: boolean;
 }
 
-function StatCard({ label, value, icon, iconBg, trend, hideBalances }: StatCardProps) {
+const StatCard = memo(function StatCard({ label, value, icon: Icon, iconColor, iconBg, trend, hideBalances }: StatCardProps) {
   return (
     <motion.div
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
@@ -71,7 +72,7 @@ function StatCard({ label, value, icon, iconBg, trend, hideBalances }: StatCardP
       <Card className="flex flex-col justify-between h-full group" style={{ padding: '12px 14px' }}>
         <div className="flex items-start justify-between mb-2">
           <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110" style={{ background: iconBg }}>
-            {icon}
+            <Icon size={16} className={`sm:w-[18px] sm:h-[18px] ${iconColor}`} />
           </div>
           <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
             trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' : 
@@ -92,7 +93,7 @@ function StatCard({ label, value, icon, iconBg, trend, hideBalances }: StatCardP
       </Card>
     </motion.div>
   );
-}
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Custom Chart Tooltip
@@ -239,7 +240,8 @@ export function DashboardView({
               <StatCard
                 label="Balance"
                 value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<Wallet size={16} className="sm:w-[18px] sm:h-[18px] text-[#6366f1]" />}
+                icon={Wallet}
+                iconColor="text-[#6366f1]"
                 iconBg="rgba(99,102,241,0.1)"
                 trend={trendPct >= 0 ? 'up' : 'down'}
                 hideBalances={hideBalances}
@@ -247,7 +249,8 @@ export function DashboardView({
               <StatCard
                 label="Income"
                 value={`${currency}${monthlyStats.totalIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<TrendingUp size={16} className="sm:w-[18px] sm:h-[18px] text-[#10b981]" />}
+                icon={TrendingUp}
+                iconColor="text-[#10b981]"
                 iconBg="rgba(16,185,129,0.1)"
                 trend="up"
                 hideBalances={hideBalances}
@@ -255,7 +258,8 @@ export function DashboardView({
               <StatCard
                 label="Expenses"
                 value={`${currency}${monthlyStats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<TrendingDown size={16} className="sm:w-[18px] sm:h-[18px] text-[#f87171]" />}
+                icon={TrendingDown}
+                iconColor="text-[#f87171]"
                 iconBg="rgba(248,113,113,0.1)"
                 trend="down"
                 hideBalances={hideBalances}
@@ -263,7 +267,8 @@ export function DashboardView({
               <StatCard
                 label="Net Worth"
                 value={`${currency}${Math.abs(netWorth).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={<Target size={16} className="sm:w-[18px] sm:h-[18px] text-[#8b5cf6]" />}
+                icon={Target}
+                iconColor="text-[#8b5cf6]"
                 iconBg="rgba(139,92,246,0.1)"
                 trend={netWorth >= 0 ? 'up' : 'down'}
                 hideBalances={hideBalances}
@@ -272,10 +277,11 @@ export function DashboardView({
                 <StatCard
                   label="Health Score"
                   value={`${healthScore}/100`}
-                  icon={<Sparkles size={16} className="sm:w-[18px] sm:h-[18px] text-[#14b8a6]" />}
+                  icon={Sparkles}
+                  iconColor="text-[#14b8a6]"
                   iconBg="rgba(20,184,166,0.1)"
                   trend={healthScore > 70 ? 'up' : 'neutral'}
-                  hideBalances={false} // Score doesn't need to be hidden? Or maybe yes.
+                  hideBalances={false}
                 />
               </div>
             </div>
