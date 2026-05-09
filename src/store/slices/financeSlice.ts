@@ -17,6 +17,7 @@ export interface FinanceSlice {
   budgetSettings: BudgetSettings;
   subscriptions: RecurringPattern[];
   recurringTransactions: RecurringTransaction[];
+  razorpayKeys: { keyId: string, keySecret: string } | null;
 
   addTransaction: (tx: Transaction) => void;
   addTransactions: (txs: Transaction[]) => void;
@@ -34,6 +35,7 @@ export interface FinanceSlice {
   addRecurringTransaction: (rt: RecurringTransaction) => void;
   updateRecurringTransaction: (id: string, data: Partial<RecurringTransaction>) => void;
   removeRecurringTransaction: (id: string) => void;
+  setRazorpayKeys: (keys: { keyId: string, keySecret: string } | null) => void;
   reindex: () => void;
 }
 
@@ -44,6 +46,9 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
   budgetSettings: { period: 'monthly', rolloverEnabled: false },
   subscriptions: [],
   recurringTransactions: [],
+  razorpayKeys: null,
+
+  setRazorpayKeys: (keys) => set({ razorpayKeys: keys }),
 
   reindex: () => {
     const { transactions } = get();

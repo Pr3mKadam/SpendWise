@@ -148,6 +148,7 @@ export const useStore = create<SpendWiseStore>()(
           liabilities: [], 
           subscriptions: [],
           recurringTransactions: [],
+          razorpayKeys: null,
           parentalState: { 
             enabled: false,
             isTeenMode: false, 
@@ -175,6 +176,7 @@ export const useStore = create<SpendWiseStore>()(
           liabilities: data.liabilities || [],
           subscriptions: data.subscriptions || [],
           recurringTransactions: data.recurringTransactions || [],
+          razorpayKeys: data.razorpayKeys || null,
         });
         get().reindex();
       }

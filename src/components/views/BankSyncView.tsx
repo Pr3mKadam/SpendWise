@@ -9,6 +9,7 @@ import { Transaction, UPIAccount, UPIProvider, Category } from '../../types';
 import CSVImporter from '../features/sync/CSVImporter';
 import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/parsers/upi';
 import { RazorpayAuth, initiateRazorpayPayment, parseUPIPayment, rememberMerchant } from '../../utils/razorpaySync';
+import { useStore } from '../../store';
 
 interface BankSyncViewProps {
   onAutoAddTransactions: (txs: Transaction[]) => void;
@@ -29,6 +30,7 @@ export default function BankSyncView({
   recentTransactions = [],
   currency = '₹',
 }: BankSyncViewProps) {
+  const { razorpayKeys, setRazorpayKeys } = useStore();
   const [view, setView] = useState<SyncView>('dashboard');
   const [wizardStep, setWizardStep] = useState<WizardStep>('upi-select');
   const [accounts, setAccounts] = useState<UPIAccount[]>([]);
@@ -50,9 +52,18 @@ export default function BankSyncView({
   const [lastTx, setLastTx] = useState<Transaction | null>(null);
   const [corrCategory, setCorrCat] = useState<Category>('Transfer');
 
-  // Load Razorpay account from localStorage on mount
+  // Load Razorpay account from store or migration on mount
   useEffect(() => {
-    const key = localStorage.getItem('spendwise_rzp_key');
+    const localKey = localStorage.getItem('spendwise_rzp_key');
+    const localSecret = localStorage.getItem('spendwise_rzp_secret');
+    
+    if (localKey && localSecret) {
+      setRazorpayKeys({ keyId: localKey, keySecret: localSecret });
+      localStorage.removeItem('spendwise_rzp_key');
+      localStorage.removeItem('spendwise_rzp_secret');
+    }
+
+    const key = razorpayKeys?.keyId || localKey;
     if (key) {
       setAccounts((p: UPIAccount[]) => {
         if (p.some(a => a.provider === 'razorpay' as any)) return p;
@@ -71,7 +82,7 @@ export default function BankSyncView({
       const mem = JSON.parse(localStorage.getItem('spendwise_merchant_memory') || '{}');
       setMerchantMemoryCount(Object.keys(mem).length);
     } catch { /* ignore */ }
-  }, []);
+  }, [razorpayKeys, setRazorpayKeys]);
 
   const handleUPILinkSuccess = (provider: typeof UPI_PROVIDERS[0], id: string) => {
     const newAccount: UPIAccount = {
@@ -91,8 +102,7 @@ export default function BankSyncView({
     e.preventDefault();
     if (!rzpKeyId.trim() || !rzpSecret.trim()) return;
     if (saveLocal) {
-      localStorage.setItem('spendwise_rzp_key', rzpKeyId.trim());
-      localStorage.setItem('spendwise_rzp_secret', rzpSecret.trim());
+      setRazorpayKeys({ keyId: rzpKeyId.trim(), keySecret: rzpSecret.trim() });
     }
     setAccounts((p: UPIAccount[]) => {
       const filtered = p.filter(a => a.provider !== 'razorpay' as any);
@@ -110,7 +120,7 @@ export default function BankSyncView({
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
-    const keyId = localStorage.getItem('spendwise_rzp_key');
+    const keyId = razorpayKeys?.keyId;
     if (!keyId) { setView('rzp-link'); return; }
 
     const rupees = parseFloat(payAmount);
