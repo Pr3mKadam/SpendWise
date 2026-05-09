@@ -7,6 +7,7 @@ import { TrendingUp, Wallet, PiggyBank, ArrowUpRight, Receipt } from 'lucide-rea
 import { MonthlyHistoryPoint, MonthlyStats, CategorySpend } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
 import { TaxPredictor } from '../features/analytics/TaxPredictor';
+import { AnomalyDetector } from '../features/analytics/AnomalyDetector';
 import { calculateHealthScore } from '../../utils/insights/healthScore';
 import { ShieldCheck, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -308,6 +309,11 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
           <span className="ml-auto text-[10px] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full shrink-0">BETA</span>
         </div>
         <TaxPredictor income={monthlyStats.totalIncome} categorySpending={categorySpending} currency={currency} />
+      </div>
+
+      {/* Anomaly Detection */}
+      <div className="card px-4 sm:px-6 py-5 mt-6">
+        <AnomalyDetector transactions={transactions || []} currency={currency} />
       </div>
     </div>
   );

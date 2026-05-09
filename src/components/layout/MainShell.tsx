@@ -591,6 +591,8 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
         cloudMode={Boolean(userId)}
       />
 
+      <Soundscape />
+
       <CustomCategoriesModal
         isOpen={showCategoriesModal}
         onClose={() => setShowCategoriesModal(false)}
