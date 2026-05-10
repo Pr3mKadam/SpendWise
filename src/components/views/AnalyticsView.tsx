@@ -8,6 +8,7 @@ import { MonthlyHistoryPoint, MonthlyStats, CategorySpend } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
 import { TaxPredictor } from '../features/analytics/TaxPredictor';
 import { AnomalyDetector } from '../features/analytics/AnomalyDetector';
+import { SpendingForecast } from '../features/analytics/SpendingForecast';
 import { calculateHealthScore } from '../../utils/insights/healthScore';
 import { ShieldCheck, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -314,6 +315,11 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
       {/* Anomaly Detection */}
       <div className="card px-4 sm:px-6 py-5 mt-6">
         <AnomalyDetector transactions={transactions || []} currency={currency} />
+      </div>
+
+      {/* Spending Forecast */}
+      <div className="card px-4 sm:px-6 py-5">
+        <SpendingForecast transactions={transactions || []} currency={currency} />
       </div>
     </div>
   );
