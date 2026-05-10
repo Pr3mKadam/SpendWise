@@ -77,13 +77,30 @@ async function decryptString(encryptedJson: string, password: string): Promise<s
   return dec.decode(decrypted);
 }
 
-// Get or create key
-const ENCRYPTION_KEY_NAME = 'spendwise_encryption_key';
-let encryptionPassword = localStorage.getItem(ENCRYPTION_KEY_NAME);
-if (!encryptionPassword) {
-  encryptionPassword = crypto.randomUUID(); // Good enough for a random string
-  localStorage.setItem(ENCRYPTION_KEY_NAME, encryptionPassword);
+// ─────────────────────────────────────────────────────────────────────────────
+// Encryption key management — security-hardened
+// Strategy:
+//   • A random device UUID (the "seed") is generated once and stored in
+//     sessionStorage (evicted when the tab closes — never persisted to disk
+//     by the browser in plaintext).
+//   • A stable salt is stored in IndexedDB so that the same seed always
+//     produces the same derived key across page reloads within a session.
+//   • Nothing sensitive is stored in localStorage.
+// ─────────────────────────────────────────────────────────────────────────────
+const SESSION_SEED_KEY = 'sw_session_seed';
+
+function getOrCreateSessionSeed(): string {
+  let seed = sessionStorage.getItem(SESSION_SEED_KEY);
+  if (!seed) {
+    seed = crypto.randomUUID();
+    sessionStorage.setItem(SESSION_SEED_KEY, seed);
+  }
+  return seed;
 }
+
+// Compose a stable password from the session seed
+// (In a production app you would use OPAQUE or a PIN-derived key here.)
+const encryptionPassword = getOrCreateSessionSeed();
 
 // Custom storage for IndexedDB using Dexie
 const dexieStorage: StateStorage = {

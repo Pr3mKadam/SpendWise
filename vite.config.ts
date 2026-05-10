@@ -69,5 +69,15 @@ export default defineConfig({
     // Exclude large binary dependencies from pre-bundling if necessary
     // or optimize chunks
   },
+  test: {
+    environment: 'happy-dom',
+    globals: true,
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary'],
+      include: ['src/utils/insights/**'],
+    },
+  },
 });
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import {
-  Brain, CheckCircle2
+  Brain, CheckCircle2, Sparkles
 } from 'lucide-react';
 import { Transaction, UPIAccount, UPIProvider, Category } from '../../types';
 import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/parsers/upi';
