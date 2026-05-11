@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { RefreshCw, Calendar, TrendingUp, Clock, Zap, LayoutGrid } from 'lucide-react';
-import { RecurringPattern } from '../../types';
+import { RecurringPattern, Transaction } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
 import { SubscriptionCalendar } from '../features/subscriptions/SubscriptionCalendar';
+import { PriceHikeDetector } from '../features/subscriptions/PriceHikeDetector';
 
 interface RecurringViewProps {
   patterns: RecurringPattern[];
   currency?: string;
+  transactions?: Transaction[];
 }
 
 // ─── Frequency badge ──────────────────────────────────────────────────────────
@@ -156,7 +158,7 @@ function SummaryBar({ patterns, currency }: { patterns: RecurringPattern[]; curr
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function RecurringView({ patterns, currency = '$' }: RecurringViewProps) {
+export default function RecurringView({ patterns, currency = '$', transactions = [] }: RecurringViewProps) {
   const [view, setView] = useState<'list' | 'calendar'>('list');
 
   // Build calendar-friendly subscription list from recurring patterns
@@ -213,6 +215,14 @@ export default function RecurringView({ patterns, currency = '$' }: RecurringVie
       {view === 'list' ? (
         <>
           {patterns.length > 0 && <SummaryBar patterns={patterns} currency={currency} />}
+
+          {/* Price Hike Detection */}
+          {transactions.length > 0 && (
+            <div className="card p-4 sm:p-5 mb-5">
+              <PriceHikeDetector transactions={transactions} currency={currency} />
+            </div>
+          )}
+
           {patterns.length === 0 ? (
             <div className="card p-8"><EmptyState /></div>
           ) : (

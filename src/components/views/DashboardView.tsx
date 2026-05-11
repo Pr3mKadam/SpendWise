@@ -21,6 +21,10 @@ import PremiumCard from '../features/dashboard/PremiumCard';
 import GoalsSummary from '../features/dashboard/GoalsSummary';
 import DailyStats from '../features/dashboard/DailyStats';
 import { BadgeGallery } from '../features/gamification/BadgeGallery';
+import { SafeToSpend } from '../features/dashboard/SafeToSpend';
+import { RoundUpVault } from '../features/gamification/RoundUpVault';
+import { SocialLeaderboard } from '../features/gamification/SocialLeaderboard';
+import { PredictiveForecasting } from '../features/analytics/PredictiveForecasting';
 import { StreakShareCard } from '../features/gamification/StreakShareCard';
 import { WeeklyDigestCard } from '../features/dashboard/WeeklyDigestCard';
 
@@ -281,6 +285,15 @@ export function DashboardView({
             {/* Finance Chart */}
             <FinanceChart chartData={chartData} currency={currency} />
 
+            {/* Safe to Spend + Round-Up Vault */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <SafeToSpend transactions={transactions} currency={currency} currentBalance={currentBalance} />
+              <RoundUpVault transactions={transactions} currency={currency} />
+            </div>
+
+            {/* Predictive Month-End Forecast */}
+            <PredictiveForecasting transactions={transactions} currency={currency} currentBalance={currentBalance} />
+
             {/* Quick Add Panel */}
             <div className="w-full">
               <QuickAddPanel
@@ -308,6 +321,9 @@ export function DashboardView({
 
             {/* AI-Driven Gamification Quests */}
             <QuestsPanel transactions={transactions} />
+
+            {/* Social Leaderboard */}
+            <SocialLeaderboard />
 
             <SavingsChallenges onNavigate={onNavigate} />
 

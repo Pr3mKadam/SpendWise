@@ -274,7 +274,12 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
           ) : (
             <div className="space-y-3">
               {categorySpending.map((cat) => (
-                <div key={cat.name} className="flex items-center gap-3 py-2 rounded-xl px-2 -mx-2 hover:bg-gray-50 transition-colors cursor-pointer">
+                <div
+                  key={cat.name}
+                  className="flex items-center gap-3 py-2 rounded-xl px-2 -mx-2 hover:bg-[var(--teal-dim)] transition-colors cursor-pointer group"
+                  onClick={() => onNavigate?.('history', cat.name)}
+                  title={`View all ${cat.name} transactions`}
+                >
                   <div className="flex items-center justify-center w-9 h-9 rounded-xl shrink-0" style={{ background: `${mergedColors[cat.name] || '#14b8a6'}15` }}>
                     <span className="text-base">{mergedIcons[cat.name] || '📦'}</span>
                   </div>
@@ -292,6 +297,9 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
                       <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', minWidth: '30px', textAlign: 'right' }}>{cat.percent}%</span>
                     </div>
                   </div>
+                  <svg className="w-4 h-4 text-[var(--text-dim)] group-hover:text-[var(--teal)] transition-colors shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
                 </div>
               ))}
 
@@ -304,6 +312,7 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
               </div>
             </div>
           )}
+
         </div>
       </div>
 

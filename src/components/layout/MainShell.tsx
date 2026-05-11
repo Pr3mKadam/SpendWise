@@ -359,8 +359,11 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                     totalSpent={totalSpent}
                     currency={currency}
                     transactions={transactions}
+                    onNavigate={(view, category) => {
+                      setActiveView(view as any);
+                    }}
                   />
-                  <RecurringView patterns={recurringData} currency={currency} />
+                  <RecurringView patterns={recurringData} currency={currency} transactions={transactions} />
                 </Suspense>
               </motion.div>
             )}
