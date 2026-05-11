@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useStore } from '../store';
-import { useFinanceState } from './useFinanceState';
+import { useTransactions } from './useTransactions';
 import { Category } from '../types';
 
 export function useBudgets() {
@@ -9,7 +9,7 @@ export function useBudgets() {
   const setBudget = useStore(state => state.setBudget);
   const removeBudget = useStore(state => state.removeBudget);
   const updateBudgetSettings = useStore(state => state.updateBudgetSettings);
-  const { transactions, monthlyStats } = useFinanceState();
+  const { transactions, monthlyStats } = useTransactions();
 
   const budgetStats = useMemo(() => {
     // Determine the start date of the current period

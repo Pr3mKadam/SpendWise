@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
-import { useFinanceState } from '../../hooks/useFinanceState';
+import { useTransactions } from '../../hooks/useTransactions';
 import { getFinancialAdvice } from '../../utils/insights/advisor';
 import { getSpendingPersonality } from '../../utils/insights/reporting';
 import { useCurrency } from '../../contexts/CurrencyContext';
@@ -49,7 +49,7 @@ const INITIAL_MESSAGE: Message = {
 };
 
 export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
-  const { transactions, monthlyStats } = useFinanceState();
+  const { transactions, monthlyStats } = useTransactions();
   const { format } = useCurrency();
   const [input, setInput] = useState('');
 

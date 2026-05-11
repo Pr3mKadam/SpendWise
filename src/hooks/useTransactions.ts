@@ -6,7 +6,7 @@ import { useStore } from '../store';
 import { FINANCE_DEFAULTS } from '../constants';
 const DEFAULT_BALANCE = FINANCE_DEFAULTS.INITIAL_BALANCE;
 
-export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
+export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
   const { mergedColors } = useCategories();
   
   const transactions = useStore(state => state.transactions);
@@ -173,45 +173,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     };
   }, [transactions, dailySpendRate]);
 
-  const subscriptions = useMemo(() => {
-    // Basic detection: group by description and amount
-    const groups = new Map<string, Transaction[]>();
-    transactions.forEach(tx => {
-      if (tx.type === 'debit') {
-        const key = `${(tx.description ?? '').toLowerCase().trim()}_${tx.amount}`;
-        const existing = groups.get(key) || [];
-        groups.set(key, [...existing, tx]);
-      }
-    });
 
-    const detected: { description: string; amount: number; frequency: string; lastDate: string }[] = [];
-    groups.forEach((txs, key) => {
-      if (txs.length >= 2) {
-        // Sort by date
-        const sorted = [...txs].sort((a, b) => a.date.localeCompare(b.date));
-        // Check for roughly monthly intervals (25-35 days)
-        let isMonthly = true;
-        for (let i = 1; i < sorted.length; i++) {
-          const d1 = new Date(sorted[i-1].date);
-          const d2 = new Date(sorted[i].date);
-          const diffDays = (d2.getTime() - d1.getTime()) / (1000 * 3600 * 24);
-          if (diffDays < 25 || diffDays > 35) {
-            isMonthly = false;
-            break;
-          }
-        }
-        if (isMonthly) {
-          detected.push({
-            description: sorted[0].description ?? '',
-            amount: sorted[0].amount,
-            frequency: 'Monthly',
-            lastDate: sorted[sorted.length - 1].date
-          });
-        }
-      }
-    });
-    return detected;
-  }, [transactions]);
 
   return {
     transactions,
@@ -232,7 +194,7 @@ export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
     monthlyStats,
     monthlyHistory,
     projectionMeta,
-    subscriptions,
+
     topCategory: categorySpending[0] || null,
   };
 }

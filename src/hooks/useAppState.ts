@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { useFinanceState } from './useFinanceState';
+import { useTransactions } from './useTransactions';
 import { useBudgets } from './useBudgets';
 import { useAlerts } from './useAlerts';
 import { useRecurring } from './useRecurring';
@@ -12,7 +12,7 @@ import { FINANCE_DEFAULTS } from '../constants';
 export function useAppState(config: SpendWiseConfig | null) {
   const currency = config?.currency ?? '$';
 
-  const financeState = useFinanceState(config?.initialBalance ?? FINANCE_DEFAULTS.INITIAL_BALANCE);
+  const financeState = useTransactions(config?.initialBalance ?? FINANCE_DEFAULTS.INITIAL_BALANCE);
   
   // Exclude pending-approval transactions from balance & budget calculations
   const transactions = useMemo(() => 

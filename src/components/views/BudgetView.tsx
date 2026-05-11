@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import { Target, TrendingUp, AlertCircle, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
 import { useBudgets } from '../../hooks/useBudgets';
 import { useCategories } from '../../hooks/useCategories';
-import { useFinanceState } from '../../hooks/useFinanceState';
+import { useTransactions } from '../../hooks/useTransactions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Category } from '../../types';
 import { SmartBudgetSuggestions } from '../features/budget/SmartBudgetSuggestions';
 
 export default function BudgetView({ currency = '₹' }: { currency?: string }) {
   const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent, budgets } = useBudgets();
-  const { transactions } = useFinanceState();
+  const { transactions } = useTransactions();
   const { allCategories: categories } = useCategories();
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');

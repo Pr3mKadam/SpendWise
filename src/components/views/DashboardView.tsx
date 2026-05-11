@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { AppView } from '../../types';
-import { useFinanceState } from '../../hooks/useFinanceState';
+import { useTransactions } from '../../hooks/useTransactions';
 import { useGamification } from '../../hooks/useGamification';
 import { useGoals } from '../../hooks/useGoals';
 import { usePortfolio } from '../../hooks/usePortfolio';
@@ -41,7 +41,7 @@ export function DashboardView({
   hideBalances = false,
   onTogglePrivacy,
 }: {
-  financeState: ReturnType<typeof useFinanceState>;
+  financeState: ReturnType<typeof useTransactions>;
   onAdd: Parameters<typeof MagicInput>[0]['onAdd'];
   onOpenAdd: () => void;
   currency: string;

@@ -19,7 +19,7 @@ import { HealthScoreChart } from '../features/analytics/HealthScoreChart';
 import SpendingDonut from '../features/analytics/SpendingDonut';
 import BalanceChart from '../features/analytics/BalanceChart';
 import SpendingHeatmap from '../features/analytics/SpendingHeatmap';
-import { useFinanceState } from '../../hooks/useFinanceState';
+import { useTransactions } from '../../hooks/useTransactions';
 
 interface AnalyticsViewProps {
   monthlyHistory:   MonthlyHistoryPoint[];
@@ -84,7 +84,7 @@ function StatCard({ label, value, sub, color, icon: Icon }: { label: string; val
 
 export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySpending, totalSpent, currency = '$', transactions = [], onNavigate }: AnalyticsViewProps) {
   const { mergedColors, mergedIcons } = useCategories();
-  const financeState = useFinanceState();
+  const financeState = useTransactions();
   const balanceData = financeState.balanceTrend ?? [];
   
   const currentBalance = useMemo(() => {
