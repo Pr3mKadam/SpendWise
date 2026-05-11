@@ -3,6 +3,7 @@ import { SharedGoal, SharedGroupMember } from '../../../hooks/useSharedWallets';
 import { Ico } from '../../common/ui/Icons';
 import { Avatar } from '../../common/ui/Avatar';
 import { StatusPill } from '../../common/ui/StatusPill';
+import { Activity } from 'lucide-react';
 
 const fmt = (v: number, currency: string) => `${currency}${v.toLocaleString()}`;
 
@@ -194,6 +195,104 @@ export function MembersTab({ members, uid, isOwner, onRemove, onInvite }: { memb
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+export function ActivityTab({ entries, expenses, goals, members, currency }: { entries: any[]; expenses: any[]; goals: any[]; members: SharedGroupMember[]; currency: string }) {
+  const map = Object.fromEntries(members.map(m => [m.id, m]));
+  
+  const timeline = React.useMemo(() => {
+    const items: any[] = [];
+    entries.forEach(e => {
+      items.push({
+        id: e.id,
+        date: new Date(e.date).getTime(),
+        dateStr: e.date,
+        type: 'wallet',
+        icon: <Ico.Wallet size={16} />,
+        title: e.kind === 'contribution' ? 'Added to Pot' : 'Used from Pot',
+        desc: `${map[e.member_id]?.display_name || 'Someone'} ${e.kind === 'contribution' ? 'added to' : 'withdrew from'} the shared pot for ${e.label}.`,
+        amount: e.amount,
+        color: e.kind === 'contribution' ? 'text-emerald-500' : 'text-red-500',
+        bg: e.kind === 'contribution' ? 'bg-emerald-500/10' : 'bg-red-500/10',
+        border: e.kind === 'contribution' ? 'border-emerald-500/20' : 'border-red-500/20'
+      });
+    });
+    expenses.forEach(e => {
+      items.push({
+        id: e.id,
+        date: new Date(e.date).getTime(),
+        dateStr: e.date,
+        type: 'expense',
+        icon: <Ico.Split size={16} />,
+        title: 'New Expense',
+        desc: `${map[e.paid_by_member_id]?.display_name || 'Someone'} paid for ${e.label}.`,
+        amount: e.amount,
+        color: 'text-[var(--text)]',
+        bg: 'bg-indigo-500/10',
+        border: 'border-indigo-500/20'
+      });
+    });
+    goals.forEach(g => {
+      (g.contributions || []).forEach((c: any) => {
+        items.push({
+          id: c.id,
+          date: new Date(c.date).getTime(),
+          dateStr: c.date,
+          type: 'goal',
+          icon: <Ico.Target size={16} />,
+          title: 'Goal Contribution',
+          desc: `${map[c.member_id]?.display_name || 'Someone'} contributed towards ${g.name} ${g.emoji}.`,
+          amount: c.amount,
+          color: 'text-amber-500',
+          bg: 'bg-amber-500/10',
+          border: 'border-amber-500/20'
+        });
+      });
+    });
+    
+    return items.sort((a, b) => b.date - a.date);
+  }, [entries, expenses, goals, map]);
+
+  if (timeline.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 px-6 text-center bg-[var(--bg)] rounded-3xl border border-[var(--card-border)] mt-4">
+        <div className="w-16 h-16 rounded-full bg-[var(--card-border)] flex items-center justify-center mb-4 text-[var(--text-secondary)] opacity-50">
+          <Activity size={32} />
+        </div>
+        <p className="m-0 text-[1rem] font-bold text-[var(--text)]">No Activity Yet</p>
+        <p className="m-0 text-[0.85rem] text-[var(--text-secondary)] mt-2 leading-relaxed">Activity will appear here when members add expenses, contribute to goals, or use the shared pot.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6 relative mt-2 pb-6">
+      <div className="absolute left-[24px] top-6 bottom-0 w-[2px] bg-gradient-to-b from-[var(--card-border)] via-[var(--card-border)] to-transparent rounded-full" />
+      
+      {timeline.map((t, i) => (
+        <div key={t.id + i} className="flex items-start gap-4 relative z-10 group">
+          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-sm border backdrop-blur-sm transition-transform group-hover:scale-105 ${t.bg} ${t.color} ${t.border}`}>
+            {t.icon}
+          </div>
+          
+          <div className="flex-1 min-w-0 bg-[var(--bg)] border border-[var(--card-border)] rounded-2xl p-4 shadow-sm transition-colors group-hover:border-[var(--card-border-hover)]">
+            <div className="flex justify-between items-start gap-2 mb-1.5">
+              <p className="m-0 font-bold text-[0.95rem] text-[var(--text)]">{t.title}</p>
+              <p className={`m-0 font-extrabold text-[0.95rem] shrink-0 ${t.color}`}>
+                {fmt(t.amount, currency)}
+              </p>
+            </div>
+            <p className="m-0 text-[0.85rem] text-[var(--text-secondary)] leading-snug">{t.desc}</p>
+            <div className="flex items-center gap-2 mt-3">
+              <span className="text-[0.65rem] font-bold uppercase tracking-widest text-[var(--text-secondary)]/70 bg-[var(--card-border)] px-2 py-0.5 rounded-md">
+                {t.dateStr}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

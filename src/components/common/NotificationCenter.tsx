@@ -1,16 +1,17 @@
-import { useEffect, useRef } from 'react';
-import { X, Bell, CheckCheck, ExternalLink, Sparkles } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { X, Bell, CheckCheck, ExternalLink, Sparkles, AlarmClock } from 'lucide-react';
 import { AppNotification, AlertSeverity, AppView } from '../../types';
 
 interface NotificationCenterProps {
-  notifications: AppNotification[];
-  unreadCount:   number;
-  isOpen:        boolean;
-  onClose:       () => void;
-  onMarkRead:    (id: string) => void;
-  onMarkAllRead: () => void;
-  onNavigate:    (view: AppView) => void;
-  cloudMode?:    boolean;
+  notifications:      AppNotification[];
+  unreadCount:        number;
+  isOpen:             boolean;
+  onClose:            () => void;
+  onMarkRead:         (id: string) => void;
+  onMarkAllRead:      () => void;
+  onNavigate:         (view: AppView) => void;
+  onSnooze?:          (id: string, hours: number) => void;
+  cloudMode?:         boolean;
 }
 
 function severityBorderColor(s: AlertSeverity): string {
@@ -30,19 +31,30 @@ function relativeTime(ts: number): string {
   return `${days}d ago`;
 }
 
-function NotifRow({ notif, onMarkRead, onNavigate, onClose }: {
+function NotifRow({ notif, onMarkRead, onNavigate, onClose, onSnooze }: {
   notif: AppNotification; onMarkRead: (id: string) => void;
   onNavigate: (v: AppView) => void; onClose: () => void;
+  onSnooze?: (id: string, hours: number) => void;
 }) {
-  const handleClick = () => {
+  const [showSnooze, setShowSnooze] = useState(false);
+
+  const handleClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking snooze button
+    if ((e.target as HTMLElement).closest('.snooze-btn')) return;
     onMarkRead(notif.id);
     if (notif.link) { onNavigate(notif.link); onClose(); }
   };
 
+  const SNOOZE_OPTIONS = [
+    { label: '1 hour',    hours: 1 },
+    { label: '8 hours',   hours: 8 },
+    { label: 'Tomorrow',  hours: 24 },
+  ];
+
   return (
     <div
       onClick={handleClick}
-      className="group flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-gray-50"
+      className="group relative flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-gray-50"
       style={{
         borderLeft: `3px solid ${severityBorderColor(notif.severity)}`,
         opacity: notif.read ? 0.6 : 1,
@@ -55,9 +67,41 @@ function NotifRow({ notif, onMarkRead, onNavigate, onClose }: {
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: notif.read ? 400 : 600, color: 'var(--text-primary)', lineHeight: 1.4 }}>
             {notif.title}
           </p>
-          <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap', flexShrink: 0 }}>
-            {relativeTime(notif.timestamp)}
-          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+              {relativeTime(notif.timestamp)}
+            </span>
+            {/* Snooze dropdown */}
+            {onSnooze && !notif.read && (
+              <div className="snooze-btn relative">
+                <button
+                  onClick={e => { e.stopPropagation(); setShowSnooze(v => !v); }}
+                  className="w-6 h-6 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-200 border-none cursor-pointer"
+                  style={{ background: 'transparent', color: 'var(--text-muted)' }}
+                  title="Snooze"
+                >
+                  <AlarmClock size={12} />
+                </button>
+                {showSnooze && (
+                  <div
+                    className="absolute right-0 top-7 z-20 rounded-xl shadow-lg overflow-hidden"
+                    style={{ background: 'var(--surface-card)', border: '1px solid var(--border)', minWidth: 110 }}
+                  >
+                    {SNOOZE_OPTIONS.map(opt => (
+                      <button
+                        key={opt.hours}
+                        onClick={e => { e.stopPropagation(); onSnooze(notif.id, opt.hours); setShowSnooze(false); }}
+                        className="w-full px-3 py-2 text-left text-xs font-medium hover:bg-gray-50 border-none cursor-pointer block"
+                        style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', background: 'transparent' }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
         <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-secondary)', marginTop: '2px', lineHeight: 1.5 }}>{notif.message}</p>
         {notif.link && (
@@ -73,7 +117,7 @@ function NotifRow({ notif, onMarkRead, onNavigate, onClose }: {
   );
 }
 
-export default function NotificationCenter({ notifications, unreadCount, isOpen, onClose, onMarkRead, onMarkAllRead, onNavigate }: NotificationCenterProps) {
+export default function NotificationCenter({ notifications, unreadCount, isOpen, onClose, onMarkRead, onMarkAllRead, onNavigate, onSnooze }: NotificationCenterProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -175,7 +219,7 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
                       New · {grouped.unread.length}
                     </p>
                   </div>
-                  {grouped.unread.map(n => <NotifRow key={n.id} notif={n} onMarkRead={onMarkRead} onNavigate={onNavigate} onClose={onClose} />)}
+                  {grouped.unread.map(n => <NotifRow key={n.id} notif={n} onMarkRead={onMarkRead} onNavigate={onNavigate} onClose={onClose} onSnooze={onSnooze} />)}
                 </>
               )}
               {grouped.read.length > 0 && (

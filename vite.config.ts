@@ -1,8 +1,9 @@
+/// <reference types="vitest" />
 import path from "path";
 import { fileURLToPath } from "url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import { VitePWA } from "vite-plugin-pwa";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -56,13 +57,11 @@ export default defineConfig({
         chunkFileNames: "assets/[name].[hash].js",
         entryFileNames: "assets/[name].[hash].js",
         manualChunks: {
-          'vendor-react': ['react', 'react-dom'],
           'vendor-motion': ['framer-motion'],
           'vendor-charts': ['recharts'],
           'vendor-lucide': ['lucide-react'],
           'vendor-ocr': ['tesseract.js'],
           'vendor-db': ['dexie', 'dexie-react-hooks', 'dexie-export-import'],
-          'vendor-utils': ['react-virtuoso', 'clsx', 'tailwind-merge'],
         }
       },
     },

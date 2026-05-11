@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { FileText, Sparkles, Download, Share2, Calendar, Loader2 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { FileText, Sparkles, Download, Share2, Calendar, Loader2, Printer } from 'lucide-react';
 import { generateMonthlyReport } from '../../utils/insights/reporting';
 
 import ReactMarkdown from 'react-markdown';
@@ -15,7 +15,7 @@ interface ReportsViewProps {
 export default function ReportsView({ transactions, currency, monthlyStats }: ReportsViewProps) {
   const [report, setReport] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  
+  const printRef = useRef<HTMLDivElement>(null);
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   const handleGenerate = async () => {
@@ -30,7 +30,7 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadMD = () => {
     if (!report) return;
     const blob = new Blob([report], { type: 'text/markdown' });
     const url = URL.createObjectURL(blob);
@@ -41,6 +41,56 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handlePrintPDF = () => {
+    if (!report || !printRef.current) return;
+    const printWindow = window.open('', '_blank', 'width=900,height=700');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>SpendWise Report — ${currentMonth}</title>
+        <style>
+          body { font-family: 'Georgia', serif; padding: 40px; max-width: 800px; margin: 0 auto; color: #1a1a2e; line-height: 1.7; }
+          h1, h2, h3 { color: #0f766e; }
+          h1 { font-size: 2rem; border-bottom: 3px solid #0f766e; padding-bottom: 8px; }
+          h2 { font-size: 1.4rem; margin-top: 32px; }
+          h3 { font-size: 1.1rem; }
+          p { margin: 12px 0; }
+          ul, ol { padding-left: 24px; }
+          li { margin: 6px 0; }
+          strong { color: #0f766e; }
+          .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; padding-bottom: 16px; border-bottom: 1px solid #e5e7eb; }
+          .badge { background: #0f766e; color: white; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: bold; }
+          @media print { body { padding: 20px; } }
+        </style>
+      </head>
+      <body>
+        <div class="header">
+          <div>
+            <h1 style="border:none;margin:0;">💰 SpendWise</h1>
+            <p style="margin:4px 0;color:#6b7280;font-size:14px;">Financial Intelligence Report</p>
+          </div>
+          <span class="badge">${currentMonth}</span>
+        </div>
+        ${printRef.current.innerHTML}
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+    setTimeout(() => { printWindow.print(); }, 500);
+  };
+
+  const handleShare = async () => {
+    if (!report) return;
+    if (navigator.share) {
+      await navigator.share({ title: `SpendWise Report — ${currentMonth}`, text: report });
+    } else {
+      await navigator.clipboard.writeText(report);
+      alert('Report copied to clipboard!');
+    }
   };
 
   return (
@@ -106,7 +156,7 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
             </div>
             <div className="flex gap-2">
               <button 
-                onClick={handleDownload}
+                onClick={handleDownloadMD}
                 className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)] transition-colors"
                 title="Download as Markdown"
                 aria-label="Download report as Markdown"
@@ -114,6 +164,15 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
                 <Download size={18} />
               </button>
               <button 
+                onClick={handlePrintPDF}
+                className="flex items-center gap-1.5 px-3 py-2 bg-[var(--teal-dim)] text-[var(--teal)] rounded-xl border-none cursor-pointer hover:opacity-80 transition-colors text-xs font-bold"
+                title="Export as PDF"
+                aria-label="Export report as PDF"
+              >
+                <Printer size={15} /> PDF
+              </button>
+              <button 
+                onClick={handleShare}
                 className="p-2.5 bg-[var(--surface-input)] text-[var(--text-primary)] rounded-xl border-none cursor-pointer hover:bg-[var(--border)] transition-colors"
                 title="Share Report"
                 aria-label="Share report"
@@ -123,7 +182,7 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
             </div>
           </div>
           
-          <div className="p-8 prose prose-slate max-w-none prose-p:text-[var(--text-primary)] prose-headings:text-[var(--text-primary)] prose-strong:text-[var(--teal)] prose-li:text-[var(--text-primary)]">
+          <div ref={printRef} className="p-8 prose prose-slate max-w-none prose-p:text-[var(--text-primary)] prose-headings:text-[var(--text-primary)] prose-strong:text-[var(--teal)] prose-li:text-[var(--text-primary)]">
             <ReactMarkdown>{report}</ReactMarkdown>
           </div>
         </motion.div>

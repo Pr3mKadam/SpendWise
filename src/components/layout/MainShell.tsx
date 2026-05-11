@@ -16,6 +16,8 @@ import { DashboardView } from '../views/DashboardView';
 import OnboardingModal, { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 import { SkeletonLoader } from '../common/SkeletonLoader';
 import PrivacyShield from '../common/PrivacyShield';
+import { OfflineIndicator } from '../common/OfflineIndicator';
+import { BudgetAlertToast } from '../features/budget/BudgetAlertToast';
 
 
 // Lazy loaded views
@@ -48,7 +50,7 @@ import { useAutomations } from '../../hooks/useAutomations';
 
 interface MainShellProps {
   config:     SpendWiseConfig | null;
-  setConfig:  Dispatch<SetStateAction<SpendWiseConfig | null>>;
+  setConfig:  (config: SpendWiseConfig) => void;
   userId:     string | null;
 }
 
@@ -69,6 +71,15 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
     }
     localStorage.setItem('spendwise_theme', theme);
   }, [theme]);
+
+  useEffect(() => {
+    const isHighContrast = localStorage.getItem('spendwise_high_contrast') === 'true';
+    if (isHighContrast) {
+      document.documentElement.classList.add('high-contrast');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
+    }
+  }, []);
 
   const toggleTheme = useCallback(() => {
     setTheme(t => (t === 'light' ? 'dark' : 'light'));
@@ -257,6 +268,8 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
           onToggleTheme={toggleTheme}
           config={config}
           onOpenSearch={() => setShowCommandPalette(true)}
+          isPrivacyEnabled={store.privacyEnabled}
+          onTogglePrivacy={store.togglePrivacy}
         />
 
         <main 
@@ -323,6 +336,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                     onToggleRollover={toggleRollover}
                     onManageCategories={() => setShowCategoriesModal(true)}
                     currency={currency}
+                    transactions={transactions}
                   />
                 </Suspense>
               </motion.div>
@@ -379,6 +393,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                     onDelete={goalsState.deleteGoal}
                     onContribute={goalsState.addContribution}
                     currency={currency}
+                    transactions={transactions}
                   />
                 </Suspense>
               </motion.div>
@@ -529,7 +544,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
                 className="w-full h-full"
               >
                 <Suspense fallback={<SkeletonLoader />}>
-                  <AdvisorView />
+                  <AdvisorView onNavigate={handleViewChange} />
                 </Suspense>
               </motion.div>
             )}
@@ -584,6 +599,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
         onClose={() => setShowNotifications(false)}
         onMarkRead={notifState.markRead}
         onMarkAllRead={notifState.markAllRead}
+        onSnooze={notifState.snoozeNotification}
         onNavigate={(view) => {
           handleViewChange(view);
           setShowNotifications(false);
@@ -615,6 +631,8 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
         transactions={transactions}
         currency={currency}
       />
+      <OfflineIndicator />
+      <BudgetAlertToast currency={currency} />
     </div>
   );
 }

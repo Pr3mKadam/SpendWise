@@ -5,7 +5,7 @@ import {
   XCircle, Link2, Copy, Unlink, BarChart2,
   AlertCircle, ChevronRight, Info, Plus,
   LayoutDashboard, ListFilter, IndianRupee, PieChart,
-  ShieldOff
+  ShieldOff, Camera, CheckSquare, Image as ImageIcon
 } from 'lucide-react';
 import { useStore } from '../../store';
 import { PinInput } from '../common/ui/PinInput';
@@ -312,6 +312,62 @@ export default function ParentalView() {
             </div>
           </div>
 
+          {/* Chores & Tasks */}
+          <div className="card overflow-hidden">
+            <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-input)]/50 flex items-center justify-between">
+              <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
+                <CheckSquare size={18} className="text-blue-500" />
+                Chore Verification
+              </h3>
+              <button className="flex items-center gap-1 text-[10px] font-bold text-[var(--teal)] uppercase tracking-wider hover:opacity-80">
+                <Plus size={12} /> Add Chore
+              </button>
+            </div>
+            
+            <div className="divide-y divide-[var(--border)]">
+              <div className="p-4 flex items-center justify-between hover:bg-[var(--surface-input)]/30 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <CheckSquare size={18} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">Clean Room</p>
+                    <p className="text-[10px] text-[var(--text-muted)] font-medium uppercase tracking-wider">
+                      Reward: ₹50 • Pending Review
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button className="w-8 h-8 rounded-lg flex items-center justify-center bg-[var(--surface-card)] border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-input)] transition-all" title="View Photo Proof">
+                    <ImageIcon size={14} />
+                  </button>
+                  <button className="w-8 h-8 rounded-lg flex items-center justify-center bg-green-500/10 text-green-500 hover:bg-green-500/20 transition-all">
+                    <CheckCircle size={16} />
+                  </button>
+                  <button className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all">
+                    <XCircle size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="p-4 flex items-center justify-between hover:bg-[var(--surface-input)]/30 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-500/10 flex items-center justify-center text-gray-500">
+                    <Camera size={18} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">Wash Car</p>
+                    <p className="text-[10px] text-[var(--text-muted)] font-medium uppercase tracking-wider">
+                      Reward: ₹150 • Waiting for photo
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-bold text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-md">Incomplete</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Device Linking (Mock UI for continuity) */}
           <div className="card p-6 border border-purple-500/20 shadow-lg shadow-purple-500/5">
             <div className="flex items-center gap-3 mb-4">
@@ -343,6 +399,28 @@ export default function ParentalView() {
 
         {/* Right Col: Settings & Controls */}
         <div className="space-y-6">
+          {/* Child Interests */}
+          <div className="card">
+            <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-input)]/50">
+              <h3 className="font-bold text-[var(--text-primary)] text-sm flex items-center gap-2">
+                <Baby size={16} className="text-pink-500" />
+                Child Profile & Interests
+              </h3>
+            </div>
+            <div className="p-4 space-y-4">
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1 bg-pink-500/10 text-pink-500 border border-pink-500/20 rounded-full text-xs font-bold">Gaming 🎮</span>
+                <span className="px-3 py-1 bg-blue-500/10 text-blue-500 border border-blue-500/20 rounded-full text-xs font-bold">Tech 💻</span>
+                <span className="px-3 py-1 bg-[var(--surface-input)] text-[var(--text-muted)] border border-[var(--border)] rounded-full text-xs font-bold border-dashed flex items-center gap-1 cursor-pointer hover:bg-[var(--border)]">
+                  <Plus size={12} /> Add Interest
+                </span>
+              </div>
+              <p className="text-[10px] text-[var(--text-muted)] leading-tight">
+                Interests are used by the AI to suggest relevant savings goals and rewards.
+              </p>
+            </div>
+          </div>
+
           <div className="card">
             <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-input)]/50">
               <h3 className="font-bold text-[var(--text-primary)] text-sm">Strictness Settings</h3>

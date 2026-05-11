@@ -14,31 +14,31 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
   const progress = (currentLevelXP / XP_PER_LEVEL) * 100;
 
   return (
-    <div className="card p-6 overflow-hidden relative group">
+    <div className="card p-4 sm:p-6 overflow-hidden relative group">
       <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
         <Trophy size={80} />
       </div>
 
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-[var(--teal)] to-[#0d9488] flex items-center justify-center text-white shadow-lg shadow-[var(--teal-dim)]/50 border border-white/20">
-            <span className="font-manrope font-black text-2xl">{level}</span>
+      <div className="flex items-center justify-between mb-3 sm:mb-5">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-[var(--teal)] to-[#0d9488] flex items-center justify-center text-white shadow-lg shadow-[var(--teal-dim)]/50 border border-white/20 shrink-0">
+            <span className="font-manrope font-black text-lg sm:text-2xl">{level}</span>
           </div>
-          <div>
-            <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">{rank}</h3>
+          <div className="min-w-0">
+            <h3 className="font-manrope font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">{rank}</h3>
             <p className="font-inter text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1.5">
               <Star size={10} className="text-amber-500 fill-amber-500" />
               Level {level} Financialist
             </p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="font-manrope font-bold text-sm text-[var(--text-primary)]">{currentLevelXP} / {XP_PER_LEVEL} XP</p>
-          <p className="font-inter text-[10px] font-bold text-[var(--teal)] uppercase tracking-wider">Next Rank at Lvl {level < 2 ? 2 : level < 5 ? 5 : level < 10 ? 10 : 20}</p>
+        <div className="text-right shrink-0">
+          <p className="font-manrope font-bold text-xs sm:text-sm text-[var(--text-primary)]">{currentLevelXP} / {XP_PER_LEVEL} XP</p>
+          <p className="font-inter text-[9px] sm:text-[10px] font-bold text-[var(--teal)] uppercase tracking-wider">Next Rank Lvl {level < 2 ? 2 : level < 5 ? 5 : level < 10 ? 10 : 20}</p>
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5 mt-4">
         <div className="h-3 w-full bg-[var(--surface-input)] rounded-full overflow-hidden border border-[var(--border)]">
           <motion.div 
             initial={{ width: 0 }}
@@ -54,7 +54,7 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-4">
+      <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-4">
         <div className="p-3 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
             <Zap size={14} className="text-amber-500" />

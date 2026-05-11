@@ -19,7 +19,7 @@ export default function WealthCity() {
   ];
 
   return (
-    <div className="card h-[280px] relative overflow-hidden bg-gradient-to-b from-[#f8fafc] to-[#e2e8f0] border-none shadow-inner">
+    <div className="card h-[200px] sm:h-[260px] relative overflow-hidden bg-gradient-to-b from-[#f8fafc] to-[#e2e8f0] border-none shadow-inner">
       {/* Dynamic Sky */}
       <div className={`absolute inset-0 transition-all duration-1000 ${stage >= 4 ? 'bg-indigo-900/10' : stage >= 3 ? 'bg-blue-400/10' : 'bg-transparent'}`} />
 
@@ -28,7 +28,7 @@ export default function WealthCity() {
 
       {/* City Title */}
       <div className="absolute top-6 left-6 z-10">
-        <h3 className="font-manrope font-black text-xl text-slate-800 tracking-tight flex items-center gap-2">
+        <h3 className="font-manrope font-black text-base sm:text-xl text-slate-800 tracking-tight flex items-center gap-2">
           Your Financial Kingdom
           {stage >= 5 && <Sparkles size={16} className="text-amber-500 animate-pulse" />}
         </h3>

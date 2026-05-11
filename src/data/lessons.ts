@@ -10,6 +10,12 @@ export interface Lesson {
   category: 'budgeting' | 'investing' | 'debt' | 'mindset' | 'advanced';
   body: string[];  // paragraphs
   keyTakeaways: string[];
+  quiz?: {
+    question: string;
+    options: string[];
+    correctIndex: number;
+    explanation: string;
+  };
 }
 
 export const LESSONS: Lesson[] = [
@@ -33,7 +39,13 @@ export const LESSONS: Lesson[] = [
       'Track needs vs wants separately in SpendWise.',
       'A single category review can reveal hidden leakage.',
       'Automate your 20% on payday before you can spend it.',
-    ]
+    ],
+    quiz: {
+      question: 'Under the 50/30/20 rule, which category should not exceed 30% of your after-tax income?',
+      options: ['Needs (Rent, Groceries)', 'Wants (Dining out, Hobbies)', 'Savings & Investments', 'Debt Repayment'],
+      correctIndex: 1,
+      explanation: '30% of your income is allocated to Wants. This gives you room to enjoy life without jeopardizing your financial security.'
+    }
   },
   {
     id: 'l2',
@@ -55,7 +67,13 @@ export const LESSONS: Lesson[] = [
       'Start investing TODAY, even if the amount is small.',
       'Increase SIP by 10% every year as your income grows.',
       'Never withdraw from investments for non-emergencies.',
-    ]
+    ],
+    quiz: {
+      question: 'What is the most critical variable in the compound interest formula?',
+      options: ['The initial principal amount', 'The interest rate', 'The frequency of compounding', 'Time (The number of years invested)'],
+      correctIndex: 3,
+      explanation: 'While all factors matter, Time (t) is the exponent in the formula. Its effect is exponential, making early starts drastically more powerful than higher interest rates later.'
+    }
   },
   {
     id: 'l3',

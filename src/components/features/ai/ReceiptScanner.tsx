@@ -12,6 +12,7 @@ interface ReceiptScannerProps {
 export default function ReceiptScanner({ isOpen, onClose, onExtracted }: ReceiptScannerProps) {
   const [image, setImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isCropping, setIsCropping] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -22,7 +23,10 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
     if (file) {
       setFile(file);
       const reader = new FileReader();
-      reader.onload = () => setImage(reader.result as string);
+      reader.onload = () => {
+        setImage(reader.result as string);
+        setIsCropping(true);
+      };
       reader.readAsDataURL(file);
       setError(null);
     }
@@ -125,15 +129,54 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                 </div>
               ) : (
                 <div className="space-y-6">
-                  <div className="relative aspect-video rounded-2xl overflow-hidden border border-[var(--border)] bg-black">
-                    <img src={image} alt="Receipt Preview" className="w-full h-full object-contain" />
-                    <button 
-                      onClick={() => setImage(null)}
-                      className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-md"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
+                  {isCropping ? (
+                    <div className="space-y-4">
+                      <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border-2 border-dashed border-teal-500/50 bg-black/20" ref={fileInputRef as any}>
+                        <img src={image} alt="Crop Preview" className="w-full h-full object-contain opacity-50" />
+                        
+                        {/* Interactive Crop Box Overlay */}
+                        <motion.div 
+                          drag
+                          dragConstraints={fileInputRef as any}
+                          dragElastic={0}
+                          dragMomentum={false}
+                          className="absolute inset-0 w-3/4 h-3/4 m-auto border-2 border-teal-400 bg-teal-500/10 backdrop-blur-[1px] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] cursor-move"
+                        >
+                          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white -translate-x-1 -translate-y-1" />
+                          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white translate-x-1 -translate-y-1" />
+                          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white -translate-x-1 translate-y-1" />
+                          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white translate-x-1 translate-y-1" />
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                            <span className="bg-black/50 text-white text-[10px] px-2 py-1 rounded-md font-bold">Drag to adjust</span>
+                          </div>
+                        </motion.div>
+                      </div>
+                      <div className="flex gap-3">
+                        <button 
+                          onClick={() => { setImage(null); setIsCropping(false); }}
+                          className="flex-1 py-3 rounded-xl bg-red-500/10 text-red-500 font-bold text-xs"
+                        >
+                          Retake
+                        </button>
+                        <button 
+                          onClick={() => setIsCropping(false)}
+                          className="flex-1 py-3 rounded-xl bg-teal-500 text-white font-bold text-xs shadow-lg shadow-teal-500/20"
+                        >
+                          Confirm Crop
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-[var(--border)] bg-black">
+                        <img src={image} alt="Receipt Preview" className="w-full h-full object-contain" />
+                        <button 
+                          onClick={() => setImage(null)}
+                          className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-md"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
 
                   {isProcessing ? (
                     <div className="space-y-4">
@@ -168,6 +211,8 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                       <Sparkles size={18} />
                       Start Analysis
                     </button>
+                  )}
+                    </div>
                   )}
                 </div>
               )}

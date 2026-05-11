@@ -31,7 +31,7 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 
 // Derive Key from Password
-async function deriveKey(password: string, salt: Uint8Array) {
+async function deriveKey(password: string, salt: Uint8Array<ArrayBuffer>) {
   const baseKey = await crypto.subtle.importKey(
     "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]
   );
@@ -45,28 +45,28 @@ async function deriveKey(password: string, salt: Uint8Array) {
 }
 
 async function encryptString(text: string, password: string): Promise<string> {
-  const salt = crypto.getRandomValues(new Uint8Array(16));
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const key = await deriveKey(password, salt);
+  const salt = crypto.getRandomValues(new Uint8Array(16)) as Uint8Array<ArrayBuffer>;
+  const iv   = crypto.getRandomValues(new Uint8Array(12)) as Uint8Array<ArrayBuffer>;
+  const key  = await deriveKey(password, salt);
 
   const ciphertext = await crypto.subtle.encrypt(
     { name: "AES-GCM", iv },
     key,
     enc.encode(text)
-  );
+  ) as ArrayBuffer;
 
   return JSON.stringify({
-    salt: arrayBufferToBase64(salt),
-    iv: arrayBufferToBase64(iv),
+    salt:       arrayBufferToBase64(salt.buffer as ArrayBuffer),
+    iv:         arrayBufferToBase64(iv.buffer as ArrayBuffer),
     ciphertext: arrayBufferToBase64(ciphertext)
   });
 }
 
 async function decryptString(encryptedJson: string, password: string): Promise<string> {
   const { salt, iv, ciphertext } = JSON.parse(encryptedJson);
-  const saltArr = new Uint8Array(base64ToArrayBuffer(salt));
-  const ivArr = new Uint8Array(base64ToArrayBuffer(iv));
-  const cipherArr = base64ToArrayBuffer(ciphertext);
+  const saltArr = new Uint8Array(base64ToArrayBuffer(salt)) as Uint8Array<ArrayBuffer>;
+  const ivArr   = new Uint8Array(base64ToArrayBuffer(iv))   as Uint8Array<ArrayBuffer>;
+  const cipherArr = base64ToArrayBuffer(ciphertext) as ArrayBuffer;
 
   const key = await deriveKey(password, saltArr);
   const decrypted = await crypto.subtle.decrypt(
@@ -147,6 +147,8 @@ export interface ParentalControlState {
 export type SpendWiseStore = FinanceSlice & PortfolioSlice & GamificationSlice & ParentalSlice & {
   resetData: () => void;
   restoreBackup: (data: any) => void;
+  privacyEnabled: boolean;
+  togglePrivacy: () => void;
 };
 
 export const useStore = create<SpendWiseStore>()(
@@ -156,6 +158,9 @@ export const useStore = create<SpendWiseStore>()(
       ...createPortfolioSlice(set, get, api),
       ...createGamificationSlice(set, get, api),
       ...createParentalSlice(set, get, api),
+
+      privacyEnabled: false,
+      togglePrivacy: () => set((state) => ({ privacyEnabled: !state.privacyEnabled })),
 
       resetData: () => {
         set({ 

@@ -1,6 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Lock, Unlock } from 'lucide-react';
+import { Lock, Unlock } from 'lucide-react';
+
+const SESSION_UNLOCKED_KEY = 'spendwise_session_unlocked';
 
 interface PrivacyShieldProps {
   onUnlock?: () => void;
@@ -8,32 +10,53 @@ interface PrivacyShieldProps {
 }
 
 export default function PrivacyShield({ onUnlock, isLocked: controlledLocked }: PrivacyShieldProps) {
-  const [isLocked, setIsLocked] = useState(false);
+  // Check if user has already unlocked this tab session
+  const [isLocked, setIsLocked] = useState(() => {
+    // If they already unlocked in this browser session, don't show the shield again on mount
+    try {
+      return sessionStorage.getItem(SESSION_UNLOCKED_KEY) !== 'true';
+    } catch {
+      return false;
+    }
+  });
   const [lastActivity, setLastActivity] = useState(Date.now());
   const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
-  const lock = useCallback(() => setIsLocked(true), []);
+  const lock = useCallback(() => {
+    setIsLocked(true);
+    try { sessionStorage.removeItem(SESSION_UNLOCKED_KEY); } catch { /* ignore */ }
+  }, []);
+
   const unlock = useCallback(() => {
     setIsLocked(false);
+    try { sessionStorage.setItem(SESSION_UNLOCKED_KEY, 'true'); } catch { /* ignore */ }
     onUnlock?.();
   }, [onUnlock]);
 
   useEffect(() => {
+    let hiddenAt: number | null = null;
+    const MIN_HIDDEN_MS = 30_000; // Only lock if tab was hidden for >30 seconds
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        lock();
+        hiddenAt = Date.now();
+      } else if (document.visibilityState === 'visible' && hiddenAt !== null) {
+        const elapsed = Date.now() - hiddenAt;
+        hiddenAt = null;
+        // Only lock if the tab was actually away for >30 seconds (not just a route change)
+        if (elapsed > MIN_HIDDEN_MS) {
+          lock();
+        }
       }
     };
 
-    const handleActivity = () => {
-      setLastActivity(Date.now());
-    };
+    const handleActivity = () => setLastActivity(Date.now());
 
     const checkInactivity = setInterval(() => {
       if (Date.now() - lastActivity > INACTIVITY_TIMEOUT) {
         lock();
       }
-    }, 30000); // Check every 30s
+    }, 30000);
 
     window.addEventListener('visibilitychange', handleVisibilityChange);
     window.addEventListener('mousemove', handleActivity);
@@ -47,7 +70,7 @@ export default function PrivacyShield({ onUnlock, isLocked: controlledLocked }: 
       window.removeEventListener('touchstart', handleActivity);
       clearInterval(checkInactivity);
     };
-  }, [lastActivity, lock]);
+  }, [lastActivity, lock, INACTIVITY_TIMEOUT]);
 
   const effectiveLocked = controlledLocked !== undefined ? controlledLocked : isLocked;
 

@@ -1,7 +1,7 @@
-import { useState, useCallback } from 'react';
-import { User, ShieldCheck, DownloadCloud, CheckCircle2 } from 'lucide-react';
+import { useState, useCallback, useRef, useEffect } from 'react';
+import { User, ShieldCheck, DownloadCloud, CheckCircle2, Sun, Moon, Type, Camera } from 'lucide-react';
 import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
-import { exportTransactionsToCSV } from '../../utils/exportCSV';
+import { exportCSV } from '../../utils/export';
 import { Transaction } from '../../types';
 import { usePWAInstall } from '../../hooks/usePWAInstall';
 import { encryptData, decryptData } from '../../utils/encryption';
@@ -48,7 +48,65 @@ export default function ProfileView({
   const [showSecureExportModal, setShowSecureExportModal] = useState(false);
   const [showRestoreModal, setShowRestoreModal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [highContrast, setHighContrast] = useState(() =>
+    document.documentElement.classList.contains('high-contrast')
+  );
+
+  const toggleHighContrast = (checked: boolean) => {
+    setHighContrast(checked);
+    if (checked) {
+      document.documentElement.classList.add('high-contrast');
+      localStorage.setItem('spendwise_high_contrast', 'true');
+    } else {
+      document.documentElement.classList.remove('high-contrast');
+      localStorage.setItem('spendwise_high_contrast', 'false');
+    }
+  };
   const [isRestoring, setIsRestoring] = useState(false);
+
+  // Avatar
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [avatar, setAvatar] = useState<string | null>(() => localStorage.getItem('spendwise_avatar'));
+
+  // Font size (Small / Medium / Large / XL)
+  const FONT_SIZES = ['text-sm', 'text-base', 'text-lg', 'text-xl'] as const;
+  type FontSizeKey = typeof FONT_SIZES[number];
+  const FONT_LABELS: Record<FontSizeKey, string> = { 'text-sm': 'Small', 'text-base': 'Medium', 'text-lg': 'Large', 'text-xl': 'XL' };
+  const [fontSize, setFontSize] = useState<FontSizeKey>(() => (localStorage.getItem('spendwise_font_size') as FontSizeKey) ?? 'text-base');
+
+  // Dark mode
+  const [darkMode, setDarkMode] = useState(() => document.documentElement.getAttribute('data-theme') === 'dark');
+
+  // Apply font size on mount
+  useEffect(() => {
+    FONT_SIZES.forEach(s => document.documentElement.classList.remove(s));
+    document.documentElement.classList.add(fontSize);
+  }, [fontSize]);
+
+  const handleFontSize = (size: FontSizeKey) => {
+    FONT_SIZES.forEach(s => document.documentElement.classList.remove(s));
+    document.documentElement.classList.add(size);
+    localStorage.setItem('spendwise_font_size', size);
+    setFontSize(size);
+  };
+
+  const handleDarkMode = (on: boolean) => {
+    document.documentElement.setAttribute('data-theme', on ? 'dark' : 'light');
+    localStorage.setItem('spendwise_dark_mode', on ? 'dark' : 'light');
+    setDarkMode(on);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const b64 = reader.result as string;
+      setAvatar(b64);
+      localStorage.setItem('spendwise_avatar', b64);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // ── Handlers ──────────────────────────────────────────────────────────────
   const handleSave = useCallback(() => {
@@ -144,6 +202,45 @@ export default function ProfileView({
         <p className="text-caption mt-1">Manage your personal details, localization, and data exports.</p>
       </div>
 
+      {/* Avatar Upload */}
+      <div className="card px-6 py-5 flex items-center gap-5">
+        <div className="relative shrink-0">
+          <div
+            className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center"
+            style={{ background: 'var(--teal-dim)', border: '3px solid var(--teal)' }}
+          >
+            {avatar
+              ? <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
+              : <User size={36} style={{ color: 'var(--teal)' }} />
+            }
+          </div>
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-white cursor-pointer"
+            style={{ background: 'var(--teal)', color: '#fff' }}
+            title="Change photo"
+          >
+            <Camera size={13} />
+          </button>
+          <input ref={avatarInputRef} type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px' }}>
+            {name || 'Your Name'}
+          </p>
+          <p className="text-sm text-[var(--text-muted)] mt-0.5" style={{ fontFamily: 'var(--font-inter)' }}>
+            {occupation || 'SpendWise Member'}{location ? ` · ${location}` : ''}
+          </p>
+          <button
+            onClick={() => avatarInputRef.current?.click()}
+            className="mt-2 text-xs font-semibold cursor-pointer border-none bg-transparent"
+            style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)' }}
+          >
+            Change photo →
+          </button>
+        </div>
+      </div>
+
       {/* Profile Form */}
       <ProfileForm
         fields={profileFields}
@@ -167,13 +264,91 @@ export default function ProfileView({
       {/* Data Management */}
       <DataManagement
         transactions={transactions}
-        onExportCSV={() => exportTransactionsToCSV(transactions)}
+        onExportCSV={() => exportCSV(transactions)}
         onOpenResetConfirm={() => setShowResetConfirm(true)}
         onOpenSecureExport={() => setShowSecureExportModal(true)}
         onOpenRestore={() => setShowRestoreModal(true)}
         onRawDBExport={handleRawDBExport}
         onRawDBImport={handleRawDBImport}
       />
+
+      {/* Accessibility & Preferences */}
+      <div className="card border border-[var(--teal)]/20 shadow-sm shadow-[var(--teal)]/5">
+        <div className="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between">
+          <div>
+            <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">Accessibility</h3>
+            <p className="text-xs text-[var(--text-muted)] mt-0.5">Customize your viewing experience.</p>
+          </div>
+          <div className="w-10 h-10 rounded-full bg-[var(--teal-dim)] flex items-center justify-center text-[var(--teal)]">
+            <User size={20} />
+          </div>
+        </div>
+        <div className="p-6 space-y-4">
+
+          {/* Dark Mode */}
+          <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)]">
+            <div className="flex items-center gap-3">
+              {darkMode ? <Moon size={18} style={{ color: '#8b5cf6' }} /> : <Sun size={18} style={{ color: '#f59e0b' }} />}
+              <div>
+                <h4 className="font-inter font-bold text-sm text-[var(--text-primary)]">Dark Mode</h4>
+                <p className="text-xs text-[var(--text-muted)] mt-0.5">Switch between light and dark themes.</p>
+              </div>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={darkMode}
+                onChange={e => handleDarkMode(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#8b5cf6]"></div>
+            </label>
+          </div>
+
+          {/* Font Size */}
+          <div className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)]">
+            <div className="flex items-center gap-2 mb-3">
+              <Type size={16} style={{ color: 'var(--teal)' }} />
+              <h4 className="font-inter font-bold text-sm text-[var(--text-primary)]">Font Size</h4>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {FONT_SIZES.map(s => (
+                <button
+                  key={s}
+                  onClick={() => handleFontSize(s)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold transition-all hover:scale-105"
+                  style={{
+                    background: fontSize === s ? 'var(--teal)' : 'var(--surface-card)',
+                    color: fontSize === s ? '#fff' : 'var(--text-muted)',
+                    border: fontSize === s ? 'none' : '1px solid var(--border)',
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-inter)',
+                  }}
+                >
+                  {FONT_LABELS[s]}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* High Contrast */}
+          <div className="flex items-center justify-between p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)]">
+            <div>
+              <h4 className="font-inter font-bold text-sm text-[var(--text-primary)]">High Contrast Mode</h4>
+              <p className="text-xs text-[var(--text-muted)] mt-0.5 max-w-[200px] md:max-w-full">Increase visual contrast across the app for better readability.</p>
+            </div>
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only peer"
+                checked={highContrast}
+                onChange={(e) => toggleHighContrast(e.target.checked)}
+              />
+              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[var(--teal)]"></div>
+            </label>
+          </div>
+        </div>
+      </div>
 
       {/* Family & Safety */}
       <div className="card border border-[var(--teal)]/20 shadow-sm shadow-[var(--teal)]/5">

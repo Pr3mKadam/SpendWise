@@ -5,16 +5,18 @@ import type { Transaction, CategorySpend, MonthlyStats } from '../../types';
 // ── helpers ──────────────────────────────────────────────────────────────────
 function makeStats(overrides: Partial<MonthlyStats> = {}): MonthlyStats {
   return {
-    totalIncome: 5000,
-    totalExpenses: 3000,
-    savingsRate: 40,     // (5000-3000)/5000 * 100
-    avgDailySpend: 100,
+    totalIncome:      5000,
+    totalExpenses:    3000,
+    savingsRate:      40,
+    netCashFlow:      2000,
+    avgDailySpend:    100,
+    transactionCount: 20,
     ...overrides,
   };
 }
 
 function makeCatSpend(name: string, value: number, percent: number): CategorySpend {
-  return { name, value, percent };
+  return { name, value, percent, color: '#6366f1' };
 }
 
 const sampleTxs: Transaction[] = [];

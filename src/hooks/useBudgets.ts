@@ -33,7 +33,8 @@ export function useBudgets() {
     startDate.setHours(0, 0, 0, 0);
     prevStartDate.setHours(0, 0, 0, 0);
     
-    const startDateStr = startDate.toISOString().split('T')[0];
+    const startDateStr    = startDate.toISOString().split('T')[0];
+    const endDateStr      = now.toISOString().split('T')[0]; // today — never include future dates
     const prevStartDateStr = prevStartDate.toISOString().split('T')[0];
 
     // Compute period spending per category
@@ -42,7 +43,7 @@ export function useBudgets() {
 
     transactions.forEach(tx => {
       if (tx.type === 'debit') {
-        if (tx.date >= startDateStr) {
+        if (tx.date >= startDateStr && tx.date <= endDateStr) {
           periodSpending.set(tx.category, (periodSpending.get(tx.category) || 0) + tx.amount);
         } else if (tx.date >= prevStartDateStr && tx.date < startDateStr) {
           prevPeriodSpending.set(tx.category, (prevPeriodSpending.get(tx.category) || 0) + tx.amount);

@@ -11,7 +11,9 @@ import SyncDashboard from '../features/sync/SyncDashboard';
 import SelectSource from '../features/sync/SelectSource';
 import UPILink from '../features/sync/UPILink';
 import RazorpayLink from '../features/sync/RazorpayLink';
+import PlaidLink from '../features/sync/PlaidLink';
 import PayForm from '../features/sync/PayForm';
+import Web3Link from '../features/sync/Web3Link';
 
 
 interface BankSyncViewProps {
@@ -20,7 +22,7 @@ interface BankSyncViewProps {
   currency?: string;
 }
 
-type SyncView = 'dashboard' | 'select-source' | 'upi-link' | 'rzp-link' | 'pay-form' | 'pay-parsing' | 'pay-success' | 'pay-correction';
+type SyncView = 'dashboard' | 'select-source' | 'upi-link' | 'plaid-link' | 'rzp-link' | 'web3-link' | 'pay-form' | 'pay-parsing' | 'pay-success' | 'pay-correction';
 type WizardStep = 'upi-select' | 'upi-credentials' | 'upi-connecting' | 'upi-success';
 
 const CATEGORIES: Category[] = [
@@ -39,8 +41,7 @@ export default function BankSyncView({
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [merchantMemoryCount, setMerchantMemoryCount] = useState(0);
 
-  const saveLocal = true;
-  const payUpiId = '';
+
   const [lastTx, setLastTx] = useState<Transaction | null>(null);
   const [corrCategory, setCorrCat] = useState<Category>('Transfer');
 
@@ -91,6 +92,34 @@ export default function BankSyncView({
     setView('dashboard');
   };
 
+  const handlePlaidLinkSuccess = (bankName: string, id: string) => {
+    const newAccount: UPIAccount = {
+      id: `acc-${Date.now()}`,
+      provider: 'plaid' as any,
+      upiId: bankName,
+      linkedAt: new Date().toISOString(),
+      lastSynced: new Date().toISOString(),
+      status: 'active',
+    };
+    setAccounts(prev => [newAccount, ...prev]);
+    handleMockSync(newAccount);
+    setView('dashboard');
+  };
+
+  const handleWeb3LinkSuccess = (walletName: string, id: string) => {
+    const newAccount: UPIAccount = {
+      id: `acc-${Date.now()}`,
+      provider: 'web3' as any,
+      upiId: walletName,
+      linkedAt: new Date().toISOString(),
+      lastSynced: new Date().toISOString(),
+      status: 'active',
+    };
+    setAccounts(prev => [newAccount, ...prev]);
+    handleMockSync(newAccount);
+    setView('dashboard');
+  };
+
 
 
   const handlePay = (amount: number, description: string) => {
@@ -101,10 +130,10 @@ export default function BankSyncView({
       keyId,
       amount: amount,
       description: description || 'UPI Payment',
-      prefillContact: payUpiId.trim() || undefined,
+      prefillContact: undefined,
       onSuccess: async (result) => {
         setView('pay-parsing');
-        const parsed = await parseUPIPayment(description || result.description, payUpiId.trim());
+        const parsed = await parseUPIPayment(description || result.description, '');
         const tx: Transaction = {
           id: `rzp_pay_${result.razorpay_payment_id}`,
           date: new Date().toISOString(),
@@ -130,7 +159,7 @@ export default function BankSyncView({
 
   const applyCorrection = () => {
     if (!lastTx) return;
-    rememberMerchant(payUpiId.trim(), lastTx.merchant, corrCategory);
+    rememberMerchant('', lastTx.merchant, corrCategory);
     onAutoAddTransactions([{ ...lastTx, category: corrCategory }]);
     setView('dashboard');
   };
@@ -140,8 +169,8 @@ export default function BankSyncView({
     setSyncingAccountId(acc.id);
     try {
       await new Promise(r => setTimeout(r, 1200));
-      const providerDef = UPI_PROVIDERS.find((p: any) => p.id === acc.provider) || UPI_PROVIDERS[0];
-      const mockTxs = generateMockUPITransactions(providerDef.name, 10);
+      const providerName = (acc.provider as string) === 'plaid' ? acc.upiId : (UPI_PROVIDERS.find((p: any) => p.id === acc.provider)?.name || 'Bank');
+      const mockTxs = generateMockUPITransactions(providerName, 10);
       onAutoAddTransactions(mockTxs);
       setAccounts(p => p.map(a => a.id === acc.id ? { ...a, lastSynced: new Date().toISOString() } : a));
     } catch (err: any) {
@@ -163,9 +192,7 @@ export default function BankSyncView({
   const aiParsedCount = recentTransactions.filter(t => t.aiParsed).length;
 
   const handleRazorpayConnect = (keyId: string, secret: string) => {
-    if (saveLocal) {
-      setRazorpayKeys({ keyId, keySecret: secret });
-    }
+    setRazorpayKeys({ keyId, keySecret: secret });
     setAccounts((p: UPIAccount[]) => {
       const filtered = p.filter(a => a.provider !== 'razorpay' as any);
       return [{
@@ -198,6 +225,8 @@ export default function BankSyncView({
       )}
       {view === 'select-source' && <SelectSource onSetView={setView} />}
       {view === 'upi-link' && <UPILink onSetView={setView} onUPILinkSuccess={handleUPILinkSuccess} />}
+      {view === 'plaid-link' && <PlaidLink onSetView={setView} onPlaidLinkSuccess={handlePlaidLinkSuccess} />}
+      {view === 'web3-link' && <Web3Link onSetView={setView} onWeb3LinkSuccess={handleWeb3LinkSuccess} />}
       {view === 'rzp-link' && <RazorpayLink onSetView={setView} onConnect={handleRazorpayConnect} />}
       {view === 'pay-form' && <PayForm onSetView={setView} onPay={handlePay} currency={currency} />}
       

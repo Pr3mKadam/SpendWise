@@ -107,7 +107,7 @@ export default function DashboardHero({
       />
 
       {/* Content */}
-      <div className="relative z-10 p-7 flex flex-col gap-5">
+      <div className="relative z-10 p-4 sm:p-6 flex flex-col gap-4">
 
         {/* Top row: greeting + sparkline */}
         <div className="flex items-start justify-between gap-4">
@@ -131,9 +131,9 @@ export default function DashboardHero({
             </div>
 
             {/* Big animated number */}
-            <div
+          <div
               className={`tabular-nums transition-all duration-500 ${hideBalances ? 'blur-lg select-none' : ''}`}
-              style={{ fontFamily: 'var(--font-manrope)', fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-0.02em' }}
+              style={{ fontFamily: 'var(--font-manrope)', fontSize: 'clamp(26px, 7vw, 56px)', fontWeight: 900, color: '#ffffff', lineHeight: 1, letterSpacing: '-0.02em' }}
             >
               {currency}{displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
@@ -150,9 +150,9 @@ export default function DashboardHero({
             </div>
           </div>
 
-          {/* Sparkline & Privacy Toggle */}
-          <div className="flex flex-col gap-2">
-            <div className="flex-shrink-0 w-[180px] h-[80px] bg-white/5 rounded-2xl p-2 border border-white/10 backdrop-blur-sm">
+          {/* Sparkline & Privacy Toggle — hidden on xs via CSS, compact on sm */}
+          <div className="hero-sparkline flex flex-col gap-2 shrink-0">
+            <div className="w-[120px] sm:w-[160px] h-[64px] sm:h-[80px] bg-white/5 rounded-2xl p-2 border border-white/10 backdrop-blur-sm">
               {sparkData.length > 1 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={sparkData}>
@@ -209,9 +209,9 @@ export default function DashboardHero({
         <div style={{ height: '1px', background: 'rgba(255,255,255,0.08)' }} />
 
         {/* Bottom row: mini-stats + health bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
           {/* Mini stats */}
-          <div className="flex items-center gap-6 flex-1">
+          <div className="flex flex-wrap items-center gap-3 flex-1">
             {/* Income */}
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
@@ -258,8 +258,8 @@ export default function DashboardHero({
             </div>
           </div>
 
-          {/* Health score bar */}
-          <div className="w-full sm:w-[200px] flex-shrink-0">
+          {/* Health score bar — always full width on mobile */}
+          <div className="w-full sm:w-[180px] flex-shrink-0">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5">
                 <Shield size={12} style={{ color: healthColor }} />

@@ -129,8 +129,6 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
         setPrediction({
           ...res,
           confidence: 0.9,
-          split: null,
-          source: 'local'
         });
       } catch (err) {
         console.error('Gemini voice parsing failed, falling back to local:', err);

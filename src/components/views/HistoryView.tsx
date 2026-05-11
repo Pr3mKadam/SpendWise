@@ -1,11 +1,12 @@
 import { useState, useMemo, useRef } from 'react';
-import { Search, Download, ChevronUp, ChevronDown, Upload, FileText } from 'lucide-react';
+import { Download, ChevronUp, ChevronDown, Upload, FileText, AlertCircle } from 'lucide-react';
 import { Transaction, Category } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
 import { Virtuoso, VirtuosoHandle } from 'react-virtuoso';
+import { useStore } from '../../store';
 
 // Extracted components and utils
-import FilterBar from '../features/history/FilterBar';
+import { FilterBar } from '../features/history/FilterBar';
 import TransactionRow from '../features/history/TransactionRow';
 import BulkActionHeader from '../features/history/BulkActionHeader';
 import { exportCSV, exportJSON } from '../../utils/export';
@@ -53,6 +54,7 @@ export default function HistoryView({
   currency = '$' 
 }: HistoryViewProps) {
   const { allCategories, mergedIcons, mergedColors } = useCategories();
+  const addTransactions = useStore(s => s.addTransactions);
   const [search, setSearch]               = useState('');
   const [categoryFilter, setCategoryFilter] = useState<Category | 'All'>('All');
   const [typeFilter, setTypeFilter]       = useState<TypeFilter>('all');
@@ -61,23 +63,41 @@ export default function HistoryView({
   const [dateFrom, setDateFrom]           = useState('');
   const [dateTo, setDateTo]               = useState('');
   const [showDateFilter, setShowDateFilter] = useState(false);
+  const [amountMin, setAmountMin]         = useState('');
+  const [amountMax, setAmountMax]         = useState('');
+  const [showAmountFilter, setShowAmountFilter] = useState(false);
   const [selectedIds, setSelectedIds]     = useState<Set<string>>(new Set());
+  const [importToast, setImportToast]     = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const virtuosoRef = useRef<VirtuosoHandle>(null);
 
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    // Reset input so same file can be picked again
+    e.target.value = '';
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
-        const data = JSON.parse(event.target?.result as string);
-        if (Array.isArray(data)) {
-          // In a real app, we'd call an onImport prop
-          alert(`Imported ${data.length} transactions (simulation)`);
+        const raw = JSON.parse(event.target?.result as string);
+        const data: Transaction[] = Array.isArray(raw) ? raw : (raw.transactions ?? []);
+        if (data.length === 0) {
+          setImportToast('No transactions found in file.');
+          setTimeout(() => setImportToast(null), 3000);
+          return;
         }
-      } catch (err) {
-        alert('Invalid JSON file');
+        // Assign fresh IDs to avoid collision with existing transactions
+        const imported = data.map(tx => ({
+          ...tx,
+          id: `imp_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        }));
+        addTransactions(imported);
+        setImportToast(`✅ Imported ${imported.length} transactions successfully!`);
+        setTimeout(() => setImportToast(null), 4000);
+      } catch {
+        setImportToast('❌ Invalid JSON file. Please try again.');
+        setTimeout(() => setImportToast(null), 3000);
       }
     };
     reader.readAsText(file);
@@ -90,12 +110,16 @@ export default function HistoryView({
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase().trim();
+    const minAmt = amountMin !== '' ? parseFloat(amountMin) : null;
+    const maxAmt = amountMax !== '' ? parseFloat(amountMax) : null;
     return transactions
       .filter(tx => {
         if (categoryFilter !== 'All' && tx.category !== categoryFilter) return false;
         if (typeFilter !== 'all' && tx.type !== typeFilter) return false;
         if (dateFrom && tx.date < dateFrom) return false;
         if (dateTo   && tx.date > dateTo)   return false;
+        if (minAmt !== null && tx.amount < minAmt) return false;
+        if (maxAmt !== null && tx.amount > maxAmt) return false;
         if (q) return tx.merchant.toLowerCase().includes(q) || tx.category.toLowerCase().includes(q) || tx.amount.toString().includes(q) || tx.date.includes(q) || (tx.tags && tx.tags.some(t => t.toLowerCase().includes(q)));
         return true;
       })
@@ -107,12 +131,12 @@ export default function HistoryView({
         if (sortKey === 'category') cmp = a.category.localeCompare(b.category);
         return sortDir === 'desc' ? -cmp : cmp;
       });
-  }, [transactions, search, categoryFilter, typeFilter, sortKey, sortDir, dateFrom, dateTo]);
+  }, [transactions, search, categoryFilter, typeFilter, sortKey, sortDir, dateFrom, dateTo, amountMin, amountMax]);
 
   const total      = filtered.reduce((a, tx) => a + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
-  const hasFilters = search || categoryFilter !== 'All' || typeFilter !== 'all' || dateFrom || dateTo;
+  const hasFilters: boolean = Boolean(search || categoryFilter !== 'All' || typeFilter !== 'all' || dateFrom || dateTo || amountMin || amountMax);
 
-  const clearFilters = () => { setSearch(''); setCategoryFilter('All'); setTypeFilter('all'); setDateFrom(''); setDateTo(''); };
+  const clearFilters = () => { setSearch(''); setCategoryFilter('All'); setTypeFilter('all'); setDateFrom(''); setDateTo(''); setAmountMin(''); setAmountMax(''); };
 
 
 
@@ -198,6 +222,9 @@ export default function HistoryView({
         categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
         allCategories={allCategories} mergedIcons={mergedIcons}
         hasFilters={hasFilters} clearFilters={clearFilters}
+        amountMin={amountMin} setAmountMin={setAmountMin}
+        amountMax={amountMax} setAmountMax={setAmountMax}
+        showAmountFilter={showAmountFilter} setShowAmountFilter={setShowAmountFilter}
       />
 
       {/* Table Card */}
@@ -255,7 +282,7 @@ export default function HistoryView({
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: '#f5f7fa' }}>
-                <Search size={22} style={{ color: 'var(--text-dim)' }} />
+                <AlertCircle size={22} style={{ color: 'var(--text-dim)' }} />
               </div>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)' }}>No transactions found</p>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>Try adjusting your filters</p>
@@ -289,6 +316,48 @@ export default function HistoryView({
           )}
         </div>
       </div>
+
+      {/* Import Toast */}
+      {importToast && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-xl text-sm font-semibold animate-fade-in-up"
+          style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)' }}
+        >
+          {importToast}
+        </div>
+      )}
+
+      {/* Custom Delete Confirmation Modal */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div
+            className="card rounded-3xl p-6 shadow-2xl w-80 animate-fade-in-up"
+            style={{ border: '1.5px solid var(--border)' }}
+          >
+            <div className="flex items-center justify-center w-12 h-12 rounded-2xl mx-auto mb-4" style={{ background: 'var(--red-dim)' }}>
+              <AlertCircle size={22} style={{ color: 'var(--red)' }} />
+            </div>
+            <h3 className="text-center font-bold text-base mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)' }}>Delete Transaction?</h3>
+            <p className="text-center text-xs mb-5" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>This action cannot be undone.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border-none cursor-pointer transition-colors"
+                style={{ background: 'var(--surface-input)', color: 'var(--text-secondary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { if (onDelete && deleteConfirmId) onDelete(deleteConfirmId); setDeleteConfirmId(null); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold border-none cursor-pointer transition-colors"
+                style={{ background: 'var(--red)', color: '#fff' }}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

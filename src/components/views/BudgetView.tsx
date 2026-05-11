@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { Target, TrendingUp, AlertCircle, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
 import { useBudgets } from '../../hooks/useBudgets';
 import { useCategories } from '../../hooks/useCategories';
+import { useFinanceState } from '../../hooks/useFinanceState';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Category } from '../../types';
+import { SmartBudgetSuggestions } from '../features/budget/SmartBudgetSuggestions';
 
 export default function BudgetView({ currency = '₹' }: { currency?: string }) {
-  const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent } = useBudgets();
+  const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent, budgets } = useBudgets();
+  const { transactions } = useFinanceState();
   const { allCategories: categories } = useCategories();
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
@@ -23,6 +26,14 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
 
   return (
     <div className="view-enter space-y-6">
+
+      {/* Smart Budget Suggestions */}
+      <SmartBudgetSuggestions
+        transactions={transactions}
+        existingBudgets={budgets}
+        onAccept={(cat, amount) => setBudget(cat, amount)}
+        currency={currency}
+      />
       {/* Header Summary */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <div className="bg-[var(--surface-card)] rounded-3xl p-6 border border-[var(--border)] shadow-sm">

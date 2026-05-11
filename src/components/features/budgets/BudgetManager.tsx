@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Target, AlertTriangle, CheckCircle2, TrendingUp, Edit3, RotateCcw,
-  Shield, X, Tag as TagIcon, Calendar, RefreshCw, Plus, Check,
+  Shield, X, Tag as TagIcon, Calendar, RefreshCw, Plus, Check, Award, Flame, Star,
+  Sparkles, ChevronDown, ChevronUp
 } from 'lucide-react';
-import { Budget, BudgetPeriod, Category } from '../../../types';
+import { Budget, BudgetPeriod, Category, Transaction } from '../../../types';
 import { useCategories } from '../../../hooks/useCategories';
+import { generateBudgetSuggestions } from '../../../utils/insights/budgetSuggestions';
 
 interface BudgetManagerProps {
   budgets:                 Budget[];
@@ -20,6 +22,7 @@ interface BudgetManagerProps {
   onToggleRollover:        () => void;
   onManageCategories?:     () => void;
   currency?:               string;
+  transactions?:           Transaction[];
 }
 
 const STATUS_CONFIG = {
@@ -269,6 +272,12 @@ function BudgetSummaryBar({
     ? budgets.reduce((a, b) => a + b.rolloverAmount, 0)
     : 0;
 
+  // Gamification Milestones
+  const hasBudgets = budgets.length > 0;
+  const isPerfect = hasBudgets && overBudgetCount === 0;
+  const isFrugal = hasBudgets && pct > 0 && pct < 50;
+  const isActive = hasBudgets && totalSpent > 0;
+
   return (
     <div className="card mb-5" style={{ padding: '22px 24px' }}>
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
@@ -305,6 +314,26 @@ function BudgetSummaryBar({
           )}
         </div>
       </div>
+
+      {/* Gamification Badges */}
+      {hasBudgets && (
+        <div className="flex gap-2 mb-4 pb-4 overflow-x-auto hide-scrollbar" style={{ borderBottom: '1px solid var(--border)' }}>
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${isActive ? 'bg-amber-50 border-amber-200 dark:bg-amber-500/10 dark:border-amber-500/20 text-amber-600 dark:text-amber-400' : 'bg-gray-50 border-gray-100 text-gray-400 dark:bg-gray-800/50 dark:border-gray-800'}`}>
+            <Flame size={14} className={isActive ? 'text-amber-500' : 'text-gray-400'} />
+            <span className="text-xs font-bold whitespace-nowrap">Active Tracker</span>
+          </div>
+          
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${isPerfect ? 'bg-emerald-50 border-emerald-200 dark:bg-emerald-500/10 dark:border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-gray-50 border-gray-100 text-gray-400 dark:bg-gray-800/50 dark:border-gray-800'}`}>
+            <Star size={14} className={isPerfect ? 'text-emerald-500' : 'text-gray-400'} />
+            <span className="text-xs font-bold whitespace-nowrap">Flawless</span>
+          </div>
+          
+          <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border ${isFrugal ? 'bg-purple-50 border-purple-200 dark:bg-purple-500/10 dark:border-purple-500/20 text-purple-600 dark:text-purple-400' : 'bg-gray-50 border-gray-100 text-gray-400 dark:bg-gray-800/50 dark:border-gray-800'}`}>
+            <Award size={14} className={isFrugal ? 'text-purple-500' : 'text-gray-400'} />
+            <span className="text-xs font-bold whitespace-nowrap">Frugal Master</span>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-3 gap-6 mb-4">
         {[
@@ -345,15 +374,34 @@ export default function BudgetManager({
   budgets, totalBudgeted, totalSpentAgainstBudget, overBudgetCount,
   period, periodLabel, rolloverEnabled,
   onUpdateLimit, onResetLimits, onChangePeriod, onToggleRollover,
-  onManageCategories, currency = '$',
+  onManageCategories, currency = '$', transactions = [],
 }: BudgetManagerProps) {
   const [showTip, setShowTip] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
   const [addCategory, setAddCategory] = useState<Category | ''>('');
   const [addLimit, setAddLimit] = useState('');
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [appliedSuggestions, setAppliedSuggestions] = useState<Set<string>>(new Set());
   const { allCategories } = useCategories();
   const existingCategories = new Set(budgets.map(b => b.category));
   const availableCategories = allCategories.filter(c => !existingCategories.has(c as Category));
+
+  const suggestions = useMemo(() => generateBudgetSuggestions(transactions), [transactions]);
+  const unappliedSuggestions = suggestions.filter(s => !existingCategories.has(s.category as Category));
+
+  const handleApplySuggestion = (category: string, limit: number) => {
+    onUpdateLimit(category as Category, limit);
+    setAppliedSuggestions(prev => new Set([...prev, category]));
+  };
+
+  const handleApplyAll = () => {
+    unappliedSuggestions.forEach(s => onUpdateLimit(s.category as Category, s.suggestedLimit));
+    setAppliedSuggestions(new Set(unappliedSuggestions.map(s => s.category)));
+    setShowSuggestions(false);
+  };
+
+  const CONFIDENCE_COLOR = { high: '#14b8a6', medium: '#f59e0b', low: '#94a3b8' };
+  const CONFIDENCE_LABEL = { high: 'Strong match', medium: 'Good estimate', low: 'Limited data' };
 
   const handleAddBudget = () => {
     const parsed = parseFloat(addLimit);
@@ -428,6 +476,116 @@ export default function BudgetManager({
           </button>
         </div>
       </div>
+
+      {/* ── AI Budget Suggestions ───────────────────────────────── */}
+      {transactions.length >= 5 && (
+        <div className="mb-5">
+          <button
+            type="button"
+            onClick={() => setShowSuggestions(v => !v)}
+            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold w-full transition-all"
+            style={{
+              background: 'linear-gradient(135deg, rgba(99,102,241,0.12) 0%, rgba(20,184,166,0.12) 100%)',
+              border: '1.5px solid rgba(99,102,241,0.3)',
+              color: '#818cf8',
+              cursor: 'pointer',
+              fontFamily: 'var(--font-inter)',
+            }}
+          >
+            <Sparkles size={15} />
+            <span>AI Budget Suggestions</span>
+            <span
+              className="ml-1 flex items-center justify-center h-5 min-w-[20px] rounded-full text-[10px] font-bold px-1"
+              style={{ background: 'rgba(99,102,241,0.2)', color: '#818cf8' }}
+            >
+              {unappliedSuggestions.length}
+            </span>
+            <span className="ml-auto">
+              {showSuggestions ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+            </span>
+          </button>
+
+          {showSuggestions && (
+            <div
+              className="mt-2 rounded-2xl p-4"
+              style={{ background: 'var(--surface-card)', border: '1.5px solid rgba(99,102,241,0.2)', boxShadow: '0 4px 20px rgba(99,102,241,0.1)' }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p style={{ fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '14px', color: 'var(--text-primary)' }}>
+                    Smart Suggestions from Your History
+                  </p>
+                  <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Based on 3 months of spending. Click to apply individual limits.
+                  </p>
+                </div>
+                {unappliedSuggestions.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleApplyAll}
+                    className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition-all"
+                    style={{ background: '#818cf8', color: '#fff', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)', whiteSpace: 'nowrap' }}
+                  >
+                    <Check size={12} /> Apply All
+                  </button>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                {suggestions.map(s => {
+                  const isApplied = appliedSuggestions.has(s.category) || existingCategories.has(s.category as Category);
+                  return (
+                    <div
+                      key={s.category}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-all"
+                      style={{ background: isApplied ? 'rgba(20,184,166,0.06)' : 'var(--bg)', border: `1px solid ${isApplied ? 'rgba(20,184,166,0.2)' : 'var(--border)'}` }}
+                    >
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                            {s.category}
+                          </span>
+                          <span
+                            className="text-[9px] font-bold rounded-full px-1.5 py-0.5"
+                            style={{ background: CONFIDENCE_COLOR[s.confidence] + '20', color: CONFIDENCE_COLOR[s.confidence] }}
+                          >
+                            {CONFIDENCE_LABEL[s.confidence]}
+                          </span>
+                        </div>
+                        <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                          {s.reasoning}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span style={{ fontFamily: 'var(--font-manrope)', fontSize: '15px', fontWeight: 800, color: '#818cf8' }}>
+                          {currency}{s.suggestedLimit.toLocaleString()}
+                        </span>
+                        {isApplied ? (
+                          <span
+                            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs font-bold"
+                            style={{ background: 'rgba(20,184,166,0.1)', color: '#14b8a6' }}
+                          >
+                            <Check size={11} /> Applied
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleApplySuggestion(s.category, s.suggestedLimit)}
+                            className="flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-bold transition-all"
+                            style={{ background: 'rgba(99,102,241,0.1)', color: '#818cf8', border: '1px solid rgba(99,102,241,0.2)', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
+                          >
+                            Apply
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Add Budget Form Panel ───────────────────────────────── */}
       {showAddForm && (

@@ -1,5 +1,5 @@
-import { useMemo, useState, memo } from 'react';
-import { AppView, Transaction } from '../../types';
+import { useMemo, useState } from 'react';
+import { AppView } from '../../types';
 import { useFinanceState } from '../../hooks/useFinanceState';
 import { useGamification } from '../../hooks/useGamification';
 import { useGoals } from '../../hooks/useGoals';
@@ -12,27 +12,21 @@ import DashboardHero from '../features/dashboard/DashboardHero';
 import QuickAddPanel from '../features/dashboard/QuickAddPanel';
 import MagicInput from '../features/ai/MagicInput';
 
-import { Camera, Sparkles, TrendingUp, TrendingDown, Wallet, Calendar, Plus, BrainCircuit, Target, Zap, ArrowUpRight, ArrowDownLeft, Shield } from 'lucide-react';
+import { Sparkles, TrendingUp, TrendingDown, Wallet, BrainCircuit, Target } from 'lucide-react';
 
-import Card from '../common/Card';
 import StatCard from '../features/dashboard/StatCard';
-
 import FinanceChart from '../features/dashboard/FinanceChart';
 import RecentTransactions from '../features/dashboard/RecentTransactions';
 import PremiumCard from '../features/dashboard/PremiumCard';
 import GoalsSummary from '../features/dashboard/GoalsSummary';
 import DailyStats from '../features/dashboard/DailyStats';
-
-// ─────────────────────────────────────────────────────────────────────────────
-
+import { BadgeGallery } from '../features/gamification/BadgeGallery';
+import { StreakShareCard } from '../features/gamification/StreakShareCard';
+import { WeeklyDigestCard } from '../features/dashboard/WeeklyDigestCard';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main DashboardView
 // ─────────────────────────────────────────────────────────────────────────────
-
-const PAGE_BG = '#f4f6fb';
-const TEXT_PRIMARY = '#0f1117';
-const TEXT_MUTED = '#9197a6';
 
 export function DashboardView({
   financeState,
@@ -52,7 +46,7 @@ export function DashboardView({
   onTogglePrivacy?: () => void;
 }) {
   const { transactions, currentBalance, monthlyStats, monthlyHistory, dailySpendRate, balanceTrend, predictedEndOfMonth } = financeState;
-  const { streak, healthScore, xp, level, xpToNextLevel, progress, levelName } = useGamification(transactions);
+  const { streak, healthScore, xp, level, xpToNextLevel, progress, levelName, savingsRate } = useGamification(transactions);
   const { goals } = useGoals();
   const { netWorth } = usePortfolio();
   const [dashboardInput, setDashboardInput] = useState('');
@@ -68,7 +62,7 @@ export function DashboardView({
     }));
   }, [monthlyHistory]);
 
-  // Recent unique merchants for "Quick Access" row
+  // Recent unique merchants for Quick Add shortcuts
   const recentMerchants = useMemo(() => {
     const seen = new Set<string>();
     const result: string[] = [];
@@ -81,8 +75,6 @@ export function DashboardView({
 
   const recentTx = useMemo(() => transactions.slice(0, 6), [transactions]);
 
-  const saved = useMemo(() => Math.max(0, monthlyStats.totalIncome - monthlyStats.totalExpenses), [monthlyStats.totalIncome, monthlyStats.totalExpenses]);
-
   // Trend % from balanceTrend array
   const trendPct = useMemo(() => {
     if (!balanceTrend || balanceTrend.length < 2) return 0;
@@ -92,23 +84,108 @@ export function DashboardView({
     return ((last - first) / Math.abs(first)) * 100;
   }, [balanceTrend]);
 
+  // Dynamic AI insight cards — computed from real spending data
+  const insights = useMemo(() => {
+    const now = new Date();
+    const thisMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const prevMonthStr = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      .toISOString().slice(0, 7);
+
+    const thisMonthTx = transactions.filter(t => t.date.startsWith(thisMonthStr) && t.type === 'debit');
+    const prevMonthTx = transactions.filter(t => t.date.startsWith(prevMonthStr) && t.type === 'debit');
+
+    // Top spending category this month
+    const catSpend: Record<string, number> = {};
+    thisMonthTx.forEach(t => { catSpend[t.category] = (catSpend[t.category] || 0) + t.amount; });
+    const topCat = Object.entries(catSpend).sort((a, b) => b[1] - a[1])[0];
+
+    // Same category last month for comparison
+    const prevCatSpend: Record<string, number> = {};
+    prevMonthTx.forEach(t => { prevCatSpend[t.category] = (prevCatSpend[t.category] || 0) + t.amount; });
+
+    const topCatChange = topCat && prevCatSpend[topCat[0]]
+      ? ((topCat[1] - prevCatSpend[topCat[0]]) / prevCatSpend[topCat[0]]) * 100
+      : null;
+
+    // Savings rate this month
+    const savingsRate = monthlyStats.totalIncome > 0
+      ? Math.round(((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100)
+      : 0;
+
+    // Highest single merchant spend this month
+    const merchantSpend: Record<string, number> = {};
+    thisMonthTx.forEach(t => { merchantSpend[t.merchant] = (merchantSpend[t.merchant] || 0) + t.amount; });
+    const topMerchant = Object.entries(merchantSpend).sort((a, b) => b[1] - a[1])[0];
+
+    return { topCat, topCatChange, savingsRate, topMerchant };
+  }, [transactions, monthlyStats]);
+
   return (
-    <div className="bg-[#f4f6fb] -mx-4 -mt-4 sm:-mx-6 sm:-mt-6 lg:-mx-8 lg:-mt-8 min-h-[calc(100vh-60px)] px-3 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
+    <div className="bg-[#f4f6fb] -mx-2 -mt-3 sm:-mx-4 sm:-mt-4 md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8 min-h-[calc(100vh-60px)] px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-8">
       <div className="max-w-[1200px] mx-auto">
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)', letterSpacing: '-0.04em' }}>
+            <h1 className="text-xl sm:text-3xl font-black text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)', letterSpacing: '-0.04em' }}>
               Dashboard
             </h1>
-            <p className="text-xs text-[var(--text-muted)] font-medium mt-1">Welcome back to your financial control center.</p>
+            <p className="text-[11px] sm:text-xs text-[var(--text-muted)] font-medium mt-0.5">Welcome back to your financial control center.</p>
+          </div>
+        </div>
+
+        {/* Dynamic AI-powered Smart Insights */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+          {/* Insight 1: Savings Rate */}
+          <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
+            <div className="p-2 bg-blue-500/20 rounded-xl text-blue-500 mt-0.5">
+              <BrainCircuit size={18} />
+            </div>
+            <div>
+              <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">AI Smart Insight</h4>
+              <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
+                {transactions.length === 0
+                  ? 'Add transactions to unlock personalized AI insights.'
+                  : insights.savingsRate > 0
+                    ? `You're saving ${insights.savingsRate}% of income this month. ${
+                        insights.savingsRate >= 20
+                          ? 'Great discipline — consider moving savings to a Goal!'
+                          : 'Try to hit the 20% savings target for financial health.'
+                      }`
+                    : `Your expenses exceed income this month. Review your ${insights.topCat?.[0] ?? 'top'} spending to find savings.`
+                }
+              </p>
+            </div>
           </div>
 
+          {/* Insight 2: Category Trend */}
+          <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3">
+            <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 mt-0.5">
+              {insights.topCatChange !== null && insights.topCatChange < 0
+                ? <TrendingDown size={18} />
+                : <TrendingUp size={18} />
+              }
+            </div>
+            <div>
+              <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">Spending Pulse</h4>
+              <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
+                {insights.topCat
+                  ? insights.topCatChange !== null
+                    ? `${insights.topCat[0]} is your top expense (${currency}${Math.round(insights.topCat[1]).toLocaleString()}). ${
+                        insights.topCatChange < 0
+                          ? `Down ${Math.abs(Math.round(insights.topCatChange))}% vs last month — great progress!`
+                          : `Up ${Math.round(insights.topCatChange)}% from last month.`
+                      }`
+                    : `${insights.topCat[0]} is your biggest spend this month at ${currency}${Math.round(insights.topCat[1]).toLocaleString()}.`
+                  : 'Add transactions to unlock spending insights.'
+                }
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Premium Dashboard Hero Section */}
         <div className="mb-6">
-          <DashboardHero 
+          <DashboardHero
             currentBalance={currentBalance}
             monthlyStats={monthlyStats}
             balanceTrend={balanceTrend}
@@ -120,30 +197,38 @@ export function DashboardView({
           />
         </div>
 
-        {streak > 0 && (
-          <div className="mb-6 inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-full">
+        {streak > 0 ? (
+          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-full">
             <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">🔥 {streak} DAY STREAK</span>
+          </div>
+        ) : (
+          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-slate-500/5 to-slate-400/10 border border-slate-400/20 rounded-full">
+            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">✨ Start your streak today — add a transaction!</span>
           </div>
         )}
 
+        {/* Weekly Digest */}
+        <div className="mb-4">
+          <WeeklyDigestCard transactions={transactions} currency={currency} />
+        </div>
 
         {/* Two-column layout (stacks on mobile and most tablets) */}
         <div className="flex flex-col xl:flex-row gap-5 xl:gap-6 items-start">
 
           {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
           <div className="flex flex-col gap-4 min-w-0 w-full xl:flex-1">
-            {/* Gamification Level Progress */}
+            {/* Gamification: WealthCity (hidden on mobile) + LevelProgress */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              <div className="lg:col-span-7">
+              <div className="hidden sm:block lg:col-span-7">
                 <WealthCity />
               </div>
-              <div className="lg:col-span-5">
+              <div className="sm:col-span-full lg:col-span-5">
                 <LevelProgress onNavigate={onNavigate} />
               </div>
             </div>
 
-            {/* Stat Cards (2x2 on mobile, 3x1 on tablet, 5x1 on xl desktop) */}
-            <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3">
+            {/* Stat Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2">
               <StatCard
                 label="Balance"
                 value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
@@ -195,10 +280,11 @@ export function DashboardView({
 
             {/* Finance Chart */}
             <FinanceChart chartData={chartData} currency={currency} />
-            {/* ── Quick Add — between chart and history ─────────── */}
+
+            {/* Quick Add Panel */}
             <div className="w-full">
-              <QuickAddPanel 
-                onAdd={onAdd} 
+              <QuickAddPanel
+                onAdd={onAdd}
                 recentMerchants={recentMerchants}
                 onQuickInput={(val) => setDashboardInput(val)}
                 dashboardInput={dashboardInput}
@@ -207,33 +293,47 @@ export function DashboardView({
               />
             </div>
 
-
-
-            {/* Transaction History */}
-            <RecentTransactions recentTx={recentTx} onNavigate={onNavigate} hideBalances={hideBalances} currency={currency} />          </div>
+            {/* Recent Transactions */}
+            <RecentTransactions recentTx={recentTx} onNavigate={onNavigate} hideBalances={hideBalances} currency={currency} />
+          </div>
 
           {/* ── RIGHT COLUMN ─────────────────────────────────────────── */}
-          <div className="flex flex-row xl:flex-col gap-4 min-w-0 w-full xl:w-[300px] xl:shrink-0 overflow-x-auto snap-x snap-mandatory hide-scrollbar pb-4 -mb-4">
-            
+          {/* Mobile: stacked vertically. sm+: horizontal snap carousel. xl: fixed sidebar */}
+          <div className="flex flex-col sm:flex-row xl:flex-col gap-3 sm:gap-4 min-w-0 w-full xl:w-[300px] xl:shrink-0 sm:overflow-x-auto sm:snap-x sm:snap-mandatory hide-scrollbar sm:pb-4 sm:-mb-4">
+
             {/* Premium My Card */}
-            <PremiumCard currentBalance={currentBalance} currency={currency} />
+            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
+              <PremiumCard currentBalance={currentBalance} currency={currency} />
+            </div>
+
             {/* My Goals */}
-            <div className="w-[85vw] sm:w-[320px] xl:w-full shrink-0 snap-center">
+            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
               <GoalsSummary goals={goals} onNavigate={onNavigate} />
             </div>
 
-            {/* AI-Driven Gamification */}
-            <div className="w-[85vw] sm:w-[320px] xl:w-full shrink-0 snap-center">
+            {/* AI-Driven Gamification Quests */}
+            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
               <QuestsPanel transactions={transactions} />
             </div>
 
-            <div className="w-[85vw] sm:w-[320px] xl:w-full shrink-0 snap-center">
-              <SavingsChallenges />
+            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
+              <SavingsChallenges onNavigate={onNavigate} />
             </div>
 
             {/* Daily Stats */}
-            <div className="w-[85vw] sm:w-[320px] xl:w-full shrink-0 snap-center">
+            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
               <DailyStats currency={currency} dailySpendRate={dailySpendRate} streak={streak} transactionCount={transactions.length} />
+            </div>
+
+            {/* Streak Share */}
+            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center flex items-center justify-center">
+              <StreakShareCard
+                streak={streak}
+                level={level}
+                levelName={levelName}
+                savingsRate={savingsRate ?? 0}
+                currency={currency}
+              />
             </div>
           </div>
         </div>

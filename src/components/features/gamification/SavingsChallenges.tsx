@@ -12,7 +12,7 @@ interface Challenge {
   color: string;
 }
 
-export function SavingsChallenges() {
+export function SavingsChallenges({ onNavigate }: { onNavigate?: (view: any) => void }) {
   const challenges: Challenge[] = [
     {
       id: '1',
@@ -50,7 +50,10 @@ export function SavingsChallenges() {
           <Target size={18} className="text-[var(--teal)]" />
           <h3 className="font-manrope font-bold text-[var(--text-primary)] text-sm">Savings Challenges</h3>
         </div>
-        <button className="text-[10px] font-bold text-[var(--teal)] hover:underline bg-transparent border-none cursor-pointer">
+        <button
+          onClick={() => onNavigate?.('goals')}
+          className="text-[10px] font-bold text-[var(--teal)] hover:underline bg-transparent border-none cursor-pointer"
+        >
           VIEW ALL
         </button>
       </div>

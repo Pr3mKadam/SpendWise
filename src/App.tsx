@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { SpendWiseConfig } from './components/features/onboarding/OnboardingModal';
 import { useAuth } from './hooks/useAuth';
 import AuthView from './components/views/AuthView';
@@ -59,7 +59,7 @@ function AppAuthenticated() {
   };
 
   if (config === null) return <LoadingScreen />;
-  return <MainShell config={config} setConfig={setConfig as any} userId={userId} />;
+  return <MainShell config={config} setConfig={setConfig} userId={userId} />;
 }
 
 export default function App() {

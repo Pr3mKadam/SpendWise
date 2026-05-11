@@ -1,0 +1,47 @@
+# SpendWise — Active Tasks
+
+## 🔄 In Progress
+- [/] `QuestsPanel.tsx` — Upgrade with useQuestReset: clickable completion, XP pop animation, daily counter
+
+## ⬜ Remaining
+- [x] `QuestsPanel.tsx` — Wire daily quest completion + XP gained today display (Completed)
+- [ ] `advisor.ts` — Add 2–3 more varied daily quest types (streak quest, income quest)
+- [ ] `LevelProgress.tsx` — Ensure XP from completed quests feeds into level (via store or prop)
+- [x] TypeScript clean compile verification (final)
+- [x] **Mobile Dashboard Fix** — Phase 1 complete (11 fixes across 5 files)
+  - Outer wrapper: negative margins match `px-2` parent on mobile
+  - `DashboardHero`: reduced padding, `clamp(26px,7vw,56px)` balance, sparkline hidden <480px, flex-wrap mini-stats, full-width health bar
+  - `StatCard`: compact `10px/12px` padding, `15px→18px→xl` responsive font, `overflow-hidden`
+  - `WealthCity`: `h-[200px] sm:h-[260px]`, WealthCity hidden on mobile (only LevelProgress shown)
+  - `LevelProgress`: compact `10/14px` avatar, tighter fonts + gaps
+  - Right column: **stacked on mobile** → snap carousel on sm+ → vertical sidebar on xl
+  - `index.css`: xs breakpoint (480px) + `.hero-sparkline`, `.stat-value-text`, `.dashboard-root` CSS classes
+- [ ] Browser smoke test — visit all 5 upgraded views and screenshot confirm
+
+## 🚀 Future Enhancement Backlog
+*Based on the comprehensive application audit.*
+
+### AI & Data Entry
+- [ ] **Receipt Scanning OCR:** Camera upload for automatic transaction parsing.
+- [ ] **Voice Input:** Web Speech API integration for hands-free logging.
+- [ ] **Live Gemini Integration:** Activate `VITE_GEMINI_API_KEY` for real advisor insights.
+
+### Gamification
+- [ ] **Social Leaderboards:** Friends tab to compare levels/streaks.
+- [ ] **Dynamic Quest Generation:** Quests based on user's specific spending weaknesses.
+- [ ] **Server-Side Validation:** Move XP calculation to backend for anti-cheat.
+
+### Analytics & Budgeting
+- [ ] **Predictive Forecasting:** ML/historical run-rate to predict end-of-month balance.
+- [ ] **"Safe to Spend" Metric:** Dynamic daily spending limit calculation.
+- [ ] **Interactive Drill-Downs:** Clickable pie charts to view underlying transactions.
+
+### Subscriptions & Goals
+- [ ] **Price Hike Detection:** Flag when a recurring bill increases.
+- [ ] **One-Click Cancellation:** Email generation templates for canceling subs.
+- [ ] **Automated Round-ups:** Real background worker for transaction spare change.
+
+### Sync & Ecosystem
+- [ ] **Cloud Sync (BaaS):** Supabase/Firebase migration from `localStorage`.
+- [ ] **Real Bank Sync:** Plaid SDK integration to replace simulation.
+- [ ] **Venmo/Stripe Integration:** Real-time settlement for Shared Bills.

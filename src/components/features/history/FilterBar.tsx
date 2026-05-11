@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, X, Calendar } from 'lucide-react';
+import { Search, Filter, X, Calendar, IndianRupee } from 'lucide-react';
 import { Category } from '../../../types';
 
 export type TypeFilter = 'all' | 'credit' | 'debit';
@@ -21,6 +21,13 @@ export interface FilterBarProps {
   mergedIcons: Record<string, string>;
   hasFilters: boolean;
   clearFilters: () => void;
+  // Amount range
+  amountMin?: string;
+  setAmountMin?: (v: string) => void;
+  amountMax?: string;
+  setAmountMax?: (v: string) => void;
+  showAmountFilter?: boolean;
+  setShowAmountFilter?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export function FilterBar({
@@ -31,8 +38,12 @@ export function FilterBar({
   typeFilter, setTypeFilter,
   categoryFilter, setCategoryFilter,
   allCategories, mergedIcons,
-  hasFilters, clearFilters
+  hasFilters, clearFilters,
+  amountMin = '', setAmountMin,
+  amountMax = '', setAmountMax,
+  showAmountFilter = false, setShowAmountFilter,
 }: FilterBarProps) {
+  const hasAmountFilter = Boolean(amountMin || amountMax);
   return (
     <div className="card px-3 sm:px-5 py-3 sm:py-4 space-y-3">
       <div className="flex flex-col gap-2">
@@ -53,20 +64,37 @@ export function FilterBar({
             </button>
           )}
         </div>
-        <button
-          onClick={() => setShowDateFilter(s => !s)}
-          aria-label="Toggle date range filter"
-          aria-expanded={showDateFilter}
-          className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all self-start"
-          style={{
-            background: showDateFilter || dateFrom || dateTo ? 'var(--teal-dim)' : 'var(--surface-input)',
-            color: showDateFilter || dateFrom || dateTo ? 'var(--teal)' : 'var(--text-muted)',
-            border: showDateFilter || dateFrom || dateTo ? '1.5px solid var(--teal-glow)' : '1.5px solid transparent',
-            cursor: 'pointer', fontFamily: 'var(--font-inter)',
-          }}
-        >
-          <Calendar size={13} /> Date Range
-        </button>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            onClick={() => setShowDateFilter(s => !s)}
+            aria-label="Toggle date range filter"
+            aria-expanded={showDateFilter}
+            className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all self-start"
+            style={{
+              background: showDateFilter || dateFrom || dateTo ? 'var(--teal-dim)' : 'var(--surface-input)',
+              color: showDateFilter || dateFrom || dateTo ? 'var(--teal)' : 'var(--text-muted)',
+              border: showDateFilter || dateFrom || dateTo ? '1.5px solid var(--teal-glow)' : '1.5px solid transparent',
+              cursor: 'pointer', fontFamily: 'var(--font-inter)',
+            }}
+          >
+            <Calendar size={13} /> Date Range
+          </button>
+          {setShowAmountFilter && (
+            <button
+              onClick={() => setShowAmountFilter(s => !s)}
+              aria-label="Toggle amount range filter"
+              className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all self-start"
+              style={{
+                background: showAmountFilter || hasAmountFilter ? 'rgba(99,102,241,0.1)' : 'var(--surface-input)',
+                color: showAmountFilter || hasAmountFilter ? '#818cf8' : 'var(--text-muted)',
+                border: showAmountFilter || hasAmountFilter ? '1.5px solid rgba(99,102,241,0.3)' : '1.5px solid transparent',
+                cursor: 'pointer', fontFamily: 'var(--font-inter)',
+              }}
+            >
+              <IndianRupee size={13} /> Amount Range
+            </button>
+          )}
+        </div>
       </div>
 
       {showDateFilter && (
@@ -91,6 +119,33 @@ export function FilterBar({
             <button onClick={() => { setDateFrom(''); setDateTo(''); }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600 }}>
               <X size={12} style={{ display: 'inline', marginRight: 2 }} /> Clear dates
+            </button>
+          )}
+        </div>
+      )}
+
+      {showAmountFilter && setAmountMin && setAmountMax && (
+        <div className="flex flex-wrap items-center gap-3 px-1">
+          <div className="flex items-center gap-2">
+            <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Min</label>
+            <input
+              type="number" placeholder="0" value={amountMin} onChange={e => setAmountMin(e.target.value)}
+              className="rounded-lg px-3 py-1.5 text-sm focus:outline-none w-24"
+              style={{ background: 'var(--surface-input)', border: '1.5px solid rgba(99,102,241,0.2)', fontFamily: 'var(--font-inter)', color: 'var(--text-primary)' }}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Max</label>
+            <input
+              type="number" placeholder="∞" value={amountMax} onChange={e => setAmountMax(e.target.value)}
+              className="rounded-lg px-3 py-1.5 text-sm focus:outline-none w-24"
+              style={{ background: 'var(--surface-input)', border: '1.5px solid rgba(99,102,241,0.2)', fontFamily: 'var(--font-inter)', color: 'var(--text-primary)' }}
+            />
+          </div>
+          {(amountMin || amountMax) && (
+            <button onClick={() => { setAmountMin(''); setAmountMax(''); }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 600 }}>
+              <X size={12} style={{ display: 'inline', marginRight: 2 }} /> Clear
             </button>
           )}
         </div>

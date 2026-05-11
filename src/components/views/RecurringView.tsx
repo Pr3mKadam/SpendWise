@@ -1,6 +1,8 @@
-import { RefreshCw, Calendar, TrendingUp, Clock, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { RefreshCw, Calendar, TrendingUp, Clock, Zap, LayoutGrid } from 'lucide-react';
 import { RecurringPattern } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
+import { SubscriptionCalendar } from '../features/subscriptions/SubscriptionCalendar';
 
 interface RecurringViewProps {
   patterns: RecurringPattern[];
@@ -155,6 +157,18 @@ function SummaryBar({ patterns, currency }: { patterns: RecurringPattern[]; curr
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function RecurringView({ patterns, currency = '$' }: RecurringViewProps) {
+  const [view, setView] = useState<'list' | 'calendar'>('list');
+
+  // Build calendar-friendly subscription list from recurring patterns
+  const calendarSubs = patterns.map((p, i) => ({
+    id: `${p.merchant}-${i}`,
+    name: p.merchant,
+    amount: Math.round(p.avgAmount),
+    billingDay: parseInt(p.nextExpected.split('-')[2] ?? '1', 10) || 1,
+    emoji: p.category === 'Subscriptions' ? '📺' : p.category === 'Food & Dining' ? '🍔' : '💳',
+    color: p.frequency === 'weekly' ? '#3b82f6' : p.frequency === 'annual' ? '#f59e0b' : '#a855f7',
+  }));
+
   return (
     <div className="animate-fade-in-up">
       {/* Header */}
@@ -166,26 +180,51 @@ export default function RecurringView({ patterns, currency = '$' }: RecurringVie
           </h2>
           <p className="text-caption mt-1">Auto-detected from your transaction history</p>
         </div>
-        {patterns.length > 0 && (
-          <span
-            className="rounded-full px-3 py-1 text-xs font-semibold"
-            style={{ background: 'var(--purple-dim)', color: 'var(--purple)', fontFamily: 'var(--font-inter)' }}
-          >
-            {patterns.length} detected
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {patterns.length > 0 && (
+            <span
+              className="rounded-full px-3 py-1 text-xs font-semibold"
+              style={{ background: 'var(--purple-dim)', color: 'var(--purple)', fontFamily: 'var(--font-inter)' }}
+            >
+              {patterns.length} detected
+            </span>
+          )}
+          {/* View toggle */}
+          <div className="flex rounded-xl overflow-hidden border border-[var(--border)]">
+            {(['list', 'calendar'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold transition-colors border-none cursor-pointer"
+                style={{
+                  background: view === v ? 'var(--teal)' : 'var(--surface-card)',
+                  color: view === v ? '#fff' : 'var(--text-muted)',
+                  fontFamily: 'var(--font-inter)',
+                }}
+              >
+                {v === 'list' ? <LayoutGrid size={12} /> : <Calendar size={12} />}
+                {v.charAt(0).toUpperCase() + v.slice(1)}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {patterns.length > 0 && <SummaryBar patterns={patterns} currency={currency} />}
-
-      {patterns.length === 0 ? (
-        <div className="card p-8"><EmptyState /></div>
+      {view === 'list' ? (
+        <>
+          {patterns.length > 0 && <SummaryBar patterns={patterns} currency={currency} />}
+          {patterns.length === 0 ? (
+            <div className="card p-8"><EmptyState /></div>
+          ) : (
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+              {patterns.map(p => (
+                <PatternCard key={`${p.merchant}-${p.frequency}`} pattern={p} currency={currency} />
+              ))}
+            </div>
+          )}
+        </>
       ) : (
-        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {patterns.map(p => (
-            <PatternCard key={`${p.merchant}-${p.frequency}`} pattern={p} currency={currency} />
-          ))}
-        </div>
+        <SubscriptionCalendar subscriptions={calendarSubs} currency={currency} />
       )}
     </div>
   );

@@ -8,7 +8,8 @@ import { Ico } from '../common/ui/Icons';
 import { Btn } from '../common/ui/Button';
 import { Err } from '../common/ui/Alert';
 import { CreateGroupModal, InviteModal, WalletModal, ExpenseModal, GoalModal, ContribModal } from '../features/shared/SharedModals';
-import { WalletTab, ExpensesTab, GoalsTab, MembersTab } from '../features/shared/SharedTabs';
+import { WalletTab, ExpensesTab, GoalsTab, MembersTab, ActivityTab } from '../features/shared/SharedTabs';
+import { Activity } from 'lucide-react';
 
 const PURPOSE_EMOJI: Record<string, string> = { friends: '🎉', roommates: '🏠', family: '👨‍👩‍👧', other: '🤝' };
 
@@ -124,12 +125,13 @@ function GroupSelector({ groups, selectedId, onSelect, onCreate }: { groups: any
   );
 }
 
-type Tab = 'wallet' | 'expenses' | 'goals' | 'members';
+type Tab = 'wallet' | 'expenses' | 'goals' | 'members' | 'activity';
 const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'wallet',   label: 'Wallet',   icon: <Ico.Wallet /> },
   { id: 'expenses', label: 'Expenses', icon: <Ico.Split /> },
   { id: 'goals',    label: 'Goals',    icon: <Ico.Target /> },
   { id: 'members',  label: 'Members',  icon: <Ico.Users /> },
+  { id: 'activity', label: 'Activity', icon: <Activity size={18} /> },
 ];
 
 class SharedErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -200,6 +202,36 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
             {/* Header Row */}
             <div className="flex items-center gap-2.5 mb-5 flex-wrap">
               <GroupSelector groups={sw.groups} selectedId={sw.selectedGroupId} onSelect={sw.setSelectedGroupId} onCreate={() => setCreate(true)} />
+              
+              {/* P2P Sync Status */}
+              <div className="flex items-center gap-3 bg-[var(--card)] border-[1.5px] border-[var(--card-border)] rounded-xl px-4 py-2 text-[0.85rem] shadow-sm ml-auto">
+                <div className="flex items-center gap-2">
+                  <span className={`relative flex h-2.5 w-2.5`}>
+                    {sw.syncState === 'connecting' && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>}
+                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${sw.syncState === 'connected' ? 'bg-emerald-500' : sw.syncState === 'connecting' ? 'bg-amber-500' : 'bg-red-500'}`}></span>
+                  </span>
+                  <span className="font-bold text-[var(--text)]">P2P Sync</span>
+                  <span className="text-[var(--text-secondary)]">
+                    {sw.syncState === 'connected' ? `(${sw.connectedPeers} peers)` : sw.syncState}
+                  </span>
+                </div>
+                <div className="h-4 w-[1px] bg-[var(--card-border)]" />
+                <span className="font-mono text-[0.7rem] text-[var(--text-secondary)] opacity-80" title="Your Peer ID">
+                  ID: {sw.localPeerId}
+                </span>
+                <button 
+                  onClick={() => {
+                    const id = prompt('Enter Peer ID to connect:');
+                    if (id) sw.connectToPeer(id);
+                  }}
+                  className="ml-2 px-3 py-1.5 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 rounded-lg font-bold cursor-pointer transition-colors border-none text-[0.8rem]"
+                >
+                  Connect
+                </button>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5 mb-5 flex-wrap">
               {sw.selectedGroupId && (
                 <button 
                   onClick={() => {
@@ -226,7 +258,6 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
               {sw.selectedGroupId && addLabel && (
                 <Btn v="primary" onClick={handleAdd}>{addLabel}</Btn>
               )}
-              <Btn v="ghost" onClick={() => setCreate(true)}><Ico.Plus /> New Group</Btn>
             </div>
 
             {sw.error && <Err msg={sw.error} />}
@@ -260,6 +291,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                   {tab === 'expenses' && <ExpensesTab expenses={sw.expenses} members={sw.members} splitBalances={sw.splitBalances} onDelete={sw.deleteExpense} currency={currency} />}
                   {tab === 'goals'    && <GoalsTab goals={sw.goals} onDelete={sw.deleteGoal} onContrib={openContrib} currency={currency} />}
                   {tab === 'members'  && <MembersTab members={sw.members} uid={userId} isOwner={isOwner} onRemove={sw.removeMember} onInvite={() => setInvite(true)} />}
+                  {tab === 'activity' && <ActivityTab entries={sw.walletEntries} expenses={sw.expenses} goals={sw.goals} members={sw.members} currency={currency} />}
                 </div>
               </>
             )}

@@ -3,7 +3,7 @@ import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   LineChart, Line, ReferenceLine, CartesianGrid,
 } from 'recharts';
-import { TrendingUp, Wallet, PiggyBank, ArrowUpRight, Receipt } from 'lucide-react';
+import { TrendingUp, Wallet, PiggyBank, ArrowUpRight, Receipt, Store } from 'lucide-react';
 import { MonthlyHistoryPoint, MonthlyStats, CategorySpend } from '../../types';
 import { useCategories } from '../../hooks/useCategories';
 import { TaxPredictor } from '../features/analytics/TaxPredictor';
@@ -12,6 +12,13 @@ import { SpendingForecast } from '../features/analytics/SpendingForecast';
 import { calculateHealthScore } from '../../utils/insights/healthScore';
 import { ShieldCheck, Info } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { PeerComparison } from '../features/analytics/PeerComparison';
+import { CashFlowWaterfall } from '../features/analytics/CashFlowWaterfall';
+import { HealthScoreChart } from '../features/analytics/HealthScoreChart';
+import SpendingDonut from '../features/analytics/SpendingDonut';
+import BalanceChart from '../features/analytics/BalanceChart';
+import SpendingHeatmap from '../features/analytics/SpendingHeatmap';
+import { useFinanceState } from '../../hooks/useFinanceState';
 
 interface AnalyticsViewProps {
   monthlyHistory:   MonthlyHistoryPoint[];
@@ -20,6 +27,7 @@ interface AnalyticsViewProps {
   totalSpent:       number;
   currency?:        string;
   transactions?:    any[];
+  onNavigate?:      (view: string, category?: string) => void;
 }
 
 function ChartTooltip({ active, payload, label, currency = '$' }: { active?: boolean; payload?: any[]; label?: string; currency?: string }) {
@@ -73,8 +81,10 @@ function StatCard({ label, value, sub, color, icon: Icon }: { label: string; val
   );
 }
 
-export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySpending, totalSpent, currency = '$', transactions = [] }: AnalyticsViewProps) {
+export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySpending, totalSpent, currency = '$', transactions = [], onNavigate }: AnalyticsViewProps) {
   const { mergedColors, mergedIcons } = useCategories();
+  const financeState = useFinanceState();
+  const balanceData = financeState.balanceTrend ?? [];
   
   const currentBalance = useMemo(() => {
     return transactions.reduce((acc, tx) => {
@@ -297,6 +307,64 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
         </div>
       </div>
 
+      {/* Spending Donut Chart */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SpendingDonut data={categorySpending} totalSpent={totalSpent} currency={currency} />
+        {balanceData.length > 0 && <BalanceChart data={balanceData} currency={currency} />}
+      </div>
+
+      {/* Spending Heatmap Calendar */}
+      {transactions.length > 0 && (
+        <SpendingHeatmap transactions={transactions} currency={currency} />
+      )}
+
+      {/* Top Merchants Leaderboard */}
+      {transactions.length > 0 && (() => {
+        const merchantMap: Record<string, number> = {};
+        transactions.filter(t => t.type === 'debit').forEach(t => {
+          merchantMap[t.merchant] = (merchantMap[t.merchant] || 0) + t.amount;
+        });
+        const topMerchants = Object.entries(merchantMap)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 6);
+        const maxVal = topMerchants[0]?.[1] || 1;
+        return (
+          <div className="card px-4 sm:px-6 py-5">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="w-9 h-9 rounded-xl bg-violet-500/10 flex items-center justify-center shrink-0">
+                <Store size={18} className="text-violet-500" />
+              </div>
+              <div>
+                <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Top Merchants</h3>
+                <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Where your money goes most</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {topMerchants.map(([merchant, amount], i) => (
+                <div key={merchant} className="flex items-center gap-3">
+                  <span className="text-[11px] font-black tabular-nums w-4 shrink-0" style={{ color: i < 3 ? 'var(--teal)' : 'var(--text-muted)' }}>#{i + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between mb-1">
+                      <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}>{merchant}</span>
+                      <span className="text-sm font-bold tabular-nums shrink-0 ml-2" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)' }}>{currency}{amount.toLocaleString()}</span>
+                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: '#f0f2f5' }}>
+                      <div
+                        className="h-full rounded-full transition-all duration-700"
+                        style={{
+                          width: `${(amount / maxVal) * 100}%`,
+                          background: i === 0 ? '#7c3aed' : i === 1 ? '#8b5cf6' : i === 2 ? '#a78bfa' : '#c4b5fd'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Tax Liability Predictor */}
       <div className="card px-4 sm:px-6 py-5">
         <div className="flex items-center gap-3 mb-6">
@@ -318,8 +386,23 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
       </div>
 
       {/* Spending Forecast */}
-      <div className="card px-4 sm:px-6 py-5">
+      <div className="card px-4 sm:px-6 py-5 mt-6">
         <SpendingForecast transactions={transactions || []} currency={currency} />
+      </div>
+      
+      {/* Peer Comparison */}
+      <div className="mt-6">
+        <PeerComparison categorySpending={categorySpending} currency={currency} />
+      </div>
+
+      {/* Cash Flow Waterfall */}
+      <div className="mt-6">
+        <CashFlowWaterfall totalIncome={monthlyStats.totalIncome} totalExpenses={monthlyStats.totalExpenses} currency={currency} />
+      </div>
+
+      {/* Financial Health Score History */}
+      <div className="mt-6">
+        <HealthScoreChart currentScore={health.score} />
       </div>
     </div>
   );

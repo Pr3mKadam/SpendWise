@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { detectAnomalies } from './anomaly';
-import type { Transaction } from '../../../types/finance';
+import type { Transaction } from '../../types';
 
 // Helper to build a minimal Transaction
 function tx(overrides: Partial<Transaction> & { amount: number; category: string }): Transaction {

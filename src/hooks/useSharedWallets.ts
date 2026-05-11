@@ -1,72 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { 
+  SharedGroup, SharedGroupMember, SharedWalletEntry, 
+  SharedExpense, SharedExpenseSplit, SharedGoal, 
+  SharedGoalContribution, SharedStorage, mergeSharedStorage 
+} from '../utils/crdt';
+import { syncEngine, SyncState } from '../utils/syncEngine';
 
-export interface SharedGroup {
-  id: string;
-  name: string;
-  purpose: string;
-  created_by: string;
-}
-
-export interface SharedGroupMember {
-  id: string;
-  group_id: string;
-  user_id?: string;
-  invited_email?: string;
-  display_name: string;
-  emoji: string;
-  role: string;
-  status: string;
-  invited_at: string;
-  joined_at?: string;
-}
-
-export interface SharedWalletEntry {
-  id: string;
-  group_id: string;
-  member_id: string;
-  kind: 'contribution' | 'spend_from_pot' | 'withdrawal';
-  amount: number;
-  label: string;
-  date: string;
-}
-
-export interface SharedExpense {
-  id: string;
-  group_id: string;
-  paid_by_member_id: string;
-  label: string;
-  category: string;
-  amount: number;
-  date: string;
-  splits?: SharedExpenseSplit[];
-}
-
-export interface SharedExpenseSplit {
-  id: string;
-  expense_id: string;
-  member_id: string;
-  share_percent: number;
-}
-
-export interface SharedGoal {
-  id: string;
-  group_id: string;
-  name: string;
-  emoji: string;
-  target_amount: number;
-  target_date: string;
-  color: string;
-  contributions?: SharedGoalContribution[];
-}
-
-export interface SharedGoalContribution {
-  id: string;
-  goal_id: string;
-  member_id: string;
-  amount: number;
-  date: string;
-  note?: string;
-}
+export type { SharedGroup, SharedGroupMember, SharedWalletEntry, SharedExpense, SharedExpenseSplit, SharedGoal, SharedGoalContribution };
 
 export interface PendingInvite {
   memberId: string;
@@ -76,20 +16,17 @@ export interface PendingInvite {
   invitedAt: string;
 }
 
-const STORAGE_KEY = 'spendwise_shared_wallets_v1';
-
-interface SharedStorage {
-  groups: SharedGroup[];
-  members: SharedGroupMember[];
-  walletEntries: SharedWalletEntry[];
-  expenses: SharedExpense[];
-  goals: SharedGoal[];
-}
+const STORAGE_KEY = 'spendwise_shared_wallets_v2';
 
 function loadStorage(): SharedStorage {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
-    if (s) return JSON.parse(s);
+    if (s) {
+      const parsed = JSON.parse(s);
+      // Migrate v1 to v2 (add tombstones)
+      if (!parsed.deleted_ids) parsed.deleted_ids = [];
+      return parsed;
+    }
   } catch { /* ignore */ }
   return {
     groups: [],
@@ -97,6 +34,7 @@ function loadStorage(): SharedStorage {
     walletEntries: [],
     expenses: [],
     goals: [],
+    deleted_ids: [],
   };
 }
 
@@ -108,21 +46,61 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
   const [data, setData] = useState<SharedStorage>(loadStorage);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  
+  // Sync state
+  const [syncState, setSyncState] = useState<SyncState>('disconnected');
+  const [connectedPeers, setConnectedPeers] = useState<number>(0);
+
+  // Initialize Sync Engine
+  useEffect(() => {
+    syncEngine.init();
+
+    syncEngine.onStateChange((state, peers) => {
+      setSyncState(state);
+      setConnectedPeers(peers);
+    });
+
+    syncEngine.onData((incoming) => {
+      try {
+        const remoteData = typeof incoming === 'string' ? JSON.parse(incoming) : incoming;
+        if (remoteData && Array.isArray(remoteData.groups)) {
+          setData(prev => {
+            const next = mergeSharedStorage(prev, remoteData as SharedStorage);
+            saveStorage(next);
+            return next;
+          });
+        }
+      } catch (err) {
+        console.error("Failed to parse incoming sync data", err);
+      }
+    });
+
+    return () => {
+      // Clean up
+    };
+  }, []);
+
+  // Broadcast full state when a new peer connects
+  useEffect(() => {
+    if (syncState === 'connected' && connectedPeers > 0) {
+      syncEngine.broadcast(data);
+    }
+  }, [connectedPeers, syncState]); // Only trigger when connection count/state changes
 
   const groups = data.groups;
   const selectedGroup = groups.find(g => g.id === selectedGroupId) ?? null;
-  const members = data.members.filter(m => m.group_id === selectedGroupId);
-  const walletEntries = data.walletEntries.filter(w => w.group_id === selectedGroupId);
-  const expenses = data.expenses.filter(e => e.group_id === selectedGroupId);
-  const goals = data.goals.filter(g => g.group_id === selectedGroupId);
+  const members = data.members.filter(m => m.group_id === selectedGroupId && !data.deleted_ids.includes(m.id));
+  const walletEntries = data.walletEntries.filter(w => w.group_id === selectedGroupId && !data.deleted_ids.includes(w.id));
+  const expenses = data.expenses.filter(e => e.group_id === selectedGroupId && !data.deleted_ids.includes(e.id));
+  const goals = data.goals.filter(g => g.group_id === selectedGroupId && !data.deleted_ids.includes(g.id));
   
   // Calculate pending invites for the currently logged in user
   const pendingInvites: PendingInvite[] = useMemo(() => {
     if (!userEmail) return [];
-    const myInvites = data.members.filter(m => m.invited_email === userEmail && m.status === 'pending');
+    const myInvites = data.members.filter(m => m.invited_email === userEmail && m.status === 'pending' && !data.deleted_ids.includes(m.id));
     return myInvites.map(inv => {
       const g = data.groups.find(x => x.id === inv.group_id);
-      if (!g) return null;
+      if (!g || data.deleted_ids.includes(g.id)) return null;
       return {
         memberId: inv.id,
         groupId: g.id,
@@ -131,7 +109,7 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
         invitedAt: inv.invited_at
       };
     }).filter(Boolean) as PendingInvite[];
-  }, [data.members, data.groups, userEmail]);
+  }, [data.members, data.groups, userEmail, data.deleted_ids]);
 
   const loading = false;
 
@@ -159,9 +137,15 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
     setData(prev => {
       const next = updater(prev);
       saveStorage(next);
+      syncEngine.broadcast(next); // Broadcast on every mutation!
       return next;
     });
   };
+
+  const markDeleted = (prev: SharedStorage, id: string) => ({
+    ...prev,
+    deleted_ids: [...prev.deleted_ids, id]
+  });
 
   return {
     groups,
@@ -176,6 +160,13 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
     splitBalances,
     loading,
     error,
+    
+    // Sync exposed props
+    syncState,
+    connectedPeers,
+    localPeerId: syncEngine.localPeerId,
+    connectToPeer: (remoteId: string) => syncEngine.connect(remoteId),
+
     setSelectedGroupId,
     createGroup: async (name: string, purpose: string, creatorName: string, creatorEmoji: string = '👑') => {
       if (!userId) return;
@@ -200,14 +191,7 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
       setSelectedGroupId(groupId);
     },
     deleteGroup: async (groupId: string) => {
-      mutate(prev => ({
-        ...prev,
-        groups: prev.groups.filter(g => g.id !== groupId),
-        members: prev.members.filter(m => m.group_id !== groupId),
-        walletEntries: prev.walletEntries.filter(w => w.group_id !== groupId),
-        expenses: prev.expenses.filter(e => e.group_id !== groupId),
-        goals: prev.goals.filter(g => g.group_id !== groupId),
-      }));
+      mutate(prev => markDeleted(prev, groupId));
       setSelectedGroupId(null);
     },
     inviteMember: async (email: string, displayName: string, emoji: string = '👤') => {
@@ -233,16 +217,10 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
       }));
     },
     declineInvite: async (memberId: string) => {
-      mutate(prev => ({
-        ...prev,
-        members: prev.members.filter(m => m.id !== memberId)
-      }));
+      mutate(prev => markDeleted(prev, memberId));
     },
     removeMember: async (memberId: string) => {
-      mutate(prev => ({
-        ...prev,
-        members: prev.members.filter(m => m.id !== memberId)
-      }));
+      mutate(prev => markDeleted(prev, memberId));
     },
     addWalletEntry: async (payload: { memberId: string; kind: SharedWalletEntry['kind']; amount: number; label: string; date: string }) => {
       if (!selectedGroupId) return;
@@ -260,10 +238,7 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
       }));
     },
     deleteWalletEntry: async (id: string) => {
-      mutate(prev => ({
-        ...prev,
-        walletEntries: prev.walletEntries.filter(w => w.id !== id)
-      }));
+      mutate(prev => markDeleted(prev, id));
     },
     addExpense: async (payload: {
       paidByMemberId: string;
@@ -295,10 +270,7 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
       }));
     },
     deleteExpense: async (id: string) => {
-      mutate(prev => ({
-        ...prev,
-        expenses: prev.expenses.filter(e => e.id !== id)
-      }));
+      mutate(prev => markDeleted(prev, id));
     },
     addGoal: async (payload: { name: string; emoji: string; targetAmount: number; targetDate: string; color: string }) => {
       if (!selectedGroupId) return;
@@ -336,10 +308,7 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
       }));
     },
     deleteGoal: async (id: string) => {
-      mutate(prev => ({
-        ...prev,
-        goals: prev.goals.filter(g => g.id !== id)
-      }));
+      mutate(prev => markDeleted(prev, id));
     },
     exportGroup: (groupId: string) => {
       const g = data.groups.find(x => x.id === groupId);
@@ -356,6 +325,7 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
         walletEntries: groupWallet,
         expenses: groupExpenses,
         goals: groupGoals,
+        peerId: syncEngine.localPeerId,
         exportedAt: new Date().toISOString()
       };
       
@@ -367,7 +337,6 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
         if (decoded.type !== 'spendwise-shared-group') throw new Error('Invalid group data');
         
         mutate(prev => {
-          // Avoid duplicates
           const otherGroups = prev.groups.filter(g => g.id !== decoded.group.id);
           const otherMembers = prev.members.filter(m => m.group_id !== decoded.group.id);
           const otherWallet = prev.walletEntries.filter(w => w.group_id !== decoded.group.id);
@@ -380,9 +349,16 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
             walletEntries: [...otherWallet, ...decoded.walletEntries],
             expenses: [...otherExpenses, ...decoded.expenses],
             goals: [...otherGoals, ...decoded.goals],
+            deleted_ids: prev.deleted_ids // Preserve existing tombstones
           };
         });
         setSelectedGroupId(decoded.group.id);
+        
+        // Auto-connect to peer if peerId is present
+        if (decoded.peerId) {
+          syncEngine.connect(decoded.peerId);
+        }
+        
         return true;
       } catch (err) {
         console.error('Import failed:', err);

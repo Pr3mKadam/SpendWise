@@ -1,10 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
 import { useFinanceState } from '../../hooks/useFinanceState';
 import { getFinancialAdvice } from '../../utils/insights/advisor';
 import { getSpendingPersonality } from '../../utils/insights/reporting';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import EducationCards from '../features/advisor/EducationCards';
+
+const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';
+const MAX_HISTORY = 20;
 
 interface Message {
   id: string;
@@ -16,40 +19,112 @@ interface Message {
 }
 
 const parseMarkdown = (text: string) => {
-  const parts = text.split(/(\*\*.*?\*\*)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith('**') && part.endsWith('**')) {
-      return <strong key={i}>{part.slice(2, -2)}</strong>;
+  // Split by lines first for list rendering
+  const lines = text.split('\n');
+  return lines.map((line, lineIdx) => {
+    const isBullet = line.trimStart().startsWith('- ') || line.trimStart().startsWith('• ');
+    const content = isBullet ? line.replace(/^[\s\-•]+/, '') : line;
+    const parts = content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+    if (isBullet) {
+      return <div key={lineIdx} className="flex items-start gap-1.5 my-0.5"><span className="mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'var(--teal)' }} /><span>{parts}</span></div>;
     }
-    return <span key={i}>{part}</span>;
+    return <span key={lineIdx}>{parts}{lineIdx < lines.length - 1 && <br />}</span>;
   });
 };
 
-const QUICK_ACTIONS = [
-  "Where did I spend the most?",
-  "How can I save more?",
-  "What was my biggest expense?",
-  "Am I on budget?"
-];
+interface AdvisorViewProps {
+  onNavigate?: (view: any) => void;
+}
 
-export default function AdvisorView() {
+const INITIAL_MESSAGE: Message = {
+  id: '1',
+  text: "Hello! I'm your SpendWise Advisor. How can I help you with your finances today?",
+  sender: 'ai',
+  timestamp: new Date().toISOString()
+};
+
+export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
   const { transactions, monthlyStats } = useFinanceState();
   const { format } = useCurrency();
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      text: "Hello! I'm your SpendWise Advisor. How can I help you with your finances today?",
-      sender: 'ai',
-      timestamp: new Date().toISOString()
-    }
-  ]);
+
+  // Persist messages in localStorage
+  const [messages, setMessages] = useState<Message[]>(() => {
+    try {
+      const saved = localStorage.getItem(ADVISOR_HISTORY_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch { /* ignore */ }
+    return [INITIAL_MESSAGE];
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [personality, setPersonality] = useState<any>(null);
   const [isAnalyzingPersonality, setIsAnalyzingPersonality] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Persist messages whenever they change
+  useEffect(() => {
+    try {
+      const toSave = messages.slice(-MAX_HISTORY);
+      localStorage.setItem(ADVISOR_HISTORY_KEY, JSON.stringify(toSave));
+    } catch { /* ignore */ }
+  }, [messages]);
+
+  const handleSend = useCallback(async (overrideInput?: string) => {
+    const text = (overrideInput ?? input).trim();
+    if (!text || isLoading) return;
+
+    const userMsg: Message = {
+      id: Date.now().toString(),
+      text,
+      sender: 'user',
+      timestamp: new Date().toISOString()
+    };
+
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      let response = await getFinancialAdvice(text, transactions);
+      
+      let actionTag = null;
+      const actionMatch = response.match(/\[ACTION:([A-Z_]+)\]/);
+      if (actionMatch) {
+        actionTag = actionMatch[1];
+        response = response.replace(actionMatch[0], '').trim();
+      }
+
+      const aiMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        text: response,
+        sender: 'ai',
+        timestamp: new Date().toISOString(),
+        type: actionTag ? 'action_card' : 'text',
+        data: actionTag ? { action: actionTag } : undefined
+      };
+      setMessages(prev => [...prev, aiMsg]);
+    } catch (error) {
+      console.error(error);
+      const errorMsg: Message = {
+        id: (Date.now() + 1).toString(),
+        text: "I'm sorry, I'm having trouble connecting to my brain right now. Please check your API key.",
+        sender: 'ai',
+        timestamp: new Date().toISOString()
+      };
+      setMessages(prev => [...prev, errorMsg]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [input, isLoading, transactions]);
+
+
 
   useEffect(() => {
     // Proactive Daily Briefing
@@ -81,8 +156,9 @@ export default function AdvisorView() {
 
       recognition.onresult = (event: any) => {
         const transcript = event.results[0][0].transcript;
-        setInput(transcript);
         setIsListening(false);
+        // Auto-send after voice input
+        handleSend(transcript);
       };
 
       recognition.onerror = () => setIsListening(false);
@@ -90,7 +166,7 @@ export default function AdvisorView() {
 
       recognitionRef.current = recognition;
     }
-  }, []);
+  }, [handleSend]);
 
   const toggleListening = () => {
     if (isListening) {
@@ -107,43 +183,18 @@ export default function AdvisorView() {
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      text: input,
-      sender: 'user',
-      timestamp: new Date().toISOString()
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    const currentInput = input;
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const response = await getFinancialAdvice(currentInput, transactions);
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        text: response,
-        sender: 'ai',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, aiMsg]);
-    } catch (error) {
-      console.error(error);
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        text: "I'm sorry, I'm having trouble connecting to my brain right now. Please check your API key.",
-        sender: 'ai',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMsg]);
-    } finally {
-      setIsLoading(false);
+  const dynamicQuickActions = React.useMemo(() => {
+    const actions = [];
+    if (monthlyStats.totalExpenses > monthlyStats.totalIncome && monthlyStats.totalIncome > 0) {
+      actions.push("How can I avoid going negative?");
     }
-  };
+    if (monthlyStats.topCategory) {
+      actions.push(`Why is my ${monthlyStats.topCategory} spending so high?`);
+    }
+    actions.push("What was my biggest expense?");
+    actions.push("How can I save more?");
+    return actions.slice(0, 4);
+  }, [monthlyStats]);
 
   const handleAnalyzePersonality = async () => {
     setIsAnalyzingPersonality(true);
@@ -197,7 +248,16 @@ export default function AdvisorView() {
               />
             </div>
             <p className="text-[10px] opacity-70 leading-relaxed mt-2">
-              You are saving more than 65% of users in your category. Keep it up!
+              {(() => {
+                const rate = monthlyStats.totalIncome > 0
+                  ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome * 100)
+                  : 0;
+                if (rate <= 0) return 'Start saving to improve your financial health!';
+                if (rate < 10) return 'Try to save at least 10% of your income each month.';
+                if (rate < 20) return 'Good progress! Aim for 20% savings rate for long-term stability.';
+                if (rate < 30) return 'Great savings rate! You are outpacing most households.';
+                return `Excellent! A ${rate.toFixed(0)}% savings rate puts you in the top tier.`;
+              })()}
             </p>
           </div>
         </div>
@@ -318,12 +378,34 @@ export default function AdvisorView() {
                       </div>
                     </div>
                   ) : (
-                    <div className={`p-4 rounded-2xl text-xs leading-relaxed shadow-sm ${
-                      msg.sender === 'user' 
-                        ? 'bg-[var(--teal)] text-white' 
-                        : 'bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)]'
-                    }`}>
-                      {msg.sender === 'ai' ? parseMarkdown(msg.text) : msg.text}
+                    <div className="flex flex-col gap-2">
+                      <div className={`p-4 rounded-2xl text-xs leading-relaxed shadow-sm ${
+                        msg.sender === 'user' 
+                          ? 'bg-[var(--teal)] text-white' 
+                          : 'bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)]'
+                      }`}>
+                        {msg.sender === 'ai' ? parseMarkdown(msg.text) : msg.text}
+                      </div>
+                      
+                      {msg.type === 'action_card' && msg.data?.action && (
+                        <div className="flex gap-2">
+                          {msg.data.action === 'CREATE_BUDGET' && (
+                            <button onClick={() => onNavigate && onNavigate('budget')} className="px-4 py-2 bg-[var(--teal)] text-white rounded-xl text-xs font-bold hover:opacity-90 shadow-sm border-none cursor-pointer">
+                              Create a Budget
+                            </button>
+                          )}
+                          {msg.data.action === 'VIEW_ANALYTICS' && (
+                            <button onClick={() => onNavigate && onNavigate('analytics')} className="px-4 py-2 bg-[var(--purple)] text-white rounded-xl text-xs font-bold hover:opacity-90 shadow-sm border-none cursor-pointer">
+                              View Analytics
+                            </button>
+                          )}
+                          {msg.data.action === 'SET_GOAL' && (
+                            <button onClick={() => onNavigate && onNavigate('goals')} className="px-4 py-2 bg-yellow-500 text-white rounded-xl text-xs font-bold hover:opacity-90 shadow-sm border-none cursor-pointer">
+                              Set a Goal
+                            </button>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   
@@ -375,18 +457,40 @@ export default function AdvisorView() {
         {/* Quick Actions & Input */}
         <div className="p-6 pt-0">
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-3 mb-1">
-            {QUICK_ACTIONS.map((action, idx) => (
+            {dynamicQuickActions.map((action, idx) => (
               <button
                 key={idx}
                 onClick={() => {
                   setInput(action);
                 }}
-                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[var(--surface-input)] border border-[var(--border)] text-[10px] font-medium text-[var(--text-primary)] hover:bg-[var(--teal)] hover:text-white hover:border-[var(--teal)] transition-all"
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[var(--surface-input)] border border-[var(--border)] text-[10px] font-medium text-[var(--text-primary)] hover:bg-[var(--teal)] hover:text-white hover:border-[var(--teal)] transition-all cursor-pointer"
               >
                 {action}
               </button>
             ))}
           </div>
+
+          {/* Voice Listening Overlay */}
+          {isListening && (
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-md z-50 rounded-3xl flex flex-col items-center justify-center animate-fade-in">
+              <div className="relative w-32 h-32 flex items-center justify-center mb-8">
+                <div className="absolute inset-0 bg-[var(--teal)] rounded-full opacity-20 animate-ping" style={{ animationDuration: '2s' }} />
+                <div className="absolute inset-4 bg-[var(--teal)] rounded-full opacity-40 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }} />
+                <div className="relative w-16 h-16 bg-gradient-to-tr from-[var(--teal)] to-[var(--teal-dim)] rounded-full shadow-[0_0_40px_var(--teal)] flex items-center justify-center">
+                  <Mic size={32} className="text-white" />
+                </div>
+              </div>
+              <h3 className="text-white font-manrope font-bold text-xl mb-2">Listening...</h3>
+              <p className="text-white/70 text-sm">Speak your transaction or ask a question</p>
+              <button 
+                onClick={toggleListening}
+                className="mt-8 px-6 py-3 rounded-full bg-red-500/20 text-red-400 font-bold text-sm border border-red-500/30 hover:bg-red-500/30 transition-all"
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
           <div className="relative flex items-center">
             <input
               type="text"
@@ -406,7 +510,7 @@ export default function AdvisorView() {
                 {isListening ? <MicOff size={16} /> : <Mic size={16} />}
               </button>
               <button 
-                onClick={handleSend}
+                onClick={() => handleSend()}
                 disabled={!input.trim() || isLoading}
                 className="p-2.5 rounded-xl bg-[var(--teal)] text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
               >

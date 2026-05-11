@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { Target, Plus } from 'lucide-react';
+import { Target, Plus, Award } from 'lucide-react';
 import { SavingsGoal, GoalStatus } from '../../types';
 import { GoalModal, GoalFormData } from '../features/goals/GoalModal';
 import { GoalCard } from '../features/goals/GoalCard';
 import { GoalsSummary } from '../features/goals/GoalsSummary';
+import { BadgeGallery } from '../features/gamification/BadgeGallery';
+import { useGamification } from '../../hooks/useGamification';
 
 interface GoalStats {
   activeCount:      number;
@@ -24,11 +26,13 @@ interface GoalsViewProps {
   onDelete:     (id: string) => void;
   onContribute: (id: string, amount: number) => void;
   currency?:    string;
+  transactions?: any[];
 }
 
-export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onContribute, currency = '$' }: GoalsViewProps) {
+export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onContribute, currency = '$', transactions = [] }: GoalsViewProps) {
   const [showAdd,  setShowAdd]  = useState(false);
   const [editGoal, setEditGoal] = useState<SavingsGoal | null>(null);
+  const { streak, level } = useGamification(transactions);
 
   useEffect(() => {
     const handleOpenAdd = () => setShowAdd(true);
@@ -128,6 +132,17 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
           ))}
         </div>
       )}
+
+      {/* Achievement Badge Gallery */}
+      <div className="mt-2">
+        <BadgeGallery
+          transactions={transactions}
+          streak={streak}
+          level={level}
+          goals={goals}
+          currency={currency}
+        />
+      </div>
 
       {/* Add modal */}
       {showAdd && (

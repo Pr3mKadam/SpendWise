@@ -148,22 +148,41 @@ export default function EducationView({
           </div>
         </div>
 
-        {/* ── Personalized Tip ── */}
-        <div className="card p-5 bg-gradient-to-br from-teal-500/5 to-cyan-500/5 border-teal-500/10 flex items-start gap-4">
-          <div className="w-10 h-10 rounded-2xl bg-[var(--teal-dim)] flex items-center justify-center shrink-0">
-            <Sparkles size={18} style={{ color: 'var(--teal)' }} />
+        {/* ── Personalized Tip & Simulation Lab ── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="card p-5 bg-gradient-to-br from-teal-500/5 to-cyan-500/5 border-teal-500/10 flex items-start gap-4 h-full">
+            <div className="w-10 h-10 rounded-2xl bg-[var(--teal-dim)] flex items-center justify-center shrink-0">
+              <Sparkles size={18} style={{ color: 'var(--teal)' }} />
+            </div>
+            <div>
+              <p className="font-manrope font-bold text-sm text-[var(--text-primary)] mb-1">
+                Personalized for your spending
+              </p>
+              <p className="font-inter text-xs text-[var(--text-secondary)] leading-relaxed">
+                Your top spending category is <strong>{topCategory}</strong>. We recommend starting with the{' '}
+                <button onClick={() => setActiveLesson(LESSONS.find(l => l.id === 'l1')!)} className="text-[var(--teal)] font-bold underline underline-offset-2 bg-transparent border-none cursor-pointer">
+                  50/30/20 Rule
+                </button>{' '}
+                to create a structured budget around it.
+              </p>
+            </div>
           </div>
-          <div>
-            <p className="font-manrope font-bold text-sm text-[var(--text-primary)] mb-1">
-              Personalized for your spending
-            </p>
-            <p className="font-inter text-xs text-[var(--text-secondary)] leading-relaxed">
-              Your top spending category is <strong>{topCategory}</strong>. We recommend starting with the{' '}
-              <button onClick={() => setActiveLesson(LESSONS.find(l => l.id === 'l1')!)} className="text-[var(--teal)] font-bold underline underline-offset-2 bg-transparent border-none cursor-pointer">
-                50/30/20 Rule
-              </button>{' '}
-              to create a structured budget around it.
-            </p>
+          
+          <div className="card p-5 bg-gradient-to-br from-purple-500/5 to-fuchsia-500/5 border-purple-500/10 flex items-start gap-4 h-full cursor-not-allowed opacity-80" title="Unlocks at Level 10">
+            <div className="w-10 h-10 rounded-2xl bg-purple-500/10 flex items-center justify-center shrink-0">
+              <Trophy size={18} className="text-purple-500" />
+            </div>
+            <div>
+              <div className="flex justify-between items-start mb-1">
+                <p className="font-manrope font-bold text-sm text-[var(--text-primary)]">
+                  Real-World Simulation Lab
+                </p>
+                <span className="text-[9px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded-full shrink-0 ml-2">Coming Soon</span>
+              </div>
+              <p className="font-inter text-xs text-[var(--text-secondary)] leading-relaxed mt-2">
+                Test your skills in simulated environments like "Buying a Car" or "Market Crash". Earn massive XP for making the right choices under pressure.
+              </p>
+            </div>
           </div>
         </div>
 

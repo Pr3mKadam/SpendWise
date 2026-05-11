@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, ChevronRight, Moon, Sun, User, Search } from 'lucide-react';
+import { Bell, ChevronRight, Moon, Sun, User, Search, Eye, EyeOff } from 'lucide-react';
 import { AppView } from '../../types';
 import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 
@@ -14,6 +14,8 @@ interface HeaderProps {
   onToggleTheme:         () => void;
   config?:               SpendWiseConfig | null;
   onOpenSearch?:         () => void;
+  isPrivacyEnabled?:     boolean;
+  onTogglePrivacy?:      () => void;
 }
 
 const VIEW_TITLES: Partial<Record<AppView, string>> = {
@@ -45,6 +47,8 @@ export default function Header({
   onToggleTheme,
   config,
   onOpenSearch,
+  isPrivacyEnabled,
+  onTogglePrivacy,
 }: HeaderProps) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -206,6 +210,23 @@ export default function Header({
               {theme === 'dark' ? <Sun size={16} style={{ color: 'var(--text-secondary)' }} /> : <Moon size={16} style={{ color: 'var(--text-secondary)' }} />}
             </span>
           </button>
+
+          {/* Privacy toggle */}
+          {onTogglePrivacy && (
+            <button
+              onClick={onTogglePrivacy}
+              className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+              aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
+              style={{ padding: 0, border: 'none' }}
+            >
+              <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
+                {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Eye size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
+              </span>
+              <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+                {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
+              </span>
+            </button>
+          )}
 
           {/* Global Search */}
           {onOpenSearch && (

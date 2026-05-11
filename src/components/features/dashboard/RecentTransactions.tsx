@@ -1,4 +1,4 @@
-import { Transaction, AppView } from '../../types';
+import { Transaction, AppView } from '../../../types';
 import Card from '../../common/Card';
 import { initials, avatarColor } from '../../../utils/avatar';
 

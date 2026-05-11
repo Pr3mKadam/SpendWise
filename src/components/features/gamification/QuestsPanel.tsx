@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
-import { Award, Zap, CheckCircle, RefreshCw, Sparkles, Coffee, BookOpen } from 'lucide-react';
-import { motion } from 'framer-motion';
+import React, { useMemo, useState } from 'react';
+import { Award, Zap, CheckCircle, RefreshCw, Sparkles, Coffee, BookOpen, TrendingUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { generateQuests } from '../../../utils/insights/advisor';
 import { Transaction } from '../../../types';
+import { useQuestReset } from '../../../hooks/useQuestReset';
 
 interface QuestsPanelProps {
   transactions: Transaction[];
@@ -10,6 +11,8 @@ interface QuestsPanelProps {
 
 export function QuestsPanel({ transactions }: QuestsPanelProps) {
   const generatedQuests = useMemo(() => generateQuests(transactions), [transactions]);
+  const { isCompleted, completeQuest, totalXPToday, completedCount } = useQuestReset();
+  const [xpPop, setXpPop] = useState<{ id: string, amount: string } | null>(null);
 
   const quests = generatedQuests.map(q => {
     let icon = <CheckCircle size={18} />;
@@ -21,34 +24,60 @@ export function QuestsPanel({ transactions }: QuestsPanelProps) {
     } else if (q.type === 'budget') {
       icon = <Zap size={18} />;
       color = '#ef4444';
+    } else if (q.type === 'uncategorized') {
+      icon = <BookOpen size={18} />;
+      color = '#8b5cf6';
+    } else if (q.type === 'streak') {
+      icon = <Award size={18} />;
+      color = '#10b981';
+    } else if (q.type === 'savings') {
+      icon = <TrendingUp size={18} />;
+      color = '#06b6d4';
+    } else if (q.type === 'logging') {
+      icon = <RefreshCw size={18} />;
+      color = '#6366f1';
     }
     
     return {
       ...q,
+      completed: isCompleted(q.id),
       icon,
       color
     };
   });
+
+  const handleQuestClick = (questId: string, reward: string) => {
+    if (isCompleted(questId)) return;
+    const numericXP = parseInt(reward.replace(/\D/g, '')) || 0;
+    completeQuest(questId, numericXP);
+    
+    setXpPop({ id: questId, amount: reward });
+    setTimeout(() => setXpPop(null), 1500);
+  };
 
   return (
     <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] overflow-hidden shadow-sm">
       <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-[var(--teal)]" />
-          <h3 className="font-manrope font-bold text-[var(--text-primary)] text-sm">Daily Quests</h3>
+          <div>
+            <h3 className="font-manrope font-bold text-[var(--text-primary)] text-sm">Daily Quests</h3>
+            <p className="text-[10px] text-[var(--text-muted)] font-inter">{completedCount}/{quests.length} completed</p>
+          </div>
         </div>
-        <button className="text-[10px] font-bold text-[var(--teal)] hover:underline bg-transparent border-none cursor-pointer flex items-center gap-1">
-          <RefreshCw size={10} />
-          REFRESH
-        </button>
+        <div className="text-right">
+           <span className="text-[12px] font-bold text-[var(--teal)] font-inter">+{totalXPToday} XP</span>
+           <p className="text-[9px] text-[var(--text-muted)] font-inter uppercase tracking-wider">Today</p>
+        </div>
       </div>
 
       <div className="p-5 space-y-4">
         {quests.map((q) => (
           <motion.div 
             key={q.id}
-            whileHover={{ x: 4 }}
-            className="group cursor-pointer"
+            whileHover={!q.completed ? { x: 4 } : {}}
+            className={`group relative ${q.completed ? 'cursor-default opacity-60' : 'cursor-pointer'}`}
+            onClick={() => handleQuestClick(q.id, q.reward)}
           >
             <div className="flex items-start gap-3">
               <div 
@@ -72,6 +101,21 @@ export function QuestsPanel({ transactions }: QuestsPanelProps) {
                 <p className="text-[10px] text-[var(--text-muted)] mt-0.5 line-clamp-1">{q.description}</p>
               </div>
             </div>
+
+            {/* XP Pop Animation */}
+            <AnimatePresence>
+              {xpPop?.id === q.id && (
+                <motion.div
+                  initial={{ opacity: 0, y: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, y: -20, scale: 1.2 }}
+                  exit={{ opacity: 0, y: -40 }}
+                  className="absolute right-0 top-0 font-bold text-[var(--teal)] text-sm z-10 pointer-events-none"
+                  style={{ textShadow: '0 2px 4px rgba(0,0,0,0.2)' }}
+                >
+                  {xpPop.amount}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         ))}
       </div>

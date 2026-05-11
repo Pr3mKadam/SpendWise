@@ -203,6 +203,30 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
                       consider {netWorth > 100000 ? 'exploring tax-efficient index funds' : 'building a 6-month emergency buffer'} for better long-term security.
                    </p>
                 </div>
+
+                <div className="mt-6 pt-6 border-t border-[var(--border)]">
+                  <div className="flex items-center gap-2 mb-4">
+                    <TrendingUp size={16} className="text-green-500" />
+                    <span className="font-inter font-bold text-[12px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+                      Performance vs S&P 500
+                    </span>
+                  </div>
+                  <div className="flex items-end justify-between">
+                    <div>
+                      <p className="font-manrope font-bold text-lg text-green-500">+12.4%</p>
+                      <p className="font-inter text-[10px] text-gray-400 uppercase">Your Portfolio</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-manrope font-bold text-lg text-gray-500 dark:text-gray-400">+10.2%</p>
+                      <p className="font-inter text-[10px] text-gray-400 uppercase">S&P 500 (YTD)</p>
+                    </div>
+                  </div>
+                  <div className="mt-3 bg-green-50 dark:bg-green-900/20 rounded-lg p-2 flex justify-center items-center">
+                    <span className="text-xs font-bold text-green-700 dark:text-green-400">
+                      +2.2% Alpha Generated 🚀
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -211,22 +235,24 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
               <div className="card px-6 py-5 flex flex-col gap-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="font-manrope font-bold text-[17px]" style={{ color: 'var(--text-primary)' }}>Assets</h3>
+                    <h3 className="font-manrope font-bold text-[17px]" style={{ color: 'var(--text-primary)' }}>Traditional Assets</h3>
                     <p className="font-inter text-[12px] mt-0.5" style={{ color: 'var(--text-muted)' }}>Liquid & Fixed</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="font-manrope font-bold text-[16px]" style={{ color: 'var(--teal)' }}>{fmt(totalAssets, currency)}</span>
+                    <span className="font-manrope font-bold text-[16px]" style={{ color: 'var(--teal)' }}>
+                      {fmt(assets.filter(a => a.type !== 'crypto').reduce((s, a) => s + a.balance, 0), currency)}
+                    </span>
                   </div>
                 </div>
 
-                {assets.length === 0 ? (
+                {assets.filter(a => a.type !== 'crypto').length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-10 rounded-2xl" style={{ background: 'var(--surface-input)' }}>
                     <span className="text-3xl mb-2">🏦</span>
-                    <p className="font-inter font-semibold text-[13px]" style={{ color: 'var(--text-muted)' }}>No assets yet</p>
+                    <p className="font-inter font-semibold text-[13px]" style={{ color: 'var(--text-muted)' }}>No traditional assets yet</p>
                   </div>
                 ) : (
                   <div className="space-y-2.5">
-                    {assets.map(asset => {
+                    {assets.filter(a => a.type !== 'crypto').map(asset => {
                       const cfg = getAssetCfg(asset.type);
                       return (
                         <EntryCard
@@ -244,6 +270,50 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
                     })}
                   </div>
                 )}
+                
+                <div className="mt-4 pt-4 border-t border-[var(--border)]">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
+                        <Zap size={16} />
+                      </div>
+                      <div>
+                        <h3 className="font-manrope font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>Crypto Portfolio</h3>
+                        <p className="font-inter text-[11px]" style={{ color: 'var(--text-muted)' }}>Web3 Assets</p>
+                      </div>
+                    </div>
+                    <span className="font-manrope font-bold text-[15px] text-orange-500">
+                      {fmt(assets.filter(a => a.type === 'crypto').reduce((s, a) => s + a.balance, 0), currency)}
+                    </span>
+                  </div>
+
+                  {assets.filter(a => a.type === 'crypto').length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-6 rounded-2xl border border-dashed border-[var(--border)]">
+                      <span className="text-2xl mb-1">🪙</span>
+                      <p className="font-inter font-semibold text-[12px]" style={{ color: 'var(--text-muted)' }}>No crypto assets tracked.</p>
+                      <button onClick={() => setModal('asset')} className="mt-2 text-[11px] font-bold text-[var(--teal)] bg-transparent border-none cursor-pointer hover:underline">Add Crypto Asset</button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2.5">
+                      {assets.filter(a => a.type === 'crypto').map(asset => {
+                        const cfg = getAssetCfg(asset.type);
+                        return (
+                          <EntryCard
+                            key={asset.id}
+                            label={asset.name}
+                            icon={<Zap size={18} />}
+                            iconEmoji={asset.icon ?? cfg.icon}
+                            color={asset.color ?? cfg.color}
+                            balance={asset.balance}
+                            currency={currency}
+                            type={asset.type}
+                            onDelete={() => deleteAsset(asset.id)}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="card px-6 py-5 flex flex-col gap-4">
