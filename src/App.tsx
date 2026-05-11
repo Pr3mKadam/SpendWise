@@ -3,6 +3,7 @@ import { SpendWiseConfig } from './components/features/onboarding/OnboardingModa
 import { useAuth } from './hooks/useAuth';
 import AuthView from './components/views/AuthView';
 import { MainShell } from './components/layout/MainShell';
+import { STORAGE_KEYS, FINANCE_DEFAULTS } from './constants';
 
 function LoadingScreen() {
   return (
@@ -39,12 +40,23 @@ function AppAuthenticated() {
   const [config, setConfigState] = useState<SpendWiseConfig | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('spendwise_config_v1');
+    const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
     if (saved) {
-      setConfigState(JSON.parse(saved));
+      try {
+        setConfigState(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse config from storage", e);
+        setConfigState({
+          initialBalance: FINANCE_DEFAULTS.INITIAL_BALANCE,
+          balanceAnchorNet: 0,
+          currency: '₹',
+          onboardingComplete: false,
+          createdAt: new Date().toISOString(),
+        });
+      }
     } else {
       setConfigState({
-        initialBalance: 5200,
+        initialBalance: FINANCE_DEFAULTS.INITIAL_BALANCE,
         balanceAnchorNet: 0,
         currency: '₹',
         onboardingComplete: false,
@@ -54,7 +66,7 @@ function AppAuthenticated() {
   }, []);
 
   const setConfig = (newConfig: SpendWiseConfig) => {
-    localStorage.setItem('spendwise_config_v1', JSON.stringify(newConfig));
+    localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(newConfig));
     setConfigState(newConfig);
   };
 

@@ -3,7 +3,8 @@ import { CategorySpend, MonthlyStats, BalanceDataPoint, Transaction, Category, M
 import { useCategories } from './useCategories';
 import { useStore } from '../store';
 
-const DEFAULT_BALANCE = 5200;
+import { FINANCE_DEFAULTS } from '../constants';
+const DEFAULT_BALANCE = FINANCE_DEFAULTS.INITIAL_BALANCE;
 
 export function useFinanceState(initialBalance: number = DEFAULT_BALANCE) {
   const { mergedColors } = useCategories();

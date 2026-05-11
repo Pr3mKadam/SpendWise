@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { STORAGE_KEYS } from '../constants';
 
 export type CurrencyCode = '$' | '€' | '£' | '₹' | '¥' | 'A$' | 'C$' | 'AED';
 
@@ -31,7 +32,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   // Load from config if exists
   useEffect(() => {
-    const raw = localStorage.getItem('spendwise_config_v1');
+    const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
     if (raw) {
       try {
         const config = JSON.parse(raw);

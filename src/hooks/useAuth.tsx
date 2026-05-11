@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { STORAGE_KEYS } from '../constants';
 
 export interface User {
   id: string;
@@ -46,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signOut = useCallback(async () => {
     localStorage.removeItem('spendwise_user');
     localStorage.removeItem('spendwise_transactions_v2');
-    localStorage.removeItem('spendwise_config_v1');
+    localStorage.removeItem(STORAGE_KEYS.CONFIG);
     window.location.reload();
   }, []);
 

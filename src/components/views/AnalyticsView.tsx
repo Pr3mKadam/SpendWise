@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { FINANCE_DEFAULTS } from '../../constants';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   LineChart, Line, ReferenceLine, CartesianGrid,
@@ -89,7 +90,7 @@ export default function AnalyticsView({ monthlyHistory, monthlyStats, categorySp
   const currentBalance = useMemo(() => {
     return transactions.reduce((acc, tx) => {
       return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
-    }, 5200); // Using default balance as fallback
+    }, FINANCE_DEFAULTS.INITIAL_BALANCE); // Using default balance as fallback
   }, [transactions]);
 
   const health = useMemo(() => 

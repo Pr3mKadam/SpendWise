@@ -18,7 +18,7 @@ export interface SpendWiseConfig {
 
 type CurrencySymbol = '$' | '£' | '€' | '₹';
 
-const STORAGE_KEY = 'spendwise_config_v1';
+import { STORAGE_KEYS } from '../../../constants';
 const CURRENCIES: { sym: CurrencySymbol; label: string }[] = [
   { sym: '$', label: 'USD' },
   { sym: '£', label: 'GBP' },
@@ -37,7 +37,7 @@ const FEATURES = [
 
 export function loadConfig(): SpendWiseConfig | null {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
     if (!raw) return null;
     return JSON.parse(raw) as SpendWiseConfig;
   } catch {
@@ -46,7 +46,7 @@ export function loadConfig(): SpendWiseConfig | null {
 }
 
 function saveConfig(config: SpendWiseConfig): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+  localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(config));
 }
 
 // ─── Component ─────────────────────────────────────────────────────────────────
