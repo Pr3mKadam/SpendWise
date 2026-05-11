@@ -6,6 +6,7 @@ import {
 import { Transaction, UPIAccount } from '../../../types';
 import { UPI_PROVIDERS } from '../../../utils/parsers/upi';
 import CSVImporter from '../../features/sync/CSVImporter';
+import { CloudSync } from '../../features/sync/CloudSync';
 
 export interface SyncDashboardProps {
   totalUPISpend: number;
@@ -202,6 +203,7 @@ export function SyncDashboard({
               Our local engine analyzes payment descriptions to automatically categorize spend without ever sending data to a server.
             </p>
           </div>
+          <CloudSync transactions={recentTransactions} onPullTransactions={onAutoAddTransactions} />
           <CSVImporter onImport={onAutoAddTransactions} />
         </div>
       </div>
