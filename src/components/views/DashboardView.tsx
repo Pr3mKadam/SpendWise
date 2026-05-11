@@ -212,11 +212,11 @@ export function DashboardView({
           <WeeklyDigestCard transactions={transactions} currency={currency} />
         </div>
 
-        {/* Two-column layout (stacks on mobile and most tablets) */}
-        <div className="flex flex-col xl:flex-row gap-5 xl:gap-6 items-start">
+        {/* Two-column layout: single column on mobile, side-by-side on lg+ */}
+        <div className="dashboard-cols flex flex-col lg:flex-row gap-4 lg:gap-6 items-start w-full">
 
           {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
-          <div className="flex flex-col gap-4 min-w-0 w-full xl:flex-1">
+          <div className="flex flex-col gap-4 min-w-0 w-full lg:flex-1">
             {/* Gamification: WealthCity (hidden on mobile) + LevelProgress */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
               <div className="hidden sm:block lg:col-span-7">
@@ -228,7 +228,7 @@ export function DashboardView({
             </div>
 
             {/* Stat Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2">
+            <div className="stat-grid grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2">
               <StatCard
                 label="Balance"
                 value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
@@ -297,44 +297,31 @@ export function DashboardView({
             <RecentTransactions recentTx={recentTx} onNavigate={onNavigate} hideBalances={hideBalances} currency={currency} />
           </div>
 
-          {/* ── RIGHT COLUMN ─────────────────────────────────────────── */}
-          {/* Mobile: stacked vertically. sm+: horizontal snap carousel. xl: fixed sidebar */}
-          <div className="flex flex-col sm:flex-row xl:flex-col gap-3 sm:gap-4 min-w-0 w-full xl:w-[300px] xl:shrink-0 sm:overflow-x-auto sm:snap-x sm:snap-mandatory hide-scrollbar sm:pb-4 sm:-mb-4">
+          {/* ── RIGHT COLUMN — fully stacked on mobile, sidebar on lg+ ── */}
+          <div className="flex flex-col gap-3 w-full lg:w-[300px] lg:shrink-0">
 
             {/* Premium My Card */}
-            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
-              <PremiumCard currentBalance={currentBalance} currency={currency} />
-            </div>
+            <PremiumCard currentBalance={currentBalance} currency={currency} />
 
             {/* My Goals */}
-            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
-              <GoalsSummary goals={goals} onNavigate={onNavigate} />
-            </div>
+            <GoalsSummary goals={goals} onNavigate={onNavigate} />
 
             {/* AI-Driven Gamification Quests */}
-            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
-              <QuestsPanel transactions={transactions} />
-            </div>
+            <QuestsPanel transactions={transactions} />
 
-            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
-              <SavingsChallenges onNavigate={onNavigate} />
-            </div>
+            <SavingsChallenges onNavigate={onNavigate} />
 
             {/* Daily Stats */}
-            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center">
-              <DailyStats currency={currency} dailySpendRate={dailySpendRate} streak={streak} transactionCount={transactions.length} />
-            </div>
+            <DailyStats currency={currency} dailySpendRate={dailySpendRate} streak={streak} transactionCount={transactions.length} />
 
             {/* Streak Share */}
-            <div className="w-full sm:w-[88vw] sm:max-w-[320px] xl:w-full shrink-0 sm:snap-center flex items-center justify-center">
-              <StreakShareCard
-                streak={streak}
-                level={level}
-                levelName={levelName}
-                savingsRate={savingsRate ?? 0}
-                currency={currency}
-              />
-            </div>
+            <StreakShareCard
+              streak={streak}
+              level={level}
+              levelName={levelName}
+              savingsRate={savingsRate ?? 0}
+              currency={currency}
+            />
           </div>
         </div>
       </div>
