@@ -1,22 +1,15 @@
 # SpendWise — Active Tasks
 
-## 🔄 In Progress
-- [/] `QuestsPanel.tsx` — Upgrade with useQuestReset: clickable completion, XP pop animation, daily counter
+## ✅ All Active Tasks Complete
 
-## ⬜ Remaining
-- [x] `QuestsPanel.tsx` — Wire daily quest completion + XP gained today display (Completed)
-- [ ] `advisor.ts` — Add 2–3 more varied daily quest types (streak quest, income quest)
-- [ ] `LevelProgress.tsx` — Ensure XP from completed quests feeds into level (via store or prop)
-- [x] TypeScript clean compile verification (final)
-- [x] **Mobile Dashboard Fix** — Phase 1 complete (11 fixes across 5 files)
-  - Outer wrapper: negative margins match `px-2` parent on mobile
-  - `DashboardHero`: reduced padding, `clamp(26px,7vw,56px)` balance, sparkline hidden <480px, flex-wrap mini-stats, full-width health bar
-  - `StatCard`: compact `10px/12px` padding, `15px→18px→xl` responsive font, `overflow-hidden`
-  - `WealthCity`: `h-[200px] sm:h-[260px]`, WealthCity hidden on mobile (only LevelProgress shown)
-  - `LevelProgress`: compact `10/14px` avatar, tighter fonts + gaps
-  - Right column: **stacked on mobile** → snap carousel on sm+ → vertical sidebar on xl
-  - `index.css`: xs breakpoint (480px) + `.hero-sparkline`, `.stat-value-text`, `.dashboard-root` CSS classes
-- [ ] Browser smoke test — visit all 5 upgraded views and screenshot confirm
+- [x] `QuestsPanel.tsx` — Upgrade with useQuestReset: clickable completion, XP pop animation, daily counter
+- [x] `QuestsPanel.tsx` — Wire daily quest completion + XP gained today display
+- [x] `advisor.ts` — Added 6 rotating daily quest types: No-Spend Hour, Budget Check-In, Savings Pulse, Paycheck Planner, Weekly Snapshot, Goal Booster. Daily rotation via day-of-year seed. Max 4 quests (up from 3).
+- [x] `LevelProgress.tsx` — XP from quests feeds live into level bar via `useStore.addXP`. "Today's XP" mini-card shows real-time `totalXPToday` from `useQuestReset`.
+- [x] TypeScript clean compile — zero errors
+- [x] **Mobile Dashboard Fix** — Phase 1+2 complete: CSS hard override, dashboard-cols/stat-grid classes, right column fully stacked on mobile, lg+ sidebar
+- [ ] Browser smoke test — verify on Android after Vercel redeploy
+
 
 ## 🚀 Future Enhancement Backlog
 *Based on the comprehensive application audit.*

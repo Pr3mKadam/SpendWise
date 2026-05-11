@@ -123,7 +123,10 @@ export interface GeneratedQuest {
 
 export function generateQuests(transactions: Transaction[]): GeneratedQuest[] {
   const debits = transactions.filter(t => t.type === 'debit');
-  
+  const credits = transactions.filter(t => t.type === 'credit');
+  const totalSpent = debits.reduce((a, t) => a + t.amount, 0);
+  const totalIncome = credits.reduce((a, t) => a + t.amount, 0);
+
   const byCategory: Record<string, number> = {};
   debits.forEach(t => {
     byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
@@ -131,94 +134,161 @@ export function generateQuests(transactions: Transaction[]): GeneratedQuest[] {
   const sortedCategories = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
   const topCat = sortedCategories[0];
 
-  const quests: GeneratedQuest[] = [];
+  // Deterministic daily seed — rotates quest set each day
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
 
-  // Quest 1: Uncategorized
+  const allQuests: GeneratedQuest[] = [];
+
+  // ── Static contextual quests (always eligible) ──────────────────────────
+
+  // 1. Uncategorized cleanup
   const uncategorized = transactions.filter(t => !t.category || t.category === 'Uncategorized');
   if (uncategorized.length > 0) {
-    quests.push({
+    allQuests.push({
       id: 'quest_uncat',
       title: 'Cleanup Crew',
-      description: `Categorize ${uncategorized.length} uncategorized transactions.`,
+      description: `Categorize ${uncategorized.length} uncategorized transaction${uncategorized.length > 1 ? 's' : ''}.`,
       reward: '+30 XP',
       type: 'uncategorized',
       completed: false
     });
   }
 
-  // Quest 2: Top Category reduction
+  // 2. Top category diet
   if (topCat) {
-    quests.push({
+    allQuests.push({
       id: 'quest_topcat',
       title: `${topCat[0]} Diet`,
-      description: `Reduce spending on ${topCat[0]} this week.`,
+      description: `Avoid spending on ${topCat[0]} for the rest of today.`,
       reward: '+50 XP',
       type: 'category',
       completed: false
     });
   }
 
-  // Quest 3: Streak/Logging
-  const recentLogging = transactions.filter(t => new Date(t.date) >= new Date(Date.now() - 86400000));
-  if (recentLogging.length === 0) {
-    quests.push({
+  // 3. Daily logging streak
+  const loggedToday = transactions.filter(t => new Date(t.date) >= new Date(Date.now() - 86400000));
+  if (loggedToday.length === 0) {
+    allQuests.push({
       id: 'quest_log',
       title: 'Active Tracker',
-      description: 'Log your first transaction today.',
+      description: 'Log your first transaction today to keep your streak alive.',
       reward: '+20 XP',
       type: 'logging',
       completed: false
     });
   } else {
-    quests.push({
+    allQuests.push({
       id: 'quest_streak',
       title: 'Streak Saver',
-      description: 'Maintain your daily tracking streak.',
+      description: `You've logged ${loggedToday.length} transaction${loggedToday.length > 1 ? 's' : ''} today. Keep it up!`,
       reward: '+40 XP',
       type: 'streak',
       completed: false
     });
   }
 
-  // Quest 4: Savings
-  const credits = transactions.filter(t => t.type === 'credit');
-  if (credits.length > 0 && quests.length < 4) {
-    quests.push({
+  // 4. Rainy day savings
+  if (credits.length > 0) {
+    allQuests.push({
       id: 'quest_savings',
       title: 'Rainy Day Fund',
-      description: 'Transfer 10% of recent income to savings.',
+      description: 'Transfer 10% of your recent income to a savings goal.',
       reward: '+60 XP',
       type: 'savings',
       completed: false
     });
   }
 
-  // Quest 5: Subscription Audit
+  // 5. Subscription audit
   const recurringCount = transactions.filter(t => t.tags?.includes('recurring')).length;
   if (recurringCount > 2) {
-    quests.push({
+    allQuests.push({
       id: 'quest_sub_audit',
       title: 'Subscription Scout',
-      description: 'Review and audit your recurring subscriptions.',
+      description: 'Review and remove one subscription you no longer use.',
       reward: '+35 XP',
       type: 'logging',
       completed: false
     });
   }
 
-  // Quest 6: Income Diversifier
+  // 6. Income diversifier
   const incomeSources = new Set(credits.map(t => t.merchant)).size;
   if (incomeSources < 2) {
-    quests.push({
+    allQuests.push({
       id: 'quest_income_boost',
       title: 'Income Explorer',
-      description: 'Explore or log a secondary income source.',
+      description: 'Log a side-hustle or secondary income source today.',
       reward: '+75 XP',
       type: 'savings',
       completed: false
     });
   }
 
-  // Return max 3 quests
-  return quests.slice(0, 3);
+  // ── Rotating daily quests (always shown regardless of data) ─────────────
+
+  const rotatingPool: GeneratedQuest[] = [
+    {
+      id: 'quest_no_spend',
+      title: 'No-Spend Hour',
+      description: 'Go 3 hours without a discretionary purchase.',
+      reward: '+25 XP',
+      type: 'streak',
+      completed: false
+    },
+    {
+      id: 'quest_budget_checkin',
+      title: 'Budget Check-In',
+      description: `Review your spending — you've spent ${totalSpent > 0 ? `₹${Math.round(totalSpent).toLocaleString('en-IN')}` : 'nothing'} this month.`,
+      reward: '+20 XP',
+      type: 'budget',
+      completed: false
+    },
+    {
+      id: 'quest_savings_rate',
+      title: 'Savings Pulse',
+      description: totalIncome > 0
+        ? `Your current savings rate is ${Math.round(((totalIncome - totalSpent) / totalIncome) * 100)}%. Target 20%+.`
+        : 'Log an income transaction to calculate your savings rate.',
+      reward: '+30 XP',
+      type: 'savings',
+      completed: false
+    },
+    {
+      id: 'quest_income_log',
+      title: 'Paycheck Planner',
+      description: 'Record all income sources you received this week.',
+      reward: '+45 XP',
+      type: 'logging',
+      completed: false
+    },
+    {
+      id: 'quest_weekly_review',
+      title: 'Weekly Snapshot',
+      description: 'Check your Analytics view for your top spending categories.',
+      reward: '+15 XP',
+      type: 'budget',
+      completed: false
+    },
+    {
+      id: 'quest_goal_progress',
+      title: 'Goal Booster',
+      description: 'Add any amount to one of your active savings goals.',
+      reward: '+50 XP',
+      type: 'savings',
+      completed: false
+    },
+  ];
+
+  // Pick 1 rotating quest per day (day-of-year cycles through the pool)
+  const todayRotating = rotatingPool[dayOfYear % rotatingPool.length];
+
+  // Only add if not already covered by a contextual quest with same ID
+  if (!allQuests.find(q => q.id === todayRotating.id)) {
+    allQuests.push(todayRotating);
+  }
+
+  // Return top 4 quests (prioritising contextual ones)
+  return allQuests.slice(0, 4);
 }

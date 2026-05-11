@@ -2,12 +2,14 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Star, TrendingUp, Zap, ArrowRight } from 'lucide-react';
 import { useStore } from '../../../store';
+import { useQuestReset } from '../../../hooks/useQuestReset';
 import { AppView } from '../../../types/ui';
 
 export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppView) => void }) {
   const level = useStore(state => state.level);
   const totalXP = useStore(state => state.totalXP);
   const rank = useStore(state => state.rank);
+  const { totalXPToday, completedCount } = useQuestReset();
 
   const XP_PER_LEVEL = 1000;
   const currentLevelXP = totalXP % XP_PER_LEVEL;
@@ -55,20 +57,24 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-2 sm:gap-4">
+        {/* Daily XP — live from quest completions */}
         <div className="p-3 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
             <Zap size={14} className="text-amber-500" />
           </div>
-          <div>
-            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Daily Bonus</p>
-            <p className="text-xs font-manrope font-bold text-[var(--text-primary)]">Available</p>
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Today's XP</p>
+            <p className="text-xs font-manrope font-bold text-[var(--text-primary)]">
+              {totalXPToday > 0 ? `+${totalXPToday} earned` : completedCount === 0 ? 'Do a quest!' : 'Claimed'}
+            </p>
           </div>
         </div>
+        {/* XP Multiplier */}
         <div className="p-3 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[var(--teal-dim)] flex items-center justify-center">
+          <div className="w-8 h-8 rounded-lg bg-[var(--teal-dim)] flex items-center justify-center shrink-0">
             <TrendingUp size={14} className="text-[var(--teal)]" />
           </div>
-          <div>
+          <div className="min-w-0">
             <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">XP Multiplier</p>
             <p className="text-xs font-manrope font-bold text-[var(--text-primary)]">1.2x Active</p>
           </div>
