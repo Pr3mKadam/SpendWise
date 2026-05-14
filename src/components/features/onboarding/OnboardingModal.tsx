@@ -3,6 +3,8 @@ import { Shield, TrendingUp, Target, Zap, ArrowRight, Check } from 'lucide-react
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
+export type UserRole = 'student' | 'professional' | 'business';
+
 export interface SpendWiseConfig {
   initialBalance:     number;
   currency:           string;
@@ -14,6 +16,7 @@ export interface SpendWiseConfig {
   occupation?:        string;
   monthlyGoal?:       number;
   location?:          string;
+  userRole:           UserRole;
 }
 
 type CurrencySymbol = '$' | '£' | '€' | '₹';
@@ -58,12 +61,14 @@ interface OnboardingModalProps {
 }
 
 export default function OnboardingModal({ onComplete, preferredName, preferredPhone }: OnboardingModalProps) {
-  const [step, setStep] = useState<1 | 2>(1);
-  const [currency, setCurrency] = useState<CurrencySymbol>('$');
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [currency, setCurrency] = useState<CurrencySymbol>('₹'); // Default to ₹ as per user audio
   const [rawValue, setRawValue] = useState('');
   const [focused, setFocused]   = useState(false);
   
   // Advanced fields
+  const [name, setName] = useState(preferredName || '');
+  const [userRole, setUserRole] = useState<UserRole>('professional');
   const [occupation, setOccupation] = useState('');
   const [location, setLocation] = useState('');
   const [monthlyGoal, setMonthlyGoal] = useState('');
@@ -88,14 +93,17 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
   };
 
   const handleFinalSubmit = () => {
+    if (!name || !occupation || !location || !monthlyGoal) return;
+
     const config: SpendWiseConfig = {
       initialBalance:     numericValue,
       currency,
-      name:               preferredName || 'User',
+      name:               name.trim(),
       phone:              preferredPhone,
-      occupation:         occupation.trim() || undefined,
-      location:           location.trim() || undefined,
-      monthlyGoal:        parseFloat(monthlyGoal) || undefined,
+      userRole,
+      occupation:         occupation.trim(),
+      location:           location.trim(),
+      monthlyGoal:        parseFloat(monthlyGoal),
       onboardingComplete: true,
       createdAt:          new Date().toISOString(),
     };
@@ -105,8 +113,9 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      if (step === 1 && isValid) handleNextStep();
-      else if (step === 2) handleFinalSubmit();
+      if (step === 1 && isValid) setStep(2);
+      else if (step === 2) setStep(3);
+      else if (step === 3) handleFinalSubmit();
     }
   };
 
@@ -143,7 +152,7 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
               Your smart<br />finance copilot
             </h2>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'rgba(255,255,255,0.5)', lineHeight: 1.6 }}>
-              Set up in 30 seconds. No account needed.
+              Personalize your suite in 3 steps.<br />Securely stored on device.
             </p>
           </div>
 
@@ -304,79 +313,63 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
               (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
             }}
           >
-            Continue
+            Select Role
             <ArrowRight size={16} />
           </button>
         </div>
         
-        {/* Step 2 Panel */}
+        {/* Step 2 Panel — Role Selection */}
         <div className="flex-1 p-6 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 2 ? 'block' : 'none' }}>
-           <div className="mb-7">
+          <div className="mb-7">
             <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
-              {preferredName ? `Welcome, ${preferredName}!` : "Tell us about yourself"}
+              Choose your Persona
             </h3>
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
-              Help us personalize your dashboard (Optional)
+              We'll customize your tools based on your role
             </p>
           </div>
 
-          <div className="space-y-4 mb-8">
-            <div>
-              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-                Occupation
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. Software Engineer"
-                value={occupation}
-                onChange={e => setOccupation(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
-                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
-                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
-                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
-              />
-            </div>
-
-            <div>
-              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-                Location
-              </label>
-              <input
-                type="text"
-                placeholder="e.g. New York, USA"
-                value={location}
-                onChange={e => setLocation(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
-                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
-                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
-                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
-              />
-            </div>
-            
-            <div>
-              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
-                Monthly Income Goal ({currency})
-              </label>
-              <input
-                type="number"
-                placeholder={`e.g. 8000`}
-                value={monthlyGoal}
-                onChange={e => setMonthlyGoal(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
-                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
-                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
-                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
-              />
-            </div>
+          <div className="space-y-3 mb-8">
+            {[
+              { id: 'student', title: 'Student', desc: 'Habit building & learning focus', icon: '🎓' },
+              { id: 'professional', title: 'Professional', desc: 'Net worth & goals focus', icon: '💼' },
+              { id: 'business', title: 'Business Owner', desc: 'Cash flow & analytics focus', icon: '🏢' },
+            ].map((role) => {
+              const isSelected = userRole === role.id;
+              return (
+                <button
+                  key={role.id}
+                  onClick={() => setUserRole(role.id as UserRole)}
+                  style={{
+                    width: '100%',
+                    padding: '16px',
+                    borderRadius: '16px',
+                    border: isSelected ? '2px solid var(--teal)' : '2px solid #edf2f7',
+                    background: isSelected ? 'var(--teal-dim)' : '#f8fafc',
+                    textAlign: 'left',
+                    cursor: 'pointer',
+                    transition: 'all 200ms ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '16px',
+                  }}
+                >
+                  <span style={{ fontSize: '24px' }}>{role.icon}</span>
+                  <div>
+                    <h4 style={{ fontFamily: 'var(--font-manrope)', fontSize: '15px', fontWeight: 700, color: isSelected ? 'var(--teal)' : 'var(--text-primary)' }}>
+                      {role.title}
+                    </h4>
+                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>
+                      {role.desc}
+                    </p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
 
-          {/* CTA Button Step 2 */}
           <button
-            onClick={handleFinalSubmit}
-            id="onboarding-submit-final"
+            onClick={() => setStep(3)}
             style={{
               width:          '100%',
               height:         '52px',
@@ -388,7 +381,113 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
               fontWeight:     600,
               color:          '#ffffff',
               background:     'var(--teal)',
-              transition:     'background 200ms ease, box-shadow 200ms ease, transform 80ms',
+              transition:     'background 200ms ease, box-shadow 200ms ease',
+              display:        'flex',
+              alignItems:     'center',
+              justifyContent: 'center',
+              gap:            '8px',
+            }}
+          >
+            Almost There
+            <ArrowRight size={16} />
+          </button>
+        </div>
+
+        {/* Step 3 Panel — Final Details */}
+        <div className="flex-1 p-6 md:p-10 transition-all duration-300" style={{ background: '#ffffff', display: step === 3 ? 'block' : 'none' }}>
+           <div className="mb-7">
+            <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '6px' }}>
+              Finalize Profile
+            </h3>
+            <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
+              All fields are required to secure your account
+            </p>
+          </div>
+
+          <div className="space-y-4 mb-8">
+            <div>
+              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                Full Name
+              </label>
+              <input
+                type="text"
+                placeholder="John Doe"
+                value={name}
+                onChange={e => setName(e.target.value)}
+                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
+                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
+              />
+            </div>
+
+            <div>
+              <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                Occupation
+              </label>
+              <input
+                type="text"
+                placeholder={userRole === 'student' ? "e.g. University Student" : "e.g. Software Engineer"}
+                value={occupation}
+                onChange={e => setOccupation(e.target.value)}
+                className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
+                onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
+              />
+            </div>
+
+            <div className="flex gap-4">
+              <div className="flex-1">
+                <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                  Location
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. London"
+                  value={location}
+                  onChange={e => setLocation(e.target.value)}
+                  className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                  style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                  onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
+                  onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
+                />
+              </div>
+              
+              <div className="flex-1">
+                <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                  Target Monthly Income
+                </label>
+                <input
+                  type="number"
+                  placeholder="5000"
+                  value={monthlyGoal}
+                  onChange={e => setMonthlyGoal(e.target.value)}
+                  className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
+                  style={{ background: '#f8fafc', border: '2px solid #edf2f7', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
+                  onFocus={e => { e.target.style.border = '2px solid var(--teal)'; e.target.style.background = '#ffffff'; }}
+                  onBlur={e => { e.target.style.border = '2px solid #edf2f7'; e.target.style.background = '#f8fafc'; }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* CTA Button Step 3 */}
+          <button
+            onClick={handleFinalSubmit}
+            disabled={!name || !occupation || !location || !monthlyGoal}
+            style={{
+              width:          '100%',
+              height:         '52px',
+              borderRadius:   '12px',
+              border:         'none',
+              cursor:         (name && occupation && location && monthlyGoal) ? 'pointer' : 'not-allowed',
+              fontFamily:     'var(--font-inter)',
+              fontSize:       '15px',
+              fontWeight:     600,
+              color:          '#ffffff',
+              background:     (name && occupation && location && monthlyGoal) ? 'var(--teal)' : '#a0aec0',
+              transition:     'all 200ms ease',
               display:        'flex',
               alignItems:     'center',
               justifyContent: 'center',

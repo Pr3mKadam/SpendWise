@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 import Portal from '../../common/Portal';
 import { ASSET_TYPES, LIABILITY_TYPES } from '../../../data/portfolioConfig';
+import { SpendWiseConfig } from '../onboarding/OnboardingModal';
 
 export interface AddModalProps {
   mode: 'asset' | 'liability';
   currency: string;
   onAdd: (data: any) => void;
   onClose: () => void;
+  config: SpendWiseConfig | null;
 }
 
 export function AddModal({
@@ -15,8 +17,53 @@ export function AddModal({
   currency,
   onAdd,
   onClose,
+  config,
 }: AddModalProps) {
-  const types = mode === 'asset' ? ASSET_TYPES : LIABILITY_TYPES;
+  const isStudent = config?.userRole === 'student';
+  const isBusiness = config?.userRole === 'business';
+  
+  const rawTypes = mode === 'asset' ? ASSET_TYPES : LIABILITY_TYPES;
+  
+  const types = useMemo(() => {
+    let filtered = [...rawTypes];
+    
+    if (mode === 'liability') {
+      if (isStudent) {
+        // Students usually don't have mortgages or business loans, but prioritize student loans
+        filtered = filtered.filter(t => t.value !== 'mortgage' && t.value !== 'business_loan');
+        const slIndex = filtered.findIndex(t => t.value === 'student_loan');
+        if (slIndex > -1) {
+          const [sl] = filtered.splice(slIndex, 1);
+          filtered.unshift(sl);
+        }
+      } else if (isBusiness) {
+        // Prioritize business loans
+        const blIndex = filtered.findIndex(t => t.value === 'business_loan');
+        if (blIndex > -1) {
+          const [bl] = filtered.splice(blIndex, 1);
+          filtered.unshift(bl);
+        }
+      }
+    } else { // Assets
+      if (isStudent) {
+        // Prioritize education fund
+        const edIndex = filtered.findIndex(t => t.value === 'education');
+        if (edIndex > -1) {
+          const [ed] = filtered.splice(edIndex, 1);
+          filtered.unshift(ed);
+        }
+      } else if (isBusiness) {
+        // Prioritize business assets
+        const baIndex = filtered.findIndex(t => t.value === 'business');
+        if (baIndex > -1) {
+          const [ba] = filtered.splice(baIndex, 1);
+          filtered.unshift(ba);
+        }
+      }
+    }
+    return filtered;
+  }, [mode, isStudent, isBusiness, rawTypes]);
+
   const [selectedType, setSelectedType] = useState(types[0].value);
   const [name, setName] = useState('');
   const [balance, setBalance] = useState('');

@@ -8,7 +8,7 @@ function getNextDate(dateStr: string, frequency: RecurringTransaction['frequency
     case 'daily':   d.setDate(d.getDate() + 1); break;
     case 'weekly':  d.setDate(d.getDate() + 7); break;
     case 'monthly': d.setMonth(d.getMonth() + 1); break;
-    case 'yearly':  d.setFullYear(d.getFullYear() + 1); break;
+    case 'annual':  d.setFullYear(d.getFullYear() + 1); break;
   }
   return d.toISOString().split('T')[0];
 }

@@ -8,6 +8,8 @@ import { useGoals } from './useGoals';
 import { useCategories } from './useCategories';
 import { SpendWiseConfig } from '../components/features/onboarding/OnboardingModal';
 import { FINANCE_DEFAULTS } from '../constants';
+import { Budget, BudgetPeriod } from '../types';
+import { useStore } from '../store';
 
 export function useAppState(config: SpendWiseConfig | null) {
   const currency = config?.currency ?? '$';
@@ -44,11 +46,9 @@ export function useAppState(config: SpendWiseConfig | null) {
   );
 
   // Budget derived state & handlers
-  const resetLimits = useCallback(() => {
-    Object.keys(budgetState.budgets).forEach(category => budgetState.setBudget(category, 0));
-  }, [budgetState.budgets, budgetState.setBudget]);
+  const resetLimits = budgetState.resetBudgets;
 
-  const totalSpentAgainstBudget = budgetState.budgetStats.reduce((a: number, b: any) => a + (b.spent || 0), 0);
+  const totalSpentAgainstBudget = budgetState.budgetStats.reduce((a: number, b: Budget) => a + (b.spent || 0), 0);
   const overBudgetCount = budgetState.budgetStats.filter(b => b.status === 'danger').length;
   
   const periodLabel = budgetState.budgetSettings.period === 'weekly' 
@@ -57,13 +57,15 @@ export function useAppState(config: SpendWiseConfig | null) {
       ? 'Last 14 Days' 
       : 'This Month';
 
-  const updatePeriod = useCallback((p: any) => {
+  const updatePeriod = useCallback((p: BudgetPeriod) => {
     budgetState.updateBudgetSettings({ period: p });
   }, [budgetState.updateBudgetSettings]);
 
   const toggleRollover = useCallback(() => {
     budgetState.updateBudgetSettings({ rolloverEnabled: !budgetState.budgetSettings.rolloverEnabled });
   }, [budgetState.updateBudgetSettings, budgetState.budgetSettings.rolloverEnabled]);
+
+  const parentalState = useStore((state: any) => state.parentalState);
 
   return {
     currency,
@@ -83,5 +85,6 @@ export function useAppState(config: SpendWiseConfig | null) {
     recurringData,
     alertState,
     notifState,
+    parentalState,
   };
 }

@@ -1,14 +1,5 @@
 import { useState, useEffect } from 'react';
-
-// Define the BeforeInstallPromptEvent type since it's not strictly part of the standard TS DOM lib yet
-interface BeforeInstallPromptEvent extends Event {
-  readonly platforms: Array<string>;
-  readonly userChoice: Promise<{
-    outcome: 'accepted' | 'dismissed';
-    platform: string;
-  }>;
-  prompt(): Promise<void>;
-}
+import { BeforeInstallPromptEvent } from '../types/dom';
 
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -34,18 +25,24 @@ export function usePWAInstall() {
       setIsAppInstalled(true);
     }
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt as any);
     window.addEventListener('appinstalled', handleAppInstalled);
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt as any);
       window.removeEventListener('appinstalled', handleAppInstalled);
     };
   }, []);
 
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
   const triggerInstall = async () => {
     if (!deferredPrompt) {
-      alert("App installation is not available. Please try installing from your browser options.");
+      if (isIOS) {
+        alert("To install SpendWise on iOS: Tap the Share button in Safari and select 'Add to Home Screen'.");
+      } else {
+        alert("App installation is not available. Please try installing from your browser options.");
+      }
       return;
     }
     
@@ -60,5 +57,5 @@ export function usePWAInstall() {
     setDeferredPrompt(null);
   };
 
-  return { isInstallable: !!deferredPrompt, isAppInstalled, triggerInstall };
+  return { isInstallable: !!deferredPrompt, isAppInstalled, triggerInstall, isIOS };
 }

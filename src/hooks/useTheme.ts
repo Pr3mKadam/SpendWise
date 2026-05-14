@@ -19,11 +19,9 @@ function loadTheme(): ThemeMode {
 function applyTheme(mode: ThemeMode) {
   const root = document.documentElement;
   if (mode === 'light') {
-    root.classList.add('light-mode');
-    root.classList.remove('dark-mode');
+    root.classList.remove('dark');
   } else {
-    root.classList.add('dark-mode');
-    root.classList.remove('light-mode');
+    root.classList.add('dark');
   }
 }
 

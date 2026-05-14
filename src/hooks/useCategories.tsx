@@ -13,6 +13,8 @@ interface CategoryContextType {
   addCustomCategory: (def: Omit<CustomCategoryDef, 'id'>) => void;
   updateCustomCategory: (id: string, def: Partial<CustomCategoryDef>) => void;
   deleteCustomCategory: (id: string) => void;
+  suggestedCategories: string[];
+  categoryLimits: Record<string, number>;
 }
 
 const CategoryContext = createContext<CategoryContextType | undefined>(undefined);
@@ -31,7 +33,8 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
   }, [customCategories]);
 
   const addCustomCategory = useCallback((def: Omit<CustomCategoryDef, 'id'>) => {
-    const newCat = { ...def, id: `cat-${Date.now()}` };
+    const id = `cat-${Math.random().toString(36).substring(2, 9)}-${Date.now()}`;
+    const newCat = { ...def, id };
     setCustomCategories(prev => [...prev, newCat]);
   }, []);
 
@@ -42,6 +45,26 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
   const deleteCustomCategory = useCallback((id: string) => {
     setCustomCategories(prev => prev.filter(c => c.id !== id));
   }, []);
+
+  const userRole = useMemo(() => {
+    try {
+      const saved = localStorage.getItem('spendwise_config');
+      if (saved) return JSON.parse(saved).userRole || 'professional';
+    } catch { }
+    return 'professional';
+  }, []);
+
+  const suggestedCategories = useMemo(() => {
+    switch (userRole) {
+      case 'student':
+        return ['Education', 'Food', 'Entertainment', 'Transport', 'Subscriptions'];
+      case 'business':
+        return ['Business', 'Utilities', 'Transport', 'Income', 'Subscriptions'];
+      case 'professional':
+      default:
+        return ['Shopping', 'Health', 'Travel', 'Bills', 'Income'];
+    }
+  }, [userRole]);
 
   const transactions = useStore(state => state.transactions);
 
@@ -84,11 +107,20 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     dynamicCategories.forEach(c => { map[c] = '🏷️'; });
     return map;
   }, [customCategories, dynamicCategories]);
+  
+  const categoryLimits = useMemo(() => {
+    const limits: Record<string, number> = {};
+    customCategories.forEach(c => {
+      if (typeof c.monthlyLimit === 'number') limits[c.name] = c.monthlyLimit;
+    });
+    return limits;
+  }, [customCategories]);
 
   return (
     <CategoryContext.Provider value={{
       customCategories, allCategories, mergedColors, mergedIcons,
-      addCustomCategory, updateCustomCategory, deleteCustomCategory
+      addCustomCategory, updateCustomCategory, deleteCustomCategory,
+      suggestedCategories, categoryLimits
     }}>
       {children}
     </CategoryContext.Provider>

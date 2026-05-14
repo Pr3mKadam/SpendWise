@@ -22,7 +22,8 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
   const currentBalance = useMemo(() => {
     return Math.round(
       transactions.reduce((acc, tx) => {
-        return tx.type === 'credit' ? acc + tx.amount : acc - tx.amount;
+        const amount = Number(tx.amount) || 0;
+        return tx.type === 'credit' ? acc + amount : acc - amount;
       }, initialBalance) * 100
     ) / 100;
   }, [transactions, initialBalance]);
@@ -30,8 +31,9 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
   const categorySpending = useMemo((): CategorySpend[] => {
     const map = new Map<Category, number>();
     transactions.forEach(tx => {
+      const amount = Number(tx.amount) || 0;
       if (tx.type === 'debit') {
-        map.set(tx.category, (map.get(tx.category) ?? 0) + tx.amount);
+        map.set(tx.category, (map.get(tx.category) ?? 0) + amount);
       }
     });
     return Array.from(map.entries())
@@ -72,8 +74,8 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
     // Filter transactions for the current calendar month
     const thisMonth = transactions.filter(tx => tx.date.startsWith(currentMonthStr));
     
-    const income = thisMonth.filter(tx => tx.type === 'credit').reduce((a, tx) => a + tx.amount, 0);
-    const expenses = thisMonth.filter(tx => tx.type === 'debit').reduce((a, tx) => a + tx.amount, 0);
+    const income = thisMonth.filter(tx => tx.type === 'credit').reduce((a, tx) => a + (Number(tx.amount) || 0), 0);
+    const expenses = thisMonth.filter(tx => tx.type === 'debit').reduce((a, tx) => a + (Number(tx.amount) || 0), 0);
     const net = income - expenses;
     const savings = income > 0 ? Math.round((net / income) * 100) : 0;
     
@@ -95,10 +97,11 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
       const monthStr = tx.date.substring(0, 7); // YYYY-MM
       const existing = historyMap.get(monthStr) || { income: 0, expenses: 0 };
       
+      const amount = Number(tx.amount) || 0;
       if (tx.type === 'credit') {
-        existing.income += tx.amount;
+        existing.income += amount;
       } else {
-        existing.expenses += tx.amount;
+        existing.expenses += amount;
       }
       historyMap.set(monthStr, existing);
     });
@@ -140,7 +143,8 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
       // While the transaction date is after the current day, subtract/add it back from running balance
       while (txIdx < sortedTx.length && sortedTx[txIdx].date > dateStr) {
         const tx = sortedTx[txIdx];
-        runningBalance -= (tx.type === 'credit' ? tx.amount : -tx.amount);
+        const amount = Number(tx.amount) || 0;
+        runningBalance -= (tx.type === 'credit' ? amount : -amount);
         txIdx++;
       }
 

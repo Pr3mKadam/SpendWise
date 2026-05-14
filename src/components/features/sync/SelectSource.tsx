@@ -1,8 +1,9 @@
 import React from 'react';
 import { ArrowLeft, Landmark, Zap, UploadCloud, ChevronRight } from 'lucide-react';
+import { SyncView } from '../../../types';
 
 export interface SelectSourceProps {
-  onSetView: (view: any) => void;
+  onSetView: (view: SyncView) => void;
 }
 
 export function SelectSource({ onSetView }: SelectSourceProps) {
@@ -24,7 +25,7 @@ export function SelectSource({ onSetView }: SelectSourceProps) {
         ].map(opt => (
           <button 
             key={opt.id}
-            onClick={() => !opt.disabled && onSetView(opt.id as any)}
+            onClick={() => !opt.disabled && onSetView(opt.id as 'dashboard' | 'upi-link' | 'plaid-link' | 'rzp-link' | 'web3-link' | 'csv')}
             className={`w-full flex items-center gap-5 p-6 rounded-2xl border ${opt.disabled ? 'opacity-50 cursor-default border-[var(--border)]' : 'border-[var(--border)] hover:border-[var(--teal)] hover:shadow-lg hover:shadow-teal-500/5 cursor-pointer bg-[var(--surface-card)]'} transition-all text-left`}
           >
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center shrink-0" style={{ background: opt.bg, color: opt.color }}>

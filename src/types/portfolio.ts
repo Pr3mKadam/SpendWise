@@ -1,6 +1,6 @@
-export type AssetType = 'bank' | 'investment' | 'crypto' | 'property' | 'other';
-export type LiabilityType = 'loan' | 'credit_card' | 'mortgage' | 'other';
-export type UPIProvider = 'gpay' | 'phonepe' | 'paytm' | 'cred' | 'bhim' | 'razorpay' | 'other';
+export type AssetType = 'bank' | 'investment' | 'crypto' | 'property' | 'business' | 'education' | 'other';
+export type LiabilityType = 'loan' | 'credit_card' | 'mortgage' | 'student_loan' | 'business_loan' | 'other';
+export type FinanceProvider = 'gpay' | 'phonepe' | 'paytm' | 'cred' | 'bhim' | 'razorpay' | 'plaid' | 'web3' | 'other';
 
 export interface AssetEntry {
   id: string;
@@ -25,9 +25,9 @@ export interface LiabilityEntry {
   lastUpdated: string;
 }
 
-export interface UPIAccount {
+export interface LinkedAccount {
   id: string;
-  provider: UPIProvider;
+  provider: FinanceProvider;
   upiId: string;
   linkedAt: string;
   lastSynced: string;

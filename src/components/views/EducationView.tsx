@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, Clock, Star, Trophy, Sparkles, Check } from 'lucide-react';
 import { useStore } from '../../store';
 import { Transaction } from '../../types';
+import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 
 import { LESSONS, Lesson } from '../../data/lessons';
 import { CATEGORY_CONFIG } from '../features/education/categoryConfig';
@@ -27,11 +28,13 @@ import LessonCard from '../features/education/LessonCard';
 export default function EducationView({
   currency,
   financeState,
-  addNotification
+  addNotification,
+  config
 }: {
   currency: string;
   financeState: any;
   addNotification?: (notif: any) => void;
+  config: SpendWiseConfig | null;
 }) {
   const level = useStore(state => state.level);
   const totalXP = useStore(state => state.totalXP);
@@ -102,9 +105,13 @@ export default function EducationView({
           <div>
             <h2 className="flex items-center gap-2.5 text-headline">
               <GraduationCap size={22} style={{ color: 'var(--teal)' }} />
-              Financial Education Center
+              {config?.userRole === 'student' ? 'Student Learning Path' : 'Financial Education Center'}
             </h2>
-            <p className="text-caption mt-1">Master money concepts. Earn XP. Build wealth.</p>
+            <p className="text-caption mt-1">
+              {config?.userRole === 'student' 
+                ? `Hey ${config.name}, master the basics of wealth building while you study!`
+                : "Master money concepts. Earn XP. Build wealth."}
+            </p>
           </div>
         </div>
 
@@ -159,11 +166,20 @@ export default function EducationView({
                 Personalized for your spending
               </p>
               <p className="font-inter text-xs text-[var(--text-secondary)] leading-relaxed">
-                Your top spending category is <strong>{topCategory}</strong>. We recommend starting with the{' '}
-                <button onClick={() => setActiveLesson(LESSONS.find(l => l.id === 'l1')!)} className="text-[var(--teal)] font-bold underline underline-offset-2 bg-transparent border-none cursor-pointer">
-                  50/30/20 Rule
-                </button>{' '}
-                to create a structured budget around it.
+                {config?.userRole === 'student' ? (
+                  <>
+                    Since you're in the <strong>Student</strong> persona, we've prioritized <strong>Debt Management</strong> and <strong>Budgeting</strong>. 
+                    Avoid high-interest car loans and focus on building your credit score early!
+                  </>
+                ) : (
+                  <>
+                    Your top spending category is <strong>{topCategory}</strong>. We recommend starting with the{' '}
+                    <button onClick={() => setActiveLesson(LESSONS.find(l => l.id === 'l1')!)} className="text-[var(--teal)] font-bold underline underline-offset-2 bg-transparent border-none cursor-pointer">
+                      50/30/20 Rule
+                    </button>{' '}
+                    to create a structured budget around it.
+                  </>
+                )}
               </p>
             </div>
           </div>

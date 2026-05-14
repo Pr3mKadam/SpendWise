@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { useStore } from '../store';
 import { useTransactions } from './useTransactions';
+import { useCategories } from './useCategories';
 import { Category } from '../types';
 
 export function useBudgets() {
@@ -10,6 +11,7 @@ export function useBudgets() {
   const removeBudget = useStore(state => state.removeBudget);
   const updateBudgetSettings = useStore(state => state.updateBudgetSettings);
   const { transactions, monthlyStats } = useTransactions();
+  const { categoryLimits } = useCategories();
 
   const budgetStats = useMemo(() => {
     // Determine the start date of the current period
@@ -50,8 +52,11 @@ export function useBudgets() {
         }
       }
     });
+    
+    // Merge explicit store budgets with implicit category limits
+    const combinedBudgets: Record<string, number> = { ...categoryLimits, ...budgets };
 
-    return Object.entries(budgets).map(([category, limit]) => {
+    return Object.entries(combinedBudgets).map(([category, limit]) => {
       const spent = periodSpending.get(category) ?? 0;
       let limitWithRollover = limit;
       let rolloverAmount = 0;
@@ -81,9 +86,11 @@ export function useBudgets() {
         status
       };
     });
-  }, [budgets, transactions, budgetSettings.period, budgetSettings.rolloverEnabled]);
-
-  const totalBudgeted = Object.values(budgets).reduce((a, b) => a + b, 0);
+  }, [budgets, transactions, budgetSettings.period, budgetSettings.rolloverEnabled, categoryLimits]);
+  
+  const totalBudgeted = Object.values({ ...categoryLimits, ...budgets })
+    .filter((v): v is number => typeof v === 'number' && !isNaN(v))
+    .reduce((a, b) => a + b, 0);
   const totalSpentInBudgeted = budgetStats.reduce((a, b) => a + b.spent, 0);
   const overallBudgetPercent = totalBudgeted > 0 ? (totalSpentInBudgeted / totalBudgeted) * 100 : 0;
 
@@ -96,6 +103,7 @@ export function useBudgets() {
     overallBudgetPercent,
     monthlyExpenses: monthlyStats.totalExpenses,
     budgetSettings,
-    updateBudgetSettings
+    updateBudgetSettings,
+    resetBudgets: useStore(state => state.resetBudgets)
   };
 }

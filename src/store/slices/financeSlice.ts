@@ -28,6 +28,7 @@ export interface FinanceSlice {
   bulkReassignCategory: (oldCategory: string, newCategory: string) => void;
   setBudget: (category: string, amount: number) => void;
   removeBudget: (category: string) => void;
+  resetBudgets: () => void;
   updateBudgetSettings: (settings: Partial<BudgetSettings>) => void;
   addSubscription: (sub: RecurringPattern) => void;
   updateSubscription: (merchant: string, data: Partial<RecurringPattern>) => void;
@@ -140,6 +141,8 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
     delete newBudgets[category];
     return { budgets: newBudgets };
   }),
+
+  resetBudgets: () => set({ budgets: {} }),
 
   updateBudgetSettings: (settings) => set((state) => ({
     budgetSettings: { 

@@ -5,6 +5,7 @@
 import { useMemo } from 'react';
 import { Lock, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { haptic } from '../../../lib/haptic';
 
 interface Badge {
   id: string;
@@ -186,7 +187,11 @@ export function BadgeGallery({ transactions, streak, level, goals, currency = 'â
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 whileHover={{ scale: 1.04 }}
-                className="relative flex flex-col items-center text-center p-4 rounded-2xl border cursor-default"
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  haptic.light();
+                }}
+                className="relative flex flex-col items-center text-center p-4 rounded-2xl border cursor-pointer"
                 style={{ borderColor: `${badge.color}30`, background: `${badge.color}08` }}
               >
                 <div className="text-3xl mb-2 drop-shadow-sm">{badge.emoji}</div>

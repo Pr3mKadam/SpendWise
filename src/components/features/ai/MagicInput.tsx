@@ -3,7 +3,6 @@ import { Wand2, Sparkles, Loader2, Check, X, Mic, Camera, Paperclip } from 'luci
 import { processNaturalLanguageExpense } from '../../../utils/parsers/nlp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Transaction } from '../../../types';
-import { playSuccess } from '../../../utils/soundscape';
 import { AIInputTools } from './AIInputTools';
 import { compressImage } from '../../../utils/imageUtils';
 import { recognizeReceipt, parseOfflineReceipt } from '../../../utils/parsers/ocr';
@@ -11,6 +10,10 @@ import { parseVoiceLocally } from '../../../utils/parsers/voice';
 import { parseVoiceWithGemini } from '../../../services/VoiceService';
 import { useCurrency } from '../../../contexts/CurrencyContext';
 import ReceiptScanner from './ReceiptScanner';
+import { haptic } from '../../../lib/haptic';
+import { predictCategory } from '../../../utils/merchantMapper';
+import { useCategories } from '../../../hooks/useCategories';
+import { useStore } from '../../../store';
 
 interface MagicInputProps {
   onAdd: (transaction: Transaction) => void;
@@ -18,10 +21,12 @@ interface MagicInputProps {
   onInputChange?: (val: string) => void;
   transactions?: Transaction[];
   onFocus?: () => void;
+  autoFocus?: boolean;
 }
 
-export default function MagicInput({ onAdd, externalInput, onInputChange, transactions, onFocus }: MagicInputProps) {
+export default function MagicInput({ onAdd, externalInput, onInputChange, transactions, onFocus, autoFocus }: MagicInputProps) {
   const { activeCurrency } = useCurrency();
+  const { suggestedCategories, mergedIcons } = useCategories();
   const [localInput, setLocalInput] = useState('');
   const input = externalInput !== undefined ? externalInput : localInput;
   const setInput = onInputChange || setLocalInput;
@@ -43,10 +48,17 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
     const result = await processNaturalLanguageExpense(input);
     
     // Intelligent Default: If merchant matches history, suggest previous category
-    if (result && result.merchant && transactions) {
-      const match = transactions.find(t => t.merchant.toLowerCase() === result.merchant?.toLowerCase());
-      if (match) {
-        result.category = match.category;
+    if (result && result.merchant) {
+      if (transactions) {
+        const match = transactions.find(t => t.merchant.toLowerCase() === result.merchant?.toLowerCase());
+        if (match) {
+          result.category = match.category;
+        } else {
+          // If no history match, use smart merchant mapper
+          result.category = predictCategory(result.merchant);
+        }
+      } else {
+        result.category = predictCategory(result.merchant);
       }
     }
 
@@ -67,7 +79,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
         date: prediction.date || new Date().toISOString().split('T')[0],
         type: prediction.type || 'debit'
       });
-      playSuccess();
+      haptic.success();
       setPrediction(null);
       setInput('');
     }
@@ -163,6 +175,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             onKeyDown={(e) => e.key === 'Enter' && handleProcess()}
             onFocus={onFocus}
             placeholder="I spent 500 on dinner at Starbucks..."
+            autoFocus={autoFocus}
             className="flex-1 bg-transparent border-none py-4 px-2 text-[var(--text-primary)] font-medium outline-none placeholder:text-[var(--text-muted)] placeholder:opacity-50"
           />
           <button 
@@ -194,19 +207,25 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
 
         {/* Quick Suggestions */}
         <div className="flex flex-wrap gap-2 px-2 mt-3">
-          {[
-            { label: '💊 Medicines', prompt: 'Bought Paracetamol for 150 at Apollo' },
-            { label: '🚌 Transport', prompt: 'Paid 40 for Bus ticket to Pune' },
-            { label: '🏰 Tourist Spots', prompt: 'Spent 2000 for stay at Goa Resort' },
-          ].map((chip) => (
-            <button
-              key={chip.label}
-              onClick={() => { setInput(chip.prompt); handleProcess(); }}
-              className="px-4 py-2 bg-[var(--surface-card)] border border-[var(--border)] shadow-sm rounded-full text-xs font-semibold text-[var(--text-secondary)] hover:border-[var(--teal)] hover:text-[var(--teal)] hover:shadow-[0_4px_12px_rgba(45,212,191,0.15)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer whitespace-nowrap flex items-center gap-1.5"
-            >
-              {chip.label}
-            </button>
-          ))}
+          {suggestedCategories.map((catName) => {
+            const icon = mergedIcons[catName] || '🏷️';
+            // Generate a sample prompt based on category
+            let prompt = `Spent 500 on ${catName}`;
+            if (catName === 'Food') prompt = 'Dinner at Starbucks for 450';
+            if (catName === 'Transport') prompt = 'Uber ride for 300';
+            if (catName === 'Education') prompt = 'Bought books for 1200';
+            if (catName === 'Business') prompt = 'Cloud subscription for 2500';
+            
+            return (
+              <button
+                key={catName}
+                onClick={() => { setInput(prompt); handleProcess(); }}
+                className="px-4 py-2 bg-[var(--surface-card)] border border-[var(--border)] shadow-sm rounded-full text-xs font-semibold text-[var(--text-secondary)] hover:border-[var(--teal)] hover:text-[var(--teal)] hover:shadow-[0_4px_12px_rgba(45,212,191,0.15)] hover:-translate-y-0.5 transition-all duration-300 cursor-pointer whitespace-nowrap flex items-center gap-1.5"
+              >
+                <span>{icon}</span> {catName}
+              </button>
+            );
+          })}
         </div>
 
       <AIInputTools 
@@ -233,6 +252,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             status: 'completed',
             tags: ['ocr']
           });
+          haptic.success();
           setShowScanner(false);
         }}
       />

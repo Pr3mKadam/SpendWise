@@ -5,7 +5,7 @@ import { useCategories } from '../../hooks/useCategories';
 import { useTransactions } from '../../hooks/useTransactions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Category } from '../../types';
-import { SmartBudgetSuggestions } from '../features/budget/SmartBudgetSuggestions';
+import { SmartBudgetSuggestions } from '../features/budgets/SmartBudgetSuggestions';
 
 export default function BudgetView({ currency = '₹' }: { currency?: string }) {
   const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent, budgets } = useBudgets();

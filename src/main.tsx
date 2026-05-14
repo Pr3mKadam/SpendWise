@@ -20,8 +20,8 @@ runDexieMigration().catch(err =>
 // ── Restore user preferences before first paint ───────────────────────────────
 (function restorePreferences() {
   // Dark mode
-  const theme = localStorage.getItem('spendwise_dark_mode');
-  if (theme) document.documentElement.setAttribute('data-theme', theme);
+  const theme = localStorage.getItem('spendwise_theme');
+  if (theme === 'dark') document.documentElement.classList.add('dark');
 
   // Font size
   const fontSizeClasses = ['text-sm', 'text-base', 'text-lg', 'text-xl'];

@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Award, Zap, CheckCircle, RefreshCw, Sparkles, Coffee, BookOpen, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { haptic } from '../../../lib/haptic';
 import { generateQuests } from '../../../utils/insights/advisor';
 import { Transaction } from '../../../types';
 import { useQuestReset } from '../../../hooks/useQuestReset';
@@ -48,6 +49,7 @@ export function QuestsPanel({ transactions }: QuestsPanelProps) {
 
   const handleQuestClick = (questId: string, reward: string) => {
     if (isCompleted(questId)) return;
+    haptic.success();
     const numericXP = parseInt(reward.replace(/\D/g, '')) || 0;
     completeQuest(questId, numericXP);
     

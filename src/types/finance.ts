@@ -7,6 +7,8 @@ export type DefaultCategory =
   | 'Utilities'
   | 'Health'
   | 'Travel'
+  | 'Education'
+  | 'Business'
   | 'Income';
 
 export type Category = DefaultCategory | (string & {});
@@ -33,6 +35,29 @@ export type BudgetPeriod = 'weekly' | 'biweekly' | 'monthly';
 export interface BudgetConfig {
   period:          BudgetPeriod;
   rolloverEnabled: boolean;
+}
+
+export type BudgetConfidence = 'high' | 'medium' | 'low';
+
+export interface CategorySpend {
+  name:     Category;
+  value:    number;
+  color:    string;
+  percent:  number;
+}
+
+export interface BalanceDataPoint {
+  date:       string;
+  balance:    number;
+  projected?: boolean;
+}
+
+export interface BudgetSuggestion {
+  category: Category;
+  suggestedLimit: number;
+  confidence: BudgetConfidence;
+  reasoning: string;
+  avgSpend?: number;
 }
 
 export interface Budget {
@@ -68,7 +93,7 @@ export interface RecurringPattern {
   merchant:      string;
   category:      Category;
   avgAmount:     number;
-  frequency:     'weekly' | 'monthly' | 'annual';
+  frequency:     'daily' | 'weekly' | 'monthly' | 'annual';
   lastSeen:      string;
   nextExpected:  string;
   occurrences:   number;
@@ -78,7 +103,7 @@ export interface RecurringPattern {
   trialEndsAt?:  string;
 }
 
-export type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'yearly';
+export type RecurringFrequency = 'daily' | 'weekly' | 'monthly' | 'annual';
 
 export interface RecurringTransaction {
   id:            string;
@@ -105,4 +130,11 @@ export interface SavingsGoal {
   status:       GoalStatus;
   color:        string;
   createdAt:    string;
+}
+
+export interface SpendingPersonality {
+  archetype: string;
+  description: string;
+  traits: string[];
+  advice: string;
 }

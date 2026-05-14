@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppView, Transaction, Category } from '../../types';
 import { SkeletonLoader } from '../common/SkeletonLoader';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 import AlertBanner from '../common/AlertBanner';
 
 // Lazy loaded views
@@ -19,36 +20,69 @@ const ParentalView = lazy(() => import('../views/ParentalView'));
 const BudgetManager = lazy(() => import('../features/budgets/BudgetManager'));
 const SubscriptionManager = lazy(() => import('../features/subscriptions/SubscriptionManager'));
 const EducationView = lazy(() => import('../views/EducationView'));
-import { DashboardView } from '../views/DashboardView';
+const GamificationView = lazy(() => import('../views/GamificationView'));
+const DashboardView = lazy(() => import('../views/DashboardView').then(m => ({ default: m.DashboardView })));
+
+import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
+import { SpendWiseStore, ParentalControlState } from '../../store';
+import { AppState } from '../../types/state';
 
 interface ViewRendererProps {
   activeView: AppView;
-  appState: any;
-  store: any;
-  pcSettings: any;
+  appState: AppState;
+  store: SpendWiseStore;
+  pcSettings: ParentalControlState;
   onNavigate: (view: AppView) => void;
   onAdd: (tx: Transaction) => void;
   onPDFReport: () => void;
-  config: any;
-  setConfig: (c: any) => void;
+  config: SpendWiseConfig | null;
+  setConfig: (config: SpendWiseConfig) => void;
   resetData: () => Promise<void>;
   userId: string | null;
+  onManageCategories?: () => void;
+  voiceSearchQuery?: string;
 }
 
-const ViewWrapper: React.FC<{ children: React.ReactNode, id: string, className?: string }> = ({ children, id, className = "w-full h-full" }) => (
-  <motion.div
-    key={id}
-    initial={{ opacity: 0, x: 20 }}
-    animate={{ opacity: 1, x: 0 }}
-    exit={{ opacity: 0, x: -20 }}
-    transition={{ duration: 0.3 }}
-    className={className}
-  >
-    <Suspense fallback={<SkeletonLoader />}>
-      {children}
-    </Suspense>
-  </motion.div>
-);
+const VIEW_ORDER: AppView[] = [
+  'dashboard',
+  'budget',
+  'analytics',
+  'subscriptions',
+  'history',
+  'goals',
+  'portfolio',
+  'advisor',
+  'education',
+  'reports',
+  'sync',
+  'shared',
+  'parental',
+  'profile'
+];
+
+const ViewWrapper: React.FC<{ children: React.ReactNode, id: string, className?: string, activeView: AppView }> = ({ children, id, className = "w-full h-full", activeView }) => {
+  return (
+    <motion.div
+      key={id}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ 
+        type: "spring",
+        stiffness: 400,
+        damping: 40,
+        opacity: { duration: 0.15 }
+      }}
+      className={className}
+    >
+      <ErrorBoundary>
+        <Suspense fallback={<SkeletonLoader />}>
+          {children}
+        </Suspense>
+      </ErrorBoundary>
+    </motion.div>
+  );
+};
 
 export const ViewRenderer: React.FC<ViewRendererProps> = ({
   activeView,
@@ -62,6 +96,8 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
   setConfig,
   resetData,
   userId,
+  onManageCategories,
+  voiceSearchQuery,
 }) => {
   const { 
     financeState, 
@@ -86,7 +122,7 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
 
       <AnimatePresence mode="wait">
         {activeView === 'dashboard' && (
-          <ViewWrapper id="dashboard">
+          <ViewWrapper id="dashboard" activeView={activeView}>
             <DashboardView
               financeState={financeState}
               onAdd={onAdd}
@@ -98,14 +134,15 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               onNavigate={onNavigate}
               hideBalances={pcSettings.hideBalances}
               onTogglePrivacy={store.togglePrivacy}
+              config={config}
             />
           </ViewWrapper>
         )}
 
         {activeView === 'budget' && (
-          <ViewWrapper id="budget">
+          <ViewWrapper id="budget" activeView={activeView}>
             <BudgetManager
-              budgets={budgetState.budgetStats as any}
+              budgets={budgetState.budgetStats}
               totalBudgeted={budgetState.totalBudgeted}
               totalSpentAgainstBudget={budgetState.totalSpentAgainstBudget}
               overBudgetCount={budgetState.overBudgetCount}
@@ -116,7 +153,7 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               onResetLimits={budgetState.resetLimits}
               onChangePeriod={budgetState.updatePeriod}
               onToggleRollover={budgetState.toggleRollover}
-              onManageCategories={() => { /* Handled in MainShell now via event or prop? Wait, MainShell needs to handle this. Let's pass a prop for it, or use a custom event. Actually, we should probably pass setShowCategoriesModal to ViewRenderer. Wait, we can use document dispatchEvent for this or add a prop. For now, let's just pass a prop. */ }}
+              onManageCategories={onManageCategories}
               currency={currency}
               transactions={transactions}
             />
@@ -124,7 +161,7 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         )}
 
         {activeView === 'analytics' && (
-          <ViewWrapper id="analytics" className="w-full h-full space-y-6">
+          <ViewWrapper id="analytics" activeView={activeView} className="w-full h-full space-y-6">
             <AnalyticsView
               monthlyHistory={financeState.monthlyHistory}
               monthlyStats={financeState.monthlyStats}
@@ -132,16 +169,15 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               totalSpent={financeState.totalSpent}
               currency={currency}
               transactions={transactions}
-              onNavigate={(view) => {
-                onNavigate(view as any);
-              }}
+              onNavigate={onNavigate}
+              config={config}
             />
             <RecurringView patterns={recurringData} currency={currency} transactions={transactions} />
           </ViewWrapper>
         )}
 
         {activeView === 'goals' && (
-          <ViewWrapper id="goals">
+          <ViewWrapper id="goals" activeView={activeView}>
             <GoalsView
               goals={goalsState.goals}
               stats={goalsState.stats}
@@ -166,13 +202,114 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         )}
 
         {activeView === 'shared' && (
-          <ViewWrapper id="shared">
+          <ViewWrapper id="shared" activeView={activeView}>
             <SharedView currency={currency} userId={userId} />
           </ViewWrapper>
         )}
 
         {activeView === 'history' && (
-          <ViewWrapper id="history">
+          <ViewWrapper id="history" activeView={activeView}>
+            <HistoryView
+              transactions={transactions}
+              onCategoryChange={async (id: string, newCategory: string) => {
+                financeState.updateTransactionCategory(id, newCategory as Category);
+              }}
+              onDelete={financeState.deleteTransaction}
+              onBulkDelete={financeState.bulkDeleteTransactions}
+              onBulkCategoryChange={financeState.bulkUpdateTransactionsCategory}
+              onImportClick={() => onNavigate('sync')}
+              onPDFReport={onPDFReport}
+              currency={currency}
+              initialSearchQuery={voiceSearchQuery}
+            />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'sync' && (
+          <ViewWrapper id="sync" activeView={activeView}>
+            <BankSyncView
+              onAutoAddTransactions={(txs) => {
+                financeState.addTransactions(txs);
+              }}
+              recentTransactions={transactions.filter((t: Transaction) =>
+                t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
+              )}
+              currency={currency}
+            />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'profile' && (
+          <ViewWrapper id="profile" activeView={activeView}>
+            <ProfileView
+              config={config}
+              onUpdateConfig={setConfig}
+              onResetData={async () => {
+                await resetData();
+                if (config) {
+                  const nextConfig = { ...config, initialBalance: 0 };
+                  setConfig(nextConfig);
+                  // Handled by App.tsx through setConfig, but let's make sure it's saved
+                  // The parent handles saving in App.tsx
+                }
+              }}
+              transactions={transactions}
+              onNavigate={onNavigate}
+              addNotification={notifState.addNotification}
+            />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'parental' && (
+          <ViewWrapper id="parental" activeView={activeView}>
+            <ParentalView />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'portfolio' && (
+          <ViewWrapper id="portfolio" activeView={activeView}>
+            <PortfolioView currency={currency} financeState={financeState} config={config} />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'subscriptions' && (
+          <ViewWrapper id="subscriptions" activeView={activeView}>
+            <SubscriptionManager patterns={recurringData} currency={currency} />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'advisor' && (
+          <ViewWrapper id="advisor" activeView={activeView}>
+            <AdvisorView onNavigate={onNavigate} />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'education' && (
+          <ViewWrapper id="education" activeView={activeView}>
+            <EducationView currency={currency} financeState={financeState} addNotification={notifState.addNotification} config={config} />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'reports' && (
+          <ViewWrapper id="reports" activeView={activeView}>
+            <ReportsView transactions={transactions} currency={currency} monthlyStats={financeState.monthlyStats} />
+          </ViewWrapper>
+        )}
+
+        {(activeView === 'quests' || activeView === 'badges' || activeView === 'inventory' || activeView === 'shop') && (
+          <ViewWrapper id={activeView} activeView={activeView}>
+            <GamificationView
+              transactions={transactions}
+              goals={goalsState.goals}
+              currency={currency}
+              onNavigate={onNavigate}
+            />
+          </ViewWrapper>
+        )}
+
+        {/* Alias: transactions → HistoryView */}
+        {activeView === 'transactions' && (
+          <ViewWrapper id="transactions" activeView={activeView}>
             <HistoryView
               transactions={transactions}
               onCategoryChange={async (id: string, newCategory: string) => {
@@ -188,73 +325,17 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
           </ViewWrapper>
         )}
 
-        {activeView === 'sync' && (
-          <ViewWrapper id="sync">
-            <BankSyncView
-              onAutoAddTransactions={(txs) => {
-                financeState.addTransactions(txs);
-              }}
-              recentTransactions={transactions.filter((t: any) =>
-                t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
-              )}
-              currency={currency}
-            />
-          </ViewWrapper>
-        )}
-
-        {activeView === 'profile' && (
-          <ViewWrapper id="profile">
+        {/* Alias: settings → ProfileView */}
+        {activeView === 'settings' && (
+          <ViewWrapper id="settings" activeView={activeView}>
             <ProfileView
               config={config}
               onUpdateConfig={setConfig}
-              onResetData={async () => {
-                await resetData();
-                if (config) {
-                  const nextConfig = { ...config, initialBalance: 0 };
-                  setConfig(nextConfig);
-                  // Handled by App.tsx through setConfig, but let's make sure it's saved
-                  // The parent handles saving in App.tsx
-                }
-              }}
+              onResetData={async () => { await resetData(); }}
               transactions={transactions}
               onNavigate={onNavigate}
+              addNotification={notifState.addNotification}
             />
-          </ViewWrapper>
-        )}
-
-        {activeView === 'parental' && (
-          <ViewWrapper id="parental">
-            <ParentalView />
-          </ViewWrapper>
-        )}
-
-        {activeView === 'portfolio' && (
-          <ViewWrapper id="portfolio">
-            <PortfolioView currency={currency} financeState={financeState} />
-          </ViewWrapper>
-        )}
-
-        {activeView === 'subscriptions' && (
-          <ViewWrapper id="subscriptions">
-            <SubscriptionManager patterns={recurringData} currency={currency} />
-          </ViewWrapper>
-        )}
-
-        {activeView === 'advisor' && (
-          <ViewWrapper id="advisor">
-            <AdvisorView onNavigate={onNavigate} />
-          </ViewWrapper>
-        )}
-
-        {activeView === 'education' && (
-          <ViewWrapper id="education">
-            <EducationView currency={currency} financeState={financeState} addNotification={notifState.addNotification} />
-          </ViewWrapper>
-        )}
-
-        {activeView === 'reports' && (
-          <ViewWrapper id="reports">
-            <ReportsView transactions={transactions} currency={currency} monthlyStats={financeState.monthlyStats} />
           </ViewWrapper>
         )}
       </AnimatePresence>

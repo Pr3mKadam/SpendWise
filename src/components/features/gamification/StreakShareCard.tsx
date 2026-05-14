@@ -5,6 +5,8 @@
  */
 import { useRef, useState } from 'react';
 import { Share2, Camera, Flame, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { haptic } from '../../../lib/haptic';
 
 interface Props {
   streak: number;
@@ -19,6 +21,7 @@ export function StreakShareCard({ streak, level, levelName, savingsRate, currenc
   const cardRef = useRef<HTMLDivElement>(null);
 
   const handleShare = async () => {
+    haptic.success();
     const text = `🔥 I'm on a ${streak}-day streak on SpendWise!\n\n📊 Level ${level} ${levelName} · ${savingsRate}% savings rate\n\nTrack your finances smarter with SpendWise 💰`;
     try {
       if (navigator.share) {
@@ -37,7 +40,10 @@ export function StreakShareCard({ streak, level, levelName, savingsRate, currenc
   return (
     <>
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          haptic.light();
+        }}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all hover:scale-105"
         style={{ background: 'var(--teal-dim)', color: 'var(--teal)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}
         title="Share your streak"

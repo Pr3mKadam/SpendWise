@@ -105,6 +105,12 @@ export function useGoals() {
     };
   }, [goals]);
 
+  const goalStats = useMemo(() => ({
+    onTrack: goals.filter(g => computeStatus(g) === 'on-track').length,
+    atRisk:  goals.filter(g => computeStatus(g) === 'at-risk').length,
+    achieved: goals.filter(g => computeStatus(g) === 'achieved').length,
+  }), [goals]);
+
   return {
     goals,
     goalsHydrated,
@@ -113,5 +119,9 @@ export function useGoals() {
     deleteGoal,
     addContribution,
     stats,
+    goalStats,
+    totalSaved: stats.totalSaved,
+    totalTarget: stats.totalTarget,
+    overallProgress: stats.overallPercent,
   };
 }

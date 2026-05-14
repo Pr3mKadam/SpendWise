@@ -90,10 +90,10 @@ async function decryptString(encryptedJson: string, password: string): Promise<s
 const SESSION_SEED_KEY = 'sw_session_seed';
 
 function getOrCreateSessionSeed(): string {
-  let seed = sessionStorage.getItem(SESSION_SEED_KEY);
+  let seed = localStorage.getItem(SESSION_SEED_KEY);
   if (!seed) {
     seed = crypto.randomUUID();
-    sessionStorage.setItem(SESSION_SEED_KEY, seed);
+    localStorage.setItem(SESSION_SEED_KEY, seed);
   }
   return seed;
 }
@@ -110,14 +110,11 @@ const dexieStorage: StateStorage = {
     try {
       return await decryptString(record.value, encryptionPassword!);
     } catch (e) {
-      console.error('Failed to decrypt data:', e);
-      // Fallback: if it's not JSON or decryption fails, maybe it was unencrypted before?
-      try {
-        JSON.parse(record.value);
-        return record.value; // It was unencrypted
-      } catch {
-        return null; // Corrupted or encrypted with wrong key
-      }
+      // Session seed mismatch is expected if the browser clears sessionStorage but keeps IndexedDB
+      // We log a warning instead of an error to keep the console clean and clear the stale data.
+      console.warn('[SpendWise Store] Session seed mismatch. Purging stale encrypted data.');
+      await db.keyval.delete(name);
+      return null;
     }
   },
   setItem: async (name: string, value: string): Promise<void> => {
@@ -142,6 +139,10 @@ export interface ParentalControlState {
   blockAddTransactions: boolean;
   sessionUnlocked: boolean;
   requireApproval: boolean;
+  notifyOnAllSpending?: boolean;
+  notifyOnLowBalance?: boolean;
+  blockAdultContent?: boolean;
+  restrictLateNightSpending?: boolean;
 }
 
 export type SpendWiseStore = FinanceSlice & PortfolioSlice & GamificationSlice & ParentalSlice & {

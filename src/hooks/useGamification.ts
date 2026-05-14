@@ -1,9 +1,11 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Transaction } from '../types';
 import { useStore } from '../store';
+import { useCategories } from './useCategories';
 
 export function useGamification(transactions: Transaction[]) {
   const store = useStore();
+  const { categoryLimits } = useCategories();
   const streak = store.streak;
   const [healthScore, setHealthScore] = useState(0);
 
@@ -59,7 +61,18 @@ export function useGamification(transactions: Transaction[]) {
     const streakXP = streak * 100;
     const healthXP = healthScore * 10;
     
-    const totalXp = transactionXP + streakXP + healthXP;
+    // Budget Adherence Bonus
+    const currentMonthStr = new Date().toISOString().substring(0, 7);
+    const monthlyExpenses = transactions
+      .filter(t => t.type === 'debit' && t.date.startsWith(currentMonthStr));
+    
+    const budgetAdherence = Object.entries(categoryLimits).reduce((acc, [cat, limit]) => {
+      if (limit === 0) return acc;
+      const spent = monthlyExpenses.filter(t => t.category === cat).reduce((s, t) => s + t.amount, 0);
+      return spent <= limit ? acc + 100 : acc;
+    }, 0);
+
+    const totalXp = transactionXP + streakXP + healthXP + budgetAdherence;
     
     // Level = floor(sqrt(xp / 250)) + 1
     const currentLevel = Math.floor(Math.sqrt(totalXp / 250)) + 1;
@@ -78,7 +91,7 @@ export function useGamification(transactions: Transaction[]) {
       xpToNextLevel: nextLevelBaseXP - totalXp,
       progress: Math.round(levelProgress)
     };
-  }, [transactions, streak, healthScore]);
+  }, [transactions, streak, healthScore, categoryLimits]);
 
   const savingsRate = useMemo(() => {
     const income = transactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);

@@ -36,7 +36,7 @@ const COLOR_OPTIONS = [
 export default function CustomCategoriesModal({
   isOpen, onClose, customCategories, onAdd, onUpdate, onDelete, transactions = [], onReassign
 }: CustomCategoriesModalProps) {
-  const { allCategories, mergedIcons } = useCategories();
+  const { allCategories, mergedIcons, suggestedCategories, addCustomCategory } = useCategories();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [reassigningCat, setReassigningCat] = useState<CustomCategoryDef | null>(null);
   const [selectedFallback, setSelectedFallback] = useState<string>('Other');
@@ -45,6 +45,7 @@ export default function CustomCategoriesModal({
   const [name, setName] = useState('');
   const [icon, setIcon] = useState('🛍️');
   const [color, setColor] = useState(COLOR_OPTIONS[0]);
+  const [monthlyLimit, setMonthlyLimit] = useState<string>('');
 
   if (!isOpen) return null;
 
@@ -53,6 +54,7 @@ export default function CustomCategoriesModal({
     setName('');
     setIcon(EMOJI_OPTIONS[0]);
     setColor(COLOR_OPTIONS[0]);
+    setMonthlyLimit('');
   };
 
   const handleStartEdit = (cat: CustomCategoryDef) => {
@@ -60,15 +62,18 @@ export default function CustomCategoriesModal({
     setName(cat.name);
     setIcon(cat.icon);
     setColor(cat.color);
+    setMonthlyLimit(cat.monthlyLimit?.toString() || '');
   };
 
   const handleSave = () => {
     if (!name.trim()) return;
     
+    const limit = monthlyLimit ? parseFloat(monthlyLimit) : undefined;
+    
     if (editingId === 'new') {
-      onAdd({ name: name.trim(), icon, color });
+      onAdd({ name: name.trim(), icon, color, monthlyLimit: limit });
     } else if (editingId) {
-      onUpdate(editingId, { name: name.trim(), icon, color });
+      onUpdate(editingId, { name: name.trim(), icon, color, monthlyLimit: limit });
     }
     setEditingId(null);
   };
@@ -172,23 +177,49 @@ export default function CustomCategoriesModal({
               ) : (
                 <div className="space-y-3 mb-6">
                   {customCategories.map(cat => (
-                    <div key={cat.id} className="flex items-center justify-between p-3 rounded-xl card-hover" style={{ border: '1.5px solid #edf2f7' }}>
-                      <div className="flex items-center gap-3">
-                        <span className="flex w-10 h-10 items-center justify-center rounded-xl text-lg shrink-0" style={{ background: `${cat.color}15` }}>
-                          {cat.icon}
-                        </span>
-                        <span style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                          {cat.name}
-                        </span>
+                    <div key={cat.id} className="p-3 rounded-xl card-hover border border-[var(--surface-border)]" style={{ background: 'var(--surface-card)' }}>
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="flex w-10 h-10 items-center justify-center rounded-xl text-lg shrink-0" style={{ background: `${cat.color}15` }}>
+                            {cat.icon}
+                          </span>
+                          <span style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                            {cat.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {cat.monthlyLimit && (
+                            <span className="px-2 py-1 rounded-lg bg-[var(--surface-submerged)] border border-[var(--surface-border)] text-[10px] font-bold text-[var(--text-primary)]">
+                              ${cat.monthlyLimit}
+                            </span>
+                          )}
+                          <button onClick={() => handleStartEdit(cat)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: '#f5f7fa', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>
+                            <Edit3 size={14} />
+                          </button>
+                          <button onClick={() => handleDeleteAttempt(cat)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}>
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => handleStartEdit(cat)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: '#f5f7fa', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer' }}>
-                          <Edit3 size={14} />
-                        </button>
-                        <button onClick={() => handleDeleteAttempt(cat)} className="flex items-center justify-center w-8 h-8 rounded-lg" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}>
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
+                      
+                      {cat.monthlyLimit && (
+                        <div className="mt-2">
+                          <div className="h-1.5 w-full bg-[var(--surface-submerged)] rounded-full overflow-hidden">
+                            {(() => {
+                              const spent = transactions
+                                .filter(t => t.category === cat.name && t.type === 'debit' && t.date.startsWith(new Date().toISOString().substring(0, 7)))
+                                .reduce((s, t) => s + t.amount, 0);
+                              const pct = Math.min(100, (spent / cat.monthlyLimit) * 100);
+                              return (
+                                <div 
+                                  className={`h-full rounded-full transition-all duration-500 ${spent > cat.monthlyLimit ? 'bg-red-500' : 'bg-[var(--teal)]'}`}
+                                  style={{ width: `${pct}%` }}
+                                />
+                              );
+                            })()}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -216,6 +247,44 @@ export default function CustomCategoriesModal({
                   onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
                   onBlur={e => { e.target.style.border = '2px solid transparent'; }}
                 />
+
+                {editingId === 'new' && (
+                  <div className="mt-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <p style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                        Suggested for your Role
+                      </p>
+                      {suggestedCategories.filter(c => !allCategories.includes(c)).length > 1 && (
+                        <button 
+                          onClick={() => {
+                            suggestedCategories.filter(c => !allCategories.includes(c)).forEach(sug => {
+                              onAdd({
+                                name: sug,
+                                icon: '🏷️',
+                                color: '#14b8a6', // Default teal
+                                monthlyLimit: 0
+                              });
+                            });
+                          }}
+                          className="text-[10px] font-bold text-[var(--teal)] hover:underline"
+                        >
+                          Add All
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {suggestedCategories.filter(c => !allCategories.includes(c)).map(sug => (
+                        <button
+                          key={sug}
+                          onClick={() => setName(sug)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-medium bg-[var(--teal-dim)] text-[var(--teal)] border border-[var(--teal-glow)] hover:scale-105 transition-transform"
+                        >
+                          + {sug}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -260,6 +329,28 @@ export default function CustomCategoriesModal({
                     />
                   ))}
                 </div>
+              </div>
+
+              <div>
+                <label style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' }}>
+                  Monthly Spending Limit (Optional)
+                </label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">$</span>
+                  <input
+                    type="number"
+                    value={monthlyLimit}
+                    onChange={e => setMonthlyLimit(e.target.value)}
+                    placeholder="0.00"
+                    className="w-full rounded-xl py-3 pl-8 pr-4 text-sm focus:outline-none transition-all"
+                    style={{ background: 'var(--surface-input)', border: '2px solid transparent', fontFamily: 'var(--font-inter)', color: 'var(--text-primary)' }}
+                    onFocus={e => { e.target.style.border = '2px solid var(--teal)'; }}
+                    onBlur={e => { e.target.style.border = '2px solid transparent'; }}
+                  />
+                </div>
+                <p className="text-[10px] text-[var(--text-muted)] mt-2 italic">
+                  Leave empty for no limit. This helps SpendWise track your budget health.
+                </p>
               </div>
 
               <div className="flex gap-3 pt-4">

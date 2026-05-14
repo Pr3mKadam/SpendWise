@@ -10,6 +10,7 @@ interface DataManagementProps {
   onOpenRestore: () => void;
   onRawDBExport: () => void;
   onRawDBImport: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onImportTransactions: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 interface DataCardProps {
@@ -51,6 +52,7 @@ export function DataManagement({
   onOpenRestore,
   onRawDBExport,
   onRawDBImport,
+  onImportTransactions,
 }: DataManagementProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -167,6 +169,29 @@ export function DataManagement({
               Import Raw JSON
             </button>
             <input type="file" accept=".json" onChange={onRawDBImport} ref={fileInputRef} className="hidden" />
+          </div>
+        </div>
+
+        {/* Transaction-only Import */}
+        <div
+          className="flex flex-col p-5 rounded-xl md:col-span-2 mt-0"
+          style={{ border: '1.5px solid var(--border)', background: 'var(--surface-input)' }}
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(20,184,166,0.1)' }}>
+              <Download size={16} style={{ color: 'var(--teal)' }} />
+            </div>
+            <h4 className="font-inter font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>Import Transactions (.json)</h4>
+          </div>
+          <p className="font-inter text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+            Import transactions from a JSON file. This will MERGE them with your existing data.
+          </p>
+          <div className="flex gap-3 items-center">
+            <label className="px-4 py-2 rounded-lg font-inter font-semibold text-xs transition-colors cursor-pointer"
+              style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)' }}>
+              Select JSON File
+              <input type="file" accept=".json" onChange={onImportTransactions} className="hidden" />
+            </label>
           </div>
         </div>
       </div>

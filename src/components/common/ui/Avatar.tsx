@@ -18,8 +18,8 @@ export function EmojiBtn({ e, active, onPick }: { e: string; active: boolean; on
       onClick={() => onPick(e)} 
       className={`text-[22px] rounded-[10px] p-1.5 cursor-pointer transition-all leading-none ${
         active 
-          ? 'bg-[var(--accent)]/10 border-2 border-[var(--accent)]' 
-          : 'bg-[var(--bg)] border-2 border-[var(--card-border)] hover:border-[var(--accent)]/50'
+          ? 'bg-[var(--teal)]/10 border-2 border-[var(--teal)]' 
+          : 'bg-[var(--bg)] border-2 border-[var(--card-border)] hover:border-[var(--teal)]/50'
       }`}
     >
       {e}

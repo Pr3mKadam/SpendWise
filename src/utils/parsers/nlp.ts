@@ -1,73 +1,71 @@
-import { Transaction } from "../../types";
-import { inferCategory, inferType } from "./common";
+import { Category } from "../../types";
 
-export async function analyzeTransactionString(raw: string): Promise<Partial<Transaction> | null> {
-  const amountMatch = raw.match(/(?:rs\.?|inr|₹)\s*([\d,]+(?:\.\d{1,2})?)/i)
-    || raw.match(/([\d,]+(?:\.\d{1,2})?)\s*(?:rs\.?|inr|₹)/i)
-    || raw.match(/\b(\d{2,}(?:\.\d{1,2})?)\b/);
-  const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : 0;
-
-  let merchant = 'Unknown';
-  const toMatch = raw.match(/(?:to|at|paid to)\s+([A-Za-z0-9 &'.@-]+?)(?:\s+on|\s+for|\s+\d|$)/i);
-  const fromMatch = raw.match(/(?:from|by)\s+([A-Za-z0-9 &'.@-]+?)(?:\s+on|\s+for|\s+\d|$)/i);
-  if (toMatch?.[1]) merchant = toMatch[1].trim();
-  else if (fromMatch?.[1]) merchant = fromMatch[1].trim();
-
-  const type = inferType(raw, amount);
-  const category = type === 'credit' ? 'Income' : inferCategory(raw);
-
-  return {
-    merchant: merchant.slice(0, 50),
-    amount,
-    category,
-    type,
-    date: new Date().toISOString().split('T')[0],
-    id: `sms-${Date.now()}`,
-    description: raw.slice(0, 120),
-  };
+export interface AIParseResult {
+  merchant: string;
+  category: Category;
+  amount?: number;
+  date?: string;
+  confidence: number;
 }
 
-export async function processNaturalLanguageExpense(input: string): Promise<Partial<Transaction> | null> {
-  const lower = input.toLowerCase();
+/**
+ * Uses Gemini AI (if key present) or local heuristics to analyze a transaction string.
+ */
+export async function processNaturalLanguageExpense(text: string): Promise<AIParseResult | null> {
+  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-  const amountPatterns = [
-    /(?:spent|paid|cost|costs?|buying?|bought|₹|rs\.?)\s*(\d[\d,]*(?:\.\d{1,2})?)/i,
-    /(\d[\d,]*(?:\.\d{1,2})?)\s*(?:rupees?|bucks?|rs\.?|₹|inr)/i,
-    /(\d{2,}(?:\.\d{1,2})?)/,
-  ];
-  let amount = 0;
-  for (const pattern of amountPatterns) {
-    const m = input.match(pattern);
-    if (m) { amount = parseFloat(m[1].replace(/,/g, '')); break; }
+  if (GEMINI_API_KEY) {
+    try {
+      const prompt = `Analyze this transaction description and extract details in JSON format.
+Description: "${text}"
+
+Required JSON fields:
+- merchant: The business or person name (e.g., "Swiggy", "Amazon")
+- category: One of [Food, Subscriptions, Transport, Entertainment, Shopping, Utilities, Health, Travel, Income, Transfer]
+- amount: Numeric value if present
+- confidence: 0.0 to 1.0
+
+Return ONLY the JSON.`;
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+        })
+      });
+
+      const data = await response.json();
+      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (rawText) {
+        const parsed = JSON.parse(rawText);
+        return {
+          merchant: parsed.merchant || text,
+          category: (parsed.category as Category) || 'Shopping',
+          amount: parsed.amount,
+          confidence: parsed.confidence || 0.9,
+        };
+      }
+    } catch (e) {
+      console.warn("AI Transaction Parse failed:", e);
+    }
   }
-  if (amount === 0) return null;
 
-  let merchant = 'Unknown';
-  const merchantPatterns = [
-    /(?:on|at|from|to|for)\s+([A-Za-z0-9'&\- ]+?)(?:\s+(?:for|yesterday|today|this|last)|$)/i,
-    /([A-Za-z]{3,}(?:\s+[A-Za-z]+)?)\s+(?:order|bill|subscription)/i,
-  ];
-  for (const pattern of merchantPatterns) {
-    const m = input.match(pattern);
-    if (m?.[1] && m[1].trim().length > 1) { merchant = m[1].trim(); break; }
-  }
-
-  const type: 'credit' | 'debit' = lower.includes('received') || lower.includes('got paid') || lower.includes('earned') ? 'credit' : 'debit';
-  const category = type === 'credit' ? 'Income' : inferCategory(input);
-
-  let date = new Date().toISOString().split('T')[0];
-  if (lower.includes('yesterday')) {
-    const d = new Date(); d.setDate(d.getDate() - 1);
-    date = d.toISOString().split('T')[0];
-  }
+  // Local Heuristics Fallback
+  const lower = text.toLowerCase();
+  let category: Category = 'Shopping';
+  
+  if (/zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner/.test(lower)) category = 'Food';
+  else if (/uber|ola|rapido|metro|bus|train|flight|fuel/.test(lower)) category = 'Transport';
+  else if (/netflix|spotify|amazon|prime|youtube|hotstar/.test(lower)) category = 'Subscriptions';
+  else if (/electricity|water|bill|recharge|mobile|broadband/.test(lower)) category = 'Utilities';
+  else if (/doctor|hospital|pharma|med|health/.test(lower)) category = 'Health';
+  else if (/movie|game|play|event|party/.test(lower)) category = 'Entertainment';
 
   return {
-    merchant: merchant.slice(0, 60),
-    amount,
+    merchant: text,
     category,
-    type,
-    date,
-    description: input.slice(0, 120),
-    id: `nlp-${Date.now()}`,
+    confidence: 0.7,
   };
 }

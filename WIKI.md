@@ -67,8 +67,22 @@ To run the project locally:
 #### Immersive Experience
 
 *   **Gamification**: Level up and quest tracking. See [src/components/features/gamification/LevelUpModal.tsx](file:///d:/Projects/Hackathon/SpendWise/SpendWise/src/components/features/gamification/LevelUpModal.tsx).
-*   **Soundscape**: Ambient music and sounds. See [src/components/features/audio/Soundscape.tsx](file:///d:/Projects/Hackathon/SpendWise/SpendWise/src/components/features/audio/Soundscape.tsx).
 *   **Wealth Tree**: Visual growth representation. See [src/components/features/wealth/WealthTree.tsx](file:///d:/Projects/Hackathon/SpendWise/SpendWise/src/components/features/wealth/WealthTree.tsx).
+
+---
+
+## 💾 Data Portability
+
+### Backups
+SpendWise supports two types of backups:
+1.  **Secure Backup (.swb)**: Encrypted file containing your entire application state (transactions, budgets, quests, etc.). Requires a password to restore.
+2.  **Raw Database (.json)**: Direct export of the IndexedDB tables. Best for developers or advanced recovery.
+
+### Importing Transactions
+You can merge external data into SpendWise using the **Import Transactions** feature in the Profile view.
+- Supports **.json** files.
+- Automatically validates and maps external fields to SpendWise types.
+- Safely merges data without overwriting existing records.
 
 ---
 

@@ -3,8 +3,8 @@ import {
   SharedGroup, SharedGroupMember, SharedWalletEntry, 
   SharedExpense, SharedExpenseSplit, SharedGoal, 
   SharedGoalContribution, SharedStorage, mergeSharedStorage 
-} from '../utils/crdt';
-import { syncEngine, SyncState } from '../utils/syncEngine';
+} from '../lib/crdt';
+import { syncEngine, SyncState } from '../lib/syncEngine';
 
 export type { SharedGroup, SharedGroupMember, SharedWalletEntry, SharedExpense, SharedExpenseSplit, SharedGoal, SharedGoalContribution };
 

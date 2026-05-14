@@ -52,7 +52,9 @@ export function AIInputTools({
         {/* ── Snap Receipt ─────────────────────────────────────────── */}
         <button
           type="button"
-          onClick={() => onOpenScanner?.()}
+          onClick={() => {
+            onOpenScanner?.();
+          }}
           disabled={isScanning || isListening}
           className="flex-1 flex items-center justify-center gap-1.5 py-3 rounded-xl text-xs font-semibold transition-all active:scale-95"
           style={{
@@ -72,7 +74,9 @@ export function AIInputTools({
         {/* ── Magic Mic ─────────────────────────────────────────────── */}
         <button
           type="button"
-          onClick={handleVoiceInput}
+          onClick={() => {
+            handleVoiceInput();
+          }}
           disabled={isScanning || isListening}
           className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-semibold transition-all active:scale-95"
           style={{

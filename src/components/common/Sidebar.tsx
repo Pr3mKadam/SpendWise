@@ -1,15 +1,21 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X, GraduationCap } from 'lucide-react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X, GraduationCap, DownloadCloud, Trophy } from 'lucide-react';
 import { AppView } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
+import { haptic } from '../../lib/haptic';
 
 import { useStore } from '../../store';
+
+import { SpendWiseConfig, UserRole } from '../features/onboarding/OnboardingModal';
 
 interface SidebarProps {
   activeView:      AppView;
   onViewChange:    (view: AppView) => void;
   overBudgetCount: number;
+  showInstall?:    boolean;
+  onInstall?:      () => void;
+  config:          SpendWiseConfig | null;
 }
 
 const ALL_NAV_ITEMS = [
@@ -24,10 +30,12 @@ const ALL_NAV_ITEMS = [
   { id: 'sync'          as AppView, label: 'UPI Sync',         icon: Landmark },
   { id: 'advisor'       as AppView, label: 'AI Advisor',       icon: Bot },
   { id: 'education'     as AppView, label: 'Learn',            icon: GraduationCap },
+  { id: 'quests'        as AppView, label: 'Quests',           icon: Trophy },
+  { id: 'parental'      as AppView, label: 'Family',           icon: Shield },
   { id: 'reports'       as AppView, label: 'Reports',          icon: FileText },
 ];
 
-export default function Sidebar({ activeView, onViewChange, overBudgetCount }: SidebarProps) {
+export default function Sidebar({ activeView, onViewChange, overBudgetCount, config, showInstall, onInstall }: SidebarProps) {
   const { signOut } = useAuth();
   const store = useStore();
   const settings = store.parentalState;
@@ -51,11 +59,26 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
     };
   }, [isMobileMenuOpen]);
 
+  const userRole = config?.userRole || 'professional';
+
   const navItems = ALL_NAV_ITEMS.filter(item => {
+    // Parental Kid Mode gating
     if (isKidMode) {
-      if (item.id === 'sync') return false; // Bank sync always hidden
+      if (item.id === 'sync') return false;
       if (item.id === 'analytics' && settings.hideAnalytics) return false;
     }
+
+    // Role-based gating
+    if (userRole === 'student') {
+      // Students don't need high-end portfolio tracking or bank sync (as per audio)
+      if (['portfolio', 'sync', 'reports'].includes(item.id)) return false;
+    }
+    
+    if (userRole === 'business' || userRole === 'professional') {
+      // Professionals/Business owners don't need basic 'Learn' tab focus
+      if (item.id === 'education') return false;
+    }
+
     return true;
   });
 
@@ -84,7 +107,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
               fontFamily: 'var(--font-manrope)',
               fontWeight: 800,
               fontSize: '20px',
-              color: 'var(--text-primary)',
+              color: '#ffffff',
               letterSpacing: '-0.5px'
             }}>
               Spend<span className="text-[var(--teal)]">Wise</span>
@@ -101,7 +124,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
             return (
               <button
                 key={item.id}
-                onClick={() => onViewChange(item.id)}
+                onClick={() => {
+                  haptic.light();
+                  onViewChange(item.id);
+                }}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewChange(item.id); } }}
                 aria-current={isActive ? 'page' : undefined}
                 aria-label={`Navigate to ${item.label}`}
@@ -109,21 +135,21 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left relative group ${isActive ? 'shadow-md shadow-teal-500/10' : ''}`}
                 style={{
                   background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--text-secondary)',
+                  color: isActive ? '#ffffff' : 'var(--sidebar-text)',
                   fontFamily: 'var(--font-inter)',
                   fontSize: '14px',
                   fontWeight: isActive ? 600 : 500,
                 }}
                 onMouseEnter={e => {
                   if (!isActive) {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface-input)';
-                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)';
+                    (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
                   }
                 }}
                 onMouseLeave={e => {
                   if (!isActive) {
                     (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
+                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--sidebar-text)';
                   }
                 }}
               >
@@ -144,20 +170,48 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
 
         {/* Bottom Actions */}
         <div className="px-3 pb-6 space-y-1">
+          {showInstall && (
+            <motion.button
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => {
+                haptic.medium();
+                onInstall?.();
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all mb-2"
+              style={{ 
+                background: 'rgba(20,184,166,0.1)', 
+                color: 'var(--teal)',
+                border: '1px dashed var(--teal)',
+                fontFamily: 'var(--font-inter)',
+                fontSize: '14px',
+                fontWeight: 600
+              }}
+            >
+              <DownloadCloud size={18} className="animate-pulse" />
+              <span>Install SpendWise</span>
+            </motion.button>
+          )}
+
           <button
-            onClick={() => onViewChange('profile')}
+            onClick={() => {
+              haptic.light();
+              onViewChange('profile');
+            }}
             className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative ${activeView === 'profile' ? 'shadow-md shadow-teal-500/10' : ''}`}
             style={{ 
               background: activeView === 'profile' ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
-              color: activeView === 'profile' ? '#ffffff' : 'var(--text-secondary)', 
+              color: activeView === 'profile' ? '#ffffff' : 'var(--sidebar-text)', 
               fontFamily: 'var(--font-inter)', 
               fontSize: '14px', 
               fontWeight: activeView === 'profile' ? 600 : 500 
             }}
             onMouseEnter={e => { 
               if (activeView !== 'profile') {
-                (e.currentTarget as HTMLButtonElement).style.background = 'var(--surface-input)';
-                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
+                (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)';
+                (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
               } 
             }}
             onMouseLeave={e => { 
@@ -175,7 +229,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
 
           
           <button
-            onClick={signOut}
+            onClick={() => {
+              haptic.light();
+              signOut();
+            }}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors mt-4 border border-teal-500/10"
             style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
             onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(45,212,191,0.1)'; }}
@@ -204,7 +261,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
           return (
             <button
               key={item.id}
-              onClick={() => onViewChange(item.id)}
+              onClick={() => {
+                haptic.light();
+                onViewChange(item.id);
+              }}
               className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px] outline-none"
               style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)', transition: 'color 0.2s' }}
             >
@@ -238,7 +298,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
           );
         })}
         <button
-          onClick={() => setIsMobileMenuOpen(true)}
+          onClick={() => {
+            haptic.light();
+            setIsMobileMenuOpen(true);
+          }}
           className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px]"
           style={{ color: 'var(--sidebar-text)' }}
         >
@@ -264,7 +327,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
                 fontFamily: 'var(--font-manrope)',
                 fontWeight: 800,
                 fontSize: '18px',
-                color: 'var(--text-primary)',
+                color: '#ffffff',
               }}>
                 Spend<span className="text-[var(--teal)]">Wise</span>
               </span>
@@ -307,6 +370,26 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount }: S
               })}
             </div>
             <div className="p-4 border-t border-white/10 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+              {showInstall && (
+                <motion.button
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    haptic.medium();
+                    onInstall?.();
+                  }}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-2"
+                  style={{ 
+                    background: 'var(--teal)', 
+                    color: '#ffffff',
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '15px',
+                    fontWeight: 700
+                  }}
+                >
+                  <DownloadCloud size={18} />
+                  <span>Install Native App</span>
+                </motion.button>
+              )}
               <button
                 onClick={() => onViewChange('profile')}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl min-h-[48px]`}

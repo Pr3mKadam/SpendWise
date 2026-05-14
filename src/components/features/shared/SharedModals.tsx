@@ -274,15 +274,15 @@ export function ExpenseModal({ show, onClose, members, onSubmit, currency }: {
           <div className="flex items-center justify-between mb-3">
             <h4 className="m-0 text-[0.85rem] font-bold text-[var(--text)]">Split Method</h4>
             <div className="flex bg-[var(--card)] rounded-lg p-0.5 border border-[var(--card-border)]">
-              <button type="button" onClick={() => setSplitMode('equal')} className={`px-3 py-1 text-[0.7rem] font-bold rounded-md transition-colors cursor-pointer border-none ${splitMode === 'equal' ? 'bg-[var(--accent)] text-white shadow-sm' : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text)]'}`}>Equal</button>
-              <button type="button" onClick={() => setSplitMode('custom')} className={`px-3 py-1 text-[0.7rem] font-bold rounded-md transition-colors cursor-pointer border-none ${splitMode === 'custom' ? 'bg-[var(--accent)] text-white shadow-sm' : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text)]'}`}>Custom %</button>
+              <button type="button" onClick={() => setSplitMode('equal')} className={`px-3 py-1 text-[0.7rem] font-bold rounded-md transition-colors cursor-pointer border-none ${splitMode === 'equal' ? 'bg-[var(--teal)] text-white shadow-sm' : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text)]'}`}>Equal</button>
+              <button type="button" onClick={() => setSplitMode('custom')} className={`px-3 py-1 text-[0.7rem] font-bold rounded-md transition-colors cursor-pointer border-none ${splitMode === 'custom' ? 'bg-[var(--teal)] text-white shadow-sm' : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text)]'}`}>Custom %</button>
             </div>
           </div>
 
           {splitMode === 'equal' ? (
             <p className="m-0 text-[0.8rem] text-[var(--text-secondary)] text-center py-2 bg-[var(--card)] rounded-lg border border-[var(--card-border)]/50">
               Split equally among <strong className="text-[var(--text)]">{active.length}</strong> active member{active.length !== 1 ? 's' : ''}.
-              {amount && !isNaN(parseFloat(amount)) && <span className="block mt-1 font-bold text-[var(--accent)]">~ {currency}{(parseFloat(amount) / active.length).toFixed(2)} each</span>}
+              {amount && !isNaN(parseFloat(amount)) && <span className="block mt-1 font-bold text-[var(--teal)]">~ {currency}{(parseFloat(amount) / active.length).toFixed(2)} each</span>}
             </p>
           ) : (
             <div className="flex flex-col gap-3 mt-4">
@@ -294,7 +294,7 @@ export function ExpenseModal({ show, onClose, members, onSubmit, currency }: {
                     <div className="relative">
                       <input 
                         type="number" min="0" max="100" step="1" 
-                        className="w-16 h-8 bg-[var(--card)] border border-[var(--card-border)] rounded-lg px-2 text-[0.8rem] text-right font-bold focus:border-[var(--accent)] outline-none"
+                        className="w-16 h-8 bg-[var(--card)] border border-[var(--card-border)] rounded-lg px-2 text-[0.8rem] text-right font-bold focus:border-[var(--teal)] outline-none"
                         value={customSplits[m.id] || ''}
                         onChange={e => setCustomSplits(prev => ({...prev, [m.id]: parseFloat(e.target.value) || 0}))}
                       />

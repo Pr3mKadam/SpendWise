@@ -1,0 +1,88 @@
+import { useState, useMemo } from 'react';
+import { useStore } from '../../../../store';
+import { Transaction } from '../../../../types';
+
+export function useParentalManager() {
+  const store = useStore();
+  const settings = store.parentalState;
+  const transactions = store.transactions;
+
+  // Setup state
+  const [setupStep, setSetupStep] = useState<'welcome' | 'pin' | 'limits'>('welcome');
+  const [newPin, setNewPin] = useState('');
+  const [pinError, setPinError] = useState('');
+
+  // Unlocking state
+  const [unlockPin, setUnlockPin] = useState('');
+  const [unlockError, setUnlockError] = useState('');
+
+  const isSetup = settings.enabled && settings.parentPinHash;
+  const isLocked = settings.enabled && !settings.sessionUnlocked;
+
+  const pendingTransactions = useMemo(() => 
+    transactions.filter((t: Transaction) => t.status === 'pending_approval'),
+    [transactions]
+  );
+
+  const handleUnlock = async () => {
+    const isValid = await store.verifyPin(unlockPin);
+    if (isValid) {
+      store.unlockSession();
+      setUnlockPin('');
+      setUnlockError('');
+    } else {
+      setUnlockError('Invalid PIN');
+      setUnlockPin('');
+    }
+  };
+
+  const handleSetPin = async () => {
+    if (newPin.length === 4) {
+      await store.setupPin(newPin);
+      setSetupStep('limits');
+    }
+  };
+
+  const handleApprove = (id: string) => {
+    store.approveTransaction(id);
+  };
+
+  const handleReject = (id: string) => {
+    store.denyTransaction(id);
+  };
+
+  const updateSettings = (updates: Partial<typeof settings>) => {
+    store.updateParentalSettings(updates);
+  };
+
+  const lockSession = () => store.lockSession();
+  const removePin = () => store.removePin();
+
+  const completeSetup = () => {
+    store.updateParentalSettings({ enabled: true, sessionUnlocked: true });
+  };
+
+  return {
+    settings,
+    setupStep,
+    setSetupStep,
+    newPin,
+    setNewPin,
+    pinError,
+    unlockPin,
+    setUnlockPin,
+    unlockError,
+    setUnlockError,
+    isSetup,
+    isLocked,
+    pendingTransactions,
+    handleUnlock,
+    handleSetPin,
+    handleApprove,
+    handleReject,
+    updateSettings,
+    lockSession,
+    removePin,
+    completeSetup
+  };
+}

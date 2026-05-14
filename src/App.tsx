@@ -8,7 +8,7 @@ import { STORAGE_KEYS, FINANCE_DEFAULTS } from './constants';
 function LoadingScreen() {
   return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-      <div className="text-[var(--accent)] animate-pulse font-medium text-lg">Loading SpendWise...</div>
+      <div className="text-[var(--teal)] animate-pulse font-medium text-lg">Loading SpendWise...</div>
     </div>
   );
 }
@@ -33,6 +33,34 @@ function NotFoundScreen() {
   );
 }
 
+function parseConfig(raw: string | null): SpendWiseConfig {
+  const defaultConfig: SpendWiseConfig = {
+    initialBalance: FINANCE_DEFAULTS.INITIAL_BALANCE,
+    balanceAnchorNet: 0,
+    currency: '₹',
+    onboardingComplete: false,
+    createdAt: new Date().toISOString(),
+    userRole: 'professional',
+  };
+
+  if (!raw) return defaultConfig;
+
+  try {
+    const parsed = JSON.parse(raw);
+    return {
+      initialBalance: typeof parsed.initialBalance === 'number' ? parsed.initialBalance : defaultConfig.initialBalance,
+      balanceAnchorNet: typeof parsed.balanceAnchorNet === 'number' ? parsed.balanceAnchorNet : defaultConfig.balanceAnchorNet,
+      currency: typeof parsed.currency === 'string' ? parsed.currency : defaultConfig.currency,
+      onboardingComplete: typeof parsed.onboardingComplete === 'boolean' ? parsed.onboardingComplete : defaultConfig.onboardingComplete,
+      createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : defaultConfig.createdAt,
+      userRole: (['student', 'professional', 'business'].includes(parsed.userRole)) ? parsed.userRole : defaultConfig.userRole,
+    };
+  } catch (e) {
+    console.error("Failed to parse config from storage", e);
+    return defaultConfig;
+  }
+}
+
 function AppAuthenticated() {
   const { user } = useAuth();
   const userId = user ? user.id : "guest";
@@ -41,28 +69,7 @@ function AppAuthenticated() {
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
-    if (saved) {
-      try {
-        setConfigState(JSON.parse(saved));
-      } catch (e) {
-        console.error("Failed to parse config from storage", e);
-        setConfigState({
-          initialBalance: FINANCE_DEFAULTS.INITIAL_BALANCE,
-          balanceAnchorNet: 0,
-          currency: '₹',
-          onboardingComplete: false,
-          createdAt: new Date().toISOString(),
-        });
-      }
-    } else {
-      setConfigState({
-        initialBalance: FINANCE_DEFAULTS.INITIAL_BALANCE,
-        balanceAnchorNet: 0,
-        currency: '₹',
-        onboardingComplete: false,
-        createdAt: new Date().toISOString(),
-      });
-    }
+    setConfigState(parseConfig(saved));
   }, []);
 
   const setConfig = (newConfig: SpendWiseConfig) => {

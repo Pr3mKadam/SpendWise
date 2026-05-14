@@ -2,6 +2,7 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import Card from '../../common/Card';
+import { haptic } from '../../../lib/haptic';
 
 export interface StatCardProps {
   label: string;
@@ -17,7 +18,11 @@ export const StatCard = memo(function StatCard({ label, value, icon: Icon, iconC
   return (
     <motion.div
       whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className="h-full"
+      whileTap={{ scale: 0.98 }}
+      onClick={() => {
+        haptic.light();
+      }}
+      className="h-full cursor-pointer"
     >
       <Card className="flex flex-col justify-between h-full group" style={{ padding: '10px 12px' }}>
         <div className="flex items-start justify-between mb-1.5">
@@ -35,10 +40,10 @@ export const StatCard = memo(function StatCard({ label, value, icon: Icon, iconC
           </div>
         </div>
         <div className="min-w-0 overflow-hidden">
-          <p className={`stat-value-text text-[15px] sm:text-[18px] md:text-xl font-black truncate tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ color: '#0f1117', letterSpacing: '-0.03em', fontFamily: 'var(--font-manrope)' }}>
+          <p className={`stat-value-text text-[15px] sm:text-[18px] md:text-xl font-black truncate tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-manrope)' }}>
             {value}
           </p>
-          <p className="text-[9px] sm:text-[10px] font-bold truncate uppercase tracking-widest text-[#9197a6] mt-0.5">{label}</p>
+          <p className="text-[9px] sm:text-[10px] font-bold truncate uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{label}</p>
         </div>
       </Card>
     </motion.div>

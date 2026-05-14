@@ -11,6 +11,7 @@ import { ASSET_TYPES, LIABILITY_TYPES, getAssetCfg, getLiabilityCfg } from '../.
 import AddModal from '../features/wealth/AddModal';
 import EntryCard from '../features/wealth/EntryCard';
 import AllocationDonut from '../features/wealth/AllocationDonut';
+import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 
 
 
@@ -25,9 +26,10 @@ function fmt(n: number, currency: string) {
 interface PortfolioViewProps { 
   currency?: string; 
   financeState: any;
+  config: SpendWiseConfig | null;
 }
 
-export default function PortfolioView({ currency = '₹', financeState }: PortfolioViewProps) {
+export default function PortfolioView({ currency = '₹', financeState, config }: PortfolioViewProps) {
   const {
     assets, liabilities,
     totalAssets, totalLiabilities, netWorth,
@@ -44,13 +46,13 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
   const healthScore = Math.min(100, Math.max(0, 
     (positive ? 50 : 20) + 
     (totalAssets > 0 ? Math.min(40, (netWorth / Math.max(totalAssets, 1)) * 40) : 0) +
-    (financeState.transactions.length > 10 ? 10 : 0)
+    ((financeState?.transactions?.length ?? 0) > 10 ? 10 : 0)
   ));
 
   // Use monthlyStats from financeState for more accurate "Monthly" numbers
-  const monthlyIncome = financeState.monthlyStats.totalIncome;
-  const monthlyExpenses = financeState.monthlyStats.totalExpenses;
-  const savingsRate = financeState.monthlyStats.savingsRate;
+  const monthlyIncome = financeState?.monthlyStats?.totalIncome ?? 0;
+  const monthlyExpenses = financeState?.monthlyStats?.totalExpenses ?? 0;
+  const savingsRate = financeState?.monthlyStats?.savingsRate ?? 0;
 
   return (
     <>
@@ -60,6 +62,7 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
           currency={currency}
           onAdd={modal === 'asset' ? addAsset : addLiability}
           onClose={() => setModal(null)}
+          config={config}
         />
       )}
 
@@ -70,9 +73,15 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
           <div>
             <h2 className="flex items-center gap-2 text-headline">
               <TrendingUp size={22} style={{ color: 'var(--teal)' }} />
-              Net Worth & Portfolio
+              {config?.userRole === 'student' ? 'Student Portfolio' : 'Net Worth & Portfolio'}
             </h2>
-            <p className="text-caption mt-1">Strategic overview of your global wealth.</p>
+            <p className="text-caption mt-1">
+              {config?.userRole === 'student' 
+                ? "Tracking your assets as you build your future."
+                : config?.userRole === 'business'
+                ? "Optimizing capital and business growth."
+                : "Strategic overview of your global wealth."}
+            </p>
           </div>
 
           <div className="flex items-center gap-4 bg-white/50 p-1 rounded-xl border border-[var(--border)] shadow-sm">
@@ -153,7 +162,11 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
                   {positive ? '' : '−'}{fmt(netWorth, currency)}
                 </p>
                 <p className="font-inter text-[12px] text-white/70 mt-1">
-                  {positive ? '🟢 Financial health is optimal' : '🔴 Focus on debt reduction'}
+                  {config?.userRole === 'student' 
+                    ? (positive ? '🟢 Study fund is growing' : '🔴 Focus on scholarship/aid')
+                    : config?.userRole === 'business'
+                    ? (positive ? '🟢 Business capital is strong' : '🔴 Cash flow optimization needed')
+                    : (positive ? '🟢 Financial health is optimal' : '🔴 Focus on debt reduction')}
                 </p>
               </div>
               <div className="flex gap-8 flex-wrap">
@@ -171,19 +184,24 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
             {/* ── Visual Insights ── */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
               <div className="xl:col-span-8 space-y-6">
-                <NetWorthEvolution transactions={financeState.transactions} currency={currency} />
+                <NetWorthEvolution transactions={financeState?.transactions ?? []} currency={currency} />
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                  <WealthTree score={healthScore} savingsRate={savingsRate} />
+                  <WealthTree score={healthScore} savingsRate={savingsRate} role={config?.userRole} />
                   <div className="card p-5 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border-indigo-500/10">
                     <div className="flex items-center gap-2 mb-4">
                       <Sparkles size={16} className="text-indigo-400" />
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">AI Insight</span>
                     </div>
                     <p className="text-sm font-manrope font-bold text-[var(--text-primary)] mb-2">
-                      Growth potential is high.
+                      {config?.userRole === 'student' ? 'Future value is promising.' : config?.userRole === 'business' ? 'Business velocity is high.' : 'Growth potential is high.'}
                     </p>
                     <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                      Your current savings rate of {savingsRate.toFixed(1)}% could lead to a {currency}{(netWorth * 1.5).toLocaleString()} portfolio in 2 years if maintained. 
+                      {config?.userRole === 'student' 
+                        ? `Your discipline could grow your education fund to ${currency}${(netWorth * 1.8).toLocaleString()} by graduation.`
+                        : config?.userRole === 'business'
+                        ? `At this rate, your business reinvestment capacity will increase by 40% in the next quarter.`
+                        : `Your current savings rate of ${savingsRate.toFixed(1)}% could lead to a ${currency}{(netWorth * 1.5).toLocaleString()} portfolio in 2 years.`
+                      }
                     </p>
                   </div>
                 </div>
@@ -199,8 +217,12 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
                       <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Wealth Tip</span>
                    </div>
                    <p className="text-[12px] leading-relaxed text-[var(--text-secondary)] font-inter">
-                      Based on your current {allocationByType.find(a => a.type === 'bank') ? 'high cash' : 'diversified'} position, 
-                      consider {netWorth > 100000 ? 'exploring tax-efficient index funds' : 'building a 6-month emergency buffer'} for better long-term security.
+                      {config?.userRole === 'student'
+                        ? "Since you're a student, focus on high-yield accounts for your scholarship funds while avoiding high-interest credit card debt."
+                        : config?.userRole === 'business'
+                        ? "Keep a 3-month operational runway in a liquid business account before making major equipment investments."
+                        : `Based on your current ${allocationByType.find(a => a.type === 'bank') ? 'high cash' : 'diversified'} position, consider ${netWorth > 100000 ? 'exploring tax-efficient index funds' : 'building a 6-month emergency buffer'}.`
+                      }
                    </p>
                 </div>
 
@@ -364,7 +386,7 @@ export default function PortfolioView({ currency = '₹', financeState }: Portfo
           </div>
         ) : (
           <div className="animate-fade-in">
-            <DebtPlanner liabilities={liabilities} currency={currency} />
+            <DebtPlanner liabilities={liabilities} currency={currency} userRole={config?.userRole} />
           </div>
         )}
 

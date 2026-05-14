@@ -1,32 +1,41 @@
-import { useMemo, useState } from 'react';
-import { AppView } from '../../types';
+import { useMemo, useState, lazy, Suspense } from 'react';
+import { AppView, Category } from '../../types';
+import { FinanceState } from '../../types/state';
+import { motion } from 'framer-motion';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useGamification } from '../../hooks/useGamification';
 import { useGoals } from '../../hooks/useGoals';
 import { usePortfolio } from '../../hooks/usePortfolio';
 import LevelProgress from '../features/gamification/LevelProgress';
-import WealthCity from '../features/gamification/WealthCity';
-import { QuestsPanel } from '../features/gamification/QuestsPanel';
-import { SavingsChallenges } from '../features/gamification/SavingsChallenges';
 import DashboardHero from '../features/dashboard/DashboardHero';
-import QuickAddPanel from '../features/dashboard/QuickAddPanel';
 import MagicInput from '../features/ai/MagicInput';
-
+import PullToRefresh from '../common/PullToRefresh';
+import { haptic } from '../../lib/haptic';
+import StatCard from '../features/dashboard/StatCard';
 import { Sparkles, TrendingUp, TrendingDown, Wallet, BrainCircuit, Target } from 'lucide-react';
 
-import StatCard from '../features/dashboard/StatCard';
 import FinanceChart from '../features/dashboard/FinanceChart';
 import RecentTransactions from '../features/dashboard/RecentTransactions';
-import PremiumCard from '../features/dashboard/PremiumCard';
 import GoalsSummary from '../features/dashboard/GoalsSummary';
 import DailyStats from '../features/dashboard/DailyStats';
-import { BadgeGallery } from '../features/gamification/BadgeGallery';
 import { SafeToSpend } from '../features/dashboard/SafeToSpend';
-import { RoundUpVault } from '../features/gamification/RoundUpVault';
-import { SocialLeaderboard } from '../features/gamification/SocialLeaderboard';
-import { PredictiveForecasting } from '../features/analytics/PredictiveForecasting';
-import { StreakShareCard } from '../features/gamification/StreakShareCard';
-import { WeeklyDigestCard } from '../features/dashboard/WeeklyDigestCard';
+import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
+
+// Lazy load non-critical/heavy components
+const FinanceChartLazy = lazy(() => import('../features/dashboard/FinanceChart'));
+const WealthCity = lazy(() => import('../features/gamification/WealthCity'));
+const QuestsPanel = lazy(() => import('../features/gamification/QuestsPanel').then(m => ({ default: m.QuestsPanel })));
+const SavingsChallenges = lazy(() => import('../features/gamification/SavingsChallenges').then(m => ({ default: m.SavingsChallenges })));
+const RoundUpVault = lazy(() => import('../features/gamification/RoundUpVault').then(m => ({ default: m.RoundUpVault })));
+const SocialLeaderboard = lazy(() => import('../features/gamification/SocialLeaderboard').then(m => ({ default: m.SocialLeaderboard })));
+const PredictiveForecasting = lazy(() => import('../features/analytics/PredictiveForecasting').then(m => ({ default: m.PredictiveForecasting })));
+const StreakShareCard = lazy(() => import('../features/gamification/StreakShareCard').then(m => ({ default: m.StreakShareCard })));
+const WeeklyDigestCard = lazy(() => import('../features/dashboard/WeeklyDigestCard').then(m => ({ default: m.WeeklyDigestCard })));
+const QuickAddPanel = lazy(() => import('../features/dashboard/QuickAddPanel'));
+const PremiumCard = lazy(() => import('../features/dashboard/PremiumCard'));
+
+const WidgetSkeleton = () => <div className="w-full h-32 rounded-2xl bg-slate-200/50 dark:bg-slate-800/50 animate-pulse" />;
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main DashboardView
@@ -35,25 +44,33 @@ import { WeeklyDigestCard } from '../features/dashboard/WeeklyDigestCard';
 export function DashboardView({
   financeState,
   onAdd,
-  onOpenAdd,
   currency,
   onNavigate,
   hideBalances = false,
   onTogglePrivacy,
+  config,
 }: {
-  financeState: ReturnType<typeof useTransactions>;
+  financeState: FinanceState;
   onAdd: Parameters<typeof MagicInput>[0]['onAdd'];
   onOpenAdd: () => void;
   currency: string;
   onNavigate: (view: AppView) => void;
   hideBalances?: boolean;
   onTogglePrivacy?: () => void;
+  config: SpendWiseConfig | null;
 }) {
   const { transactions, currentBalance, monthlyStats, monthlyHistory, dailySpendRate, balanceTrend, predictedEndOfMonth } = financeState;
-  const { streak, healthScore, xp, level, xpToNextLevel, progress, levelName, savingsRate } = useGamification(transactions);
+  const { streak, healthScore, level, levelName, savingsRate } = useGamification(transactions);
   const { goals } = useGoals();
   const { netWorth } = usePortfolio();
   const [dashboardInput, setDashboardInput] = useState('');
+
+  const handleRefresh = async () => {
+    haptic.medium();
+    // Simulate refresh delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    haptic.success();
+  };
 
   // Chart data — last 6 months
   const chartData = useMemo(() => {
@@ -116,231 +133,254 @@ export function DashboardView({
       ? Math.round(((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100)
       : 0;
 
-    // Highest single merchant spend this month
-    const merchantSpend: Record<string, number> = {};
-    thisMonthTx.forEach(t => { merchantSpend[t.merchant] = (merchantSpend[t.merchant] || 0) + t.amount; });
-    const topMerchant = Object.entries(merchantSpend).sort((a, b) => b[1] - a[1])[0];
-
-    return { topCat, topCatChange, savingsRate, topMerchant };
+    return { topCat, topCatChange, savingsRate };
   }, [transactions, monthlyStats]);
 
   return (
-    <div className="bg-[#f4f6fb] -mx-2 -mt-3 sm:-mx-4 sm:-mt-4 md:-mx-6 md:-mt-6 lg:-mx-8 lg:-mt-8 min-h-[calc(100vh-60px)] px-3 py-4 sm:px-5 sm:py-5 md:px-6 md:py-6 lg:px-8 lg:py-8">
-      <div className="max-w-[1200px] mx-auto">
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
-          <div>
-            <h1 className="text-xl sm:text-3xl font-black text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)', letterSpacing: '-0.04em' }}>
-              Dashboard
-            </h1>
-            <p className="text-[11px] sm:text-xs text-[var(--text-muted)] font-medium mt-0.5">Welcome back to your financial control center.</p>
-          </div>
-        </div>
-
-        {/* Dynamic AI-powered Smart Insights */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-          {/* Insight 1: Savings Rate */}
-          <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
-            <div className="p-2 bg-blue-500/20 rounded-xl text-blue-500 mt-0.5">
-              <BrainCircuit size={18} />
-            </div>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <div className="min-h-screen">
+        <div className="max-w-[1200px] mx-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-2">
             <div>
-              <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">AI Smart Insight</h4>
-              <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
-                {transactions.length === 0
-                  ? 'Add transactions to unlock personalized AI insights.'
-                  : insights.savingsRate > 0
-                    ? `You're saving ${insights.savingsRate}% of income this month. ${
-                        insights.savingsRate >= 20
-                          ? 'Great discipline — consider moving savings to a Goal!'
-                          : 'Try to hit the 20% savings target for financial health.'
-                      }`
-                    : `Your expenses exceed income this month. Review your ${insights.topCat?.[0] ?? 'top'} spending to find savings.`
-                }
+              <h1 className="text-xl sm:text-3xl font-black text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)', letterSpacing: '-0.04em' }}>
+                Hey, {config?.name || 'there'}!
+              </h1>
+              <p className="text-[11px] sm:text-xs text-[var(--text-muted)] font-medium mt-0.5">
+                {config?.userRole === 'student' && "Keep building those healthy spending habits! 🎓"}
+                {config?.userRole === 'business' && "Optimize your cash flow today. 🏢"}
+                {config?.userRole === 'professional' && "Your financial control center is ready. 💼"}
+                {!config?.userRole && "Welcome back to your financial control center."}
               </p>
             </div>
           </div>
 
-          {/* Insight 2: Category Trend */}
-          <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3">
-            <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 mt-0.5">
-              {insights.topCatChange !== null && insights.topCatChange < 0
-                ? <TrendingDown size={18} />
-                : <TrendingUp size={18} />
-              }
+          {/* Dynamic AI-powered Smart Insights */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+            {/* Insight 1: Savings Rate */}
+            <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
+              <div className="p-2 bg-blue-500/20 rounded-xl text-blue-500 mt-0.5">
+                <BrainCircuit size={18} />
+              </div>
+              <div>
+                <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">AI Smart Insight</h4>
+                <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
+                  {transactions.length === 0
+                    ? 'Add transactions to unlock personalized AI insights.'
+                    : insights.savingsRate > 0
+                      ? `You're saving ${insights.savingsRate}% of income this month. ${
+                          insights.savingsRate >= 20
+                            ? 'Great discipline — consider moving savings to a Goal!'
+                            : 'Try to hit the 20% savings target for financial health.'
+                        }`
+                      : `Your expenses exceed income this month. Review your ${insights.topCat?.[0] ?? 'top'} spending to find savings.`
+                  }
+                </p>
+              </div>
             </div>
-            <div>
-              <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">Spending Pulse</h4>
-              <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
-                {insights.topCat
-                  ? insights.topCatChange !== null
-                    ? `${insights.topCat[0]} is your top expense (${currency}${Math.round(insights.topCat[1]).toLocaleString()}). ${
-                        insights.topCatChange < 0
-                          ? `Down ${Math.abs(Math.round(insights.topCatChange))}% vs last month — great progress!`
-                          : `Up ${Math.round(insights.topCatChange)}% from last month.`
-                      }`
-                    : `${insights.topCat[0]} is your biggest spend this month at ${currency}${Math.round(insights.topCat[1]).toLocaleString()}.`
-                  : 'Add transactions to unlock spending insights.'
+
+            {/* Insight 2: Category Trend */}
+            <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3">
+              <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 mt-0.5">
+                {insights.topCatChange !== null && insights.topCatChange < 0
+                  ? <TrendingDown size={18} />
+                  : <TrendingUp size={18} />
                 }
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Premium Dashboard Hero Section */}
-        <div className="mb-6">
-          <DashboardHero
-            currentBalance={currentBalance}
-            monthlyStats={monthlyStats}
-            balanceTrend={balanceTrend}
-            healthScore={healthScore}
-            currency={currency}
-            hideBalances={hideBalances}
-            onTogglePrivacy={onTogglePrivacy}
-            predictedEndOfMonth={predictedEndOfMonth}
-          />
-        </div>
-
-        {streak > 0 ? (
-          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-full">
-            <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">🔥 {streak} DAY STREAK</span>
-          </div>
-        ) : (
-          <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-slate-500/5 to-slate-400/10 border border-slate-400/20 rounded-full">
-            <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">✨ Start your streak today — add a transaction!</span>
-          </div>
-        )}
-
-        {/* Weekly Digest */}
-        <div className="mb-4">
-          <WeeklyDigestCard transactions={transactions} currency={currency} />
-        </div>
-
-        {/* Two-column layout: single column on mobile, side-by-side on lg+ */}
-        <div className="dashboard-cols flex flex-col lg:flex-row gap-4 lg:gap-6 items-start w-full">
-
-          {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
-          <div className="flex flex-col gap-4 min-w-0 w-full lg:flex-1">
-            {/* Gamification: WealthCity (hidden on mobile) + LevelProgress */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-              <div className="hidden sm:block lg:col-span-7">
-                <WealthCity />
               </div>
-              <div className="sm:col-span-full lg:col-span-5">
-                <LevelProgress onNavigate={onNavigate} />
+              <div>
+                <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">Spending Pulse</h4>
+                <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
+                  {insights.topCat
+                    ? insights.topCatChange !== null
+                      ? `${insights.topCat[0]} is your top expense (${currency}${Math.round(insights.topCat[1]).toLocaleString()}). ${
+                          insights.topCatChange < 0
+                            ? `Down ${Math.abs(Math.round(insights.topCatChange))}% vs last month — great progress!`
+                            : `Up ${Math.round(insights.topCatChange)}% from last month.`
+                        }`
+                      : `${insights.topCat[0]} is your biggest spend this month at ${currency}${Math.round(insights.topCat[1]).toLocaleString()}.`
+                    : 'Add transactions to unlock spending insights.'
+                  }
+                </p>
               </div>
             </div>
-
-            {/* Stat Cards */}
-            <div className="stat-grid grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2">
-              <StatCard
-                label="Balance"
-                value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={Wallet}
-                iconColor="text-[#6366f1]"
-                iconBg="rgba(99,102,241,0.1)"
-                trend={trendPct >= 0 ? 'up' : 'down'}
-                hideBalances={hideBalances}
-              />
-              <StatCard
-                label="Income"
-                value={`${currency}${monthlyStats.totalIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={TrendingUp}
-                iconColor="text-[#10b981]"
-                iconBg="rgba(16,185,129,0.1)"
-                trend="up"
-                hideBalances={hideBalances}
-              />
-              <StatCard
-                label="Expenses"
-                value={`${currency}${monthlyStats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={TrendingDown}
-                iconColor="text-[#f87171]"
-                iconBg="rgba(248,113,113,0.1)"
-                trend="down"
-                hideBalances={hideBalances}
-              />
-              <StatCard
-                label="Net Worth"
-                value={`${currency}${Math.abs(netWorth).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
-                icon={Target}
-                iconColor="text-[#8b5cf6]"
-                iconBg="rgba(139,92,246,0.1)"
-                trend={netWorth >= 0 ? 'up' : 'down'}
-                hideBalances={hideBalances}
-              />
-              <div className="col-span-2 sm:col-span-1">
-                <StatCard
-                  label="Health Score"
-                  value={`${healthScore}/100`}
-                  icon={Sparkles}
-                  iconColor="text-[#14b8a6]"
-                  iconBg="rgba(20,184,166,0.1)"
-                  trend={healthScore > 70 ? 'up' : 'neutral'}
-                  hideBalances={false}
-                />
-              </div>
-            </div>
-
-            {/* Finance Chart */}
-            <FinanceChart chartData={chartData} currency={currency} />
-
-            {/* Safe to Spend + Round-Up Vault */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <SafeToSpend transactions={transactions} currency={currency} currentBalance={currentBalance} />
-              <RoundUpVault transactions={transactions} currency={currency} />
-            </div>
-
-            {/* Predictive Month-End Forecast */}
-            <PredictiveForecasting transactions={transactions} currency={currency} currentBalance={currentBalance} />
-
-            {/* Quick Add Panel */}
-            <div className="w-full">
-              <QuickAddPanel
-                onAdd={onAdd}
-                recentMerchants={recentMerchants}
-                onQuickInput={(val) => setDashboardInput(val)}
-                dashboardInput={dashboardInput}
-                setDashboardInput={setDashboardInput}
-                transactions={transactions}
-              />
-            </div>
-
-            {/* Recent Transactions */}
-            <RecentTransactions recentTx={recentTx} onNavigate={onNavigate} hideBalances={hideBalances} currency={currency} />
           </div>
 
-          {/* ── RIGHT COLUMN — fully stacked on mobile, sidebar on lg+ ── */}
-          <div className="flex flex-col gap-3 w-full lg:w-[300px] lg:shrink-0">
-
-            {/* Premium My Card */}
-            <PremiumCard currentBalance={currentBalance} currency={currency} />
-
-            {/* My Goals */}
-            <GoalsSummary goals={goals} onNavigate={onNavigate} />
-
-            {/* AI-Driven Gamification Quests */}
-            <QuestsPanel transactions={transactions} />
-
-            {/* Social Leaderboard */}
-            <SocialLeaderboard />
-
-            <SavingsChallenges onNavigate={onNavigate} />
-
-            {/* Daily Stats */}
-            <DailyStats currency={currency} dailySpendRate={dailySpendRate} streak={streak} transactionCount={transactions.length} />
-
-            {/* Streak Share */}
-            <StreakShareCard
-              streak={streak}
-              level={level}
-              levelName={levelName}
-              savingsRate={savingsRate ?? 0}
+          {/* Premium Dashboard Hero Section */}
+          <div className="mb-6">
+            <DashboardHero
+              currentBalance={currentBalance}
+              monthlyStats={monthlyStats}
+              balanceTrend={balanceTrend}
+              healthScore={healthScore}
               currency={currency}
+              hideBalances={hideBalances}
+              onTogglePrivacy={onTogglePrivacy}
+              predictedEndOfMonth={predictedEndOfMonth}
             />
+          </div>
+
+          {streak > 0 ? (
+            <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-full">
+              <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">🔥 {streak} DAY STREAK</span>
+            </div>
+          ) : (
+            <div className="mb-4 inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-slate-500/5 to-slate-400/10 border border-slate-400/20 rounded-full">
+              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">✨ Start your streak today — add a transaction!</span>
+            </div>
+          )}
+
+          {/* Weekly Digest */}
+          <div className="mb-4">
+            <Suspense fallback={<WidgetSkeleton />}>
+              <WeeklyDigestCard transactions={transactions} currency={currency} />
+            </Suspense>
+          </div>
+
+          {/* Two-column layout: single column on mobile, side-by-side on lg+ */}
+          <div className="dashboard-cols flex flex-col lg:flex-row gap-4 lg:gap-6 items-start w-full">
+            {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
+            <div className="flex flex-col gap-4 min-w-0 w-full lg:flex-1">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                {config?.userRole !== 'student' && (
+                  <div className="hidden sm:block lg:col-span-7">
+                    <Suspense fallback={<WidgetSkeleton />}>
+                      <WealthCity />
+                    </Suspense>
+                  </div>
+                )}
+                <div className={config?.userRole === 'student' ? "col-span-full" : "sm:col-span-full lg:col-span-5"}>
+                  <LevelProgress onNavigate={onNavigate} />
+                </div>
+              </div>
+
+              {/* Stat Cards */}
+              <div className="stat-grid grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2">
+                <StatCard
+                  label="Balance"
+                  value={`${currency}${Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                  icon={Wallet}
+                  iconColor="text-[#6366f1]"
+                  iconBg="rgba(99,102,241,0.1)"
+                  trend={trendPct >= 0 ? 'up' : 'down'}
+                  hideBalances={hideBalances}
+                />
+                <StatCard
+                  label="Income"
+                  value={`${currency}${monthlyStats.totalIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                  icon={TrendingUp}
+                  iconColor="text-[#10b981]"
+                  iconBg="rgba(16,185,129,0.1)"
+                  trend="up"
+                  hideBalances={hideBalances}
+                />
+                <StatCard
+                  label="Expenses"
+                  value={`${currency}${monthlyStats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                  icon={TrendingDown}
+                  iconColor="text-[#f87171]"
+                  iconBg="rgba(248,113,113,0.1)"
+                  trend="down"
+                  hideBalances={hideBalances}
+                />
+                <StatCard
+                  label="Net Worth"
+                  value={`${currency}${Math.abs(netWorth).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+                  icon={Target}
+                  iconColor="text-[#8b5cf6]"
+                  iconBg="rgba(139,92,246,0.1)"
+                  trend={netWorth >= 0 ? 'up' : 'down'}
+                  hideBalances={hideBalances}
+                />
+                <div className="col-span-2 sm:col-span-1">
+                  <StatCard
+                    label="Health Score"
+                    value={`${healthScore}/100`}
+                    icon={Sparkles}
+                    iconColor="text-[#14b8a6]"
+                    iconBg="rgba(20,184,166,0.1)"
+                    trend={healthScore > 70 ? 'up' : 'neutral'}
+                    hideBalances={false}
+                  />
+                </div>
+              </div>
+
+              <Suspense fallback={<WidgetSkeleton />}>
+                <FinanceChartLazy chartData={chartData} currency={currency} />
+              </Suspense>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <SafeToSpend transactions={transactions} currency={currency} currentBalance={currentBalance} />
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <RoundUpVault transactions={transactions} currency={currency} />
+                </Suspense>
+              </div>
+
+              <Suspense fallback={<WidgetSkeleton />}>
+                <PredictiveForecasting transactions={transactions} currency={currency} currentBalance={currentBalance} />
+              </Suspense>
+
+              <div className="w-full">
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <QuickAddPanel
+                    onAdd={onAdd}
+                    recentMerchants={recentMerchants}
+                    onQuickInput={(val) => setDashboardInput(val)}
+                    dashboardInput={dashboardInput}
+                    setDashboardInput={setDashboardInput}
+                    transactions={transactions}
+                  />
+                </Suspense>
+              </div>
+
+              <RecentTransactions recentTx={recentTx} onNavigate={onNavigate} hideBalances={hideBalances} currency={currency} />
+            </div>
+
+            {/* ── RIGHT COLUMN ── */}
+            <div className="flex flex-col gap-3 w-full lg:w-[300px] lg:shrink-0">
+              {config?.userRole !== 'student' && (
+                <Suspense fallback={<WidgetSkeleton />}>
+                  <PremiumCard currentBalance={currentBalance} currency={currency} />
+                </Suspense>
+              )}
+              <GoalsSummary goals={goals} onNavigate={onNavigate} />
+              <Suspense fallback={<WidgetSkeleton />}>
+                <QuestsPanel transactions={transactions} />
+              </Suspense>
+              <Suspense fallback={<WidgetSkeleton />}>
+                <SocialLeaderboard />
+              </Suspense>
+              {config?.userRole === 'student' && (
+                <div 
+                  onClick={() => onNavigate('education')}
+                  className="card p-4 bg-gradient-to-br from-indigo-600 to-violet-700 text-white cursor-pointer hover:scale-[1.02] transition-transform shadow-xl shadow-indigo-500/20"
+                >
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                      <Sparkles size={20} />
+                    </div>
+                    <h3 className="font-bold text-sm">Learning Center</h3>
+                  </div>
+                  <p className="text-xs text-white/80 leading-relaxed">
+                    Master your money with our byte-sized finance lessons. Complete tasks to earn XP!
+                  </p>
+                </div>
+              )}
+              <Suspense fallback={<WidgetSkeleton />}>
+                <SavingsChallenges onNavigate={onNavigate} />
+              </Suspense>
+              <DailyStats currency={currency} dailySpendRate={dailySpendRate} streak={streak} transactionCount={transactions.length} />
+              <Suspense fallback={<WidgetSkeleton />}>
+                <StreakShareCard
+                  streak={streak}
+                  level={level}
+                  levelName={levelName}
+                  savingsRate={savingsRate ?? 0}
+                  currency={currency}
+                />
+              </Suspense>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </PullToRefresh>
   );
 }

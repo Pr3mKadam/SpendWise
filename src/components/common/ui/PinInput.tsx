@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
 import { motion, useAnimation } from 'framer-motion';
-import { playPinTap, playPinError } from '../../../utils/soundscape';
 
 function PinDot({ filled }: { filled: boolean }) {
   return (
@@ -29,7 +28,6 @@ export function PinInput({ value, onChange, label, error }: PinInputProps) {
 
   useEffect(() => {
     if (error) {
-      playPinError();
       controls.start({
         x: [0, -10, 10, -10, 10, 0],
         transition: { duration: 0.4 }
@@ -38,7 +36,6 @@ export function PinInput({ value, onChange, label, error }: PinInputProps) {
   }, [error, controls]);
 
   const press = (d: string) => {
-    playPinTap();
     if (d === '⌫') { onChange(value.slice(0, -1)); return; }
     if (value.length < 4) onChange(value + d);
   };

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Search, Filter, X, Calendar, IndianRupee } from 'lucide-react';
 import { Category } from '../../../types';
+import { haptic } from '../../../lib/haptic';
 
 export type TypeFilter = 'all' | 'credit' | 'debit';
 
@@ -66,7 +67,10 @@ export function FilterBar({
         </div>
         <div className="flex gap-2 flex-wrap">
           <button
-            onClick={() => setShowDateFilter(s => !s)}
+            onClick={() => {
+              haptic.light();
+              setShowDateFilter(s => !s);
+            }}
             aria-label="Toggle date range filter"
             aria-expanded={showDateFilter}
             className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all self-start"
@@ -156,7 +160,10 @@ export function FilterBar({
         <div className="flex rounded-lg overflow-hidden shrink-0" style={{ border: '1.5px solid #edf2f7' }}>
           {(['all', 'credit', 'debit'] as TypeFilter[]).map(t => (
             <button key={t}
-              onClick={() => setTypeFilter(t)}
+              onClick={() => {
+                haptic.light();
+                setTypeFilter(t);
+              }}
               style={{
                 fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 600, padding: '5px 10px',
                 background: typeFilter === t ? (t === 'credit' ? 'var(--teal-dim)' : t === 'debit' ? 'var(--red-dim)' : '#edf2f7') : '#fff',
@@ -170,7 +177,10 @@ export function FilterBar({
         <div className="flex gap-1.5 overflow-x-auto pb-0.5 flex-1 min-w-0">
           {['All', ...allCategories].map(cat => (
             <button key={cat}
-              onClick={() => setCategoryFilter(cat as Category | 'All')}
+              onClick={() => {
+                haptic.light();
+                setCategoryFilter(cat as Category | 'All');
+              }}
               className="shrink-0 rounded-full px-2.5 py-1 text-[10px] sm:text-xs font-semibold transition-all"
               style={{
                 fontFamily: 'var(--font-inter)',

@@ -2,10 +2,16 @@ import { Category } from "./finance";
 
 export type AppView =
   | 'dashboard'
+  | 'transactions'
   | 'budget'
   | 'analytics'
   | 'history'
+  | 'settings'
   | 'goals'
+  | 'quests'
+  | 'inventory'
+  | 'shop'
+  | 'badges'
   | 'shared'
   | 'sync'
   | 'profile'
@@ -44,16 +50,3 @@ export interface AppNotification {
 }
 
 export type ThemeMode = 'dark' | 'light';
-
-export interface BalanceDataPoint {
-  date:       string;
-  balance:    number;
-  projected?: boolean;
-}
-
-export interface CategorySpend {
-  name:     string;
-  value:    number;
-  color:    string;
-  percent?: number;
-}

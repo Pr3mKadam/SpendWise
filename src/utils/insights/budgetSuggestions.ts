@@ -1,12 +1,4 @@
-import { Transaction } from '../../types';
-
-export interface BudgetSuggestion {
-  category: string;
-  suggestedLimit: number;
-  avgSpend: number;
-  reasoning: string;
-  confidence: 'high' | 'medium' | 'low';
-}
+import { Transaction, BudgetSuggestion } from '../../types';
 
 /**
  * Analyzes last 3 months of spending to suggest smart budget limits.
@@ -77,5 +69,5 @@ export function generateBudgetSuggestions(transactions: Transaction[]): BudgetSu
   });
 
   // Sort by avg spend descending
-  return suggestions.sort((a, b) => b.avgSpend - a.avgSpend);
+  return suggestions.sort((a, b) => (b.avgSpend || 0) - (a.avgSpend || 0));
 }

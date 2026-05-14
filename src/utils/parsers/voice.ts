@@ -1,79 +1,34 @@
-import type { Category } from "../../types";
-import { inferCategory, inferType, toTitleCase } from "./common";
+import { Category } from "../../types";
+import { Transaction } from "../../types";
 
-export interface LocalParsedTransaction {
-  amount: number;
-  category: Category;
-  merchant: string;
-  type: 'credit' | 'debit';
-  date: string;
-  confidence: number;
-  split: null;
-  source: 'local';
-}
-
-function extractAmount(text: string): number | null {
-  const patterns = [
-    /[₹रु]\s*(\d+(?:[.,]\d+)?)/i,
-    /(?:rs|inr|rupee[s]?)\.?\s*(\d+(?:[.,]\d+)?)/i,
-    /(\d+(?:[.,]\d+)?)\s*(?:rs|inr|rupee[s]?|bucks)/i,
-    /(?:spent|paid|cost[s]?|buy|bought|spend|expense[d]?|for|worth)\s+(?:rs\.?\s*)?(\d+(?:[.,]\d+)?)/i,
-    /(\d{1,6}(?:\.\d{1,2})?)/,
-  ];
-  for (const pattern of patterns) {
-    const m = text.match(pattern);
-    if (m?.[1]) {
-      const n = parseFloat(m[1].replace(',', ''));
-      if (Number.isFinite(n) && n > 0 && n <= 999_999) return n;
-    }
-  }
-  return null;
-}
-
-function extractMerchant(text: string, category: Category): string {
-  const locPattern = /(?:at|from|on|to|for)\s+([A-Za-z][A-Za-z0-9 '&.-]{1,30}?)(?:\s+(?:for|on|at|from|in|worth|of|using|via|through|with|rs|inr|\d|$))/i;
-  const m = text.match(locPattern);
-  if (m?.[1]) {
-    const candidate = m[1].trim();
-    if (candidate.length >= 2 && candidate.length <= 35) return toTitleCase(candidate);
-  }
-  const inferred = inferCategory(text);
-  return inferred === category ? category : toTitleCase(inferred);
-}
-
-function scoreConfidence(amount: number | null, text: string, merchant: string): number {
-  let score = 0;
-  if (amount !== null) score += 0.5;
-  if (/(?:at|from|on|to|for)\s+\w/i.test(text)) score += 0.2;
-  if (merchant !== 'Food' && merchant !== 'Income') score += 0.1;
-  return Math.min(score, 1);
-}
-
-export function parseVoiceLocally(text: string, today: string): LocalParsedTransaction & { recurring?: string } {
-  const type = inferType(text);
-  const category = inferCategory(text);
-  const amount = extractAmount(text) ?? 0;
-  const merchant = extractMerchant(text, category);
-  const confidence = scoreConfidence(amount || null, text, merchant);
-
-  let recurring: string | undefined = undefined;
-  if (/every\s+(month|week|year|day)/i.test(text)) {
-    const m = text.match(/every\s+(month|week|year|day)/i);
-    recurring = m?.[1].toLowerCase();
-  } else if (/monthly|weekly|yearly|daily/i.test(text)) {
-    const m = text.match(/(monthly|weekly|yearly|daily)/i);
-    recurring = m?.[1].toLowerCase().replace('ly', '');
+export function parseVoiceLocally(transcript: string, date: string): Partial<Transaction> {
+  const lower = transcript.toLowerCase();
+  
+  // Extract amount
+  const amountMatch = lower.match(/(\d+)/);
+  const amount = amountMatch ? parseFloat(amountMatch[1]) : 0;
+  
+  // Extract category
+  let category: Category = 'Shopping';
+  if (/food|dinner|lunch|breakfast|eat|starbucks|restaurant/.test(lower)) category = 'Food';
+  else if (/uber|ola|rapido|cab|ride|transport|fuel|petrol/.test(lower)) category = 'Transport';
+  else if (/movie|cinema|netflix|show|entertainment/.test(lower)) category = 'Entertainment';
+  else if (/medicine|doctor|health|medical|hospital/.test(lower)) category = 'Health';
+  else if (/bill|recharge|electricity|water|utilities/.test(lower)) category = 'Utilities';
+  
+  // Extract merchant - very simple logic
+  let merchant = transcript;
+  const merchantMatch = lower.match(/(?:at|from|to)\s+([a-z\s]+)(?:\s+for|$)/);
+  if (merchantMatch) {
+    merchant = merchantMatch[1].trim();
   }
 
   return {
     amount,
     category,
-    merchant,
-    type,
-    date: today,
-    confidence,
-    split: null,
-    source: 'local',
-    recurring,
+    merchant: merchant.charAt(0).toUpperCase() + merchant.slice(1),
+    date,
+    type: 'debit',
+    status: 'completed'
   };
 }

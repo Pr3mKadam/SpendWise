@@ -4,9 +4,10 @@ import { motion } from 'framer-motion';
 interface WealthTreeProps {
   score: number; // 0 to 100
   savingsRate: number; // percentage
+  role?: string;
 }
 
-export function WealthTree({ score, savingsRate }: WealthTreeProps) {
+export function WealthTree({ score, savingsRate, role }: WealthTreeProps) {
   // Tree state: 0-20: Seed, 21-40: Sprout, 41-60: Small Tree, 61-80: Healthy Tree, 81-100: Lush Tree
   const stage = score <= 20 ? 'seed' : score <= 40 ? 'sprout' : score <= 60 ? 'small' : score <= 80 ? 'healthy' : 'lush';
   
@@ -25,7 +26,9 @@ export function WealthTree({ score, savingsRate }: WealthTreeProps) {
   return (
     <div className="relative w-full h-48 flex flex-col items-center justify-end pb-4 bg-gradient-to-b from-transparent to-[var(--bg-secondary)] rounded-2xl overflow-hidden border border-[var(--card-border)]">
       <div className="absolute top-4 left-4 flex flex-col gap-1">
-        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Wealth Tree</span>
+        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+          {role === 'student' ? 'Study Fund Tree' : role === 'business' ? 'Capital Growth Tree' : 'Wealth Tree'}
+        </span>
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-pulse" />
           <span className="text-xs font-bold text-[var(--text-primary)]">Level {Math.floor(score / 10)}</span>

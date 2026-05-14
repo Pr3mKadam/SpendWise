@@ -30,6 +30,8 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   Utilities:     '#06b6d4',
   Health:        '#10b981',
   Travel:        '#0ea5e9',
+  Education:     '#8b5cf6',
+  Business:      '#f97316',
   Income:        '#3b82f6',
 };
 
@@ -42,6 +44,8 @@ export const CATEGORY_ICONS: Record<Category, string> = {
   Utilities:     '💡',
   Health:        '💊',
   Travel:        '✈️',
+  Education:     '🎓',
+  Business:      '💼',
   Income:        '💰',
 };
 
@@ -61,7 +65,7 @@ export const initialTransactions: Transaction[] = [
 export const INITIAL_NET_WORTH = 4500.00;
 
 export const DEBIT_CATEGORIES: Category[] = [
-  'Food', 'Subscriptions', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Health', 'Travel',
+  'Food', 'Subscriptions', 'Transport', 'Entertainment', 'Shopping', 'Utilities', 'Health', 'Travel', 'Education', 'Business'
 ];
 
 export const MERCHANT_MAP: Record<Category, string[]> = {
@@ -73,6 +77,8 @@ export const MERCHANT_MAP: Record<Category, string[]> = {
   Utilities:     ['Electric Co.', 'Water Bill', 'Comcast Internet', 'Gas Company', 'AT&T'],
   Health:        ['CVS Pharmacy', 'Walgreens', 'Planet Fitness', 'Apollo Pharmacy', 'Wellness Forever', 'Practo'],
   Travel:        ['MakeMyTrip', 'Airbnb', 'Goibibo', 'Hotels.com', 'Booking.com', 'IRCTC', 'Indigo'],
+  Education:     ['Udemy', 'Coursera', 'Skillshare', 'Duolingo', 'University Fee', 'Library'],
+  Business:      ['AWS', 'Google Cloud', 'Slack', 'Zoom', 'GitHub', 'Canva', 'Office Rent'],
   Income:        ['Salary Deposit', 'Freelance Payment', 'Direct Deposit', 'Bank Refund'],
 };
 
@@ -121,6 +127,16 @@ const CATEGORY_KEYWORDS: Record<Category, string[]> = {
     'stay', 'vacation', 'holiday', 'trip', 'tour', 'sightseeing', 'museum',
     'fort', 'beach', 'mountains', 'goa', 'manali', 'shimla', 'ooty',
     'staycation', 'check-in', 'visa', 'passport', 'trivago', 'booking.com',
+  ],
+  Education: [
+    'udemy', 'coursera', 'edx', 'skillshare', 'duolingo', 'chegg', 'college',
+    'university', 'library', 'class', 'course', 'school', 'tuition', 'books',
+    'stationery', 'exam', 'fees',
+  ],
+  Business: [
+    'google cloud', 'aws', 'azure', 'slack', 'zoom', 'linkedin', 'github',
+    'digital ocean', 'shopify', 'canva', 'adobe', 'figma', 'marketing',
+    'payroll', 'office', 'rent', 'tax', 'invoice', 'client', 'server',
   ],
   Income: [],
 };

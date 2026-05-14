@@ -5,7 +5,7 @@ import CommandPalette from '../common/CommandPalette';
 import LevelUpModal from '../features/gamification/LevelUpModal';
 import PrivacyShield from '../common/PrivacyShield';
 import { OfflineIndicator } from '../common/OfflineIndicator';
-import { BudgetAlertToast } from '../features/budget/BudgetAlertToast';
+import { BudgetAlertToast } from '../features/budgets/BudgetAlertToast';
 import { AppView, Transaction, Category } from '../../types';
 
 interface AppModalsProps {

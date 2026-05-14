@@ -1,5 +1,5 @@
 import { Transaction, Category } from '../types';
-import { analyzeTransactionString } from './parsers/nlp';
+import { processNaturalLanguageExpense } from './parsers/nlp';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
 const MEMORY_KEY = 'spendwise_merchant_memory';
@@ -46,7 +46,7 @@ export async function parseUPIPayment(
   }
 
   // 2 — Attempt AI Analysis
-  const aiResult = await analyzeTransactionString(description || upiVPA);
+  const aiResult = await processNaturalLanguageExpense(description || upiVPA);
   if (aiResult) {
     const out = {
       merchant: aiResult.merchant || description || upiVPA || 'UPI Payment',
@@ -164,9 +164,11 @@ export interface RazorpayPaymentResult {
   method: string;
 }
 
+// Razorpay types are now in src/types/dom.ts
+
 /** Opens the Razorpay checkout popup for a UPI payment. */
 export function initiateRazorpayPayment(opts: RazorpayPaymentOptions): void {
-  const RazorpaySDK = (window as any).Razorpay;
+  const RazorpaySDK = window.Razorpay;
   if (!RazorpaySDK) {
     alert('Razorpay SDK not loaded. Check your internet connection.');
     return;
@@ -184,7 +186,7 @@ export function initiateRazorpayPayment(opts: RazorpayPaymentOptions): void {
       contact: opts.prefillContact ?? '',
     },
     theme: { color: '#14b8a6' },
-    handler: function (response: any) {
+    handler: function (response) {
       opts.onSuccess({
         razorpay_payment_id: response.razorpay_payment_id ?? `demo_${Date.now()}`,
         amount: opts.amount,

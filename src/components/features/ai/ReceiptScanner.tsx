@@ -17,6 +17,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -131,13 +132,13 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                 <div className="space-y-6">
                   {isCropping ? (
                     <div className="space-y-4">
-                      <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border-2 border-dashed border-teal-500/50 bg-black/20" ref={fileInputRef as any}>
+                      <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border-2 border-dashed border-teal-500/50 bg-black/20" ref={containerRef}>
                         <img src={image} alt="Crop Preview" className="w-full h-full object-contain opacity-50" />
                         
                         {/* Interactive Crop Box Overlay */}
                         <motion.div 
                           drag
-                          dragConstraints={fileInputRef as any}
+                          dragConstraints={containerRef}
                           dragElastic={0}
                           dragMomentum={false}
                           className="absolute inset-0 w-3/4 h-3/4 m-auto border-2 border-teal-400 bg-teal-500/10 backdrop-blur-[1px] shadow-[0_0_0_9999px_rgba(0,0,0,0.5)] cursor-move"

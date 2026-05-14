@@ -67,7 +67,7 @@ function EmptyState({ onCreateGroup }: { onCreateGroup: () => void }) {
       <p className="m-0 mb-10 text-[var(--text-secondary)] max-w-[380px] leading-relaxed text-[0.95rem]">
         Create a shared wallet to track joint expenses, split bills and save towards group goals — all synced in real time.
       </p>
-      <button type="button" onClick={onCreateGroup} className="flex items-center gap-2 px-8 py-3.5 bg-[var(--accent)] text-white border-none rounded-[14px] cursor-pointer font-extrabold text-[1rem] tracking-tight">
+      <button type="button" onClick={onCreateGroup} className="flex items-center gap-2 px-8 py-3.5 bg-[var(--teal)] text-white border-none rounded-[14px] cursor-pointer font-extrabold text-[1rem] tracking-tight">
         <Ico.Plus /> Create First Group
       </button>
     </div>
@@ -224,7 +224,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                     const id = prompt('Enter Peer ID to connect:');
                     if (id) sw.connectToPeer(id);
                   }}
-                  className="ml-2 px-3 py-1.5 bg-[var(--accent)]/10 text-[var(--accent)] hover:bg-[var(--accent)]/20 rounded-lg font-bold cursor-pointer transition-colors border-none text-[0.8rem]"
+                  className="ml-2 px-3 py-1.5 bg-[var(--teal)]/10 text-[var(--teal)] hover:bg-[var(--teal)]/20 rounded-lg font-bold cursor-pointer transition-colors border-none text-[0.8rem]"
                 >
                   Connect
                 </button>
@@ -264,7 +264,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
 
             {sw.loading && (
               <div className="text-center py-16 text-[var(--text-secondary)]">
-                <div className="text-[2rem] inline-block mb-3 text-[var(--accent)]"><Ico.Spin /></div>
+                <div className="text-[2rem] inline-block mb-3 text-[var(--teal)]"><Ico.Spin /></div>
                 <p className="m-0 text-[0.9rem]">Loading group…</p>
               </div>
             )}
@@ -278,7 +278,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                       key={t.id} 
                       type="button" 
                       onClick={() => setTab(t.id)} 
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-[9px] border-none cursor-pointer font-semibold text-[0.8rem] transition-all font-inherit ${tab === t.id ? 'bg-[var(--card)] text-[var(--accent)] shadow-sm' : 'bg-transparent text-[var(--text-secondary)]'}`}
+                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-[9px] border-none cursor-pointer font-semibold text-[0.8rem] transition-all font-inherit ${tab === t.id ? 'bg-[var(--card)] text-[var(--teal)] shadow-sm' : 'bg-transparent text-[var(--text-secondary)]'}`}
                     >
                       {t.icon} {t.label}
                     </button>

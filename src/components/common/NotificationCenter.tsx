@@ -54,11 +54,11 @@ function NotifRow({ notif, onMarkRead, onNavigate, onClose, onSnooze }: {
   return (
     <div
       onClick={handleClick}
-      className="group relative flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-gray-50"
+      className="group relative flex cursor-pointer items-start gap-3 px-4 py-3.5 transition-colors hover:bg-[var(--surface-hover)]"
       style={{
         borderLeft: `3px solid ${severityBorderColor(notif.severity)}`,
         opacity: notif.read ? 0.6 : 1,
-        borderBottom: '1px solid #f7f8fa',
+        borderBottom: '1px solid var(--border)',
       }}
     >
       <span style={{ fontSize: '16px', flexShrink: 0, marginTop: '2px' }}>{notif.icon}</span>
@@ -76,7 +76,7 @@ function NotifRow({ notif, onMarkRead, onNavigate, onClose, onSnooze }: {
               <div className="snooze-btn relative">
                 <button
                   onClick={e => { e.stopPropagation(); setShowSnooze(v => !v); }}
-                  className="w-6 h-6 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-gray-200 border-none cursor-pointer"
+                  className="w-6 h-6 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-[var(--surface-input)] border-none cursor-pointer"
                   style={{ background: 'transparent', color: 'var(--text-muted)' }}
                   title="Snooze"
                 >
@@ -91,7 +91,7 @@ function NotifRow({ notif, onMarkRead, onNavigate, onClose, onSnooze }: {
                       <button
                         key={opt.hours}
                         onClick={e => { e.stopPropagation(); onSnooze(notif.id, opt.hours); setShowSnooze(false); }}
-                        className="w-full px-3 py-2 text-left text-xs font-medium hover:bg-gray-50 border-none cursor-pointer block"
+                        className="w-full px-3 py-2 text-left text-xs font-medium hover:bg-[var(--surface-hover)] border-none cursor-pointer block"
                         style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', background: 'transparent' }}
                       >
                         {opt.label}
@@ -158,7 +158,7 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
         }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1.5px solid #f0f2f5' }}>
+        <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: '1.5px solid var(--border)' }}>
           <div className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl" style={{ background: 'var(--teal-dim)' }}>
               <Bell size={15} style={{ color: 'var(--teal)' }} />
@@ -174,7 +174,7 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
             {unreadCount > 0 && (
               <button onClick={onMarkAllRead}
                 className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-colors"
-                style={{ background: '#f5f7fa', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
+                style={{ background: 'var(--surface-input)', color: 'var(--text-secondary)', fontFamily: 'var(--font-inter)', border: 'none', cursor: 'pointer' }}>
                 <CheckCheck size={13} /> Mark all read
               </button>
             )}
@@ -204,7 +204,7 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
 
           {notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-14 text-center">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ background: '#f5f7fa' }}>
+              <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3" style={{ background: 'var(--surface-input)' }}>
                 <Bell size={20} style={{ color: 'var(--text-muted)' }} />
               </div>
               <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)' }}>No notifications</p>
@@ -237,7 +237,7 @@ export default function NotificationCenter({ notifications, unreadCount, isOpen,
         </div>
 
         {/* Footer */}
-        <div className="shrink-0 px-5 py-3 text-center" style={{ borderTop: '1.5px solid #f0f2f5' }}>
+        <div className="shrink-0 px-5 py-3 text-center" style={{ borderTop: '1.5px solid var(--border)' }}>
           <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>Powered by SpendWise · Data stored locally</p>
         </div>
       </div>

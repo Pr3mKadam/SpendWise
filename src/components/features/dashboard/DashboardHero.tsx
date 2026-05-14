@@ -4,6 +4,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight, Shield } from 'lucide-react';
 import { useCountUp } from '../../../hooks/useCountUp';
 import { MonthlyStats, BalanceDataPoint } from '../../../types';
+import { haptic } from '../../../lib/haptic';
 
 interface DashboardHeroProps {
   currentBalance: number;
@@ -70,10 +71,16 @@ export default function DashboardHero({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="relative w-full overflow-hidden rounded-3xl shadow-2xl"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      whileHover={{ y: -2 }}
+      whileTap={{ scale: 0.99 }}
+      onClick={() => {
+        haptic.light();
+      }}
+
+      className="relative w-full overflow-hidden rounded-3xl shadow-lg border border-white/10 dark:border-white/5 cursor-pointer"
       style={{ minHeight: '220px' }}
     >
       <div
@@ -188,7 +195,10 @@ export default function DashboardHero({
             
             {onTogglePrivacy && (
               <button
-                onClick={onTogglePrivacy}
+                onClick={() => {
+                  onTogglePrivacy();
+                  haptic.light();
+                }}
                 className="flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl border transition-all hover:scale-105 active:scale-95"
                 style={{ 
                   background: hideBalances ? 'rgba(20,184,166,0.2)' : 'rgba(255,255,255,0.05)', 

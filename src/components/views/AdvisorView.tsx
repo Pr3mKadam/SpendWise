@@ -1,13 +1,23 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
+import { SpendingPersonality } from '../../types';
 import { getFinancialAdvice } from '../../utils/insights/advisor';
 import { getSpendingPersonality } from '../../utils/insights/reporting';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import EducationCards from '../features/advisor/EducationCards';
+import { SpeechRecognition, SpeechRecognitionEvent } from '../../types/dom';
 
 const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';
 const MAX_HISTORY = 20;
+
+interface MessageData {
+  action?: 'CREATE_BUDGET' | 'VIEW_ANALYTICS' | 'SET_GOAL';
+  balance?: number;
+  expenses?: number;
+  topCategory?: string;
+  savingsRate?: string;
+}
 
 interface Message {
   id: string;
@@ -15,7 +25,7 @@ interface Message {
   sender: 'ai' | 'user';
   timestamp: string;
   type?: 'text' | 'action_card' | 'briefing';
-  data?: any;
+  data?: MessageData;
 }
 
 const parseMarkdown = (text: string) => {
@@ -62,10 +72,10 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     return [INITIAL_MESSAGE];
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [personality, setPersonality] = useState<any>(null);
+  const [personality, setPersonality] = useState<SpendingPersonality | null>(null);
   const [isAnalyzingPersonality, setIsAnalyzingPersonality] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Persist messages whenever they change
@@ -107,7 +117,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         sender: 'ai',
         timestamp: new Date().toISOString(),
         type: actionTag ? 'action_card' : 'text',
-        data: actionTag ? { action: actionTag } : undefined
+        data: actionTag ? { action: actionTag as MessageData['action'] } : undefined
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
@@ -148,13 +158,14 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
   }, [transactions, monthlyStats]);
 
   useEffect(() => {
-    if ('webkitSpeechRecognition' in window) {
-      const recognition = new (window as any).webkitSpeechRecognition();
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const RecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new RecognitionClass() as SpeechRecognition;
       recognition.continuous = false;
       recognition.interimResults = false;
       recognition.lang = 'en-US';
 
-      recognition.onresult = (event: any) => {
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         setIsListening(false);
         // Auto-send after voice input
@@ -183,7 +194,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     }
   }, [messages]);
 
-  const dynamicQuickActions = React.useMemo(() => {
+  const dynamicQuickActions = useMemo(() => {
     const actions = [];
     if (monthlyStats.totalExpenses > monthlyStats.totalIncome && monthlyStats.totalIncome > 0) {
       actions.push("How can I avoid going negative?");
@@ -341,7 +352,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
           ref={scrollRef}
           className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
         >
-          {messages.map((msg) => (
+          {messages.map((msg: Message) => (
             <div 
               key={msg.id} 
               className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
@@ -363,17 +374,17 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Net Balance</p>
-                          <p className="text-sm font-bold text-[var(--teal)]">{format(msg.data.balance)}</p>
+                          <p className="text-sm font-bold text-[var(--teal)]">{format(msg.data?.balance ?? 0)}</p>
                         </div>
                         <div>
                           <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Savings Rate</p>
-                          <p className="text-sm font-bold text-purple-500">{msg.data.savingsRate}%</p>
+                          <p className="text-sm font-bold text-purple-500">{msg.data?.savingsRate ?? '0'}%</p>
                         </div>
                       </div>
                       <div className="mt-3 pt-3 border-t border-[var(--border)]">
                         <p className="text-[11px] text-[var(--text-secondary)]">
-                          You've spent <span className="font-bold">{format(msg.data.expenses)}</span> this month. 
-                          Your top category is <span className="font-bold text-[var(--teal)]">{msg.data.topCategory}</span>.
+                          You've spent <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> this month. 
+                          Your top category is <span className="font-bold text-[var(--teal)]">{msg.data?.topCategory ?? 'Unknown'}</span>.
                         </p>
                       </div>
                     </div>

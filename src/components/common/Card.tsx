@@ -14,8 +14,10 @@ export const Card = memo(function Card({ children, className = "", style = {}, g
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
-      className={`${glass ? 'glass-card' : 'bg-white rounded-2xl shadow-sm border border-black/[0.04]'} ${className}`}
+      className={`${glass ? 'glass-card' : 'rounded-2xl shadow-sm border'} ${className}`}
       style={{
+        background: glass ? undefined : 'var(--surface-card)',
+        borderColor: glass ? undefined : 'var(--border)',
         padding: 'var(--card-padding, 16px)',
         ...style,
       }}

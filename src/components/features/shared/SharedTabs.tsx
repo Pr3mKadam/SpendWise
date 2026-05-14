@@ -11,7 +11,7 @@ export function WalletTab({ entries, balance, members, onDelete, currency }: { e
   const map = Object.fromEntries(members.map(m => [m.id, m]));
   return (
     <div>
-      <div className="bg-gradient-to-br from-[var(--accent)] to-indigo-500 rounded-2xl p-6 text-center mb-6">
+      <div className="bg-gradient-to-br from-[var(--teal)] to-indigo-500 rounded-2xl p-6 text-center mb-6">
         <p className="m-0 mb-1 text-white/65 text-[0.7rem] font-bold uppercase tracking-widest">Shared Pot Balance</p>
         <p className="m-0 text-[2.25rem] font-extrabold text-white tracking-tight">{fmt(balance, currency)}</p>
       </div>
@@ -169,7 +169,7 @@ export function MembersTab({ members, uid, isOwner, onRemove, onInvite }: { memb
   return (
     <div>
       {isOwner && (
-        <button type="button" onClick={onInvite} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent text-[var(--accent)] border-[1.5px] border-dashed border-[var(--accent)] rounded-xl cursor-pointer font-bold text-[0.85rem] w-full mb-4 hover:bg-[var(--accent)]/5 transition-colors">
+        <button type="button" onClick={onInvite} className="flex items-center justify-center gap-2 px-4 py-2.5 bg-transparent text-[var(--teal)] border-[1.5px] border-dashed border-[var(--teal)] rounded-xl cursor-pointer font-bold text-[0.85rem] w-full mb-4 hover:bg-[var(--teal)]/5 transition-colors">
           <Ico.Mail /> Invite Member by Email
         </button>
       )}

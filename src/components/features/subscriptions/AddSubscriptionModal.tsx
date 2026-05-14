@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
 import { useStore } from '../../../store';
 import { useCategories } from '../../../hooks/useCategories';
-import { RecurringFrequency } from '../../../types';
+import { RecurringFrequency, Category } from '../../../types';
 
 interface AddSubscriptionModalProps {
   isOpen: boolean;
@@ -16,7 +16,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
   
   const [merchant, setMerchant] = useState('');
   const [amount, setAmount] = useState('');
-  const [category, setCategory] = useState('Subscriptions');
+  const [category, setCategory] = useState<Category>('Subscriptions');
   const [frequency, setFrequency] = useState<RecurringFrequency>('monthly');
   const [nextOccurrence, setNextOccurrence] = useState(() => {
     const d = new Date();
@@ -36,7 +36,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
       id: `rt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       merchant,
       amount: parseFloat(amount),
-      category: category as any,
+      category,
       frequency,
       lastProcessed: null,
       nextOccurrence,
@@ -150,8 +150,8 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
                 Category
               </label>
               <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={category as string}
+                onChange={(e) => setCategory(e.target.value as Category)}
                 className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
               >
                 {allCategories.map((cat: string) => (

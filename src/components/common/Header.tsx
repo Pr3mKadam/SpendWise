@@ -2,6 +2,7 @@ import React from 'react';
 import { Bell, ChevronRight, Moon, Sun, User, Search, Eye, EyeOff } from 'lucide-react';
 import { AppView } from '../../types';
 import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
+import { MasterMic } from './MasterMic';
 
 interface HeaderProps {
   activeView:            AppView;
@@ -16,6 +17,8 @@ interface HeaderProps {
   onOpenSearch?:         () => void;
   isPrivacyEnabled?:     boolean;
   onTogglePrivacy?:      () => void;
+  onExport?:             () => void;
+  setSearchQuery?:       (q: string) => void;
 }
 
 const VIEW_TITLES: Partial<Record<AppView, string>> = {
@@ -49,6 +52,8 @@ export default function Header({
   onOpenSearch,
   isPrivacyEnabled,
   onTogglePrivacy,
+  onExport,
+  setSearchQuery,
 }: HeaderProps) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -128,7 +133,9 @@ export default function Header({
           {activeView !== 'dashboard' && (
             <>
               <button
-                onClick={() => onNavigate('dashboard')}
+                onClick={() => {
+                  onNavigate('dashboard');
+                }}
                 aria-label="Go to Dashboard"
                 style={{
                   fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 500,
@@ -195,7 +202,9 @@ export default function Header({
 
           {/* Theme toggle */}
           <button
-            onClick={onToggleTheme}
+            onClick={() => {
+              onToggleTheme();
+            }}
             className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
             aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
             /* Mobile style applied via wrapper; desktop overrides inline */
@@ -214,7 +223,9 @@ export default function Header({
           {/* Privacy toggle */}
           {onTogglePrivacy && (
             <button
-              onClick={onTogglePrivacy}
+              onClick={() => {
+                onTogglePrivacy();
+              }}
               className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
               aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
               style={{ padding: 0, border: 'none' }}
@@ -231,7 +242,9 @@ export default function Header({
           {/* Global Search */}
           {onOpenSearch && (
             <button
-              onClick={onOpenSearch}
+              onClick={() => {
+                onOpenSearch?.();
+              }}
               className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
               aria-label="Search transactions and settings (Cmd+K)"
               style={{ padding: 0, border: 'none' }}
@@ -245,9 +258,22 @@ export default function Header({
             </button>
           )}
 
+          {/* Master Voice Mic */}
+          {onExport && (
+            <MasterMic 
+              variant="header"
+              navigate={onNavigate}
+              onExport={onExport}
+              toggleTheme={onToggleTheme}
+              setSearchQuery={setSearchQuery}
+            />
+          )}
+
           {/* Notification bell */}
           <button
-            onClick={onToggleNotifications}
+            onClick={() => {
+              onToggleNotifications();
+            }}
             className="relative flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
             aria-label={`View notifications, ${unreadCount} unread`}
             style={{ padding: 0, border: 'none' }}
@@ -270,7 +296,9 @@ export default function Header({
 
           {/* User Avatar */}
           <button
-            onClick={() => onNavigate('profile')}
+            onClick={() => {
+              onNavigate('profile');
+            }}
             aria-label="View Profile and Settings"
             className="group relative flex h-9 w-9 items-center justify-center rounded-full text-white font-bold text-sm shrink-0 transition-all hover:scale-105"
             style={{

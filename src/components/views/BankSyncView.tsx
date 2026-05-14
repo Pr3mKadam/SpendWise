@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Brain, CheckCircle2, Sparkles
 } from 'lucide-react';
-import { Transaction, UPIAccount, UPIProvider, Category } from '../../types';
+import { Transaction, LinkedAccount, FinanceProvider, Category, SyncView, WizardStep } from '../../types';
 import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/parsers/upi';
 import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant } from '../../utils/razorpaySync';
 import { useStore } from '../../store';
@@ -15,15 +15,11 @@ import PlaidLink from '../features/sync/PlaidLink';
 import PayForm from '../features/sync/PayForm';
 import Web3Link from '../features/sync/Web3Link';
 
-
 interface BankSyncViewProps {
   onAutoAddTransactions: (txs: Transaction[]) => void;
   recentTransactions?: Transaction[];
   currency?: string;
 }
-
-type SyncView = 'dashboard' | 'select-source' | 'upi-link' | 'plaid-link' | 'rzp-link' | 'web3-link' | 'pay-form' | 'pay-parsing' | 'pay-success' | 'pay-correction';
-type WizardStep = 'upi-select' | 'upi-credentials' | 'upi-connecting' | 'upi-success';
 
 const CATEGORIES: Category[] = [
   'Food', 'Transport', 'Shopping', 'Subscriptions',
@@ -37,7 +33,7 @@ export default function BankSyncView({
 }: BankSyncViewProps) {
   const { razorpayKeys, setRazorpayKeys } = useStore();
   const [view, setView] = useState<SyncView>('dashboard');
-  const [accounts, setAccounts] = useState<UPIAccount[]>([]);
+  const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [merchantMemoryCount, setMerchantMemoryCount] = useState(0);
 
@@ -59,8 +55,8 @@ export default function BankSyncView({
 
     const key = razorpayKeys?.keyId || localKey;
     if (key) {
-      setAccounts((p: UPIAccount[]) => {
-        if (p.some(a => a.provider === 'razorpay' as any)) return p;
+      setAccounts((p: LinkedAccount[]) => {
+        if (p.some(a => a.provider === 'razorpay')) return p;
         return [...p, {
           id: 'rzp-auth',
           provider: 'razorpay',
@@ -79,9 +75,9 @@ export default function BankSyncView({
   }, [razorpayKeys, setRazorpayKeys]);
 
   const handleUPILinkSuccess = (provider: typeof UPI_PROVIDERS[0], id: string) => {
-    const newAccount: UPIAccount = {
+    const newAccount: LinkedAccount = {
       id: `acc-${Date.now()}`,
-      provider: provider.id as UPIProvider,
+      provider: provider.id as FinanceProvider,
       upiId: id,
       linkedAt: new Date().toISOString(),
       lastSynced: new Date().toISOString(),
@@ -93,9 +89,9 @@ export default function BankSyncView({
   };
 
   const handlePlaidLinkSuccess = (bankName: string, id: string) => {
-    const newAccount: UPIAccount = {
+    const newAccount: LinkedAccount = {
       id: `acc-${Date.now()}`,
-      provider: 'plaid' as any,
+      provider: 'plaid',
       upiId: bankName,
       linkedAt: new Date().toISOString(),
       lastSynced: new Date().toISOString(),
@@ -107,9 +103,9 @@ export default function BankSyncView({
   };
 
   const handleWeb3LinkSuccess = (walletName: string, id: string) => {
-    const newAccount: UPIAccount = {
+    const newAccount: LinkedAccount = {
       id: `acc-${Date.now()}`,
-      provider: 'web3' as any,
+      provider: 'web3',
       upiId: walletName,
       linkedAt: new Date().toISOString(),
       lastSynced: new Date().toISOString(),
@@ -165,11 +161,11 @@ export default function BankSyncView({
   };
 
   /** Mock sync for non-Razorpay providers */
-  const handleMockSync = async (acc: UPIAccount) => {
+  const handleMockSync = async (acc: LinkedAccount) => {
     setSyncingAccountId(acc.id);
     try {
       await new Promise(r => setTimeout(r, 1200));
-      const providerName = (acc.provider as string) === 'plaid' ? acc.upiId : (UPI_PROVIDERS.find((p: any) => p.id === acc.provider)?.name || 'Bank');
+      const providerName = (acc.provider as string) === 'plaid' ? acc.upiId : (UPI_PROVIDERS.find((p) => p.id === acc.provider)?.name || 'Bank');
       const mockTxs = generateMockUPITransactions(providerName, 10);
       onAutoAddTransactions(mockTxs);
       setAccounts(p => p.map(a => a.id === acc.id ? { ...a, lastSynced: new Date().toISOString() } : a));
@@ -180,7 +176,7 @@ export default function BankSyncView({
     }
   };
 
-  const handleSyncAccount = (acc: UPIAccount) => {
+  const handleSyncAccount = (acc: LinkedAccount) => {
     if ((acc.provider as string) === 'razorpay') return;
     handleMockSync(acc);
   };
@@ -193,8 +189,8 @@ export default function BankSyncView({
 
   const handleRazorpayConnect = (keyId: string, secret: string) => {
     setRazorpayKeys({ keyId, keySecret: secret });
-    setAccounts((p: UPIAccount[]) => {
-      const filtered = p.filter(a => a.provider !== 'razorpay' as any);
+    setAccounts((p: LinkedAccount[]) => {
+      const filtered = p.filter(a => a.provider !== 'razorpay');
       return [{
         id: 'rzp-auth',
         provider: 'razorpay',

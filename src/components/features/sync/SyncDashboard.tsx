@@ -3,7 +3,7 @@ import {
   Landmark, Zap, MoreVertical, TrendingDown, Hash, Sparkles, Brain,
   SmartphoneNfc, Link2, History, CreditCard, Clock, RefreshCw, Activity
 } from 'lucide-react';
-import { Transaction, UPIAccount } from '../../../types';
+import { Transaction, LinkedAccount, SyncView } from '../../../types';
 import { UPI_PROVIDERS } from '../../../utils/parsers/upi';
 import CSVImporter from '../../features/sync/CSVImporter';
 import { CloudSync } from '../../features/sync/CloudSync';
@@ -12,11 +12,11 @@ export interface SyncDashboardProps {
   totalUPISpend: number;
   aiParsedCount: number;
   merchantMemoryCount: number;
-  accounts: UPIAccount[];
+  accounts: LinkedAccount[];
   recentTransactions: Transaction[];
   syncingAccountId: string | null;
-  onSyncAccount: (acc: UPIAccount) => void;
-  onSetView: (view: any) => void;
+  onSyncAccount: (acc: LinkedAccount) => void;
+  onSetView: (view: SyncView) => void;
   currency: string;
   onAutoAddTransactions: (txs: Transaction[]) => void;
 }
@@ -125,7 +125,7 @@ export function SyncDashboard({
                   const isRzp = (acc.provider as string) === 'razorpay';
                   const providerDef = isRzp
                     ? { name: 'Razorpay', icon: <Zap size={18} />, color: '#3395FF' }
-                    : UPI_PROVIDERS.find((p: any) => p.id === acc.provider) || UPI_PROVIDERS[0];
+                    : (UPI_PROVIDERS.find((p) => p.id === acc.provider) || UPI_PROVIDERS[0]);
 
                   return (
                     <div key={acc.id} className="rounded-xl p-5 relative overflow-hidden border border-[var(--border)] bg-[var(--surface-card)]">

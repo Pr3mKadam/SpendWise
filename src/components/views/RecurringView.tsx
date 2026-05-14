@@ -17,6 +17,7 @@ const FREQ_CONFIG = {
   weekly:  { label: 'Weekly',  color: '#3b82f6', emoji: '🔁' },
   monthly: { label: 'Monthly', color: '#a855f7', emoji: '🔄' },
   annual:  { label: 'Annual',  color: '#f59e0b', emoji: '📅' },
+  daily:   { label: 'Daily',   color: '#10b981', emoji: '🌅' },
 };
 
 // ─── Days until next ──────────────────────────────────────────────────────────
@@ -158,7 +159,7 @@ function SummaryBar({ patterns, currency }: { patterns: RecurringPattern[]; curr
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function RecurringView({ patterns, currency = '$', transactions = [] }: RecurringViewProps) {
+export default function RecurringView({ patterns = [], currency = '$', transactions = [] }: RecurringViewProps) {
   const [view, setView] = useState<'list' | 'calendar'>('list');
 
   // Build calendar-friendly subscription list from recurring patterns
