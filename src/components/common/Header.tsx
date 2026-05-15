@@ -200,44 +200,38 @@ export default function Header({
         {/* Right — Action buttons */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
 
-          {/* Theme toggle */}
-          <button
-            onClick={() => {
-              onToggleTheme();
-            }}
-            className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
-            aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            /* Mobile style applied via wrapper; desktop overrides inline */
-            style={{ padding: 0, border: 'none' }}
-          >
-            {/* Mobile glass */}
-            <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
-              {theme === 'dark' ? <Sun size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Moon size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
-            </span>
-            {/* Desktop plain */}
-            <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
-              {theme === 'dark' ? <Sun size={16} style={{ color: 'var(--text-secondary)' }} /> : <Moon size={16} style={{ color: 'var(--text-secondary)' }} />}
-            </span>
-          </button>
-
-          {/* Privacy toggle */}
-          {onTogglePrivacy && (
+          {/* Hide theme/privacy toggle on mobile header to reduce crowding */}
+          <div className="hidden md:flex items-center gap-2">
+            {/* Theme toggle */}
             <button
               onClick={() => {
-                onTogglePrivacy();
+                onToggleTheme();
               }}
               className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
-              aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               style={{ padding: 0, border: 'none' }}
             >
-              <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
-                {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Eye size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
-              </span>
-              <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
-                {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+                {theme === 'dark' ? <Sun size={16} style={{ color: 'var(--text-secondary)' }} /> : <Moon size={16} style={{ color: 'var(--text-secondary)' }} />}
               </span>
             </button>
-          )}
+
+            {/* Privacy toggle */}
+            {onTogglePrivacy && (
+              <button
+                onClick={() => {
+                  onTogglePrivacy();
+                }}
+                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+                aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
+                style={{ padding: 0, border: 'none' }}
+              >
+                <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+                  {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
+                </span>
+              </button>
+            )}
+          </div>
 
           {/* Global Search */}
           {onOpenSearch && (

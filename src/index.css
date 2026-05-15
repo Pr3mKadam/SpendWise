@@ -167,7 +167,27 @@
 
   *, *::before, *::after {
     box-sizing: border-box;
+    /* Prevent blue tap highlight on mobile/Android */
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Make app feel native by preventing bounce/overscroll */
+  html, body {
+    overscroll-behavior-y: none;
+    /* Prevent text selection on UI elements */
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Re-enable text selection for actual readable content */
+  p, h1, h2, h3, h4, h5, h6, span.selectable, input, textarea, [contenteditable] {
+    user-select: auto;
+    -webkit-user-select: auto;
+  }
+
+  /* Prevent double-tap to zoom on interactive elements */
+  button, a, input, select, textarea {
+    touch-action: manipulation;
   }
 
   /* Only transition specific properties on interaction, not everything globally */
@@ -255,6 +275,7 @@
       scroll-behavior: auto !important;
     }
   }
+
 /* ═══════════════════════════════════════════════
    LAYOUT — Sidebar + Content Shell
 ═══════════════════════════════════════════════ */

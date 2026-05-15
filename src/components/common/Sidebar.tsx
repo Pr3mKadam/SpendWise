@@ -82,10 +82,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
     return true;
   });
 
-  // Mobile nav: show 5 core items + 1 menu button
+  // Mobile nav: show 4 core items + 1 menu button to reduce crowding
   const mobileNavItems = navItems.filter(item => 
-    ['dashboard', 'history', 'budget', 'goals', 'advisor'].includes(item.id)
-  ).slice(0, 5);
+    ['dashboard', 'history', 'budget', 'advisor'].includes(item.id)
+  ).slice(0, 4);
 
   return (
     <>
