@@ -168,8 +168,11 @@
   *, *::before, *::after {
     box-sizing: border-box;
     -webkit-tap-highlight-color: transparent;
-    /* Smooth color transitions when theme toggles */
-    transition: background-color 200ms ease, color 150ms ease, border-color 200ms ease, box-shadow 200ms ease;
+  }
+
+  /* Only transition specific properties on interaction, not everything globally */
+  button, a, .btn-tactile, .card-hover, .input-field {
+    transition: background-color 200ms ease, color 150ms ease, border-color 200ms ease, box-shadow 200ms ease, transform 150ms ease;
   }
 
   /* Don't transition transforms/opacity — that would break animations */
@@ -306,7 +309,12 @@
   }
 
   .surface-glass {
-    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/20 dark:border-white/5;
+    @apply bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/20 dark:border-white/5;
+  }
+  @media (min-width: 768px) {
+    .surface-glass {
+      @apply backdrop-blur-xl;
+    }
   }
 
   .overscroll-contain {
@@ -597,8 +605,28 @@
 
 /* ═══════════════════════════════════════════════
    MOBILE DASHBOARD OVERRIDES
-   Prevent overflow and scale down heavy components
+   Prevent overflow, scale down heavy components, and optimize GPU
 ═══════════════════════════════════════════════ */
+
+/* Android / Mobile GPU Optimizations */
+@media (max-width: 768px) {
+  :root {
+    /* Reduce blur intensity on mobile to save GPU cycles on Android */
+    --glass-blur: 4px;
+    /* Flatter shadows on mobile */
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.04);
+  }
+  
+  .dark {
+    --shadow-card: 0 1px 2px rgba(0,0,0,0.2), 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  /* Disable heavy continuous animations on mobile to save battery and stop lag */
+  .animate-float, .animate-pulse-glow, .premium-shimmer {
+    animation: none !important;
+    transform: none !important;
+  }
+}
 
 /* On very small phones (<480px), hide the hero sparkline */
 @media (max-width: 479px) {

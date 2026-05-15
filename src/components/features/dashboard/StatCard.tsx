@@ -1,5 +1,4 @@
 import { memo } from 'react';
-import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import Card from '../../common/Card';
 import { haptic } from '../../../lib/haptic';
@@ -16,13 +15,9 @@ export interface StatCardProps {
 
 export const StatCard = memo(function StatCard({ label, value, icon: Icon, iconColor, iconBg, trend, hideBalances }: StatCardProps) {
   return (
-    <motion.div
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => {
-        haptic.light();
-      }}
-      className="h-full cursor-pointer"
+    <div
+      onClick={() => haptic.light()}
+      className="h-full cursor-pointer transition-transform duration-200 hover:-translate-y-1 active:scale-95"
     >
       <Card className="flex flex-col justify-between h-full group" style={{ padding: '10px 12px' }}>
         <div className="flex items-start justify-between mb-1.5">
@@ -46,8 +41,9 @@ export const StatCard = memo(function StatCard({ label, value, icon: Icon, iconC
           <p className="text-[9px] sm:text-[10px] font-bold truncate uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{label}</p>
         </div>
       </Card>
-    </motion.div>
+    </div>
   );
 });
 
 export default StatCard;
+
