@@ -21,15 +21,15 @@ export default function WealthCity() {
   const stage = level >= 20 ? 5 : level >= 10 ? 4 : level >= 5 ? 3 : level >= 2 ? 2 : 1;
 
   const buildings = [
-    { id: 1, icon: <Home />, minLvl: 1, name: 'Cottage', pos: 'bottom-4 left-4' },
-    { id: 2, icon: <TreePine />, minLvl: 2, name: 'Greenery', pos: 'bottom-10 right-10' },
-    { id: 3, icon: <Building2 />, minLvl: 5, name: 'Tower', pos: 'bottom-20 left-12' },
-    { id: 4, icon: <Landmark />, minLvl: 10, name: 'Bank', pos: 'bottom-12 right-24' },
-    { id: 5, icon: <Sparkles />, minLvl: 20, name: 'Citadel', pos: 'top-10 left-1/2' },
+    { id: 1, icon: <Home />, minLvl: 1, name: 'Cottage', pos: 'bottom-2 left-4' },
+    { id: 2, icon: <TreePine />, minLvl: 2, name: 'Greenery', pos: 'bottom-6 right-10' },
+    { id: 3, icon: <Building2 />, minLvl: 5, name: 'Tower', pos: 'bottom-12 left-12' },
+    { id: 4, icon: <Landmark />, minLvl: 10, name: 'Bank', pos: 'bottom-8 right-24' },
+    { id: 5, icon: <Sparkles />, minLvl: 20, name: 'Citadel', pos: 'top-6 left-1/2 -translate-x-1/2' },
   ];
 
   return (
-    <div className="card h-[200px] sm:h-[260px] relative overflow-hidden bg-gradient-to-b from-[var(--surface-0)] to-[var(--surface-card)] border border-[var(--border)] shadow-inner">
+    <div className="card h-[140px] sm:h-[160px] relative overflow-hidden bg-gradient-to-b from-[var(--surface-0)] to-[var(--surface-card)] border border-[var(--border)] shadow-inner">
       {/* Dynamic Sky */}
       <div className={`absolute inset-0 transition-all duration-1000 ${stage >= 4 ? 'bg-indigo-900/10' : stage >= 3 ? 'bg-blue-400/10' : 'bg-transparent'}`} />
 
@@ -51,7 +51,7 @@ export default function WealthCity() {
       <div className="absolute bottom-0 left-0 right-0 h-16 bg-[var(--surface-input)] border-t border-[var(--border)]" />
 
       {/* Buildings */}
-      <div className="absolute inset-0 flex items-end justify-center pb-16">
+      <div className="absolute inset-0 flex items-end justify-center pb-8">
         {buildings.map((b) => (
           <motion.div
             key={b.id}

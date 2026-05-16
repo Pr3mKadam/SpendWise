@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X, GraduationCap, DownloadCloud, Trophy } from 'lucide-react';
+import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X, GraduationCap, DownloadCloud, Trophy, Sun, Moon } from 'lucide-react';
 import { AppView } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { haptic } from '../../lib/haptic';
@@ -314,7 +314,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
 
       {/* ── Mobile Drawer (Overlay) ── */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[60] md:hidden flex">
+        <div className="fixed inset-0 z-[70] md:hidden flex">
           {/* Backdrop */}
           <div 
             className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
@@ -341,7 +341,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
-              {navItems.map((item) => {
+              {navItems.filter(item => !['dashboard', 'history', 'budget', 'advisor', 'education', 'quests', 'reports', 'subscriptions', 'shared'].includes(item.id)).map((item) => {
                 const Icon = item.icon;
                 const isActive = activeView === item.id;
                 return (

@@ -1,5 +1,6 @@
 import { Transaction, AppView } from '../../../types';
 import Card from '../../common/Card';
+import { WalletCards } from 'lucide-react';
 import { initials, avatarColor } from '../../../utils/avatar';
 
 const TEXT_PRIMARY = '#0f1117';
@@ -20,16 +21,20 @@ export default function RecentTransactions({ recentTx, onNavigate, hideBalances,
         <button
           onClick={() => onNavigate('history')}
           aria-label="View all transactions"
-          style={{ fontSize: 12, color: '#6366f1', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, whiteSpace: 'nowrap' }}
+          style={{ fontSize: 13, color: '#6366f1', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: '8px', margin: '-8px', whiteSpace: 'nowrap' }}
         >
           View all →
         </button>
       </div>
 
       {recentTx.length === 0 ? (
-        <p style={{ fontSize: 13, color: TEXT_MUTED, padding: '16px 20px 20px', textAlign: 'center' }}>
-          No transactions yet. Add one using the panel →
-        </p>
+        <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+             <WalletCards size={24} className="text-slate-400" />
+          </div>
+          <p className="text-sm font-bold text-[var(--text-primary)] mb-1">No transactions yet</p>
+          <p className="text-xs text-[var(--text-muted)] max-w-[200px]">Add your first transaction using the Quick Add panel to get started.</p>
+        </div>
       ) : (
         recentTx.map((tx: Transaction, i) => {
           const bg = avatarColor(tx.merchant);

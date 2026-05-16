@@ -38,9 +38,12 @@ export default function GoalsSummary({ goals, onNavigate }: GoalsSummaryProps) {
       </div>
 
       {goals.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '16px 0' }}>
-          <Target size={28} color="#d1d5db" style={{ margin: '0 auto 8px' }} />
-          <p style={{ fontSize: 12, color: TEXT_MUTED }}>No goals yet</p>
+        <div className="flex flex-col items-center justify-center py-6 px-2 text-center">
+          <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
+             <Target size={20} className="text-slate-400" />
+          </div>
+          <p className="text-[13px] font-bold text-[var(--text-primary)] mb-1">No goals yet</p>
+          <p className="text-[11px] text-[var(--text-muted)] max-w-[160px]">Create a goal to start saving.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

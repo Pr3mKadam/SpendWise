@@ -129,7 +129,13 @@ export function DashboardView({
       ? Math.round(((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100)
       : 0;
 
-    return { topCat, topCatChange, savingsRate: savingsRateValue };
+    const prevMonthTotalExpenses = prevMonthTx.reduce((sum, t) => sum + t.amount, 0);
+    const thisMonthTotalExpenses = thisMonthTx.reduce((sum, t) => sum + t.amount, 0);
+    const totalExpensesChange = prevMonthTotalExpenses > 0 
+      ? ((thisMonthTotalExpenses - prevMonthTotalExpenses) / prevMonthTotalExpenses) * 100
+      : null;
+
+    return { topCat, topCatChange, savingsRate: savingsRateValue, totalExpensesChange };
   }, [transactions, monthlyStats]);
 
   if (isMobile) {
@@ -199,7 +205,8 @@ export function DashboardView({
 
               <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3">
                 <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 mt-0.5">
-                  {insights.topCatChange !== null && insights.topCatChange < 0
+                  {!insights.topCat ? <Sparkles size={18} /> : 
+                   insights.topCatChange !== null && insights.topCatChange < 0
                     ? <TrendingDown size={18} />
                     : <TrendingUp size={18} />
                   }
@@ -213,8 +220,8 @@ export function DashboardView({
                             insights.topCatChange < 0
                               ? `Down ${Math.abs(Math.round(insights.topCatChange))}% vs last month — great progress!`
                               : `Up ${Math.round(insights.topCatChange)}% from last month.`
-                          }`
-                        : `${insights.topCat[0]} is your biggest spend this month at ${currency}${Math.round(insights.topCat[1]).toLocaleString()}.`
+                          } ${insights.totalExpensesChange !== null ? `Overall spending is ${insights.totalExpensesChange > 0 ? 'up' : 'down'} ${Math.abs(Math.round(insights.totalExpensesChange))}%.` : ''}`
+                        : `${insights.topCat[0]} is your biggest spend this month at ${currency}${Math.round(insights.topCat[1]).toLocaleString()}. ${insights.totalExpensesChange !== null ? `Overall spending is ${insights.totalExpensesChange > 0 ? 'up' : 'down'} ${Math.abs(Math.round(insights.totalExpensesChange))}%.` : ''}`
                       : 'Add transactions to unlock spending insights.'
                     }
                   </p>

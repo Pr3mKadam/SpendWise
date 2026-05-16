@@ -123,9 +123,9 @@ export default function DashboardViewMobile({
           <h3 className="text-lg font-black text-[var(--text-primary)]">Recent</h3>
           <button 
             onClick={() => onNavigate('history')}
-            className="text-[var(--teal)] text-[10px] font-black uppercase tracking-widest flex items-center gap-1"
+            className="text-[var(--teal)] text-xs font-black uppercase tracking-widest flex items-center gap-1 p-2 -mr-2"
           >
-            See All <ChevronRight size={14} />
+            See All <ChevronRight size={16} />
           </button>
         </div>
 

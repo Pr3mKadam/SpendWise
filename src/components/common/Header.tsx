@@ -198,7 +198,7 @@ export default function Header({
         </div>
 
         {/* Right — Action buttons */}
-        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
           {/* Hide theme/privacy toggle on mobile header to reduce crowding */}
           <div className="hidden md:flex items-center gap-2">
