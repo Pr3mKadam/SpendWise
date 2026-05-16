@@ -74,7 +74,7 @@ If the query is not related to finance, politely redirect them to ask about thei
   const q = query.toLowerCase();
   
   // Logic for nonsensical or unrelated queries
-  const isFinancial = /spend|save|money|budget|cost|income|buy|expense|transaction|worth|wealth|rich|poor|tax|debt/i.test(q);
+  const isFinancial = /spend|save|money|budget|burget|cost|income|buy|expense|transaction|worth|wealth|rich|poor|tax|debt/i.test(q);
   if (q.length < 3 || (!isFinancial && q.split(' ').length < 2)) {
     return "I am your SpendWise financial advisor. I cannot answer non-financial questions. How can I help you with your budget or spending today?";
   }

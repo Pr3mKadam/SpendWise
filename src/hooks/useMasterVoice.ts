@@ -15,6 +15,7 @@ import { parseVoiceCommand, getMissingEntityPrompt, requiresConfirmation } from 
 import { executeCommand } from '../lib/voiceCommands/commandRouter';
 import { VoiceCommand, CommandResult } from '../lib/voiceCommands/types';
 import { speak } from '../lib/voiceCommands/tts';
+import { haptic } from '../lib/haptic';
  
 interface SpeechRecognitionEvent extends Event {
   readonly results: SpeechRecognitionResultList;
@@ -172,7 +173,13 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
       const outcome = await executeCommand(cmd, navigate, onExport, toggleTheme, setSearchQuery);
       setResult(outcome);
       setState(outcome.success ? 'success' : 'error');
-      if (outcome.success) pushHistory(cmd, outcome);
+      
+      if (outcome.success) {
+        haptic.success();
+        pushHistory(cmd, outcome);
+      } else {
+        haptic.error();
+      }
 
       // TTS readback
       const ttsText = outcome.message.replace(/[✅📄📍❓↩💰💳🏦📈🎯🔔]/gu, '').trim();

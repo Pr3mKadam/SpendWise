@@ -37,9 +37,10 @@ interface MainShellProps {
   config:     SpendWiseConfig | null;
   setConfig:  (config: SpendWiseConfig) => void;
   userId:     string | null;
+  initialView?: AppView;
 }
 
-export function MainShell({ config, setConfig, userId }: MainShellProps) {
+export function MainShell({ config, setConfig, userId, initialView = 'dashboard' }: MainShellProps) {
   useAutomations();
   const { user } = useAuth();
 
@@ -73,7 +74,7 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
   const [showCategoriesModal, setShowCategoriesModal] = useState(false);
   const [showParentalGate, setShowParentalGate]     = useState(false);
   const [showCommandPalette, setShowCommandPalette] = useState(false);
-  const [activeView, setActiveView]               = useState<AppView>('dashboard');
+  const [activeView, setActiveView]               = useState<AppView>(initialView);
   const [voiceSearchQuery, setVoiceSearchQuery]     = useState<string>('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
@@ -103,6 +104,14 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
   }, []);
+
+  // Sync URL with active view
+  useEffect(() => {
+    const path = activeView === 'dashboard' ? '/' : `/${activeView}`;
+    if (window.location.pathname !== path) {
+      window.history.pushState(null, '', path);
+    }
+  }, [activeView]);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -498,6 +507,8 @@ export function MainShell({ config, setConfig, userId }: MainShellProps) {
             showInstall={!!deferredPrompt}
             onInstall={handleInstallClick}
             config={config}
+            theme={theme}
+            onToggleTheme={toggleTheme}
           />
 
           <div className="flex-1 flex flex-col min-w-0">

@@ -61,10 +61,12 @@ const CATEGORY_MAP: Record<string, string> = {
   rent: 'Housing', emi: 'EMI', loan: 'EMI', shopping: 'Shopping', medical: 'Health',
   entertainment: 'Entertainment', utilities: 'Utilities', bills: 'Utilities',
   salary: 'Income', investment: 'Investment', savings: 'Savings',
+  burget: 'Budget', budget: 'Budget',
 };
 
 export function normalizeCategory(raw: string): string {
   const lower = raw.toLowerCase().trim();
+  if (lower === 'budget' || lower === 'burget') return 'Miscellaneous';
   return CATEGORY_MAP[lower] || raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
 }
 

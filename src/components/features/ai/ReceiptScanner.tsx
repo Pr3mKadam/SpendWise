@@ -99,7 +99,9 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                 </div>
                 <div>
                   <h3 className="font-bold text-[var(--text-primary)]">AI Receipt Scanner</h3>
-                  <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-wider">Local-First OCR</p>
+                  <p className="text-[10px] text-teal-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                    <Sparkles size={10} className="fill-current" /> Powered by Gemini AI
+                  </p>
                 </div>
               </div>
               <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-[var(--text-muted)]">
@@ -221,7 +223,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
             
             <div className="px-8 pb-8 flex items-center gap-3 text-[10px] text-[var(--text-muted)]">
               <CheckCircle2 size={12} className="text-teal-500" />
-              <span>Processed locally via Tesseract Neural Engine</span>
+              <span>Processed securely via SpendWise Cloud (Gemini 1.5)</span>
             </div>
           </motion.div>
         </div>

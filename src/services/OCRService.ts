@@ -50,20 +50,36 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
   }
 
   const data = await response.json();
+  
+  if (!data.candidates || data.candidates.length === 0 || !data.candidates[0].content || !data.candidates[0].content.parts) {
+    console.error('Gemini API structure mismatch:', data);
+    throw new Error('Receipt analysis returned no results. Please ensure the image is clear.');
+  }
+
   const text = data.candidates[0].content.parts[0].text;
   
   try {
-    const result = JSON.parse(text);
+    // Gemini 1.5 Pro/Flash in JSON mode might still wrap in backticks sometimes if not careful
+    const cleanJson = text.replace(/```json|```/g, '').trim();
+    const result = JSON.parse(cleanJson);
+    
     return {
       merchant: result.merchant || 'Unknown Merchant',
-      amount: result.amount,
+      amount: result.amount || 0,
       date: result.date || new Date().toISOString().split('T')[0],
-      category: result.category,
+      category: result.category || 'Other',
       rawText: result.rawText || text
     };
   } catch (e) {
-    console.error('Failed to parse Gemini response as JSON:', text);
-    throw new Error('Invalid response from Gemini');
+    console.warn('Failed to parse Gemini response as JSON, falling back to regex:', text);
+    // Simple regex fallback for common fields if JSON parsing fails
+    const amountMatch = text.match(/(?:total|amount|sum|due)\s*[:$₹Rs]?\s*(\d+[.,]\d{2})/i);
+    return {
+      merchant: 'Receipt',
+      amount: amountMatch ? parseFloat(amountMatch[1].replace(',', '.')) : 0,
+      date: new Date().toISOString().split('T')[0],
+      rawText: text
+    };
   }
 };
 

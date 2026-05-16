@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { SpendWiseConfig } from './components/features/onboarding/OnboardingModal';
 import { useAuth } from './hooks/useAuth';
 import AuthView from './components/views/AuthView';
 import { MainShell } from './components/layout/MainShell';
+import { AppView } from './types';
 import { STORAGE_KEYS, FINANCE_DEFAULTS } from './constants';
 
 function LoadingScreen() {
@@ -61,7 +63,52 @@ function parseConfig(raw: string | null): SpendWiseConfig {
   }
 }
 
-function AppAuthenticated() {
+export default function App() {
+  const { user, authReady } = useAuth();
+  
+  const [path] = useState(window.location.pathname);
+  const validViews: AppView[] = [
+    'dashboard', 'transactions', 'budget', 'analytics', 'history', 
+    'settings', 'goals', 'quests', 'inventory', 'shop', 'badges', 
+    'shared', 'sync', 'profile', 'parental', 'portfolio', 
+    'subscriptions', 'advisor', 'education', 'reports'
+  ];
+  const currentPath = path.replace('/', '') as AppView;
+  const initialView: AppView = validViews.includes(currentPath) ? currentPath : 'dashboard';
+  
+  if (path !== '/' && path !== '/index.html' && !validViews.includes(currentPath)) {
+    return <NotFoundScreen />;
+  }
+
+  if (!authReady) {
+    return <LoadingScreen />;
+  }
+
+  return (
+    <div className="app-container">
+      {user ? (
+        <AppAuthenticated initialView={initialView} />
+      ) : (
+        <AuthView />
+      )}
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          style: {
+            background: 'var(--surface-card)',
+            color: 'var(--text-primary)',
+            borderRadius: '16px',
+            border: '1px solid var(--border)',
+            fontSize: '14px',
+            fontWeight: 500,
+          }
+        }}
+      />
+    </div>
+  );
+}
+
+function AppAuthenticated({ initialView }: { initialView: AppView }) {
   const { user } = useAuth();
   const userId = user ? user.id : "guest";
 
@@ -78,19 +125,5 @@ function AppAuthenticated() {
   };
 
   if (config === null) return <LoadingScreen />;
-  return <MainShell config={config} setConfig={setConfig} userId={userId} />;
-}
-
-export default function App() {
-  const { user, authReady } = useAuth();
-  
-  const [path] = useState(window.location.pathname);
-  if (path !== '/' && path !== '/index.html') {
-    return <NotFoundScreen />;
-  }
-
-  if (!authReady) return <LoadingScreen />;
-  if (!user) return <AuthView />;
-
-  return <AppAuthenticated />;
+  return <MainShell config={config} setConfig={setConfig} userId={userId} initialView={initialView} />;
 }

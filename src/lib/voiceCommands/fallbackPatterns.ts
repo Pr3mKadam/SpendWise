@@ -52,13 +52,23 @@ export const FALLBACK_PATTERNS: Pattern[] = [
   // ── BUDGET UPDATE ───────────────────────────────────────────────────────────
   {
     intent: 'BUDGET_UPDATE',
-    regex: /\b(increase|decrease|change|set|update|raise|lower|reduce|modify)\b.*\b(budget|limit|spending)\b/i,
+    // Matches "set budget for food to 500" OR "500 on budget for food" OR "burget 500 for food"
+    regex: /\b(increase|decrease|change|set|update|raise|lower|reduce|modify|create|make|add|burget|budget)\b.*\b(\d+)\b/i,
     extract: (_match, transcript, { normalizeCategory, parseIndianNumber }) => {
-      const catMatch = transcript.match(/\b(?:budget|limit|spending)\b\s+(?:for|of|on)?\s+(\w+)/i);
-      const category = catMatch ? normalizeCategory(catMatch[1]) : undefined;
+      const catMatch = transcript.match(/\b(?:budget|limit|spending|burget|for|on|of)\b\s+([a-z]+)/i);
+      // Avoid capturing the action verb as category
+      const actionVerbs = ['increase','decrease','change','set','update','raise','lower','reduce','modify','create','make','add'];
+      let categoryRaw = catMatch ? catMatch[1] : undefined;
+      if (categoryRaw && actionVerbs.includes(categoryRaw.toLowerCase())) {
+        const secondMatch = transcript.match(new RegExp(`\\b${categoryRaw}\\b\\s+(?:for|on|of|to)?\\s+([a-z]+)`, 'i'));
+        categoryRaw = secondMatch ? secondMatch[1] : categoryRaw;
+      }
+      
+      const category = categoryRaw ? normalizeCategory(categoryRaw) : undefined;
       const fromTo = transcript.match(/from\s+([\d,.a-z\s]+(?:lakh|crore|k)?)\s+to\s+([\d,.a-z\s]+(?:lakh|crore|k)?)/i);
-      const toOnly = transcript.match(/to\s+([\d,.a-z\s]+(?:lakh|crore|k|hundred)?)/i);
-      const amount = fromTo ? parseIndianNumber(fromTo[2]) ?? undefined : toOnly ? parseIndianNumber(toOnly[1]) ?? undefined : undefined;
+      const toOnly = transcript.match(/(?:to|of|is|at|set|burget|budget)\s+([\d,.a-z\s]+(?:lakh|crore|k|hundred)?)/i);
+      const amountMatch = transcript.match(/([\d,.]+(?:\s*(?:lakh|crore|k|thousand|hundred))?)/i);
+      const amount = fromTo ? parseIndianNumber(fromTo[2]) ?? undefined : toOnly ? parseIndianNumber(toOnly[1]) ?? undefined : (amountMatch ? parseIndianNumber(amountMatch[1]) ?? undefined : undefined);
       return { category, amount };
     },
     summarize: (e) => `Update ${e.category || 'budget'} limit to ₹${(e.amount ?? 0).toLocaleString('en-IN')}`,
@@ -68,12 +78,13 @@ export const FALLBACK_PATTERNS: Pattern[] = [
   // ── TRANSACTION ADD ─────────────────────────────────────────────────────────
   {
     intent: 'TRANSACTION_ADD',
-    regex: /\b(spent|paid|bought|added|expense|received|earned|salary|income)\b/i,
+    // Now even more flexible: matches "200 on food" or "paid 200" or "food 200"
+    regex: /\b(spent|paid|bought|added|expense|received|earned|salary|income|got)\b|\b(\d+)\b\s*(?:on|at|for|to|spent|paid)|\b([a-z]+)\b\s+(\d+)\b/i,
     extract: (_match, transcript, { normalizeCategory, parseIndianNumber }) => {
       const isCredit = /\b(received|earned|salary|income|got)\b/i.test(transcript);
       const amountMatch = transcript.match(/([\d,.]+(?:\s*(?:lakh|crore|k|thousand|hundred))?)/i);
       const amount = amountMatch ? parseIndianNumber(amountMatch[1]) ?? undefined : undefined;
-      const onMatch = transcript.match(/(?:on|at|for|from)\s+([\w\s]+?)(?:\s+(?:today|yesterday|last|this|for|from|in)|\.|$)/i);
+      const onMatch = transcript.match(/(?:on|at|for|from|to|spent|paid)\s+([a-z\s]+?)(?:\s+(?:today|yesterday|last|this|for|from|in|of)|\.|$)/i);
       const name = onMatch ? onMatch[1].trim() : (isCredit ? 'Income' : undefined);
       const category = isCredit ? 'Income' : (name ? normalizeCategory(name) : 'Miscellaneous');
       const period = /yesterday/i.test(transcript) ? 'yesterday' : /today/i.test(transcript) ? 'today' : undefined;

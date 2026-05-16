@@ -16,6 +16,8 @@ interface SidebarProps {
   showInstall?:    boolean;
   onInstall?:      () => void;
   config:          SpendWiseConfig | null;
+  theme?:          'light' | 'dark';
+  onToggleTheme?:  () => void;
 }
 
 const ALL_NAV_ITEMS = [
@@ -35,7 +37,7 @@ const ALL_NAV_ITEMS = [
   { id: 'reports'       as AppView, label: 'Reports',          icon: FileText },
 ];
 
-export default function Sidebar({ activeView, onViewChange, overBudgetCount, config, showInstall, onInstall }: SidebarProps) {
+export default function Sidebar({ activeView, onViewChange, overBudgetCount, config, showInstall, onInstall, theme, onToggleTheme }: SidebarProps) {
   const { signOut } = useAuth();
   const store = useStore();
   const settings = store.parentalState;
@@ -345,7 +347,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
                 return (
                   <button
                     key={item.id}
-                    onClick={() => onViewChange(item.id)}
+                    onClick={() => {
+                      haptic.light();
+                      onViewChange(item.id);
+                    }}
                     className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-left min-h-[44px]`}
                     style={{
                       background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
@@ -360,7 +365,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
                     {item.id === 'budget' && overBudgetCount > 0 && (
                       <span
                         className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[10px] font-bold px-1"
-                        style={{ background: 'rgba(239,68,68,0.9)', color: '#fff' }}
+                        style={{ background: 'var(--red)', color: '#fff' }}
                       >
                         {overBudgetCount}
                       </span>
@@ -370,6 +375,24 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
               })}
             </div>
             <div className="p-4 border-t border-white/10 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
+              {/* Theme Toggle (Mobile Only) */}
+              <button
+                onClick={() => {
+                  haptic.medium();
+                  onToggleTheme?.();
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] bg-white/5 mb-2"
+                style={{ color: '#ffffff', fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 500 }}
+              >
+                <div className="flex items-center gap-3">
+                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                  <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                </div>
+                <div className="w-10 h-5 rounded-full bg-white/10 relative">
+                   <div className={`absolute top-1 w-3 h-3 rounded-full bg-[var(--teal)] transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`} />
+                </div>
+              </button>
+
               {showInstall && (
                 <motion.button
                   whileTap={{ scale: 0.95 }}
@@ -391,7 +414,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
                 </motion.button>
               )}
               <button
-                onClick={() => onViewChange('profile')}
+                onClick={() => {
+                  haptic.light();
+                  onViewChange('profile');
+                }}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl min-h-[48px]`}
                 style={{ 
                   background: activeView === 'profile' ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
@@ -405,7 +431,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
                 <span>Profile & Settings</span>
               </button>
               <button
-                onClick={signOut}
+                onClick={() => {
+                  haptic.light();
+                  signOut();
+                }}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-teal-500/10 min-h-[48px]"
                 style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 500 }}
               >
