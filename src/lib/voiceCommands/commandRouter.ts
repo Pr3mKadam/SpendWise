@@ -561,6 +561,129 @@ export async function executeCommand(
       return { success: true, message: `Attempting to undo the last action...`, undoable: false };
     }
 
+    // ── PORTFOLIO ADJUST ──────────────────────────────────────────────────────
+    case 'PORTFOLIO_ADJUST': {
+      const { ticker, name, amount } = command.entities;
+      const target = ticker || name;
+      if (!target) return { success: false, message: 'Which asset should I update?' };
+      if (amount === undefined) return { success: false, message: `What should I set the value of ${target} to?` };
+      
+      const asset = store.assets.find(a => a.name.toLowerCase().includes(target.toLowerCase()));
+      if (!asset) return { success: false, message: `I couldn't find an asset named ${target}.` };
+      
+      store.updateAsset(asset.id, { balance: amount });
+      return { success: true, message: `✅ Updated ${asset.name} value to ₹${amount.toLocaleString('en-IN')}.`, undoable: true };
+    }
+
+    // ── BUDGET RESET ──────────────────────────────────────────────────────────
+    case 'BUDGET_RESET': {
+      store.resetBudgets();
+      return { success: true, message: `🗑️ All budgets have been reset.`, undoable: true };
+    }
+
+    // ── BUDGET SETTINGS UPDATE ────────────────────────────────────────────────
+    case 'BUDGET_SETTINGS_UPDATE': {
+      const { period, settingValue } = command.entities;
+      if (period) {
+        if (['weekly', 'biweekly', 'monthly'].includes(period)) {
+          store.updateBudgetSettings({ period: period as 'weekly' | 'biweekly' | 'monthly' });
+          return { success: true, message: `✅ Budget period set to ${period}.`, undoable: true };
+        }
+      } else if (settingValue) {
+        const rollover = settingValue === 'on';
+        store.updateBudgetSettings({ rolloverEnabled: rollover });
+        return { success: true, message: `✅ Budget rollover ${rollover ? 'enabled' : 'disabled'}.`, undoable: true };
+      }
+      return { success: false, message: 'I couldn\'t understand the budget setting you want to change.' };
+    }
+
+    // ── TRANSACTION BULK DELETE ───────────────────────────────────────────────
+    case 'TRANSACTION_BULK_DELETE': {
+      const { category, period } = command.entities;
+      if (!category) return { success: false, message: 'Which category of transactions should I delete?' };
+      
+      const transactions = store.transactions;
+      const now = new Date();
+      
+      const toDelete = transactions.filter(t => {
+        if (t.category.toLowerCase() !== category.toLowerCase()) return false;
+        if (period) {
+          const tDate = new Date(t.date);
+          if (period === 'month' && (tDate.getMonth() !== now.getMonth() || tDate.getFullYear() !== now.getFullYear())) return false;
+          if (period === 'today' && t.date !== todayISO()) return false;
+        }
+        return true;
+      });
+      
+      if (toDelete.length === 0) return { success: false, message: `No transactions found to delete for ${category}.` };
+      
+      store.bulkDeleteTransactions(toDelete.map(t => t.id));
+      return { success: true, message: `🗑️ Deleted ${toDelete.length} transactions in ${category}.`, undoable: true };
+    }
+
+    // ── TRANSACTION BULK UPDATE ───────────────────────────────────────────────
+    case 'TRANSACTION_BULK_UPDATE': {
+      const { category, name } = command.entities; // "Change all {category} to {name}"
+      if (!category || !name) return { success: false, message: 'Please specify the old category and the new category.' };
+      
+      // Need to find matching old category to exactly match SpendWise categories
+      // For simplicity, we just pass string values, financeSlice accepts string
+      store.bulkReassignCategory(category, name);
+      return { success: true, message: `🔄 Reassigned all ${category} transactions to ${name}.`, undoable: true };
+    }
+
+    // ── PARENTAL RESTRICT CATEGORY ────────────────────────────────────────────
+    case 'PARENTAL_RESTRICT_CATEGORY': {
+      const { category } = command.entities;
+      if (!category) return { success: false, message: 'Which category should I restrict?' };
+      store.toggleRestrictedCategory(category as Category);
+      return { success: true, message: `🛡️ Toggled restriction for ${category} in teen mode.`, undoable: true };
+    }
+
+    // ── PARENTAL APPROVE TX ───────────────────────────────────────────────────
+    case 'PARENTAL_APPROVE_TX': {
+      const { amount, name } = command.entities;
+      const pending = store.parentalState.pendingTransactions;
+      if (pending.length === 0) return { success: false, message: 'There are no pending transactions to approve.' };
+      
+      let targetTx = pending[0]; // Default to the first one
+      if (amount || name) {
+        const found = pending.find(t => 
+          (amount && t.amount === amount) || 
+          (name && t.merchant.toLowerCase().includes(name.toLowerCase()))
+        );
+        if (found) targetTx = found;
+      }
+      
+      store.approveTransaction(targetTx.id);
+      return { success: true, message: `✅ Approved transaction for ${targetTx.merchant}.`, undoable: false };
+    }
+
+    // ── PARENTAL DENY TX ──────────────────────────────────────────────────────
+    case 'PARENTAL_DENY_TX': {
+      const { amount, name } = command.entities;
+      const pending = store.parentalState.pendingTransactions;
+      if (pending.length === 0) return { success: false, message: 'There are no pending transactions to deny.' };
+      
+      let targetTx = pending[0];
+      if (amount || name) {
+        const found = pending.find(t => 
+          (amount && t.amount === amount) || 
+          (name && t.merchant.toLowerCase().includes(name.toLowerCase()))
+        );
+        if (found) targetTx = found;
+      }
+      
+      store.denyTransaction(targetTx.id);
+      return { success: true, message: `🚫 Denied transaction for ${targetTx.merchant}.`, undoable: false };
+    }
+
+    // ── SESSION LOCK ──────────────────────────────────────────────────────────
+    case 'SESSION_LOCK': {
+      store.lockSession();
+      return { success: true, message: `🔒 Session locked.`, undoable: false };
+    }
+
     // ── HELP ──────────────────────────────────────────────────────────────────
     case 'HELP': {
       return {
