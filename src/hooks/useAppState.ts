@@ -79,6 +79,7 @@ export function useAppState(config: SpendWiseConfig | null) {
       periodLabel,
       updatePeriod,
       toggleRollover,
+      removeBudget: budgetState.removeBudget,
     },
     goalsState,
     categoryState,

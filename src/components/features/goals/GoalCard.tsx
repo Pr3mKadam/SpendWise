@@ -126,7 +126,7 @@ export function GoalCard({
             </div>
           </div>
 
-          <div className="flex flex-shrink-0 items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+          <div className="flex flex-shrink-0 items-center gap-1.5 opacity-100 md:opacity-0 transition-opacity md:group-hover:opacity-100">
             <button onClick={onEdit}
               className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors"
               style={{ background: '#f5f7fa', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>

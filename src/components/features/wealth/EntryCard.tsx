@@ -66,7 +66,7 @@ export function EntryCard({
 
       <button
         onClick={onDelete}
-        className="w-8 h-8 flex items-center justify-center rounded-xl opacity-0 group-hover:opacity-100 transition-all shrink-0"
+        className="w-8 h-8 flex items-center justify-center rounded-xl opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all shrink-0"
         style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}
       >
         <Trash2 size={14} />

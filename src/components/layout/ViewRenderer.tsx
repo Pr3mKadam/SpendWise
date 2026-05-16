@@ -150,6 +150,7 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               periodLabel={budgetState.periodLabel}
               rolloverEnabled={budgetState.budgetSettings.rolloverEnabled}
               onUpdateLimit={budgetState.setBudget}
+              onDeleteLimit={budgetState.removeBudget}
               onResetLimits={budgetState.resetLimits}
               onChangePeriod={budgetState.updatePeriod}
               onToggleRollover={budgetState.toggleRollover}

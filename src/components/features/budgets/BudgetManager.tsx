@@ -19,6 +19,7 @@ interface BudgetManagerProps {
   periodLabel:             string;
   rolloverEnabled:         boolean;
   onUpdateLimit:           (category: Category, limit: number) => void;
+  onDeleteLimit:           (category: Category) => void;
   onResetLimits:           () => void;
   onChangePeriod:          (p: BudgetPeriod) => void;
   onToggleRollover:        () => void;
@@ -30,7 +31,7 @@ interface BudgetManagerProps {
 export default function BudgetManager({
   budgets, totalBudgeted, totalSpentAgainstBudget, overBudgetCount,
   period, periodLabel, rolloverEnabled,
-  onUpdateLimit, onResetLimits, onChangePeriod, onToggleRollover,
+  onUpdateLimit, onDeleteLimit, onResetLimits, onChangePeriod, onToggleRollover,
   onManageCategories, currency = '$', transactions = [],
 }: BudgetManagerProps) {
   const {
@@ -392,6 +393,7 @@ export default function BudgetManager({
               key={budget.category}
               budget={budget}
               onUpdate={v => onUpdateLimit(budget.category, v)}
+              onDelete={() => onDeleteLimit(budget.category)}
               currency={currency}
               rolloverEnabled={rolloverEnabled}
             />

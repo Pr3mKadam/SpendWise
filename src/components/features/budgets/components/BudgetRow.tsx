@@ -11,8 +11,8 @@ const STATUS_CONFIG: Record<BudgetStatus, { color: string; label: string; bg: st
   danger:  { color: '#ef4444', label: 'Over Budget', bg: 'rgba(239,68,68,0.1)',  text: '#ef4444', icon: AlertTriangle },
 };
 
-function BudgetEditRow({ budget, onSave, onCancel, currency }: {
-  budget: Budget; onSave: (v: number) => void; onCancel: () => void; currency: string;
+function BudgetEditRow({ budget, onSave, onCancel, onDelete, currency }: {
+  budget: Budget; onSave: (v: number) => void; onCancel: () => void; onDelete: () => void; currency: string;
 }) {
   const [val, setVal] = useState(String(budget.baseLimit));
   const parsed  = parseFloat(val);
@@ -37,12 +37,18 @@ function BudgetEditRow({ budget, onSave, onCancel, currency }: {
         style={{ background: 'var(--bg)', color: 'var(--text-secondary)', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
         Cancel
       </button>
+      <div style={{ flex: 1 }} />
+      <button onClick={onDelete}
+        className="rounded-lg px-3 py-2 text-xs font-semibold flex items-center gap-1 transition-colors"
+        style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-inter)' }}>
+        Delete
+      </button>
     </div>
   );
 }
 
-export function BudgetRow({ budget, onUpdate, currency, rolloverEnabled }: {
-  budget: Budget; onUpdate: (l: number) => void; currency: string; rolloverEnabled: boolean;
+export function BudgetRow({ budget, onUpdate, onDelete, currency, rolloverEnabled }: {
+  budget: Budget; onUpdate: (l: number) => void; onDelete: () => void; currency: string; rolloverEnabled: boolean;
 }) {
   const { mergedColors, mergedIcons, categoryLimits } = useCategories();
   const [editing, setEditing] = useState(false);
@@ -151,6 +157,7 @@ export function BudgetRow({ budget, onUpdate, currency, rolloverEnabled }: {
           budget={budget}
           onSave={v => { onUpdate(v); setEditing(false); }}
           onCancel={() => setEditing(false)}
+          onDelete={() => { onDelete(); setEditing(false); }}
           currency={currency}
         />
       )}

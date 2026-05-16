@@ -90,6 +90,10 @@ export const parseMasterVoiceWithGemini = async (text: string, today: string): P
             Today's date is ${today}.
             Command: "${text}"
 
+            CRITICAL RULES:
+            - If the user explicitly says "delete", "remove", "clear", or "cancel" for ANY entity (budget, transaction, liability, portfolio asset, goal, subscription, or recurring transaction), the intent MUST be the respective *_DELETE intent (e.g., BUDGET_DELETE, GOAL_DELETE, LIABILITY_DELETE, PORTFOLIO_DELETE, SUBSCRIPTION_DELETE, RECURRING_DELETE, TRANSACTION_DELETE) and NOT an *_ADD or *_UPDATE intent.
+            - For example: "delete budget 200" -> BUDGET_DELETE, "remove goal travel" -> GOAL_DELETE, "cancel subscription netflix" -> SUBSCRIPTION_DELETE.
+
             Return a valid JSON object matching this schema exactly:
             {
               "intent": "BUDGET_UPDATE" | "BUDGET_DELETE" | "BUDGET_RESET" | "BUDGET_SETTINGS_UPDATE" | "TRANSACTION_ADD" | "TRANSACTION_UPDATE" | "TRANSACTION_DELETE" | "TRANSACTION_BULK_DELETE" | "TRANSACTION_BULK_UPDATE" | "LIABILITY_ADD" | "LIABILITY_PAY" | "LIABILITY_DELETE" | "PORTFOLIO_UPDATE" | "PORTFOLIO_ADJUST" | "PORTFOLIO_DELETE" | "GOAL_ADD" | "GOAL_UPDATE" | "GOAL_DELETE" | "SUBSCRIPTION_ADD" | "SUBSCRIPTION_UPDATE" | "SUBSCRIPTION_DELETE" | "RECURRING_ADD" | "RECURRING_DELETE" | "REPORT_EXPORT" | "QUERY_REPORT" | "BATCH_TRANSACTIONS" | "SETTINGS_TOGGLE" | "PARENTAL_TOGGLE" | "PARENTAL_LIMIT_SET" | "PARENTAL_RESTRICT_CATEGORY" | "PARENTAL_APPROVE_TX" | "PARENTAL_DENY_TX" | "SESSION_LOCK" | "DATA_QUERY" | "QUEST_ACTION" | "QUEST_CLAIM" | "SEARCH_ACTION" | "NAVIGATE" | "UNDO_ACTION" | "HELP" | "UNKNOWN",

@@ -129,7 +129,15 @@ export default function HistoryViewMobile({
                     </p>
                   </div>
                 </div>
-                <div className="text-[var(--text-dim)] shrink-0">
+                <div className="flex items-center gap-2 text-[var(--text-dim)] shrink-0">
+                  {onDelete && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); haptic.medium(); onDelete(tx.id); }}
+                      className="p-1.5 rounded-lg active:bg-red-500/10 active:text-red-500 transition-colors"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  )}
                   <ChevronRight size={16} />
                 </div>
               </div>
