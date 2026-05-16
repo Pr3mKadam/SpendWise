@@ -5,20 +5,35 @@
 
 export type VoiceIntent =
   | 'BUDGET_UPDATE'
+  | 'BUDGET_DELETE'
   | 'TRANSACTION_ADD'
+  | 'TRANSACTION_UPDATE'
+  | 'TRANSACTION_DELETE'
   | 'LIABILITY_ADD'
+  | 'LIABILITY_PAY'
+  | 'LIABILITY_DELETE'
   | 'PORTFOLIO_UPDATE'
+  | 'PORTFOLIO_DELETE'
   | 'GOAL_ADD'
+  | 'GOAL_UPDATE'
+  | 'GOAL_DELETE'
   | 'SUBSCRIPTION_ADD'
+  | 'SUBSCRIPTION_UPDATE'
+  | 'SUBSCRIPTION_DELETE'
+  | 'RECURRING_ADD'
+  | 'RECURRING_DELETE'
   | 'REPORT_EXPORT'
   | 'QUERY_REPORT'
   | 'BATCH_TRANSACTIONS'
   | 'SETTINGS_TOGGLE'
+  | 'PARENTAL_TOGGLE'
+  | 'PARENTAL_LIMIT_SET'
   | 'DATA_QUERY'
-  | 'TRANSACTION_DELETE'
   | 'QUEST_ACTION'
+  | 'QUEST_CLAIM'
   | 'SEARCH_ACTION'
   | 'NAVIGATE'
+  | 'UNDO_ACTION'
   | 'HELP'
   | 'UNKNOWN';
 
@@ -37,6 +52,7 @@ export type AppView =
 export interface VoiceEntities {
   category?: string;       // "food", "transport", "fuel"
   amount?: number;         // 1200, 200000
+  targetAmount?: number;   // for goal deposits, liability payments
   previousAmount?: number; // for "from X to Y" patterns
   name?: string;           // merchant, liability name, goal name
   period?: string;         // "yesterday", "today", "this month"

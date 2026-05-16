@@ -92,17 +92,20 @@ export const parseMasterVoiceWithGemini = async (text: string, today: string): P
 
             Return a valid JSON object matching this schema exactly:
             {
-              "intent": "BUDGET_UPDATE" | "TRANSACTION_ADD" | "LIABILITY_ADD" | "PORTFOLIO_UPDATE" | "GOAL_ADD" | "SUBSCRIPTION_ADD" | "REPORT_EXPORT" | "QUERY_REPORT" | "BATCH_TRANSACTIONS" | "SETTINGS_TOGGLE" | "DATA_QUERY" | "TRANSACTION_DELETE" | "QUEST_ACTION" | "SEARCH_ACTION" | "NAVIGATE" | "HELP" | "UNKNOWN",
+              "intent": "BUDGET_UPDATE" | "BUDGET_DELETE" | "TRANSACTION_ADD" | "TRANSACTION_UPDATE" | "TRANSACTION_DELETE" | "LIABILITY_ADD" | "LIABILITY_PAY" | "LIABILITY_DELETE" | "PORTFOLIO_UPDATE" | "PORTFOLIO_DELETE" | "GOAL_ADD" | "GOAL_UPDATE" | "GOAL_DELETE" | "SUBSCRIPTION_ADD" | "SUBSCRIPTION_UPDATE" | "SUBSCRIPTION_DELETE" | "RECURRING_ADD" | "RECURRING_DELETE" | "REPORT_EXPORT" | "QUERY_REPORT" | "BATCH_TRANSACTIONS" | "SETTINGS_TOGGLE" | "PARENTAL_TOGGLE" | "PARENTAL_LIMIT_SET" | "DATA_QUERY" | "QUEST_ACTION" | "QUEST_CLAIM" | "SEARCH_ACTION" | "NAVIGATE" | "UNDO_ACTION" | "HELP" | "UNKNOWN",
               "entities": {
                 "category": "string (e.g. Food, Transport, Shopping)",
                 "amount": "number (extract amount in INR, handle lakh/crore)",
+                "targetAmount": "number (extract target amount or payment amount)",
                 "name": "string (merchant name, liability name, goal name)",
                 "period": "string (e.g. yesterday, today, month, week)",
                 "view": "string (e.g. dashboard, analytics, budget, goals, shared, history, sync, profile, portfolio, subscriptions, UNDO)",
                 "type": "debit" | "credit",
+                "frequency": "daily | weekly | monthly | annual",
                 "settingKey": "theme" | "privacy" | "notifications" | "biometric" | "shake" | "currency",
                 "settingValue": "on" | "off" | "toggle",
                 "searchQuery": "string (search term)",
+                "actionType": "string (e.g. start, check, claim)",
                 "items": [{"amount": "number", "category": "string", "name": "string"}] (for batch operations)
               },
               "confidence": "number between 0 and 1",

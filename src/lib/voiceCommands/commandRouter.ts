@@ -155,6 +155,29 @@ export async function executeCommand(
       };
     }
 
+    // ── BUDGET DELETE ─────────────────────────────────────────────────────────
+    case 'BUDGET_DELETE': {
+      const { category, amount } = command.entities;
+      let targetCategory = category;
+      
+      // If no category was explicitly mentioned, try to find a budget matching the amount
+      if (!targetCategory && amount) {
+        const matchingCategory = Object.keys(store.budgets).find(cat => store.budgets[cat] === amount);
+        if (matchingCategory) {
+          targetCategory = matchingCategory;
+        }
+      }
+
+      if (!targetCategory) return { success: false, message: 'Which budget category should I delete?' };
+      
+      store.removeBudget(targetCategory as string);
+      return {
+        success: true,
+        message: `✅ Deleted budget for ${targetCategory}.`,
+        undoable: true,
+      };
+    }
+
     // ── TRANSACTION ADD ───────────────────────────────────────────────────────
     case 'TRANSACTION_ADD': {
       const { amount, name, category, type, period } = command.entities;
@@ -323,6 +346,219 @@ export async function executeCommand(
         success: true, 
         message: `📊 ${pLabel} overview: You spent ₹${totalExpense.toLocaleString('en-IN')}${totalIncome > 0 ? ` and earned ₹${totalIncome.toLocaleString('en-IN')}` : ''}.` 
       };
+    }
+
+    // ── TRANSACTION UPDATE ────────────────────────────────────────────────────
+    case 'TRANSACTION_UPDATE': {
+      const { category, name } = command.entities;
+      const lastTx = store.transactions[store.transactions.length - 1];
+      if (!lastTx) return { success: false, message: "I couldn't find any recent transactions to update." };
+      if (!category) return { success: false, message: "What category should I change it to?" };
+      
+      store.updateTransactionCategory(lastTx.id, category as Category);
+      return { 
+        success: true, 
+        message: `🔄 Changed last transaction's category to ${category}.`,
+        undoable: true
+      };
+    }
+
+    // ── LIABILITY PAY ─────────────────────────────────────────────────────────
+    case 'LIABILITY_PAY': {
+      const { amount, name } = command.entities;
+      if (!amount || amount <= 0) return { success: false, message: 'How much did you pay?' };
+      if (!name) return { success: false, message: 'Which liability did you pay?' };
+      
+      const liability = store.liabilities.find(l => l.name.toLowerCase().includes(name.toLowerCase()));
+      if (!liability) return { success: false, message: `I couldn't find a liability named ${name}.` };
+      
+      store.updateLiability(liability.id, { balance: Math.max(0, liability.balance - amount) });
+      
+      // Also add a transaction for the payment
+      const tx: Transaction = {
+        id: shortId(),
+        merchant: `Payment to ${liability.name}`,
+        amount: amount,
+        type: 'debit',
+        category: 'Miscellaneous',
+        date: todayISO(),
+        description: `Voice payment`,
+        tags: ['voice', 'liability_payment'],
+      };
+      store.addTransaction(tx);
+      
+      return {
+        success: true,
+        message: `✅ Recorded ₹${amount.toLocaleString('en-IN')} payment towards ${liability.name}.`,
+        undoable: true,
+      };
+    }
+
+    // ── LIABILITY DELETE ──────────────────────────────────────────────────────
+    case 'LIABILITY_DELETE': {
+      const { name } = command.entities;
+      if (!name) return { success: false, message: 'Which liability should I delete?' };
+      const liability = store.liabilities.find(l => l.name.toLowerCase().includes(name.toLowerCase()));
+      if (!liability) return { success: false, message: `I couldn't find a liability named ${name}.` };
+      
+      store.deleteLiability(liability.id);
+      return { success: true, message: `🗑️ Deleted liability: ${liability.name}.`, undoable: true };
+    }
+
+    // ── PORTFOLIO DELETE ──────────────────────────────────────────────────────
+    case 'PORTFOLIO_DELETE': {
+      const { ticker, name } = command.entities;
+      const target = ticker || name;
+      if (!target) return { success: false, message: 'Which asset should I delete?' };
+      const asset = store.assets.find(a => a.name.toLowerCase().includes(target.toLowerCase()));
+      if (!asset) return { success: false, message: `I couldn't find an asset named ${target}.` };
+      
+      store.deleteAsset(asset.id);
+      return { success: true, message: `🗑️ Deleted asset: ${asset.name}.`, undoable: true };
+    }
+
+    // ── GOAL UPDATE ───────────────────────────────────────────────────────────
+    case 'GOAL_UPDATE': {
+      const { amount, targetAmount, name } = command.entities;
+      if (!name) return { success: false, message: 'Which goal should I update?' };
+      
+      const goal = store.assets.find(a => a.type === 'other' && a.name.toLowerCase().includes(name.toLowerCase()));
+      if (!goal) return { success: false, message: `I couldn't find a goal named ${name}.` };
+      
+      if (amount && amount > 0) {
+        // Adding to the goal balance
+        store.updateAsset(goal.id, { balance: goal.balance + amount });
+        
+        const tx: Transaction = {
+          id: shortId(),
+          merchant: `Deposit to ${goal.name}`,
+          amount: amount,
+          type: 'debit',
+          category: 'Miscellaneous',
+          date: todayISO(),
+          description: `Voice goal deposit`,
+          tags: ['voice', 'goal_deposit'],
+        };
+        store.addTransaction(tx);
+        
+        return { success: true, message: `✅ Added ₹${amount.toLocaleString('en-IN')} to ${goal.name}.`, undoable: true };
+      } else if (targetAmount && targetAmount > 0) {
+         // Changing the target amount? We don't have a target amount field in asset. We could return a message.
+         return { success: false, message: `I can add money to the goal, but changing the target isn't supported yet.` };
+      }
+      
+      return { success: false, message: `What amount should I add to ${name}?` };
+    }
+
+    // ── GOAL DELETE ───────────────────────────────────────────────────────────
+    case 'GOAL_DELETE': {
+      const { name } = command.entities;
+      if (!name) return { success: false, message: 'Which goal should I delete?' };
+      const goal = store.assets.find(a => a.type === 'other' && a.name.toLowerCase().includes(name.toLowerCase()));
+      if (!goal) return { success: false, message: `I couldn't find a goal named ${name}.` };
+      
+      store.deleteAsset(goal.id);
+      return { success: true, message: `🗑️ Deleted goal: ${goal.name}.`, undoable: true };
+    }
+
+    // ── SUBSCRIPTION UPDATE ───────────────────────────────────────────────────
+    case 'SUBSCRIPTION_UPDATE': {
+      const { name, amount, frequency } = command.entities;
+      if (!name) return { success: false, message: 'Which subscription should I update?' };
+      
+      const sub = store.subscriptions.find(s => s.merchant.toLowerCase().includes(name.toLowerCase()));
+      if (!sub) return { success: false, message: `I couldn't find a subscription for ${name}.` };
+      
+      store.updateSubscription(sub.merchant, {
+        avgAmount: amount || sub.avgAmount,
+        frequency: frequency || sub.frequency,
+      });
+      return { success: true, message: `🔄 Updated subscription: ${sub.merchant}.`, undoable: true };
+    }
+
+    // ── SUBSCRIPTION DELETE ───────────────────────────────────────────────────
+    case 'SUBSCRIPTION_DELETE': {
+      const { name } = command.entities;
+      if (!name) return { success: false, message: 'Which subscription should I delete?' };
+      
+      const sub = store.subscriptions.find(s => s.merchant.toLowerCase().includes(name.toLowerCase()));
+      if (!sub) return { success: false, message: `I couldn't find a subscription for ${name}.` };
+      
+      store.deleteSubscription(sub.merchant);
+      return { success: true, message: `🗑️ Deleted subscription: ${sub.merchant}.`, undoable: true };
+    }
+    
+    // ── RECURRING ADD ─────────────────────────────────────────────────────────
+    case 'RECURRING_ADD': {
+      const { amount, name, frequency, type } = command.entities;
+      if (!amount || amount <= 0) return { success: false, message: 'What is the recurring amount?' };
+      store.addRecurringTransaction({
+        id: shortId(),
+        amount: amount,
+        type: type || 'debit',
+        category: 'Miscellaneous',
+        merchant: name || 'Recurring Transaction',
+        frequency: frequency || 'monthly',
+        startDate: todayISO(),
+        lastProcessed: null
+      });
+      return {
+        success: true,
+        message: `✅ Recurring ${type === 'credit' ? 'income' : 'expense'} "${name || 'Transaction'}" of ₹${amount.toLocaleString('en-IN')}/${frequency || 'month'} added.`,
+        undoable: false,
+      };
+    }
+    
+    // ── RECURRING DELETE ──────────────────────────────────────────────────────
+    case 'RECURRING_DELETE': {
+      const { name } = command.entities;
+      if (!name) return { success: false, message: 'Which recurring transaction should I delete?' };
+      
+      const rt = store.recurringTransactions.find(r => r.merchant.toLowerCase().includes(name.toLowerCase()));
+      if (!rt) return { success: false, message: `I couldn't find a recurring transaction for ${name}.` };
+      
+      store.removeRecurringTransaction(rt.id);
+      return { success: true, message: `🗑️ Deleted recurring transaction: ${rt.merchant}.`, undoable: true };
+    }
+
+    // ── PARENTAL TOGGLE ───────────────────────────────────────────────────────
+    case 'PARENTAL_TOGGLE': {
+      const { settingValue } = command.entities;
+      if (settingValue === 'on') {
+        if (!store.parentalState.parentPinHash) {
+          return { success: false, message: `You need to set up a Parent PIN first in settings.` };
+        }
+        store.setTeenMode(true);
+        return { success: true, message: `🛡️ Teen mode enabled.` };
+      } else if (settingValue === 'off') {
+        store.setTeenMode(false);
+        store.unlockSession();
+        return { success: true, message: `🔓 Teen mode disabled.` };
+      }
+      return { success: false, message: `Do you want to turn teen mode on or off?` };
+    }
+
+    // ── PARENTAL LIMIT SET ────────────────────────────────────────────────────
+    case 'PARENTAL_LIMIT_SET': {
+      const { amount } = command.entities;
+      if (!amount || amount <= 0) return { success: false, message: 'What should the monthly limit be?' };
+      store.setMonthlyLimit(amount);
+      return { success: true, message: `🛡️ Monthly spending limit set to ₹${amount.toLocaleString('en-IN')}.`, undoable: true };
+    }
+    
+    // ── QUEST CLAIM ───────────────────────────────────────────────────────────
+    case 'QUEST_CLAIM': {
+      const { name } = command.entities;
+      const quest = store.quests?.find(q => !q.completed && q.progress >= 100 && (!name || q.title.toLowerCase().includes(name.toLowerCase())));
+      if (!quest) return { success: false, message: `I couldn't find any completed quests to claim right now.` };
+      
+      store.completeQuest(quest.id);
+      return { success: true, message: `🎉 Claimed reward for quest: ${quest.title}! You earned ${quest.xpReward} XP.`, undoable: false };
+    }
+
+    // ── UNDO ACTION ───────────────────────────────────────────────────────────
+    case 'UNDO_ACTION': {
+      return { success: true, message: `Attempting to undo the last action...`, undoable: false };
     }
 
     // ── HELP ──────────────────────────────────────────────────────────────────
