@@ -24,9 +24,13 @@ interface ProfileViewProps {
   addNotification?: (notif: any) => void;
 }
 
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import ProfileViewMobile from './ProfileViewMobile';
+
 export default function ProfileView({
   config, onUpdateConfig, onResetData, transactions, onNavigate, addNotification,
 }: ProfileViewProps) {
+  const isMobile = useIsMobile();
   const { isInstallable, isAppInstalled, triggerInstall, isIOS } = usePWAInstall();
   const { activeCurrency, baseCurrency } = useCurrency();
 
@@ -55,6 +59,71 @@ export default function ProfileView({
     { label: 'Location',                               value: location,    onChange: setLocation,    placeholder: 'e.g. San Francisco, CA' },
     { label: `Monthly Income Goal (${currency})`,      value: monthlyGoal, onChange: setMonthlyGoal, placeholder: 'e.g. 5000', type: 'number' },
   ];
+
+  if (isMobile) {
+    return (
+      <>
+        <ProfileViewMobile 
+          name={name}
+          avatar={avatar}
+          occupation={occupation}
+          location={location}
+          monthlyGoal={monthlyGoal}
+          currency={currency}
+          config={config}
+          onAvatarClick={() => avatarInputRef.current?.click()}
+          onNavigate={(view) => onNavigate?.(view)}
+          isAppInstalled={isAppInstalled}
+          isInstallable={isInstallable}
+          triggerInstall={triggerInstall}
+          transactionsCount={transactions.length}
+          profileForm={
+            <ProfileForm fields={profileFields} currency={currency} onSave={handleSave} showSavedMsg={showSavedMsg} />
+          }
+          currencySelector={
+            <CurrencySelector
+              activeCurrency={activeCurrency}
+              baseCurrency={baseCurrency}
+              onSelect={(code) => handleCurrencySelect(code as CurrencyCode)}
+            />
+          }
+          dataManagement={
+            <DataManagement
+              transactions={transactions}
+              onExportCSV={() => exportCSV(transactions)}
+              onOpenResetConfirm={() => setShowResetConfirm(true)}
+              onOpenSecureExport={() => setShowSecureExportModal(true)}
+              onOpenRestore={() => setShowRestoreModal(true)}
+              onRawDBExport={handleRawDBExport}
+              onRawDBImport={handleRawDBImport}
+              onImportTransactions={handleImportTransactions}
+            />
+          }
+          accessibility={
+            <AccessibilitySection
+              darkMode={darkMode} onDarkMode={handleDarkMode}
+              highContrast={highContrast} onHighContrast={toggleHighContrast}
+              hapticsEnabled={hapticsEnabled} onHaptics={toggleHaptics}
+              shakeEnabled={shakeEnabled} onShake={toggleShake}
+              biometricEnabled={biometricEnabled} onBiometric={toggleBiometric}
+              fontSize={fontSize} FONT_SIZES={FONT_SIZES} FONT_LABELS={FONT_LABELS} onFontSize={handleFontSize}
+            />
+          }
+          notifications={
+            <NotificationsSection
+              notifPermission={notifPermission}
+              onRequestPermission={requestNotifPermission}
+              onTestNotification={testNotification}
+            />
+          }
+        />
+        <input ref={avatarInputRef} type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
+        {showSecureExportModal && <SecureExportModal onClose={() => setShowSecureExportModal(false)} onExport={handleSecureExport} isExporting={isExporting} />}
+        {showRestoreModal      && <RestoreModal      onClose={() => setShowRestoreModal(false)}      onRestore={handleRestore}    isRestoring={isRestoring} />}
+        {showResetConfirm      && <ResetConfirmModal onClose={() => setShowResetConfirm(false)}       onConfirm={onResetData} />}
+      </>
+    );
+  }
 
   return (
     <div className="animate-fade-in-up max-w-[800px] mx-auto space-y-8">

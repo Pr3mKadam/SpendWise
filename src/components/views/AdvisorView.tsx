@@ -7,6 +7,8 @@ import { getSpendingPersonality } from '../../utils/insights/reporting';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import EducationCards from '../features/advisor/EducationCards';
 import { SpeechRecognition, SpeechRecognitionEvent } from '../../types/dom';
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import AdvisorViewMobile from './AdvisorViewMobile';
 
 const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';
 const MAX_HISTORY = 20;
@@ -59,6 +61,7 @@ const INITIAL_MESSAGE: Message = {
 };
 
 export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
+  const isMobile = useIsMobile();
   const { transactions, monthlyStats } = useTransactions();
   const { format } = useCurrency();
   const [input, setInput] = useState('');
@@ -229,6 +232,21 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
       }
     ]);
   };
+
+  if (isMobile) {
+    return (
+      <AdvisorViewMobile 
+        messages={messages}
+        onSend={handleSend}
+        isLoading={isLoading}
+        isListening={isListening}
+        toggleListening={toggleListening}
+        onClearChat={handleClearChat}
+        monthlyStats={monthlyStats}
+        dynamicQuickActions={dynamicQuickActions}
+      />
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 max-w-7xl mx-auto h-[calc(100vh-140px)]">

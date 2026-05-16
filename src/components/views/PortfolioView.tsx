@@ -29,7 +29,11 @@ interface PortfolioViewProps {
   config: SpendWiseConfig | null;
 }
 
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import PortfolioViewMobile from './PortfolioViewMobile';
+
 export default function PortfolioView({ currency = '₹', financeState, config }: PortfolioViewProps) {
+  const isMobile = useIsMobile();
   const {
     assets, liabilities,
     totalAssets, totalLiabilities, netWorth,
@@ -53,6 +57,41 @@ export default function PortfolioView({ currency = '₹', financeState, config }
   const monthlyIncome = financeState?.monthlyStats?.totalIncome ?? 0;
   const monthlyExpenses = financeState?.monthlyStats?.totalExpenses ?? 0;
   const savingsRate = financeState?.monthlyStats?.savingsRate ?? 0;
+
+  if (isMobile) {
+    return (
+      <>
+        {modal && (
+          <AddModal
+            mode={modal}
+            currency={currency}
+            onAdd={modal === 'asset' ? addAsset : addLiability}
+            onClose={() => setModal(null)}
+            config={config}
+          />
+        )}
+        <PortfolioViewMobile 
+          netWorth={netWorth}
+          totalAssets={totalAssets}
+          totalLiabilities={totalLiabilities}
+          currency={currency}
+          assets={assets}
+          liabilities={liabilities}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onAddAsset={() => setModal('asset')}
+          onAddLiability={() => setModal('liability')}
+          onDeleteAsset={deleteAsset}
+          onDeleteLiability={deleteLiability}
+          allocationByType={allocationByType}
+          financeState={financeState}
+          config={config}
+          healthScore={healthScore}
+          savingsRate={savingsRate}
+        />
+      </>
+    );
+  }
 
   return (
     <>

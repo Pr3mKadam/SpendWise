@@ -11,6 +11,8 @@ import { SortBtn } from '../features/history/SortBtn';
 import { HistoryToolbar } from '../features/history/HistoryToolbar';
 import { DeleteConfirmModal } from '../features/history/DeleteConfirmModal';
 import { useHistoryView } from '../features/history/useHistoryView';
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import HistoryViewMobile from './HistoryViewMobile';
 
 // Re-export types for consumers that still import from this file
 export type { SortKey, SortDir, TypeFilter } from '../features/history/historyTypes';
@@ -35,6 +37,7 @@ export default function HistoryView({
   currency = '$',
   initialSearchQuery = '',
 }: HistoryViewProps) {
+  const isMobile = useIsMobile();
   const { allCategories, mergedIcons, mergedColors } = useCategories();
 
   const {
@@ -51,6 +54,17 @@ export default function HistoryView({
   } = useHistoryView(transactions, initialSearchQuery);
 
   const total = filtered.reduce((a, tx) => a + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+
+  if (isMobile) {
+    return (
+      <HistoryViewMobile 
+        transactions={transactions}
+        currency={currency}
+        onDelete={onDelete}
+        onCategoryChange={onCategoryChange}
+      />
+    );
+  }
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>

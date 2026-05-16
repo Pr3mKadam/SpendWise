@@ -23,6 +23,8 @@ import { CategoryAnalyzer } from '../features/analytics/CategoryAnalyzer';
 import { ChartTooltip, SavingsTooltip, StatCard } from '../features/analytics/AnalyticsPrimitives';
 import { TopMerchants } from '../features/analytics/TopMerchants';
 import { HealthIndexCard } from '../features/analytics/HealthIndexCard';
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import AnalyticsViewMobile from './AnalyticsViewMobile';
 
 interface AnalyticsViewProps {
   monthlyHistory:   MonthlyHistoryPoint[];
@@ -39,6 +41,7 @@ export default function AnalyticsView({
   monthlyHistory, monthlyStats, categorySpending, totalSpent,
   currency = '$', transactions = [], onNavigate, config,
 }: AnalyticsViewProps) {
+  const isMobile = useIsMobile();
   const isStudent  = config?.userRole === 'student';
   const isBusiness = config?.userRole === 'business';
   const { mergedColors, mergedIcons } = useCategories();
@@ -64,6 +67,18 @@ export default function AnalyticsView({
     ? [...monthlyHistory].sort((a, b) => b.savings - a.savings)[0] : null;
 
   const axisStyle = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
+
+  if (isMobile) {
+    return (
+      <AnalyticsViewMobile 
+        monthlyStats={monthlyStats}
+        categorySpending={categorySpending}
+        totalSpent={totalSpent}
+        currency={currency}
+        transactions={transactions}
+      />
+    );
+  }
 
   return (
     <div className="animate-fade-in-up space-y-6">

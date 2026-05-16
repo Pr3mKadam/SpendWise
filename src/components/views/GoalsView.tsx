@@ -7,6 +7,9 @@ import { GoalsSummary } from '../features/goals/GoalsSummary';
 import { BadgeGallery } from '../features/gamification/BadgeGallery';
 import { useGamification } from '../../hooks/useGamification';
 
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import GoalsViewMobile from './GoalsViewMobile';
+
 interface GoalStats {
   activeCount:      number;
   achievedCount:    number;
@@ -30,6 +33,7 @@ interface GoalsViewProps {
 }
 
 export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onContribute, currency = '$', transactions = [] }: GoalsViewProps) {
+  const isMobile = useIsMobile();
   const [showAdd,  setShowAdd]  = useState(false);
   const [editGoal, setEditGoal] = useState<SavingsGoal | null>(null);
   const { streak, level } = useGamification(transactions);
@@ -70,8 +74,46 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
   // Sort: active first (on-track, at-risk, paused), then achieved
   const sorted = [...goals].sort((a, b) => {
     const order: Record<GoalStatus, number> = { 'on-track': 0, 'at-risk': 1, 'paused': 2, 'achieved': 3 };
-    return order[a.status] - order[b.status];
+    return (order[a.status] ?? 0) - (order[b.status] ?? 0);
   });
+
+  if (isMobile) {
+    return (
+      <>
+        <GoalsViewMobile 
+          goals={goals}
+          stats={stats}
+          onAdd={() => setShowAdd(true)}
+          onUpdate={onUpdate}
+          onDelete={onDelete}
+          onContribute={onContribute}
+          currency={currency}
+          transactions={transactions}
+          streak={streak}
+          level={level}
+        />
+        {showAdd && (
+          <GoalModal onSave={handleAdd} onClose={() => setShowAdd(false)} currency={currency} />
+        )}
+        {editGoal && (
+          <GoalModal
+            initial={{
+              name:                editGoal.name,
+              emoji:               editGoal.emoji,
+              targetAmount:        String(editGoal.targetAmount),
+              savedAmount:         String(editGoal.savedAmount),
+              targetDate:          editGoal.targetDate,
+              monthlyContribution: String(editGoal.monthlyContribution),
+              color:               editGoal.color,
+            }}
+            onSave={handleEdit}
+            onClose={() => setEditGoal(null)}
+            currency={currency}
+          />
+        )}
+      </>
+    );
+  }
 
   return (
     <div className="view-enter space-y-5">

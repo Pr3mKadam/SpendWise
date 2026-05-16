@@ -20,7 +20,8 @@ import GoalsSummary from '../features/dashboard/GoalsSummary';
 import DailyStats from '../features/dashboard/DailyStats';
 import { SafeToSpend } from '../features/dashboard/SafeToSpend';
 import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
-import { useMediaQuery } from '../../hooks/useMediaQuery';
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import DashboardViewMobile from './DashboardViewMobile';
 
 // Lazy load non-critical/heavy components
 const FinanceChartLazy = lazy(() => import('../features/dashboard/FinanceChart'));
@@ -61,7 +62,7 @@ export function DashboardView({
   config: SpendWiseConfig | null;
 }) {
   const [showAllWidgets, setShowAllWidgets] = useState(false);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useIsMobile();
   
   const { transactions, currentBalance, monthlyStats, monthlyHistory, dailySpendRate, balanceTrend, predictedEndOfMonth } = financeState;
   const { streak, healthScore, level, levelName, savingsRate } = useGamification(transactions);
@@ -75,7 +76,6 @@ export function DashboardView({
     haptic.success();
   };
 
-  // Chart data — last 6 months
   const chartData = useMemo(() => {
     return monthlyHistory.slice(-6).map(m => ({
       month: m.month.length === 7
@@ -125,12 +125,25 @@ export function DashboardView({
       ? ((topCat[1] - prevCatSpend[topCat[0]]) / prevCatSpend[topCat[0]]) * 100
       : null;
 
-    const savingsRate = monthlyStats.totalIncome > 0
+    const savingsRateValue = monthlyStats.totalIncome > 0
       ? Math.round(((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100)
       : 0;
 
-    return { topCat, topCatChange, savingsRate };
+    return { topCat, topCatChange, savingsRate: savingsRateValue };
   }, [transactions, monthlyStats]);
+
+  if (isMobile) {
+    return (
+      <DashboardViewMobile 
+        financeState={financeState}
+        onAdd={onAdd}
+        currency={currency}
+        onNavigate={onNavigate}
+        hideBalances={hideBalances}
+        config={config}
+      />
+    );
+  }
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>

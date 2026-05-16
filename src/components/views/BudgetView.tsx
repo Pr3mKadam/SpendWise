@@ -6,14 +6,21 @@ import { useTransactions } from '../../hooks/useTransactions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Category } from '../../types';
 import { SmartBudgetSuggestions } from '../features/budgets/SmartBudgetSuggestions';
+import { useIsMobile } from '../../hooks/useMediaQuery';
+import BudgetViewMobile from './BudgetViewMobile';
 
 export default function BudgetView({ currency = '₹' }: { currency?: string }) {
+  const isMobile = useIsMobile();
   const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent, budgets } = useBudgets();
   const { transactions } = useTransactions();
   const { allCategories: categories } = useCategories();
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [limitAmount, setLimitAmount] = useState('');
+
+  if (isMobile) {
+    return <BudgetViewMobile currency={currency} />;
+  }
 
   const handleAdd = () => {
     if (selectedCategory && limitAmount) {
