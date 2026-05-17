@@ -31,7 +31,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
   const input = externalInput !== undefined ? externalInput : localInput;
   const setInput = onInputChange || setLocalInput;
   const [isProcessing, setIsProcessing] = useState(false);
-  const [prediction, setPrediction] = useState<Partial<Transaction> | null>(null);
+  const [prediction, setPrediction] = useState<Partial<Transaction>[] | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [scanStatus, setScanStatus] = useState<string | undefined>();
@@ -45,9 +45,9 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
       return;
     }
     setIsProcessing(true);
-    const result = await processNaturalLanguageExpense(input, activeCurrency);
+    const results = await processNaturalLanguageExpense(input, activeCurrency);
     
-    if (!result) {
+    if (!results || results.length === 0) {
       // Fallback: create a minimal transaction from the raw text
       const amount = parseFloat(input.replace(/[^0-9.]/g, '')) || 0;
       const fallbackResult = {
@@ -57,43 +57,48 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
         type: 'debit' as const,
         confidence: 0.3,
       };
-      setPrediction(fallbackResult);
+      setPrediction([fallbackResult]);
       setScanStatus('⚠️ Could not fully parse — please review and edit below');
       setIsProcessing(false);
       return;
     }
     
     // Intelligent Default: If merchant matches history, suggest previous category
-    if (result && result.merchant) {
-      if (transactions) {
-        const match = transactions.find(t => t.merchant.toLowerCase() === result.merchant?.toLowerCase());
-        if (match) {
-          result.category = match.category;
+    const enrichedResults = results.map(res => {
+      if (res && res.merchant) {
+        if (transactions) {
+          const match = transactions.find(t => t.merchant.toLowerCase() === res.merchant.toLowerCase());
+          if (match) {
+            res.category = match.category;
+          } else {
+            res.category = predictCategory(res.merchant);
+          }
         } else {
-          // If no history match, use smart merchant mapper
-          result.category = predictCategory(result.merchant);
+          res.category = predictCategory(res.merchant);
         }
-      } else {
-        result.category = predictCategory(result.merchant);
       }
-    }
+      return res;
+    });
 
-    setPrediction(result);
+    setPrediction(enrichedResults);
     setIsProcessing(false);
   };
 
   const handleConfirm = () => {
-    if (prediction) {
-      if (!prediction.amount || prediction.amount <= 0) {
+    if (prediction && prediction.length > 0) {
+      const invalid = prediction.find(p => !p.amount || p.amount <= 0);
+      if (invalid) {
         setScanStatus('⚠️ Amount must be greater than 0');
         setTimeout(() => setScanStatus(undefined), 2000);
         return;
       }
-      onAdd({
-        ...prediction as Transaction,
-        id: `magic-${Date.now()}`,
-        date: prediction.date || new Date().toISOString().split('T')[0],
-        type: prediction.type || 'debit'
+      prediction.forEach((p, index) => {
+        onAdd({
+          ...p as Transaction,
+          id: `magic-${Date.now()}-${index}`,
+          date: p.date || new Date().toISOString().split('T')[0],
+          type: p.type || 'debit'
+        });
       });
       haptic.success();
       setPrediction(null);
@@ -116,7 +121,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
           const compressed = await compressImage(base64Url, 800, 0.75);
           const rawText = await recognizeReceipt(`data:${compressed.mimeType};base64,${compressed.base64}`);
           const res = parseOfflineReceipt(rawText);
-          setPrediction(res);
+          setPrediction([res]);
           setScanStatus('✅ Receipt scanned! Review and confirm.');
         } catch (err) {
           setScanStatus('❌ Scan failed. Try a clearer photo.');
@@ -154,14 +159,14 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
       
       try {
         const res = await parseVoiceWithGemini(transcript, today);
-        setPrediction({
+        setPrediction([{
           ...res,
           confidence: 0.9,
-        });
+        }]);
       } catch (err) {
         console.error('Gemini voice parsing failed, falling back to local:', err);
         const res = parseVoiceLocally(transcript, today);
-        setPrediction(res);
+        setPrediction([res]);
       }
       
       setIsListening(false);
@@ -191,7 +196,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleProcess()}
             onFocus={onFocus}
-            placeholder="I spent 500 on dinner at Starbucks..."
+            placeholder="500 on food and 700 on travel..."
             autoFocus={autoFocus}
             className="flex-1 bg-transparent border-none py-4 px-2 text-[var(--text-primary)] font-medium outline-none placeholder:text-[var(--text-muted)] placeholder:opacity-50"
           />
@@ -226,9 +231,8 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
         <div className="flex flex-wrap gap-2 px-2 mt-3">
           {suggestedCategories.map((catName) => {
             const icon = mergedIcons[catName] || '🏷️';
-            // Generate a sample prompt based on category
             let prompt = `Spent 500 on ${catName}`;
-            if (catName === 'Food') prompt = 'Dinner at Starbucks for 450';
+            if (catName === 'Food') prompt = '500 on food and 300 on coffee';
             if (catName === 'Transport') prompt = 'Uber ride for 300';
             if (catName === 'Education') prompt = 'Bought books for 1200';
             if (catName === 'Business') prompt = 'Cloud subscription for 2500';
@@ -285,31 +289,37 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--teal)] to-blue-500" />
             
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[length:var(--fs-overline)] font-bold uppercase text-[var(--teal)] tracking-widest">Local AI Prediction</span>
+              <span className="text-[length:var(--fs-overline)] font-bold uppercase text-[var(--teal)] tracking-widest">
+                Local AI Prediction ({prediction.length} {prediction.length === 1 ? 'item' : 'items'})
+              </span>
               <button onClick={() => setPrediction(null)} className="p-1 text-[var(--text-muted)] hover:text-red-500 bg-transparent border-none cursor-pointer">
                 <X size={18} />
               </button>
             </div>
 
-            <div className="flex items-center gap-6">
-              <div className="flex-1">
-                <h4 className="text-2xl font-black text-[var(--text-primary)]">{prediction.merchant || 'Unknown Merchant'}</h4>
-                <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.category || 'Expense'}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-2xl font-black text-[var(--teal)]">
-                  {prediction.type === 'debit' ? '-' : '+'}{activeCurrency}{prediction.amount || 0}
-                </p>
-                <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{prediction.type || 'debit'}</p>
-              </div>
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-1 mb-6">
+              {prediction.map((item, idx) => (
+                <div key={idx} className="flex items-center gap-6 p-3 bg-[var(--surface-bg)] rounded-2xl border border-[var(--border)]">
+                  <div className="flex-1 min-w-0">
+                    <h4 className="text-xl font-black text-[var(--text-primary)] truncate">{item.merchant || 'Unknown Merchant'}</h4>
+                    <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{item.category || 'Expense'}</p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="text-xl font-black text-[var(--teal)]">
+                      {item.type === 'debit' ? '-' : '+'}{activeCurrency}{item.amount || 0}
+                    </p>
+                    <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{item.type || 'debit'}</p>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-6 flex gap-3">
+            <div className="flex gap-3">
               <button 
                 onClick={handleConfirm}
                 className="flex-1 py-3 bg-[var(--teal)] text-white border-none rounded-xl font-bold cursor-pointer hover:bg-[#0d9488] transition-colors flex items-center justify-center gap-2"
               >
-                <Check size={18} /> CONFIRM ADD
+                <Check size={18} /> CONFIRM ALL ({prediction.length})
               </button>
               <button 
                 onClick={() => setPrediction(null)}
