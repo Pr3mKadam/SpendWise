@@ -11,7 +11,7 @@ export interface AIParseResult {
 
 /**
  * Uses Gemini AI (if key present) or local heuristics to analyze a transaction string.
- * Supports extracting multiple transactions from a single sentence (e.g., "500 on food and 700 on travel").
+ * Supports extracting multiple transactions from a single sentence (e.g., "500 on food 700 on travel 800 on subscription").
  */
 export async function processNaturalLanguageExpense(text: string, currencyContext?: string): Promise<AIParseResult[] | null> {
   const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
@@ -22,7 +22,7 @@ export async function processNaturalLanguageExpense(text: string, currencyContex
 Description: "${text}"
 ${currencyContext ? `Context: User's base currency is ${currencyContext}.` : ''}
 
-For example, if description is "500 on food and 700 on travel", return an array with TWO objects: one for food (500) and one for travel (700).
+For example, if description is "500 on food 700 on travel 800 on subscription", return an array with THREE objects.
 
 Each object in the JSON array must have:
 - merchant: The business, person name, or short description (e.g. "Food", "Starbucks", "Travel", "Bus ticket")
@@ -61,40 +61,93 @@ Return ONLY the JSON array of objects.`;
     }
   }
 
-  // Local Heuristics Fallback for multiple items
-  // Split by "and", "&", ",", ";", "+" if they separate different amounts/items
-  const parts = text.split(/\b(?:and|&|,|;|\+)\b/i).map(p => p.trim()).filter(Boolean);
-  
+  // Local Heuristics Fallback for multiple items (Highly advanced tokenizer)
   const results: AIParseResult[] = [];
+  
+  // Find all number occurrences in the text (e.g., 500, 700, 1,200.50)
+  const numberMatches = Array.from(text.matchAll(/\b(\d+[\d,]*\.?\d*)\b/g));
 
-  for (const part of parts) {
-    const lower = part.toLowerCase();
-    let category: Category = 'Shopping';
-    
-    if (/zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|snack/.test(lower)) category = 'Food';
-    else if (/uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab/.test(lower)) category = 'Transport';
-    else if (/netflix|spotify|amazon|prime|youtube|hotstar/.test(lower)) category = 'Subscriptions';
-    else if (/electricity|water|bill|recharge|mobile|broadband/.test(lower)) category = 'Utilities';
-    else if (/doctor|hospital|pharma|med|health/.test(lower)) category = 'Health';
-    else if (/movie|game|play|event|party/.test(lower)) category = 'Entertainment';
+  if (numberMatches.length > 1) {
+    // We have multiple numbers! Determine if it's Amount-First or Description-First
+    const firstIndex = numberMatches[0].index!;
+    const textBeforeFirst = text.slice(0, firstIndex).trim();
+    const isAmountFirst = textBeforeFirst.length === 0 || /^(?:rs\.?|inr|₹|\$|€|£|¥)$/i.test(textBeforeFirst);
 
-    const amountMatch =
-      part.match(/(?:rs\.?|inr|₹|\$|€|£|¥)\s*([\d,]+\.?\d*)/i) ||
-      part.match(/\b([\d,]+\.?\d*)\s*(?:rs\.?|inr|rupees?|\$|€|£|¥)\b/i) ||
-      part.match(/\b(\d{2,}[.,]?\d*)\b/);
-    
-    const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : undefined;
-    const isCredit = /\b(income|salary|received|credited|payment received|earned|bonus|refund|cashback|reward)\b/i.test(part);
+    for (let i = 0; i < numberMatches.length; i++) {
+      const match = numberMatches[i];
+      const amountStr = match[1];
+      const amount = parseFloat(amountStr.replace(/,/g, ''));
+      let desc = '';
 
-    // Only add if we found an amount or if there's only one part
-    if (amount !== undefined || parts.length === 1) {
+      if (isAmountFirst) {
+        // Description is the text between this number and the next number
+        const start = match.index! + match[0].length;
+        const end = i < numberMatches.length - 1 ? numberMatches[i + 1].index! : text.length;
+        desc = text.slice(start, end).trim();
+        // Clean up leading/trailing connectors
+        desc = desc.replace(/^(?:on|and|&|,|;|\+|for)\s+/i, '').replace(/\s+(?:and|&|,|;|\+|for|on)$/i, '').trim();
+        if (!desc) desc = `Expense ${i + 1}`;
+      } else {
+        // Description is the text between the previous number (or 0) and this number
+        const start = i === 0 ? 0 : numberMatches[i - 1].index! + numberMatches[i - 1][0].length;
+        const end = match.index!;
+        desc = text.slice(start, end).trim();
+        desc = desc.replace(/^(?:on|and|&|,|;|\+|for)\s+/i, '').replace(/\s+(?:and|&|,|;|\+|for|on)$/i, '').trim();
+        if (!desc) desc = `Expense ${i + 1}`;
+      }
+
+      // Determine category from desc
+      const lower = desc.toLowerCase();
+      let category: Category = 'Shopping';
+      if (/zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|snack|starbucks|coffee/.test(lower)) category = 'Food';
+      else if (/uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab/.test(lower)) category = 'Transport';
+      else if (/netflix|spotify|amazon|prime|youtube|hotstar|sub|susbcription|subscription/.test(lower)) category = 'Subscriptions';
+      else if (/electricity|water|bill|recharge|mobile|broadband/.test(lower)) category = 'Utilities';
+      else if (/doctor|hospital|pharma|med|health/.test(lower)) category = 'Health';
+      else if (/movie|game|play|event|party/.test(lower)) category = 'Entertainment';
+
+      const isCredit = /\b(income|salary|received|credited|payment received|earned|bonus|refund|cashback|reward)\b/i.test(desc);
+
       results.push({
-        merchant: part || text,
+        merchant: desc,
         category,
-        amount: amount || 0,
+        amount,
         type: isCredit ? 'credit' : 'debit',
-        confidence: 0.7,
+        confidence: 0.8,
       });
+    }
+  } else {
+    // Single number or fallback splitting by "and", "&", ",", ";", "+"
+    const parts = text.split(/\b(?:and|&|,|;|\+)\b/i).map(p => p.trim()).filter(Boolean);
+    
+    for (const part of parts) {
+      const lower = part.toLowerCase();
+      let category: Category = 'Shopping';
+      
+      if (/zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|snack|starbucks|coffee/.test(lower)) category = 'Food';
+      else if (/uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab/.test(lower)) category = 'Transport';
+      else if (/netflix|spotify|amazon|prime|youtube|hotstar|sub|susbcription|subscription/.test(lower)) category = 'Subscriptions';
+      else if (/electricity|water|bill|recharge|mobile|broadband/.test(lower)) category = 'Utilities';
+      else if (/doctor|hospital|pharma|med|health/.test(lower)) category = 'Health';
+      else if (/movie|game|play|event|party/.test(lower)) category = 'Entertainment';
+
+      const amountMatch =
+        part.match(/(?:rs\.?|inr|₹|\$|€|£|¥)\s*([\d,]+\.?\d*)/i) ||
+        part.match(/\b([\d,]+\.?\d*)\s*(?:rs\.?|inr|rupees?|\$|€|£|¥)\b/i) ||
+        part.match(/\b(\d{2,}[.,]?\d*)\b/);
+      
+      const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : undefined;
+      const isCredit = /\b(income|salary|received|credited|payment received|earned|bonus|refund|cashback|reward)\b/i.test(part);
+
+      if (amount !== undefined || parts.length === 1) {
+        results.push({
+          merchant: part || text,
+          category,
+          amount: amount || 0,
+          type: isCredit ? 'credit' : 'debit',
+          confidence: 0.7,
+        });
+      }
     }
   }
 
