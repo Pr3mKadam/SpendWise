@@ -18,6 +18,12 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
 
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target?.closest('input, textarea, select, [contenteditable]')) {
+        startY.current = -1;
+        return;
+      }
+
       if (window.scrollY === 0) {
         startY.current = e.touches[0].pageY;
       } else {
