@@ -31,7 +31,7 @@ export const parseVoiceWithGemini = async (text: string, today: string): Promise
             Today's date is ${today}.
             Return a JSON object with fields: 
             - amount (number)
-            - category (string, must be one of: Food, Transport, Shopping, Bills, Entertainment, Health, Education, Investment, Income, Others)
+            - category (string, must be one of: Food, Subscriptions, Transport, Entertainment, Shopping, Utilities, Health, Travel, Education, Business, Income)
             - merchant (string)
             - type (string, must be 'credit' or 'debit')
             - date (string, YYYY-MM-DD)
@@ -59,7 +59,7 @@ export const parseVoiceWithGemini = async (text: string, today: string): Promise
     const result = JSON.parse(resultText);
     return {
       amount: result.amount || 0,
-      category: result.category || 'Others',
+      category: result.category || 'Shopping',
       merchant: result.merchant || 'Unknown Merchant',
       type: result.type || 'debit',
       date: result.date || today,

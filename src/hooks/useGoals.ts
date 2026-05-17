@@ -79,13 +79,25 @@ export function useGoals() {
 
   const addContribution = useCallback(
     async (id: string, amount: number) => {
-      const existing = goals.find(g => g.id === id);
-      if (!existing) return;
-
-      const newSaved = Math.min(existing.savedAmount + amount, existing.targetAmount);
-      await updateGoal(id, { savedAmount: Math.round(newSaved * 100) / 100 });
+      // BUG-08 fix: use functional update — avoids stale closure when called rapidly
+      setGoals(prev => {
+        const existing = prev.find(g => g.id === id);
+        if (!existing) return prev;
+        const newSaved = Math.min(existing.savedAmount + amount, existing.targetAmount);
+        const next = prev.map(g =>
+          g.id === id
+            ? {
+                ...g,
+                savedAmount: Math.round(newSaved * 100) / 100,
+                status: computeStatus({ ...g, savedAmount: newSaved }),
+              }
+            : g
+        );
+        saveGoals(next);
+        return next;
+      });
     },
-    [goals, updateGoal]
+    [] // No deps — pure functional update, no stale closure possible
   );
 
   const stats = useMemo(() => {

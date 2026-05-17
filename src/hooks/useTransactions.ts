@@ -36,12 +36,16 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
         map.set(tx.category, (map.get(tx.category) ?? 0) + amount);
       }
     });
+    // BUG-06 fix: compute total so percent is not always 0
+    const totalDebitAmount = Array.from(map.values()).reduce((a, b) => a + b, 0);
     return Array.from(map.entries())
       .map(([name, value]) => ({
         name,
         value:   Math.round(value * 100) / 100,
         color:   mergedColors[name] || '#14b8a6',
-        percent: 0,
+        percent: totalDebitAmount > 0
+          ? Math.round((value / totalDebitAmount) * 100)
+          : 0,
       }))
       .sort((a, b) => b.value - a.value);
   }, [transactions, mergedColors]);
@@ -78,6 +82,15 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
     const expenses = thisMonth.filter(tx => tx.type === 'debit').reduce((a, tx) => a + (Number(tx.amount) || 0), 0);
     const net = income - expenses;
     const savings = income > 0 ? Math.round((net / income) * 100) : 0;
+
+    // BUG-11 fix: compute topCategory and categoryDistribution (were always undefined)
+    const catMap: Record<string, number> = {};
+    thisMonth
+      .filter(tx => tx.type === 'debit')
+      .forEach(tx => {
+        catMap[tx.category] = (catMap[tx.category] || 0) + (Number(tx.amount) || 0);
+      });
+    const sortedCats = Object.entries(catMap).sort(([, a], [, b]) => b - a);
     
     return {
       totalIncome: Math.round(income * 100) / 100,
@@ -86,6 +99,8 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
       netCashFlow: Math.round(net * 100) / 100,
       avgDailySpend: Math.round((expenses / Math.max(1, now.getDate())) * 100) / 100,
       transactionCount: thisMonth.length,
+      topCategory: sortedCats[0]?.[0] as Category | undefined,
+      categoryDistribution: Object.fromEntries(sortedCats),
     };
   }, [transactions]);
 
@@ -141,10 +156,11 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
       const dateStr = d.toISOString().split('T')[0];
 
       // While the transaction date is after the current day, subtract/add it back from running balance
+      // BUG-05 fix: was inverted — credits appeared as increases when unwinding (they should decrease the earlier balance)
       while (txIdx < sortedTx.length && sortedTx[txIdx].date > dateStr) {
         const tx = sortedTx[txIdx];
         const amount = Number(tx.amount) || 0;
-        runningBalance -= (tx.type === 'credit' ? amount : -amount);
+        runningBalance += tx.type === 'credit' ? -amount : amount;
         txIdx++;
       }
 

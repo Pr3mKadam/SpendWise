@@ -20,7 +20,7 @@ export const STORAGE_KEYS = {
 
 // ─── Financial Defaults ───────────────────────────────────────────────────────
 export const FINANCE_DEFAULTS = {
-  INITIAL_BALANCE:          5200,
+  INITIAL_BALANCE:          0,
   SUBSCRIPTION_WINDOW_DAYS: 30,
   SUBSCRIPTION_MIN_DAYS:    25,
   SUBSCRIPTION_MAX_DAYS:    35,
