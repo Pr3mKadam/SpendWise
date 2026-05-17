@@ -86,6 +86,4 @@ You can merge external data into SpendWise using the **Import Transactions** fea
 
 ---
 
-## 📚 References
-- [PROJECT_RULES.md](file:///d:/Projects/Hackathon/SpendWise/SpendWise/PROJECT_RULES.md) - GSD Protocol Rules.
-- [GSD-STYLE.md](file:///d:/Projects/Hackathon/SpendWise/SpendWise/GSD-STYLE.md) - Coding style and guidelines.
+
