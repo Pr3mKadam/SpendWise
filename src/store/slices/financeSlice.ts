@@ -29,7 +29,9 @@ export interface FinanceSlice {
   setBudget: (category: string, amount: number) => void;
   removeBudget: (category: string) => void;
   resetBudgets: () => void;
+  resetLimits: () => void;
   updateBudgetSettings: (settings: Partial<BudgetSettings>) => void;
+  toggleRollover: () => void;
   addSubscription: (sub: RecurringPattern) => void;
   updateSubscription: (merchant: string, data: Partial<RecurringPattern>) => void;
   deleteSubscription: (merchant: string) => void;
@@ -144,10 +146,25 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
 
   resetBudgets: () => set({ budgets: {} }),
 
+  resetLimits: () => set((state) => {
+    const resetB: Record<string, number> = {};
+    Object.keys(state.budgets).forEach(cat => {
+      resetB[cat] = 0;
+    });
+    return { budgets: resetB };
+  }),
+
   updateBudgetSettings: (settings) => set((state) => ({
     budgetSettings: { 
       ...(state.budgetSettings || { period: 'monthly', rolloverEnabled: false }), 
       ...settings 
+    }
+  })),
+
+  toggleRollover: () => set((state) => ({
+    budgetSettings: {
+      ...(state.budgetSettings || { period: 'monthly', rolloverEnabled: false }),
+      rolloverEnabled: !(state.budgetSettings?.rolloverEnabled ?? false)
     }
   })),
 

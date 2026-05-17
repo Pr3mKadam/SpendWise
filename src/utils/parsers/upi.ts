@@ -66,28 +66,43 @@ export function generateMockUPITransactions(provider: string, count: number = 10
 
 export function parseUPISMS(text: string): Partial<Transaction> | null {
   const lower = text.toLowerCase();
-  const amountMatch = text.match(/(?:rs\.?|inr)\s*([\d,]+\.?\d*)/i);
+  const amountMatch = text.match(/(?:rs\.?|inr|₹)\s*([\d,]+\.?\d*)/i);
   if (!amountMatch) return null;
   const amount = parseFloat(amountMatch[1].replace(/,/g, ''));
 
   let type: 'credit' | 'debit' = 'debit';
   if (lower.includes('credited') || lower.includes('deposited') || lower.includes('received')) type = 'credit';
-  else if (lower.includes('debited') || lower.includes('spent') || lower.includes('sent')) type = 'debit';
+  else if (lower.includes('debited') || lower.includes('spent') || lower.includes('sent') || lower.includes('paid')) type = 'debit';
 
   let merchant = 'Unknown UPI/Bank';
-  const toMatch = text.match(/\bto\s+([A-Za-z0-9@\s]+?)(?:on\s|ref|upi|\.|$)/i);
-  if (toMatch && type === 'debit') merchant = toMatch[1].trim();
 
-  const fromMatch = text.match(/\bfrom\s+([A-Za-z0-9@\s]+?)(?:on\s|ref|upi|\.|$)/i);
-  if (fromMatch && type === 'credit') merchant = fromMatch[1].trim();
+  if (type === 'debit') {
+    const toMatch = text.match(/\b(?:to|at)\s+([A-Za-z0-9@\s]+?)(?:via\s|from\s|on\s|ref|upi|val|\.|$)/i);
+    if (toMatch) merchant = toMatch[1].trim();
+  } else {
+    const fromMatch = text.match(/\bfrom\s+([A-Za-z0-9@\s]+?)(?:via\s|in\s|on\s|ref|upi|val|\.|$)/i);
+    if (fromMatch) merchant = fromMatch[1].trim();
+  }
 
   if (merchant.length > 25) merchant = merchant.substring(0, 25);
-  merchant = merchant.replace(/a\/c|account/gi, '').trim();
+  merchant = merchant.replace(/a\/c|account|gpay|phonepe|paytm|bhim|upi/gi, '').trim();
+  if (!merchant) merchant = 'UPI Merchant';
+
+  const desc = merchant.toLowerCase();
+  const cat: Category =
+    /zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|pizza|burger|blinkit|instamart/.test(desc) ? 'Food' :
+    /uber|ola|rapido|metro|bus|train|flight|fuel|petrol/.test(desc) ? 'Transport' :
+    /netflix|spotify|amazon|prime|youtube|hotstar|sub/.test(desc) ? 'Subscriptions' :
+    /amazon|flipkart|myntra|mall|shop|store/.test(desc) ? 'Shopping' :
+    /electricity|water|bill|recharge|mobile|broadband|wifi|jio/.test(desc) ? 'Utilities' :
+    /doctor|hospital|pharma|med|health|clinic|apollo/.test(desc) ? 'Health' :
+    /movie|game|play|event|party|concert|bookmyshow/.test(desc) ? 'Entertainment' :
+    type === 'credit' ? 'Income' : 'Transfer';
 
   return {
     amount,
     merchant,
     type,
-    category: type === 'credit' ? 'Income' : 'Shopping',
+    category: cat,
   };
 }

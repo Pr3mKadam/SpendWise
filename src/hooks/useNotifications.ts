@@ -1,33 +1,7 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import { AppNotification, SpendingAlert, RecurringPattern, SavingsGoal, AlertSeverity } from '../types';
-
-const STORAGE_KEY        = 'spendwise_read_notifications_v1';
-const SNOOZE_STORAGE_KEY = 'spendwise_snoozed_notifications_v1';
-
-function loadRead(): Set<string> {
-  try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    if (s) return new Set(JSON.parse(s) as string[]);
-  } catch { /* ignore */ }
-  return new Set();
-}
-
-function saveRead(ids: Set<string>) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
-  } catch { /* ignore */ }
-}
-
-function loadSnoozed(): Record<string, number> {
-  try {
-    const s = localStorage.getItem(SNOOZE_STORAGE_KEY);
-    return s ? JSON.parse(s) : {};
-  } catch { return {}; }
-}
-
-function saveSnoozed(map: Record<string, number>) {
-  try { localStorage.setItem(SNOOZE_STORAGE_KEY, JSON.stringify(map)); } catch { /* ignore */ }
-}
+import { sendBrowserNotification } from '../utils/pushNotification';
+import { useStore } from '../store';
 
 // ─── Icon mapping ──────────────────────────────────────────────────────────────
 
@@ -50,9 +24,27 @@ export function useNotifications(
   recurring: RecurringPattern[],
   goals:     SavingsGoal[],
 ) {
-  const [readIds, setReadIds] = useState<Set<string>>(loadRead);
+  const readNotificationIds = useStore(state => state.readNotificationIds);
+  const setReadNotificationIds = useStore(state => state.setReadNotificationIds);
+  const snoozedNotifications = useStore(state => state.snoozedNotifications);
+  const setSnoozedNotifications = useStore(state => state.setSnoozedNotifications);
+
   const [customNotifications, setCustomNotifications] = useState<AppNotification[]>([]);
-  const [snoozedUntil, setSnoozedUntil] = useState<Record<string, number>>(loadSnoozed);
+
+  const readIds = useMemo(() => new Set(readNotificationIds), [readNotificationIds]);
+
+  const prevAlertsLengthRef = useRef(alerts.length);
+  useEffect(() => {
+    if (alerts.length > prevAlertsLengthRef.current) {
+      const newAlerts = alerts.slice(prevAlertsLengthRef.current);
+      newAlerts.forEach(a => {
+        if (a.severity === 'danger' || a.severity === 'warning') {
+          sendBrowserNotification('⚠️ Budget Alert', a.message);
+        }
+      });
+    }
+    prevAlertsLengthRef.current = alerts.length;
+  }, [alerts]);
 
   // ── Build unified notification list ────────────────────────────────────────
 
@@ -129,14 +121,14 @@ export function useNotifications(
 
     // Filter out currently snoozed
     const now = Date.now();
-    const active = list.filter(n => !snoozedUntil[n.id] || snoozedUntil[n.id] <= now);
+    const active = list.filter(n => !snoozedNotifications[n.id] || snoozedNotifications[n.id] <= now);
 
     // Sort: unread first, then by timestamp desc
     return active.sort((a, b) => {
       if (a.read !== b.read) return a.read ? 1 : -1;
       return b.timestamp - a.timestamp;
     });
-  }, [alerts, recurring, goals, readIds, customNotifications, snoozedUntil]);
+  }, [alerts, recurring, goals, readIds, customNotifications, snoozedNotifications]);
 
   const unreadCount = useMemo(
     () => notifications.filter(n => !n.read).length,
@@ -146,19 +138,19 @@ export function useNotifications(
   // ── Actions ────────────────────────────────────────────────────────────────
 
   const markRead = useCallback((id: string) => {
-    setReadIds(prev => {
-      const next = new Set(prev);
-      next.add(id);
-      saveRead(next);
-      return next;
+    setReadNotificationIds(prev => {
+      if (prev.includes(id)) return prev;
+      return [...prev, id];
     });
-  }, []);
+  }, [setReadNotificationIds]);
 
   const markAllRead = useCallback(() => {
-    const ids = new Set(notifications.map(n => n.id));
-    saveRead(ids);
-    setReadIds(ids);
-  }, [notifications]);
+    const ids = notifications.map(n => n.id);
+    setReadNotificationIds(prev => {
+      const merged = new Set([...prev, ...ids]);
+      return Array.from(merged);
+    });
+  }, [notifications, setReadNotificationIds]);
 
   const addNotification = useCallback((notif: Omit<AppNotification, 'id' | 'timestamp' | 'read'>) => {
     const newNotif: AppNotification = {
@@ -173,30 +165,26 @@ export function useNotifications(
   /** Snooze a notification for `hours` hours (default 1h) */
   const snoozeNotification = useCallback((id: string, hours = 1) => {
     const until = Date.now() + hours * 3_600_000;
-    setSnoozedUntil(prev => {
-      const next = { ...prev, [id]: until };
-      saveSnoozed(next);
-      return next;
-    });
+    setSnoozedNotifications(prev => ({
+      ...prev,
+      [id]: until
+    }));
     // Also mark as read so it doesn't show on un-snooze in unread bucket
-    setReadIds(prev => {
-      const next = new Set(prev);
-      next.add(id);
-      saveRead(next);
-      return next;
+    setReadNotificationIds(prev => {
+      if (prev.includes(id)) return prev;
+      return [...prev, id];
     });
-  }, []);
+  }, [setSnoozedNotifications, setReadNotificationIds]);
 
   /** Permanently dismiss a notification (only for custom ones) */
   const dismissNotification = useCallback((id: string) => {
     setCustomNotifications(prev => prev.filter(n => n.id !== id));
     // Also mark snoozed forever
-    setSnoozedUntil(prev => {
-      const next = { ...prev, [id]: Date.now() + 10 * 365 * 86_400_000 };
-      saveSnoozed(next);
-      return next;
-    });
-  }, []);
+    setSnoozedNotifications(prev => ({
+      ...prev,
+      [id]: Date.now() + 10 * 365 * 86_400_000
+    }));
+  }, [setSnoozedNotifications]);
 
   return { notifications, unreadCount, markRead, markAllRead, addNotification, snoozeNotification, dismissNotification };
 }

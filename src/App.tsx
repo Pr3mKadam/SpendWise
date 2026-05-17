@@ -122,6 +122,7 @@ function AppAuthenticated({ initialView }: { initialView: AppView }) {
   const setConfig = (newConfig: SpendWiseConfig) => {
     localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(newConfig));
     setConfigState(newConfig);
+    window.dispatchEvent(new Event('spendwise-config-updated'));
   };
 
   if (config === null) return <LoadingScreen />;

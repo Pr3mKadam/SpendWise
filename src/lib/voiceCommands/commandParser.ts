@@ -57,17 +57,18 @@ export function parseIndianNumber(text: string): number | null {
 // ─── Category Normalizer ──────────────────────────────────────────────────────
 
 const CATEGORY_MAP: Record<string, string> = {
-  food: 'Food', grocery: 'Food', transport: 'Transport', travel: 'Transport',
-  rent: 'Housing', emi: 'EMI', loan: 'EMI', shopping: 'Shopping', medical: 'Health',
+  food: 'Food', grocery: 'Food', transport: 'Transport', travel: 'Travel',
+  rent: 'Utilities', emi: 'Utilities', loan: 'Utilities', shopping: 'Shopping', medical: 'Health',
   entertainment: 'Entertainment', utilities: 'Utilities', bills: 'Utilities',
-  salary: 'Income', investment: 'Investment', savings: 'Savings',
-  burget: 'Budget', budget: 'Budget',
+  salary: 'Income', investment: 'Business', savings: 'Income',
+  subscription: 'Subscriptions', subscriptions: 'Subscriptions', education: 'Education',
+  business: 'Business', income: 'Income', health: 'Health',
 };
 
 export function normalizeCategory(raw: string): string {
   const lower = raw.toLowerCase().trim();
-  if (lower === 'budget' || lower === 'burget') return 'Miscellaneous';
-  return CATEGORY_MAP[lower] || raw.charAt(0).toUpperCase() + raw.slice(1).toLowerCase();
+  if (lower === 'budget' || lower === 'burget') return 'Shopping';
+  return CATEGORY_MAP[lower] || 'Shopping';
 }
 
 // ─── Navigation Map ───────────────────────────────────────────────────────────

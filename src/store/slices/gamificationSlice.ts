@@ -66,32 +66,31 @@ export const createGamificationSlice: StateCreator<SpendWiseStore, [["zustand/pe
   showLevelUp: false,
 
   checkStreak: () => set((state) => {
-    const today = new Date().toISOString().split('T')[0];
-    if (state.lastLoginDate === today) return state; // Already checked today
+    const d = new Date();
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
+    if (state.lastLoginDate === today) return state; // Already checked today ✓
 
-    let newStreak = state.streak;
+    let newStreak = 1; // Always start at 1 (today counts)
     let xpBonus = 0;
 
     if (state.lastLoginDate) {
-      const last = new Date(state.lastLoginDate);
-      const current = new Date(today);
-      const diffTime = Math.abs(current.getTime() - last.getTime());
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const last = new Date(state.lastLoginDate + 'T00:00:00');
+      const curr = new Date(today + 'T00:00:00');
+      const diffDays = Math.round((curr.getTime() - last.getTime()) / 86400000);
 
       if (diffDays === 1) {
-        newStreak += 1;
-        xpBonus = 10; // Daily streak bonus
-      } else if (diffDays > 1) {
-        newStreak = 1;
+        newStreak = state.streak + 1; // Genuine consecutive day
+        xpBonus = 10;
+      } else if (diffDays === 0) {
+        return state; // Same day, no change
       }
-    } else {
-      newStreak = 1;
+      // diffDays > 1: streak broken, newStreak stays 1
     }
 
-    if (xpBonus > 0) {
-      get().addXP(xpBonus);
-    }
-
+    if (xpBonus > 0) setTimeout(() => get().addXP(xpBonus), 0);
     return { streak: newStreak, lastLoginDate: today };
   }),
 

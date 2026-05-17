@@ -4,6 +4,7 @@ import { BeforeInstallPromptEvent } from '../types/dom';
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [showIOSPrompt, setShowIOSPrompt] = useState(false);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (e: Event) => {
@@ -34,12 +35,12 @@ export function usePWAInstall() {
     };
   }, []);
 
-  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
 
   const triggerInstall = async () => {
     if (!deferredPrompt) {
       if (isIOS) {
-        alert("To install SpendWise on iOS: Tap the Share button in Safari and select 'Add to Home Screen'.");
+        setShowIOSPrompt(true);
       } else {
         alert("App installation is not available. Please try installing from your browser options.");
       }
@@ -57,5 +58,12 @@ export function usePWAInstall() {
     setDeferredPrompt(null);
   };
 
-  return { isInstallable: !!deferredPrompt, isAppInstalled, triggerInstall, isIOS };
+  return { 
+    isInstallable: !!deferredPrompt, 
+    isAppInstalled, 
+    triggerInstall, 
+    isIOS, 
+    showIOSPrompt, 
+    closeIOSPrompt: () => setShowIOSPrompt(false) 
+  };
 }

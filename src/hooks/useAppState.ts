@@ -46,7 +46,7 @@ export function useAppState(config: SpendWiseConfig | null) {
   );
 
   // Budget derived state & handlers
-  const resetLimits = budgetState.resetBudgets;
+  const resetLimits = budgetState.resetLimits;
 
   const totalSpentAgainstBudget = budgetState.budgetStats.reduce((a: number, b: Budget) => a + (b.spent || 0), 0);
   const overBudgetCount = budgetState.budgetStats.filter(b => b.status === 'danger').length;
@@ -61,10 +61,6 @@ export function useAppState(config: SpendWiseConfig | null) {
     budgetState.updateBudgetSettings({ period: p });
   }, [budgetState.updateBudgetSettings]);
 
-  const toggleRollover = useCallback(() => {
-    budgetState.updateBudgetSettings({ rolloverEnabled: !budgetState.budgetSettings.rolloverEnabled });
-  }, [budgetState.updateBudgetSettings, budgetState.budgetSettings.rolloverEnabled]);
-
   const parentalState = useStore((state: any) => state.parentalState);
 
   return {
@@ -78,7 +74,7 @@ export function useAppState(config: SpendWiseConfig | null) {
       overBudgetCount,
       periodLabel,
       updatePeriod,
-      toggleRollover,
+      toggleRollover: budgetState.toggleRollover,
       removeBudget: budgetState.removeBudget,
     },
     goalsState,

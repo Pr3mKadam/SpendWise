@@ -7,7 +7,7 @@ import { SharedGoal } from '../../hooks/useSharedWallets';
 import { Ico } from '../common/ui/Icons';
 import { Btn } from '../common/ui/Button';
 import { Err } from '../common/ui/Alert';
-import { CreateGroupModal, InviteModal, WalletModal, ExpenseModal, GoalModal, ContribModal } from '../features/shared/SharedModals';
+import { CreateGroupModal, InviteModal, WalletModal, ExpenseModal, GoalModal, ContribModal, GroupQRModal } from '../features/shared/SharedModals';
 import { WalletTab, ExpensesTab, GoalsTab, MembersTab, ActivityTab } from '../features/shared/SharedTabs';
 import { Activity } from 'lucide-react';
 
@@ -175,9 +175,11 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
   const [showExpense, setExpense]   = useState(false);
   const [showGoal, setGoal]         = useState(false);
   const [showContrib, setContrib]   = useState(false);
+  const [showQR, setQR]             = useState(false);
   const [activeGoal, setActiveGoal] = useState<SharedGoal | null>(null);
 
   const isOwner = useMemo(() => sw.selectedGroup?.created_by === userId, [sw.selectedGroup, userId]);
+  const groupName = sw.selectedGroup?.name || 'Shared Wallet';
 
   const openContrib = useCallback((g: SharedGoal) => { setActiveGoal(g); setContrib(true); }, []);
 
@@ -234,13 +236,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
             <div className="flex items-center gap-2.5 mb-5 flex-wrap">
               {sw.selectedGroupId && (
                 <button 
-                  onClick={() => {
-                    const data = sw.exportGroup(sw.selectedGroupId!);
-                    if (data) {
-                      const url = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(data)}`;
-                      window.open(url, '_blank');
-                    }
-                  }}
+                  onClick={() => setQR(true)}
                   className="flex items-center gap-2 px-4 py-3 bg-[var(--teal)]/10 text-[var(--teal)] border-none rounded-xl cursor-pointer font-bold text-[0.85rem] hover:bg-[var(--teal)]/20 transition-all shadow-sm"
                 >
                   <Ico.Share size={16} /> Share QR
@@ -300,7 +296,8 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
 
         {/* Modals */}
         <CreateGroupModal show={showCreate} onClose={() => setCreate(false)} onSubmit={async (n: string, p: string, e: string) => { await sw.createGroup(n, p, userName, e); }} userName={userName} />
-        <InviteModal      show={showInvite}  onClose={() => setInvite(false)}  onSubmit={sw.inviteMember} />
+        <InviteModal      show={showInvite}  onClose={() => setInvite(false)}  onSubmit={sw.inviteMember} groupName={groupName} groupId={sw.selectedGroupId || undefined} />
+        <GroupQRModal     show={showQR}      onClose={() => setQR(false)}      groupData={sw.selectedGroupId ? (sw.exportGroup(sw.selectedGroupId) || '') : ''} groupName={groupName} />
         <WalletModal      show={showWallet}  onClose={() => setWallet(false)}  members={sw.members} onSubmit={sw.addWalletEntry} currency={currency} />
         <ExpenseModal     show={showExpense} onClose={() => setExpense(false)} members={sw.members} onSubmit={sw.addExpense}     currency={currency} />
         <GoalModal        show={showGoal}    onClose={() => setGoal(false)}    onSubmit={sw.addGoal} />

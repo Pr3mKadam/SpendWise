@@ -494,13 +494,12 @@ export async function executeCommand(
       if (!amount || amount <= 0) return { success: false, message: 'What is the recurring amount?' };
       store.addRecurringTransaction({
         id: shortId(),
-        amount: amount,
-        type: type || 'debit',
-        category: 'Miscellaneous',
         merchant: name || 'Recurring Transaction',
+        amount: amount,
+        category: 'Miscellaneous',
         frequency: frequency || 'monthly',
-        startDate: todayISO(),
-        lastProcessed: null
+        lastProcessed: null,
+        nextOccurrence: todayISO()
       });
       return {
         success: true,

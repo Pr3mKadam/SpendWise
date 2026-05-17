@@ -65,6 +65,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
   const { transactions, monthlyStats } = useTransactions();
   const { format } = useCurrency();
   const [input, setInput] = useState('');
+  const hasGemini = !!import.meta.env.VITE_GEMINI_API_KEY;
 
   // Persist messages in localStorage
   const [messages, setMessages] = useState<Message[]>(() => {
@@ -124,10 +125,14 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
       };
       setMessages(prev => [...prev, aiMsg]);
     } catch (error) {
-      console.error(error);
+      console.error('Advisor error:', error);
+      // Attempt a safe local fallback rather than showing a blank error
+      const fallbackText = transactions.length > 0
+        ? `I had trouble processing your question. Based on your **${transactions.length} transactions**, your top focus area right now is tracking your spending. Try asking "How can I save more?" or "Where do I spend the most?"`
+        : "I had trouble processing that. Once you add some transactions, I can give you personalised advice!";
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
-        text: "I'm sorry, I'm having trouble connecting to my brain right now. Please check your API key.",
+        text: fallbackText,
         sender: 'ai',
         timestamp: new Date().toISOString()
       };
@@ -244,6 +249,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         onClearChat={handleClearChat}
         monthlyStats={monthlyStats}
         dynamicQuickActions={dynamicQuickActions}
+        hasGemini={hasGemini}
       />
     );
   }
@@ -328,6 +334,16 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
           </div>
         </div>
 
+        {!hasGemini && (
+          <div className="bg-yellow-500/10 border-b border-yellow-500/20 px-6 py-3 flex items-start gap-3">
+            <AlertTriangle className="text-yellow-500 mt-0.5 flex-shrink-0" size={16} />
+            <div>
+              <p className="text-xs font-bold text-yellow-500">Local Advisor Mode Active</p>
+              <p className="text-[10px] text-yellow-500/80 mt-0.5">Gemini API key is not configured. The advisor is using the local rule-based fallback engine. Set VITE_GEMINI_API_KEY in .env for AI advice.</p>
+            </div>
+          </div>
+        )}
+
         {/* Personality Card */}
         {personality && (
           <div className="mx-6 mt-6 p-5 rounded-2xl bg-gradient-to-br from-purple-500/10 to-indigo-500/10 border border-purple-500/20 animate-fade-in">
@@ -362,6 +378,16 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               <p className="text-[10px] font-bold text-purple-500 uppercase mb-1">Expert Advice</p>
               <p className="text-xs text-[var(--text-primary)]">{personality.advice}</p>
             </div>
+          </div>
+        )}
+
+        {/* Empty state for new users */}
+        {transactions.length === 0 && messages.length <= 1 && (
+          <div className="mx-6 mt-4 p-4 rounded-2xl bg-[var(--teal)]/5 border border-[var(--teal)]/20">
+            <p className="text-xs font-bold text-[var(--teal)] mb-1">👋 Getting Started</p>
+            <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+              Add your first transaction to unlock AI-powered financial insights. Try asking: <span className="text-[var(--teal)] font-semibold">"How can I save more?"</span>
+            </p>
           </div>
         )}
 
@@ -501,7 +527,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
 
           {/* Voice Listening Overlay */}
           {isListening && (
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-md z-50 rounded-3xl flex flex-col items-center justify-center animate-fade-in">
+            <div className="absolute inset-x-0 bottom-0 top-0 bg-black/60 backdrop-blur-md z-40 rounded-3xl flex flex-col items-center justify-center animate-fade-in">
               <div className="relative w-32 h-32 flex items-center justify-center mb-8">
                 <div className="absolute inset-0 bg-[var(--teal)] rounded-full opacity-20 animate-ping" style={{ animationDuration: '2s' }} />
                 <div className="absolute inset-4 bg-[var(--teal)] rounded-full opacity-40 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }} />

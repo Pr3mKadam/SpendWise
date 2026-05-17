@@ -10,6 +10,7 @@ export interface Lesson {
   category: 'budgeting' | 'investing' | 'debt' | 'mindset' | 'advanced';
   body: string[];  // paragraphs
   keyTakeaways: string[];
+  roles?: ('student' | 'professional' | 'business')[];
   quiz?: {
     question: string;
     options: string[];
@@ -40,6 +41,7 @@ export const LESSONS: Lesson[] = [
       'A single category review can reveal hidden leakage.',
       'Automate your 20% on payday before you can spend it.',
     ],
+    roles: ['student', 'professional'],
     quiz: {
       question: 'Under the 50/30/20 rule, which category should not exceed 30% of your after-tax income?',
       options: ['Needs (Rent, Groceries)', 'Wants (Dining out, Hobbies)', 'Savings & Investments', 'Debt Repayment'],
@@ -68,6 +70,7 @@ export const LESSONS: Lesson[] = [
       'Increase SIP by 10% every year as your income grows.',
       'Never withdraw from investments for non-emergencies.',
     ],
+    roles: ['student', 'professional', 'business'],
     quiz: {
       question: 'What is the most critical variable in the compound interest formula?',
       options: ['The initial principal amount', 'The interest rate', 'The frequency of compounding', 'Time (The number of years invested)'],
@@ -95,7 +98,8 @@ export const LESSONS: Lesson[] = [
       'Use the Debt Lab in Portfolio → Debt Lab to simulate both.',
       'Either method works if followed consistently.',
       'Hybrid: use snowball for motivation until you get momentum.',
-    ]
+    ],
+    roles: ['student', 'professional']
   },
   {
     id: 'l4',
@@ -117,7 +121,8 @@ export const LESSONS: Lesson[] = [
       'Calculate your monthly essential expenses first.',
       'Build it before you start investing aggressively.',
       'Never use it for planned expenses—that\'s what budgeting is for.',
-    ]
+    ],
+    roles: ['student', 'professional', 'business']
   },
   {
     id: 'l5',
@@ -139,7 +144,8 @@ export const LESSONS: Lesson[] = [
       'Review your portfolio before March 31 each financial year.',
       'Prioritize harvesting STCL as it offsets higher-taxed STCG.',
       'Keep detailed records of all transactions for ITR filing.',
-    ]
+    ],
+    roles: ['professional', 'business']
   },
   {
     id: 'l6',
@@ -162,7 +168,8 @@ export const LESSONS: Lesson[] = [
       'Implement a 48-hour rule for any unplanned purchase over ₹2,000.',
       'Set up automatic SIPs to bypass present bias entirely.',
       'Use your SpendWise category data to spot behavioral patterns.',
-    ]
+    ],
+    roles: ['student', 'professional', 'business']
   },
   {
     id: 'l7',
@@ -184,7 +191,8 @@ export const LESSONS: Lesson[] = [
       'Start an SIP as early as possible.',
       'Automate your SIP deduction right after salary day.',
       'Do not stop your SIP during market downturns.'
-    ]
+    ],
+    roles: ['student', 'professional', 'business']
   },
   {
     id: 'l8',
@@ -206,7 +214,8 @@ export const LESSONS: Lesson[] = [
       'Buy term insurance if you have financial dependents.',
       'Opt for regular pay until your retirement age.',
       'Do not mix insurance and investment.'
-    ]
+    ],
+    roles: ['professional', 'business']
   },
   {
     id: 'l9',
@@ -228,7 +237,8 @@ export const LESSONS: Lesson[] = [
       'ELSS is an excellent tax-saving tool for young professionals.',
       'The 3-year lock-in applies to each individual SIP installment.',
       'Don\'t just look at the tax savings; treat it as a long-term investment.'
-    ]
+    ],
+    roles: ['professional', 'business']
   },
   {
     id: 'l10',
@@ -250,7 +260,8 @@ export const LESSONS: Lesson[] = [
       'Use NPS to claim the extra ₹50k tax deduction.',
       'Opt for the Active Choice and maximize your equity exposure (up to 75%) if you are young.',
       'Remember, the primary goal of NPS is a locked-in retirement corpus.'
-    ]
+    ],
+    roles: ['professional', 'business']
   },
   {
     id: 'l11',
@@ -272,6 +283,7 @@ export const LESSONS: Lesson[] = [
       'Avoid F&O trading entirely if you are building long-term wealth.',
       'Invest time in your career and passive index funds instead.',
       'If you must trade, treat it as entertainment money, not an investment.'
-    ]
+    ],
+    roles: ['student', 'professional', 'business']
   }
 ];

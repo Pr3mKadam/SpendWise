@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Modal } from '../../common/ui/Modal';
 import { Btn } from '../../common/ui/Button';
 import { Field, Inp } from '../../common/ui/Input';
@@ -66,9 +66,40 @@ export function CreateGroupModal({ show, onClose, onSubmit, userName }: {
   );
 }
 
-export function InviteModal({ show, onClose, onSubmit }: {
+export function GroupQRModal({ groupData, groupName, show, onClose }: {
+  groupData: string; groupName: string; show: boolean; onClose: () => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    if (!show || !ref.current || !groupData) return;
+    ref.current.innerHTML = '';
+    
+    try {
+      // @ts-ignore
+      new window.QRCode(ref.current, { text: groupData, width: 180, height: 180 });
+    } catch (e) {
+      console.error('Failed to generate QR:', e);
+    }
+  }, [show, groupData]);
+
+  if (!show) return null;
+  return (
+    <Modal show={show} onClose={onClose} title={`Join "${groupName}"`}>
+      <div className="text-center pb-4">
+        <p className="text-sm text-[var(--text-secondary)] mb-6">Scan to join this shared wallet</p>
+        <div ref={ref} className="flex justify-center mx-auto mb-6 bg-white p-4 rounded-xl inline-block" />
+        <Btn full v="primary" onClick={onClose}>Done</Btn>
+      </div>
+    </Modal>
+  );
+}
+
+export function InviteModal({ show, onClose, onSubmit, groupName, groupId }: {
   show: boolean; onClose: () => void;
   onSubmit: (email: string, name: string, emoji: string) => Promise<void>;
+  groupName?: string;
+  groupId?: string;
 }) {
   const [email, setEmail] = useState('');
   const [dname, setDname] = useState('');
@@ -86,6 +117,18 @@ export function InviteModal({ show, onClose, onSubmit }: {
     setBusy(true); setErr('');
     try {
       await onSubmit(email.trim(), dname.trim() || email.split('@')[0], emoji);
+      
+      // Mailto fallback
+      if (groupName && groupId) {
+        const subject = encodeURIComponent(`Join my SpendWise group: ${groupName}`);
+        const body = encodeURIComponent(
+          `Hi!\n\nI'd like you to join my shared wallet "${groupName}" on SpendWise.\n\n` +
+          `Open SpendWise and enter this Group ID to join: ${groupId}\n\n` +
+          `SpendWise — Smart Finance Tracker`
+        );
+        window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
+      }
+
       setOk(`Invite sent to ${email.split('@')[0]}! They'll see it when they log in.`);
       setTimeout(() => { reset(); onClose(); }, 2000);
     } catch (ex: any) { setErr(ex?.message ?? 'Failed to send invite.'); }
@@ -112,6 +155,17 @@ export function InviteModal({ show, onClose, onSubmit }: {
           <Btn full v="primary" type="submit" disabled={busy || !email.trim()}>
             {busy ? <><Ico.Spin /> Sending…</> : <><Ico.Mail /> Send Invite</>}
           </Btn>
+          <div className="mt-3 text-center">
+             <button type="button" onClick={() => {
+                if (!window.location) return;
+                let inviteLink = `https://spendwise.app/join?group=${groupId || ''}`;
+                navigator.clipboard.writeText(inviteLink);
+                setOk('Invite link copied!');
+                setTimeout(() => setOk(''), 2000);
+             }} className="bg-transparent border-none cursor-pointer text-[var(--teal)] font-bold text-sm hover:underline">
+               📋 Copy Invite Link
+             </button>
+          </div>
         </>}
       </form>
     </Modal>

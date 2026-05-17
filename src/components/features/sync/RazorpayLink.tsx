@@ -12,8 +12,8 @@ export function RazorpayLink({ onSetView, onConnect }: RazorpayLinkProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!rzpKeyId.trim() || !rzpSecret.trim()) return;
-    onConnect(rzpKeyId.trim(), rzpSecret.trim());
+    if (!rzpKeyId.trim()) return;
+    onConnect(rzpKeyId.trim(), 'backend_proxy_mode');
   };
 
   return (
@@ -30,11 +30,10 @@ export function RazorpayLink({ onSetView, onConnect }: RazorpayLinkProps) {
             <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">Key ID</label>
             <input type="text" value={rzpKeyId} onChange={e => setRzpKeyId(e.target.value)} placeholder="rzp_test_..." className="w-full p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] outline-none text-sm font-inter" />
           </div>
-          <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">Key Secret</label>
-            <input type="password" value={rzpSecret} onChange={e => setRzpSecret(e.target.value)} placeholder="••••••••••••" className="w-full p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] outline-none text-sm font-inter" />
+          <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs">
+            🔒 Security Notice: Key Secrets are no longer accepted on the client side. Please configure your Razorpay Key Secret securely in your backend Edge Function or Proxy.
           </div>
-          <button type="submit" disabled={!rzpKeyId || !rzpSecret} className="w-full py-4 rounded-xl bg-[var(--teal)] text-white font-bold border-none cursor-pointer disabled:opacity-50 mt-4 shadow-lg shadow-teal-500/10">Save & Connect</button>
+          <button type="submit" disabled={!rzpKeyId} className="w-full py-4 rounded-xl bg-[var(--teal)] text-white font-bold border-none cursor-pointer disabled:opacity-50 mt-4 shadow-lg shadow-teal-500/10">Save Key ID</button>
         </form>
       </div>
     </div>

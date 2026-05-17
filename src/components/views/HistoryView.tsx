@@ -172,7 +172,12 @@ export default function HistoryView({
                         setSelectedIds(newSet);
                       }}
                       onCategoryChange={onCategoryChange}
-                      onDelete={onDelete}
+                      onDelete={(id) => {
+                        const newSet = new Set(selectedIds);
+                        newSet.delete(id);
+                        setSelectedIds(newSet);
+                        if (onDelete) onDelete(id);
+                      }}
                       currency={currency}
                       mergedColors={mergedColors}
                       mergedIcons={mergedIcons}
@@ -199,7 +204,13 @@ export default function HistoryView({
         <DeleteConfirmModal
           deleteConfirmId={deleteConfirmId}
           onCancel={() => setDeleteConfirmId(null)}
-          onConfirm={(id) => { if (onDelete) onDelete(id); setDeleteConfirmId(null); }}
+          onConfirm={(id) => {
+            const newSet = new Set(selectedIds);
+            newSet.delete(id);
+            setSelectedIds(newSet);
+            if (onDelete) onDelete(id);
+            setDeleteConfirmId(null);
+          }}
         />
       </div>
     </PullToRefresh>

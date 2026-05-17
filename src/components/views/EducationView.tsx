@@ -48,9 +48,15 @@ export default function EducationView({
 
   const categories = ['all', ...Object.keys(CATEGORY_CONFIG)] as const;
 
+  const activeRole = config?.userRole || 'professional';
+
+  const roleLessons = useMemo(() => {
+    return LESSONS.filter(l => !l.roles || l.roles.includes(activeRole));
+  }, [activeRole]);
+
   const filtered = useMemo(() => {
-    return LESSONS.filter(l => filter === 'all' || l.category === filter);
-  }, [filter]);
+    return roleLessons.filter(l => filter === 'all' || l.category === filter);
+  }, [roleLessons, filter]);
 
   const handleComplete = (lesson: Lesson) => {
     if (completedLessons.has(lesson.id)) return;
@@ -72,9 +78,23 @@ export default function EducationView({
     }
   };
 
-  const totalXPAvailable = LESSONS.reduce((s, l) => s + l.xpReward, 0);
-  const earnedXP = LESSONS.filter(l => completedLessons.has(l.id)).reduce((s, l) => s + l.xpReward, 0);
-  const completionPct = Math.round((completedLessons.size / LESSONS.length) * 100);
+  const completedRoleLessonsCount = useMemo(() => {
+    return roleLessons.filter(l => completedLessons.has(l.id)).length;
+  }, [roleLessons, completedLessons]);
+
+  const totalXPAvailable = useMemo(() => {
+    return roleLessons.reduce((s, l) => s + l.xpReward, 0);
+  }, [roleLessons]);
+
+  const earnedXP = useMemo(() => {
+    return roleLessons.filter(l => completedLessons.has(l.id)).reduce((s, l) => s + l.xpReward, 0);
+  }, [roleLessons, completedLessons]);
+
+  const completionPct = useMemo(() => {
+    return roleLessons.length > 0 
+      ? Math.round((completedRoleLessonsCount / roleLessons.length) * 100)
+      : 0;
+  }, [completedRoleLessonsCount, roleLessons]);
 
   // Personalized insight from spending data
   const transactions: Transaction[] = financeState.transactions;
@@ -105,11 +125,17 @@ export default function EducationView({
           <div>
             <h2 className="flex items-center gap-2.5 text-headline">
               <GraduationCap size={22} style={{ color: 'var(--teal)' }} />
-              {config?.userRole === 'student' ? 'Student Learning Path' : 'Financial Education Center'}
+              {config?.userRole === 'student' 
+                ? 'Student Learning Path' 
+                : config?.userRole === 'business'
+                ? 'Business Wealth Academy'
+                : 'Financial Education Center'}
             </h2>
             <p className="text-caption mt-1">
               {config?.userRole === 'student' 
                 ? `Hey ${config.name}, master the basics of wealth building while you study!`
+                : config?.userRole === 'business'
+                ? `Hey ${config.name}, scale your business cash flow and optimize taxes!`
                 : "Master money concepts. Earn XP. Build wealth."}
             </p>
           </div>
@@ -128,7 +154,7 @@ export default function EducationView({
               <div>
                 <p className="font-inter text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1">Your Progress</p>
                 <p className="font-manrope font-black text-4xl text-white">{completionPct}%</p>
-                <p className="font-inter text-sm text-white/60 mt-1">{completedLessons.size} of {LESSONS.length} lessons</p>
+                <p className="font-inter text-sm text-white/60 mt-1">{completedRoleLessonsCount} of {roleLessons.length} lessons</p>
               </div>
               <div className="h-14 w-px bg-white/10 hidden sm:block" />
               <div>
@@ -169,7 +195,12 @@ export default function EducationView({
                 {config?.userRole === 'student' ? (
                   <>
                     Since you're in the <strong>Student</strong> persona, we've prioritized <strong>Debt Management</strong> and <strong>Budgeting</strong>. 
-                    Avoid high-interest car loans and focus on building your credit score early!
+                    Avoid high-interest credit card debt and build emergency savings early!
+                  </>
+                ) : config?.userRole === 'business' ? (
+                  <>
+                    Since you're in the <strong>Business Owner</strong> persona, we've prioritized <strong>Tax Efficiency</strong> and <strong>Cash Flow</strong>. 
+                    Master tax-loss harvesting and optimize your working capital!
                   </>
                 ) : (
                   <>
@@ -240,7 +271,7 @@ export default function EducationView({
         </div>
 
         {/* ── Completion Banner ── */}
-        {completedLessons.size === LESSONS.length && (
+        {completedRoleLessonsCount === roleLessons.length && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -248,7 +279,7 @@ export default function EducationView({
           >
             <div className="text-5xl mb-3">🏆</div>
             <h3 className="font-manrope font-black text-2xl text-[var(--text-primary)] mb-2">Financial Scholar!</h3>
-            <p className="font-inter text-sm text-[var(--text-secondary)]">You've completed all lessons. Your financial IQ has leveled up significantly.</p>
+            <p className="font-inter text-sm text-[var(--text-secondary)]">You've completed all lessons for your active path. Your financial IQ has leveled up significantly.</p>
           </motion.div>
         )}
       </div>

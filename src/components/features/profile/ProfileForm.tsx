@@ -17,21 +17,35 @@ interface ProfileFormProps {
 }
 
 function FormField({ label, value, onChange, placeholder, type = 'text' }: ProfileFormField) {
+  const isPhone = label === 'Mobile Number';
+
   return (
     <div>
       <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
         {label}
       </label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
-        style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
-        onFocus={e => (e.target.style.borderColor = 'var(--teal)')}
-        onBlur={e => (e.target.style.borderColor = 'transparent')}
-      />
+      <div className="relative">
+        <input
+          type={type}
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          placeholder={placeholder}
+          className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
+          style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
+          onFocus={e => (e.target.style.borderColor = 'var(--teal)')}
+          onBlur={e => (e.target.style.borderColor = 'transparent')}
+        />
+        {isPhone && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded">
+            Unverified
+          </span>
+        )}
+      </div>
+      {isPhone && (
+        <p className="text-xs text-[var(--text-muted)] mt-1">
+          Phone verification coming soon. Number stored locally only.
+        </p>
+      )}
     </div>
   );
 }

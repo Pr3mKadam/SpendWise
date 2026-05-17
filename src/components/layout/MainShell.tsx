@@ -5,7 +5,6 @@ import { useAuth } from '../../hooks/useAuth';
 
 import Sidebar from '../common/Sidebar';
 import Header from '../common/Header';
-import AlertBanner from '../common/AlertBanner';
 import type { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 import { ViewRenderer } from './ViewRenderer';
 import { useAppState } from '../../hooks/useAppState';
@@ -523,7 +522,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
               onToggleTheme={toggleTheme}
               config={config}
               onOpenSearch={() => setShowCommandPalette(true)}
-              isPrivacyEnabled={store.privacyEnabled}
+              isPrivacyEnabled={pcSettings.hideBalances}
               onTogglePrivacy={handleTogglePrivacy}
               onExport={handlePDFReport}
               setSearchQuery={setVoiceSearchQuery}
@@ -534,14 +533,6 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
               role="main" 
               className="flex-1 px-2 py-3 sm:px-4 sm:py-4 md:px-6 md:py-6 lg:px-8 lg:py-8 overflow-x-hidden"
             >
-              {activeView === 'dashboard' && appState.alertState.alerts.length > 0 && (
-                <AlertBanner
-                  alerts={appState.alertState.alerts}
-                  onDismiss={appState.alertState.dismissAlert}
-                  onDismissAll={appState.alertState.dismissAll}
-                />
-              )}
-
               <ViewRenderer
                 activeView={activeView}
                 appState={appState}

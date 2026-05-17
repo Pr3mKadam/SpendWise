@@ -61,14 +61,14 @@ const MERCHANT_MAP: Record<string, Category> = {
   'xbox': 'Entertainment',
   
   // Utilities
-  'airtel': 'Bills',
-  'jio': 'Bills',
-  'vi': 'Bills',
-  'bsnl': 'Bills',
-  'electricity': 'Bills',
-  'water bill': 'Bills',
-  'gas': 'Bills',
-  'recharge': 'Bills',
+  'airtel': 'Utilities',
+  'jio': 'Utilities',
+  'vi': 'Utilities',
+  'bsnl': 'Utilities',
+  'electricity': 'Utilities',
+  'water bill': 'Utilities',
+  'gas': 'Utilities',
+  'recharge': 'Utilities',
   
   // Professional / Business
   'google cloud': 'Business',
@@ -111,9 +111,9 @@ export function predictCategory(merchant: string): Category {
   if (m.includes('cafe') || m.includes('restaurant') || m.includes('diner') || m.includes('bake')) return 'Food';
   if (m.includes('store') || m.includes('shop') || m.includes('mart') || m.includes('mall')) return 'Shopping';
   if (m.includes('taxi') || m.includes('cab') || m.includes('bus') || m.includes('train') || m.includes('flight')) return 'Transport';
-  if (m.includes('bill') || m.includes('pay') || m.includes('utility')) return 'Bills';
+  if (m.includes('bill') || m.includes('pay') || m.includes('utility')) return 'Utilities';
   if (m.includes('game') || m.includes('movie') || m.includes('cinema')) return 'Entertainment';
   if (m.includes('class') || m.includes('course') || m.includes('school')) return 'Education';
   
-  return 'Personal';
+  return 'Shopping';
 }

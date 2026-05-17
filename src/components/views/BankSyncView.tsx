@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
-  Brain, CheckCircle2, Sparkles
+  Brain, CheckCircle2, Sparkles, Loader2, AlertCircle
 } from 'lucide-react';
 import { Transaction, LinkedAccount, FinanceProvider, Category, SyncView, WizardStep } from '../../types';
 import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/parsers/upi';
-import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant } from '../../utils/razorpaySync';
+import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant, parseUPIDescription, loadMerchantMemory } from '../../utils/razorpaySync';
+import { predictCategory } from '../../utils/merchantMapper';
 import { useStore } from '../../store';
 
 import SyncDashboard from '../features/sync/SyncDashboard';
@@ -37,23 +38,17 @@ export default function BankSyncView({
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [merchantMemoryCount, setMerchantMemoryCount] = useState(0);
 
-
   const [lastTx, setLastTx] = useState<Transaction | null>(null);
   const [corrCategory, setCorrCat] = useState<Category>('Transfer');
 
+  const [syncState, setSyncState] = useState<'idle' | 'parsing' | 'categorising' | 'review' | 'done' | 'error'>('idle');
+  const [stagedTxs, setStagedTxs] = useState<Transaction[]>([]);
+  const [syncingAcc, setSyncingAcc] = useState<LinkedAccount | null>(null);
+  const [existingCount, setExistingCount] = useState(0);
 
-  // Load Razorpay account from store or migration on mount
+  // Load Razorpay account from store on mount
   useEffect(() => {
-    const localKey = localStorage.getItem('spendwise_rzp_key');
-    const localSecret = localStorage.getItem('spendwise_rzp_secret');
-    
-    if (localKey && localSecret) {
-      setRazorpayKeys({ keyId: localKey, keySecret: localSecret });
-      localStorage.removeItem('spendwise_rzp_key');
-      localStorage.removeItem('spendwise_rzp_secret');
-    }
-
-    const key = razorpayKeys?.keyId || localKey;
+    const key = razorpayKeys?.keyId;
     if (key) {
       setAccounts((p: LinkedAccount[]) => {
         if (p.some(a => a.provider === 'razorpay')) return p;
@@ -67,11 +62,9 @@ export default function BankSyncView({
         }];
       });
     }
-    // Count merchant memory entries
-    try {
-      const mem = JSON.parse(localStorage.getItem('spendwise_merchant_memory') || '{}');
-      setMerchantMemoryCount(Object.keys(mem).length);
-    } catch { /* ignore */ }
+    // Count merchant memory entries from secure storage
+    const mem = loadMerchantMemory();
+    setMerchantMemoryCount(Object.keys(mem).length);
   }, [razorpayKeys, setRazorpayKeys]);
 
   const handleUPILinkSuccess = (provider: typeof UPI_PROVIDERS[0], id: string) => {
@@ -160,20 +153,67 @@ export default function BankSyncView({
     setView('dashboard');
   };
 
-  /** Mock sync for non-Razorpay providers */
+  /** Mock sync for non-Razorpay providers with Step-by-Step feedback and Review */
   const handleMockSync = async (acc: LinkedAccount) => {
     setSyncingAccountId(acc.id);
+    setSyncingAcc(acc);
+    setSyncState('parsing');
     try {
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 1000));
       const providerName = (acc.provider as string) === 'plaid' ? acc.upiId : (UPI_PROVIDERS.find((p) => p.id === acc.provider)?.name || 'Bank');
-      const mockTxs = generateMockUPITransactions(providerName, 10);
-      onAutoAddTransactions(mockTxs);
-      setAccounts(p => p.map(a => a.id === acc.id ? { ...a, lastSynced: new Date().toISOString() } : a));
+      const rawMockTxs = generateMockUPITransactions(providerName, 10);
+      
+      // Step 1: Parse UPI strings
+      const parsedTxs = rawMockTxs.map(tx => {
+        const parsed = parseUPIDescription(tx.merchant);
+        return {
+          ...tx,
+          merchant: parsed.merchant,
+          description: parsed.upiId ? `UPI VPA: ${parsed.upiId}` : tx.description,
+          upiId: parsed.upiId
+        };
+      });
+
+      setSyncState('categorising');
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Step 2: Bulk categorise using existing merchant memory & merchantMapper
+      const mem = loadMerchantMemory();
+      const categorisedTxs = parsedTxs.map((tx: any) => {
+        const vpaKey = tx.upiId?.toLowerCase();
+        let cat = tx.category;
+        if (vpaKey && mem[vpaKey]) {
+          cat = mem[vpaKey].category as Category;
+        } else {
+          cat = predictCategory(tx.merchant) || 'Shopping';
+        }
+        return {
+          ...tx,
+          category: cat
+        };
+      });
+
+      setExistingCount(Math.floor(Math.random() * 3) + 1);
+      setStagedTxs(categorisedTxs);
+      setSyncState('review');
     } catch (err: any) {
       console.error(err);
+      setSyncState('error');
     } finally {
       setSyncingAccountId(null);
     }
+  };
+
+  const handleConfirmImport = () => {
+    onAutoAddTransactions(stagedTxs);
+    if (syncingAcc) {
+      setAccounts(p => p.map(a => a.id === syncingAcc.id ? { ...a, lastSynced: new Date().toISOString() } : a));
+    }
+    setSyncState('done');
+  };
+
+  const handleCategoryChange = (txId: string, newCat: Category) => {
+    setStagedTxs(prev => prev.map(t => t.id === txId ? { ...t, category: newCat } : t));
   };
 
   const handleSyncAccount = (acc: LinkedAccount) => {
@@ -262,6 +302,108 @@ export default function BankSyncView({
             ))}
           </div>
           <button onClick={applyCorrection} className="w-full py-4 rounded-xl bg-[var(--teal)] text-white font-bold border-none cursor-pointer shadow-lg shadow-teal-500/20">Save Correction</button>
+        </div>
+      )}
+
+      {syncState !== 'idle' && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-[var(--surface-card)] border border-[var(--border)] rounded-2xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col animate-scale-in">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
+              <h3 className="text-xl font-manrope font-bold flex items-center gap-2 text-[var(--text-primary)]">
+                <Brain className="text-[var(--teal)]" size={24} />
+                UPI Payment Synchronization
+              </h3>
+              {syncState === 'review' && (
+                <button onClick={() => setSyncState('idle')} className="text-sm text-[var(--text-muted)] hover:text-[var(--text-primary)] bg-transparent border-none cursor-pointer">Cancel</button>
+              )}
+            </div>
+
+            {syncState === 'parsing' && (
+              <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                <Loader2 size={48} className="animate-spin text-[var(--teal)]" />
+                <p className="font-manrope font-bold text-lg text-[var(--text-primary)]">Parsing UPI strings & extracting merchants...</p>
+                <p className="text-sm text-[var(--text-muted)]">Applying Indian bank regex patterns (PhonePe, GPay, Paytm, HDFC)...</p>
+              </div>
+            )}
+
+            {syncState === 'categorising' && (
+              <div className="flex flex-col items-center justify-center py-16 space-y-4">
+                <Loader2 size={48} className="animate-spin text-[var(--teal)]" />
+                <p className="font-manrope font-bold text-lg text-[var(--text-primary)]">Categorising {stagedTxs.length || 10} transactions...</p>
+                <p className="text-sm text-[var(--text-muted)]">Matching against Merchant Memory & AI rules...</p>
+              </div>
+            )}
+
+            {syncState === 'review' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between bg-[var(--surface-input)] p-4 rounded-xl border border-[var(--border)]">
+                  <div>
+                    <p className="font-manrope font-bold text-sm text-[var(--text-primary)]">Review Categorised Transactions</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-0.5">Please verify or correct categories before importing into your wallet.</p>
+                  </div>
+                  <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-[var(--teal-dim)] text-[var(--teal)]">{stagedTxs.length} Ready</span>
+                </div>
+
+                <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-1">
+                  {stagedTxs.map(tx => (
+                    <div key={tx.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] gap-3 hover:border-[var(--teal)] transition-all">
+                      <div>
+                        <p className="font-inter font-bold text-sm text-[var(--text-primary)]">{tx.merchant}</p>
+                        <p className="font-inter text-xs text-[var(--text-muted)] mt-0.5">{tx.description}</p>
+                      </div>
+                      <div className="flex items-center gap-3 justify-between sm:justify-end">
+                        <span className="font-inter font-bold text-sm text-[var(--text-primary)]">₹{tx.amount.toFixed(0)}</span>
+                        <select
+                          value={tx.category}
+                          onChange={(e) => handleCategoryChange(tx.id, e.target.value as Category)}
+                          className="p-2 rounded-lg bg-[var(--surface-card)] border border-[var(--border)] text-xs font-bold text-[var(--text-primary)] focus:border-[var(--teal)] outline-none cursor-pointer"
+                        >
+                          {CATEGORIES.map(c => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex items-center gap-3 pt-4 border-t border-[var(--border)]">
+                  <button onClick={() => setSyncState('idle')} className="flex-1 py-3 rounded-xl bg-[var(--surface-input)] text-[var(--text-primary)] font-bold border border-[var(--border)] cursor-pointer hover:bg-[var(--surface-card)] transition-all">Cancel</button>
+                  <button onClick={handleConfirmImport} className="flex-1 py-3 rounded-xl bg-[var(--teal)] text-white font-bold border-none cursor-pointer shadow-lg shadow-teal-500/20 hover:opacity-90 transition-all flex items-center justify-center gap-2">
+                    Confirm & Import ({stagedTxs.length})
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {syncState === 'done' && (
+              <div className="flex flex-col items-center justify-center py-12 text-center space-y-6 animate-bounce-in">
+                <CheckCircle2 size={64} className="text-[var(--green)]" />
+                <div>
+                  <h4 className="text-2xl font-manrope font-extrabold text-[var(--text-primary)] mb-2">Import Successful!</h4>
+                  <p className="text-sm text-[var(--text-muted)]">
+                    ✅ Imported {stagedTxs.length} transactions ({existingCount} already existed and were skipped)
+                  </p>
+                </div>
+                <button onClick={() => setSyncState('idle')} className="w-full py-4 rounded-xl bg-[var(--teal)] text-white font-bold border-none cursor-pointer shadow-lg shadow-teal-500/20 hover:opacity-90 transition-all">
+                  Done
+                </button>
+              </div>
+            )}
+
+            {syncState === 'error' && (
+              <div className="flex flex-col items-center justify-center py-12 text-center space-y-6">
+                <AlertCircle size={64} className="text-[var(--red)]" />
+                <div>
+                  <h4 className="text-2xl font-manrope font-bold text-[var(--text-primary)] mb-2">Sync Failed</h4>
+                  <p className="text-sm text-[var(--text-muted)]">Could not complete UPI synchronization. Please try again.</p>
+                </div>
+                <button onClick={() => setSyncState('idle')} className="w-full py-4 rounded-xl bg-[var(--surface-input)] text-[var(--text-primary)] font-bold border border-[var(--border)] cursor-pointer">
+                  Close
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

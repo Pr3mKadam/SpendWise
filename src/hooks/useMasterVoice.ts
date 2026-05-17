@@ -84,6 +84,9 @@ const MAX_HISTORY    = 10;
 // SpeechRecognition types handled via (window as any)
 
 export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery }: UseMasterVoiceOptions): UseMasterVoiceReturn {
+  const optionsRef = useRef({ navigate, onExport, toggleTheme, setSearchQuery });
+  optionsRef.current = { navigate, onExport, toggleTheme, setSearchQuery };
+
   const [state,          setState]          = useState<MicState>('idle');
   const [transcript,     setTranscript]     = useState('');
   const [command,        setCommand]        = useState<VoiceCommand | null>(null);
@@ -103,6 +106,7 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
       : null;
 
   const isSupported = !!SpeechRecognitionClass;
+  const startTimeRef = useRef<number>(0);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -170,7 +174,13 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
     }
 
     try {
-      const outcome = await executeCommand(cmd, navigate, onExport, toggleTheme, setSearchQuery);
+      const outcome = await executeCommand(
+        cmd,
+        optionsRef.current.navigate,
+        optionsRef.current.onExport,
+        optionsRef.current.toggleTheme,
+        optionsRef.current.setSearchQuery
+      );
       setResult(outcome);
       setState(outcome.success ? 'success' : 'error');
       
@@ -193,7 +203,7 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
       speak('Something went wrong.');
       scheduleReset();
     }
-  }, [navigate, onExport, pushHistory, scheduleReset]);
+  }, [pushHistory, scheduleReset]);
 
   /** Confirm a pending high-value command. */
   const confirm = useCallback(() => {
@@ -220,8 +230,19 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
     });
   }, []);
 
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     if (!SpeechRecognitionClass) return;
+
+    // Check mic permission first
+    try {
+      const permResult = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      if (permResult.state === 'denied') {
+        setResult({ success: false, message: '🎙️ Microphone access denied. Enable it in browser settings.' });
+        setState('error');
+        scheduleReset(4000);
+        return;
+      }
+    } catch { /* permissions API not supported, proceed anyway */ }
 
     // Cooldown guard
     const now = Date.now();
@@ -240,12 +261,15 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
 
     const recognition = new SpeechRecognitionClass();
     recognition.lang          = 'en-IN';
-    recognition.continuous    = false;
+    recognition.continuous    = true;
     recognition.interimResults = true;
     recognition.maxAlternatives = 3;
     recognitionRef.current = recognition;
 
-    recognition.onstart = () => setState('listening');
+    recognition.onstart = () => {
+      setState('listening');
+      startTimeRef.current = Date.now();
+    };
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const interim = Array.from(event.results)
@@ -256,7 +280,13 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
     };
 
     recognition.onend = async () => {
+      const elapsed = Date.now() - startTimeRef.current;
       const finalTranscript = finalTranscriptRef.current;
+
+      const MIN_LISTEN_MS = 2500;
+      if (!finalTranscript.trim() && elapsed < MIN_LISTEN_MS) {
+        try { recognition.start(); return; } catch { /* already stopped */ }
+      }
 
       if (!finalTranscript.trim()) {
         setResult({ success: false, message: 'No speech detected. Try again.' });

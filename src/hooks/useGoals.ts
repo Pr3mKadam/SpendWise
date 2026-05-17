@@ -1,20 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { SavingsGoal, GoalStatus } from '../types';
 import { useAuth } from './useAuth';
-
-const GOALS_KEY = 'spendwise_goals_v1';
-
-function loadGoals(): SavingsGoal[] {
-  try {
-    const s = localStorage.getItem(GOALS_KEY);
-    if (s) return JSON.parse(s);
-  } catch { /* ignore */ }
-  return [];
-}
-
-function saveGoals(goals: SavingsGoal[]) {
-  try { localStorage.setItem(GOALS_KEY, JSON.stringify(goals)); } catch { /* ignore */ }
-}
+import { useStore } from '../store';
 
 function computeStatus(goal: SavingsGoal): GoalStatus {
   if (goal.savedAmount >= goal.targetAmount) return 'achieved';
@@ -33,7 +20,8 @@ function computeStatus(goal: SavingsGoal): GoalStatus {
 
 export function useGoals() {
   const { user } = useAuth();
-  const [goals, setGoals] = useState<SavingsGoal[]>(loadGoals);
+  const goals = useStore(state => state.goals);
+  const setGoals = useStore(state => state.setGoals);
   const goalsHydrated = true;
 
   const addGoal = useCallback(
@@ -48,33 +36,30 @@ export function useGoals() {
           status,
           createdAt: new Date().toISOString().split('T')[0]
         } as SavingsGoal];
-        saveGoals(next);
         return next;
       });
     },
-    []
+    [user, setGoals]
   );
 
   const updateGoal = useCallback(
     async (id: string, updates: Partial<SavingsGoal>) => {
       setGoals(prev => {
         const next = prev.map(g => g.id === id ? { ...g, ...updates, status: computeStatus({ ...g, ...updates }) } : g);
-        saveGoals(next);
         return next;
       });
     },
-    []
+    [setGoals]
   );
 
   const deleteGoal = useCallback(
     async (id: string) => {
       setGoals(prev => {
         const next = prev.filter(g => g.id !== id);
-        saveGoals(next);
         return next;
       });
     },
-    []
+    [setGoals]
   );
 
   const addContribution = useCallback(
@@ -93,11 +78,10 @@ export function useGoals() {
               }
             : g
         );
-        saveGoals(next);
         return next;
       });
     },
-    [] // No deps — pure functional update, no stale closure possible
+    [setGoals]
   );
 
   const stats = useMemo(() => {

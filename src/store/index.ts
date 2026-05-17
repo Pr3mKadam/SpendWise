@@ -6,6 +6,7 @@ import { createFinanceSlice, FinanceSlice } from './slices/financeSlice';
 import { createPortfolioSlice, PortfolioSlice } from './slices/portfolioSlice';
 import { createGamificationSlice, GamificationSlice } from './slices/gamificationSlice';
 import { createParentalSlice, ParentalSlice } from './slices/parentalSlice';
+import { createSecuredSlice, SecuredSlice } from './slices/securedSlice';
 
 // Helper functions for base64 conversion
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -131,6 +132,7 @@ export interface ParentalControlState {
   isTeenMode: boolean;
   ageGroup: 'child' | 'teen' | 'adult';
   parentPinHash: string | null;
+  parentId?: string | null;
   monthlyLimit: number | null;
   restrictedCategories: Category[];
   pendingTransactions: Transaction[];
@@ -145,7 +147,7 @@ export interface ParentalControlState {
   restrictLateNightSpending?: boolean;
 }
 
-export type SpendWiseStore = FinanceSlice & PortfolioSlice & GamificationSlice & ParentalSlice & {
+export type SpendWiseStore = FinanceSlice & PortfolioSlice & GamificationSlice & ParentalSlice & SecuredSlice & {
   resetData: () => void;
   restoreBackup: (data: any) => void;
   privacyEnabled: boolean;
@@ -159,9 +161,13 @@ export const useStore = create<SpendWiseStore>()(
       ...createPortfolioSlice(set, get, api),
       ...createGamificationSlice(set, get, api),
       ...createParentalSlice(set, get, api),
+      ...createSecuredSlice(set, get, api),
 
       privacyEnabled: false,
-      togglePrivacy: () => set((state) => ({ privacyEnabled: !state.privacyEnabled })),
+      togglePrivacy: () => set((state) => ({ 
+        privacyEnabled: !state.privacyEnabled,
+        parentalState: { ...state.parentalState, hideBalances: !state.privacyEnabled }
+      })),
 
       resetData: () => {
         set({ 
@@ -172,6 +178,18 @@ export const useStore = create<SpendWiseStore>()(
           subscriptions: [],
           recurringTransactions: [],
           razorpayKeys: null,
+          goals: [],
+          sharedData: {
+            groups: [],
+            members: [],
+            walletEntries: [],
+            expenses: [],
+            goals: [],
+            deleted_ids: [],
+          },
+          merchantMemory: {},
+          readNotificationIds: [],
+          snoozedNotifications: {},
           parentalState: { 
             enabled: false,
             isTeenMode: false, 
@@ -200,6 +218,18 @@ export const useStore = create<SpendWiseStore>()(
           subscriptions: data.subscriptions || [],
           recurringTransactions: data.recurringTransactions || [],
           razorpayKeys: data.razorpayKeys || null,
+          goals: data.goals || [],
+          sharedData: data.sharedData || {
+            groups: [],
+            members: [],
+            walletEntries: [],
+            expenses: [],
+            goals: [],
+            deleted_ids: [],
+          },
+          merchantMemory: data.merchantMemory || {},
+          readNotificationIds: data.readNotificationIds || [],
+          snoozedNotifications: data.snoozedNotifications || {},
         });
         get().reindex();
       }
@@ -210,3 +240,71 @@ export const useStore = create<SpendWiseStore>()(
     }
   )
 );
+
+// ─── Automatic Legacy LocalStorage Migration ──────────────────────────────────
+function migrateLegacyLocalStorage(store: SpendWiseStore) {
+  try {
+    // 1. Migrate Savings Goals
+    const legacyGoals = localStorage.getItem('spendwise_goals_v1');
+    if (legacyGoals) {
+      const goals = JSON.parse(legacyGoals);
+      if (Array.isArray(goals) && goals.length > 0) {
+        store.setGoals(goals);
+      }
+      localStorage.removeItem('spendwise_goals_v1');
+    }
+
+    // 2. Migrate Shared Wallets
+    const legacyShared = localStorage.getItem('spendwise_shared_wallets_v2');
+    if (legacyShared) {
+      const shared = JSON.parse(legacyShared);
+      if (shared && typeof shared === 'object' && Array.isArray(shared.groups)) {
+        store.setSharedData(shared);
+      }
+      localStorage.removeItem('spendwise_shared_wallets_v2');
+    }
+
+    // 3. Migrate Merchant Memory
+    const legacyMerchant = localStorage.getItem('spendwise_merchant_memory');
+    if (legacyMerchant) {
+      const merchant = JSON.parse(legacyMerchant);
+      if (merchant && typeof merchant === 'object') {
+        store.setMerchantMemory(merchant);
+      }
+      localStorage.removeItem('spendwise_merchant_memory');
+    }
+
+    // 4. Migrate Notifications
+    const legacyReadNotifs = localStorage.getItem('spendwise_read_notifications_v1');
+    if (legacyReadNotifs) {
+      const readNotifs = JSON.parse(legacyReadNotifs);
+      if (Array.isArray(readNotifs)) {
+        store.setReadNotificationIds(readNotifs);
+      }
+      localStorage.removeItem('spendwise_read_notifications_v1');
+    }
+
+    const legacySnoozedNotifs = localStorage.getItem('spendwise_snoozed_notifications_v1');
+    if (legacySnoozedNotifs) {
+      const snoozed = JSON.parse(legacySnoozedNotifs);
+      if (snoozed && typeof snoozed === 'object') {
+        store.setSnoozedNotifications(snoozed);
+      }
+      localStorage.removeItem('spendwise_snoozed_notifications_v1');
+    }
+
+    // 5. Migrate Razorpay Keys
+    const legacyRzpKey = localStorage.getItem('spendwise_rzp_key');
+    const legacyRzpSecret = localStorage.getItem('spendwise_rzp_secret');
+    if (legacyRzpKey && legacyRzpSecret) {
+      store.setRazorpayKeys({ keyId: legacyRzpKey, keySecret: legacyRzpSecret });
+      localStorage.removeItem('spendwise_rzp_key');
+      localStorage.removeItem('spendwise_rzp_secret');
+    }
+  } catch (err) {
+    console.error('[SpendWise Store] Failed to migrate legacy local storage:', err);
+  }
+}
+
+// Run the migration immediately
+migrateLegacyLocalStorage(useStore.getState());

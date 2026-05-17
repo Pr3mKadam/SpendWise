@@ -19,6 +19,7 @@ interface ProfileViewMobileProps {
   onNavigate: (view: string) => void;
   isAppInstalled: boolean;
   isInstallable: boolean;
+  isIOS: boolean;
   triggerInstall: () => void;
   // Sections (Passed as pre-rendered components for simplicity/state management)
   profileForm: React.ReactNode;
@@ -41,6 +42,7 @@ export default function ProfileViewMobile({
   onNavigate,
   isAppInstalled,
   isInstallable,
+  isIOS,
   triggerInstall,
   profileForm,
   currencySelector,
@@ -173,7 +175,7 @@ export default function ProfileViewMobile({
           Your data is encrypted and stored locally on this device.<br/>We never upload your transactions to any server.
         </p>
         
-        {!isAppInstalled && (isInstallable) && (
+        {!isAppInstalled && (isInstallable || isIOS) && (
           <button 
             onClick={() => { haptic.heavy(); triggerInstall(); }}
             className="w-full h-14 bg-[var(--teal)] text-white rounded-2xl flex items-center justify-center gap-3 font-black uppercase tracking-widest shadow-lg active:scale-95 transition-transform"

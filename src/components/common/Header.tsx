@@ -15,8 +15,8 @@ interface HeaderProps {
   onToggleTheme:         () => void;
   config?:               SpendWiseConfig | null;
   onOpenSearch?:         () => void;
-  isPrivacyEnabled?:     boolean;
-  onTogglePrivacy?:      () => void;
+  isPrivacyEnabled?:     boolean; // Kept for backwards compatibility if needed
+  onTogglePrivacy?:      () => void; // Kept for backwards compatibility if needed
   onExport?:             () => void;
   setSearchQuery?:       (q: string) => void;
 }
@@ -50,10 +50,10 @@ export default function Header({
   onToggleTheme,
   config,
   onOpenSearch,
-  isPrivacyEnabled,
-  onTogglePrivacy,
   onExport,
   setSearchQuery,
+  isPrivacyEnabled = false,
+  onTogglePrivacy = () => {},
 }: HeaderProps) {
   const now = new Date();
   const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -217,20 +217,16 @@ export default function Header({
             </button>
 
             {/* Privacy toggle */}
-            {onTogglePrivacy && (
-              <button
-                onClick={() => {
-                  onTogglePrivacy();
-                }}
-                className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
-                aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
-                style={{ padding: 0, border: 'none' }}
-              >
-                <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
-                  {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
-                </span>
-              </button>
-            )}
+            <button
+              onClick={onTogglePrivacy}
+              className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+              aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
+              style={{ padding: 0, border: 'none' }}
+            >
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+                {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
+              </span>
+            </button>
           </div>
 
           {/* Global Search */}

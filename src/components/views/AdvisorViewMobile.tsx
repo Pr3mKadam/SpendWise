@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, User, Mic, MicOff, Trash2, Zap, Sparkles } from 'lucide-react';
+import { Bot, Send, User, Mic, MicOff, Trash2, Zap, Sparkles, AlertTriangle } from 'lucide-react';
 import { useTransactions } from '../../hooks/useTransactions';
 import { useCurrency } from '../../contexts/CurrencyContext';
 import { haptic } from '../../lib/haptic';
@@ -13,6 +13,7 @@ interface AdvisorViewMobileProps {
   onClearChat: () => void;
   monthlyStats: any;
   dynamicQuickActions: string[];
+  hasGemini: boolean;
 }
 
 export default function AdvisorViewMobile({
@@ -23,7 +24,8 @@ export default function AdvisorViewMobile({
   toggleListening,
   onClearChat,
   monthlyStats,
-  dynamicQuickActions
+  dynamicQuickActions,
+  hasGemini
 }: AdvisorViewMobileProps) {
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -64,6 +66,16 @@ export default function AdvisorViewMobile({
           <Trash2 size={18} />
         </button>
       </div>
+
+      {!hasGemini && (
+        <div className="mx-1 mb-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
+          <AlertTriangle className="text-yellow-500 mt-0.5 flex-shrink-0" size={14} />
+          <div>
+            <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">Local Mode</p>
+            <p className="text-[10px] text-yellow-500/80 mt-1 leading-snug">Gemini API key missing. Using local rule-based advisor fallback.</p>
+          </div>
+        </div>
+      )}
 
       {/* 2. Chat Area */}
       <div 

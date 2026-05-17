@@ -9,8 +9,6 @@ export const STORAGE_KEYS = {
   THEME:             'spendwise_theme',
   HIGH_CONTRAST:     'spendwise_high_contrast',
   MERCHANT_MEMORY:   'spendwise_merchant_memory',
-  RZP_KEY:           'spendwise_rzp_key',
-  RZP_SECRET:        'spendwise_rzp_secret',
   SUPABASE_SESSION:  'spendwise_supabase_session_v1',
   LAST_SYNC:         'spendwise_last_sync_v1',
   ROUND_UP_VAULT:    'spendwise_roundup_vault_v1',

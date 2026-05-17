@@ -4,6 +4,8 @@ import {
   Eye, EyeOff, CheckCircle2, TrendingUp, ShieldCheck, Zap, Star,
   ChevronRight,
 } from 'lucide-react';
+import { ChildQRScanner } from '../features/parental/components/ChildQRScanner';
+import { useAuth } from '../../hooks/useAuth';
 
 // ── Feature list shown on left panel ────────────────────────────
 const features = [
@@ -15,6 +17,7 @@ const features = [
 
 // ── Main component ───────────────────────────────────────────────
 export default function AuthView() {
+  const { signIn, signUp } = useAuth();
   const [isLogin,    setIsLogin]    = useState(true);
   const [email,      setEmail]      = useState('');
   const [password,   setPassword]   = useState('');
@@ -26,6 +29,7 @@ export default function AuthView() {
   const [success,    setSuccess]    = useState<string | null>(null);
   const [showPw,     setShowPw]     = useState(false);
   const [mounted,    setMounted]    = useState(false);
+  const [showQRScanner, setShowQRScanner] = useState(false);
 
   useEffect(() => { setMounted(true); }, []);
 
@@ -35,21 +39,50 @@ export default function AuthView() {
     setSuccess(null);
     setLoading(true);
     
-    // Simulate auth delay
-    setTimeout(() => {
-      const user = {
-        id: email.split('@')[0] || 'guest',
-        email,
-        user_metadata: {
+    try {
+      if (isLogin) {
+        await signIn(email, password);
+      } else {
+        await signUp(email, password, {
           first_name: firstName,
           last_name: lastName,
           phone
-        }
-      };
-      localStorage.setItem('spendwise_user', JSON.stringify(user));
+        });
+      }
       window.location.reload();
+    } catch (err: any) {
+      setError(err.message || 'Authentication failed. Please check your credentials.');
+    } finally {
       setLoading(false);
-    }, 1000);
+    }
+  };
+
+  const handleChildScanSuccess = (parentId: string) => {
+    setShowQRScanner(false);
+    const childUser = {
+      id: 'child_' + Math.random().toString(36).substr(2, 9),
+      email: 'child@local',
+      user_metadata: {
+        first_name: 'Child',
+        last_name: 'Account',
+        parentId,
+        role: 'child'
+      }
+    };
+    localStorage.setItem('spendwise_user', JSON.stringify(childUser));
+    try {
+      const existingCfg = localStorage.getItem('spendwise_config_v1');
+      const cfg = existingCfg ? JSON.parse(existingCfg) : {
+        initialBalance: 0,
+        currency: '₹',
+        onboardingComplete: true,
+        createdAt: new Date().toISOString()
+      };
+      cfg.userRole = 'student';
+      cfg.parentId = parentId;
+      localStorage.setItem('spendwise_config_v1', JSON.stringify(cfg));
+    } catch { /* ignore */ }
+    window.location.reload();
   };
 
   const switchMode = () => { setIsLogin(v => !v); setError(null); setSuccess(null); };
@@ -161,10 +194,26 @@ export default function AuthView() {
                 {isLogin ? 'Sign up for free' : 'Sign in'}<ChevronRight className="w-3.5 h-3.5" />
               </button>
             </p>
+
+            <div className="relative my-6 text-center">
+              <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-[var(--border)]"></div></div>
+              <span className="relative bg-[var(--bg)] px-3 text-xs text-[var(--text-muted)] uppercase tracking-wider">Or</span>
+            </div>
+
+            <button type="button" onClick={() => setShowQRScanner(true)} className="w-full py-3 px-4 rounded-xl font-semibold text-sm bg-[var(--surface-input)] border border-[var(--border)] text-[var(--text-primary)] hover:bg-[var(--surface-hover)] transition-all duration-200 flex items-center justify-center gap-2">
+              <User className="w-4.5 h-4.5 text-[var(--teal)]" />
+              Link to Parent Account
+            </button>
           </div>
           <p className="absolute bottom-6 text-[11px] text-[var(--text-dim)]">© 2026 SpendWise · Local-first experience</p>
         </div>
       </div>
+
+      <ChildQRScanner
+        show={showQRScanner}
+        onClose={() => setShowQRScanner(false)}
+        onSuccess={handleChildScanSuccess}
+      />
     </>
   );
 }

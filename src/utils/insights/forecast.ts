@@ -26,8 +26,8 @@ export interface SpendingForecast {
  * Uses a simple weighted average (recent months weigh more)
  * and a "burn rate" extrapolation for the current month.
  */
-export function forecastNextMonth(transactions: Transaction[]): SpendingForecast {
-  const now = new Date();
+export function forecastNextMonth(transactions: Transaction[], referenceDate: Date = new Date()): SpendingForecast {
+  const now = referenceDate;
   const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
   const daysElapsed = now.getDate();
@@ -145,9 +145,21 @@ export function forecastNextMonth(transactions: Transaction[]): SpendingForecast
     .filter(tx => tx.type === 'debit')
     .reduce((s, tx) => s + tx.amount, 0);
 
-  // Run-rate: if we continue spending at current pace
-  const dailyRate = daysElapsed > 0 ? spentSoFar / daysElapsed : 0;
-  const runRate = Math.round(dailyRate * totalDaysInMonth);
+  // Run-rate: if we continue spending at current pace (with minimum telemetry guard of 5 days)
+  const MIN_DAYS = 5;
+  let runRate = 0;
+  let finalConfidence = confidence;
+  let finalConfidenceReason = confidenceReason;
+
+  if (daysElapsed >= MIN_DAYS) {
+    const dailyRate = spentSoFar / daysElapsed;
+    runRate = Math.round(dailyRate * totalDaysInMonth);
+  } else {
+    // Graceful fallback to predicted total if historical data is available, otherwise simple projection
+    runRate = months.length > 0 ? predictedTotal : Math.round(spentSoFar * (totalDaysInMonth / Math.max(1, daysElapsed)));
+    finalConfidence = 'low';
+    finalConfidenceReason = 'Early in the month — confidence will increase after the 5th day when active telemetry stabilizes.';
+  }
 
   const predictedSavings = predictedIncome - (months.length > 0 ? predictedTotal : runRate);
 
@@ -156,8 +168,8 @@ export function forecastNextMonth(transactions: Transaction[]): SpendingForecast
     predictedIncome,
     predictedSavings,
     categoryForecasts,
-    confidence,
-    confidenceReason,
+    confidence: finalConfidence,
+    confidenceReason: finalConfidenceReason,
     daysRemaining,
     spentSoFar: Math.round(spentSoFar),
     runRate,

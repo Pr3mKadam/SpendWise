@@ -1,6 +1,7 @@
-import React from 'react';
-import { ShieldCheck, ArrowRight, Save, Lock } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, ArrowRight, Save, Lock, Camera } from 'lucide-react';
 import { PinInput } from '../../../common/ui/PinInput';
+import { ChildQRScanner } from './ChildQRScanner';
 
 interface ParentalSetupFlowProps {
   setupStep: 'welcome' | 'pin' | 'limits';
@@ -25,6 +26,8 @@ export const ParentalSetupFlow: React.FC<ParentalSetupFlowProps> = ({
   settings,
   updateSettings
 }) => {
+  const [showScanner, setShowScanner] = useState(false);
+
   return (
     <div className="max-w-2xl mx-auto p-4 animate-slide-up">
       {setupStep === 'welcome' && (
@@ -38,12 +41,29 @@ export const ParentalSetupFlow: React.FC<ParentalSetupFlowProps> = ({
           </p>
           <button
             onClick={() => setSetupStep('pin')}
-            className="w-full py-4 rounded-2xl bg-[var(--teal)] text-white font-bold text-lg hover:opacity-90 flex items-center justify-center gap-3 transition-all shadow-lg shadow-teal-500/25"
+            className="w-full py-4 rounded-2xl bg-[var(--teal)] text-white font-bold text-lg hover:opacity-90 flex items-center justify-center gap-3 transition-all shadow-lg shadow-teal-500/25 mb-4"
           >
             Get Started <ArrowRight className="w-6 h-6" />
           </button>
+          
+          <button
+            onClick={() => setShowScanner(true)}
+            className="w-full py-4 rounded-2xl bg-[var(--surface-input)] text-[var(--teal)] border border-[var(--teal)]/20 font-bold text-lg hover:bg-[var(--teal)]/10 flex items-center justify-center gap-3 transition-all"
+          >
+            I'm a Child (Scan Parent QR) <Camera className="w-6 h-6" />
+          </button>
         </div>
       )}
+
+      <ChildQRScanner
+        show={showScanner}
+        onClose={() => setShowScanner(false)}
+        onSuccess={(parentId) => {
+          updateSettings({ enabled: true, isTeenMode: true, ageGroup: 'teen', parentId });
+          setShowScanner(false);
+          completeSetup();
+        }}
+      />
 
       {setupStep === 'pin' && (
         <div className="card p-8 flex flex-col items-center shadow-xl border border-[var(--teal)]/10">

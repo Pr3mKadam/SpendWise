@@ -27,23 +27,49 @@ const SIMULATED_RATES: Record<CurrencyCode, number> = {
 };
 
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>('$');
-  const [activeCurrency, setActiveCurrency] = useState<CurrencyCode>('$');
-
-  // Load from config if exists
-  useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
-    if (raw) {
-      try {
+  const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
+      if (raw) {
         const config = JSON.parse(raw);
-        if (config.currency) {
-          setBaseCurrency(config.currency);
-          setActiveCurrency(config.currency);
-        }
-      } catch (e) {
-        console.error('Failed to load currency config', e);
+        if (config.currency) return config.currency as CurrencyCode;
       }
-    }
+    } catch { /* ignore */ }
+    return '₹'; // Default to Rupees as requested
+  });
+
+  const [activeCurrency, setActiveCurrency] = useState<CurrencyCode>(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
+      if (raw) {
+        const c = JSON.parse(raw);
+        if (c.currency) return c.currency as CurrencyCode;
+      }
+    } catch { /* ignore */ }
+    return '₹';
+  });
+
+  useEffect(() => {
+    const handleConfigChange = () => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
+        if (raw) {
+          const config = JSON.parse(raw);
+          if (config.currency) {
+            setBaseCurrency(config.currency as CurrencyCode);
+            setActiveCurrency(config.currency as CurrencyCode);
+          }
+        }
+      } catch { /* ignore */ }
+    };
+
+    window.addEventListener('spendwise-config-updated', handleConfigChange);
+    window.addEventListener('storage', handleConfigChange);
+
+    return () => {
+      window.removeEventListener('spendwise-config-updated', handleConfigChange);
+      window.removeEventListener('storage', handleConfigChange);
+    };
   }, []);
 
   const convert = (amount: number, from: CurrencyCode = baseCurrency, to: CurrencyCode = activeCurrency) => {

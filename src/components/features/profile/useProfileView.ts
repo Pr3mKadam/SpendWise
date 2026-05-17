@@ -182,7 +182,13 @@ export function useProfileView(
       }
     } catch { alert('Failed to read file.'); }
   };
-  const handleCurrencySelect = (code: CurrencyCode) => { setActiveCurrency(code); setCurrency(code); };
+  const handleCurrencySelect = (code: CurrencyCode) => {
+    setActiveCurrency(code);
+    setCurrency(code);
+    if (config) {
+      onUpdateConfig({ ...config, currency: code });
+    }
+  };
 
   return {
     // form fields

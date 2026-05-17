@@ -104,6 +104,8 @@ export function useBudgets() {
     monthlyExpenses: monthlyStats.totalExpenses,
     budgetSettings,
     updateBudgetSettings,
-    resetBudgets: useStore(state => state.resetBudgets)
+    resetBudgets: useStore(state => state.resetBudgets),
+    resetLimits: useStore(state => state.resetLimits),
+    toggleRollover: useStore(state => state.toggleRollover)
   };
 }

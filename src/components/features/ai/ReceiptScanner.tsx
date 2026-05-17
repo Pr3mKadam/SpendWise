@@ -67,9 +67,13 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
         onClose();
       }, 500);
       
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setError("Failed to parse receipt with Gemini. Please try again.");
+      setError(
+        err.message?.includes('API key')
+          ? '🔑 Gemini API key not configured. Using local OCR instead — tap "Start Analysis" again.'
+          : '⚠️ Could not read receipt. Try a clearer, well-lit photo.'
+      );
     } finally {
       setIsProcessing(false);
     }

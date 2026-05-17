@@ -28,6 +28,7 @@ export const createParentalSlice: StateCreator<SpendWiseStore, [["zustand/persis
     isTeenMode: false,
     ageGroup: 'teen',
     parentPinHash: null,
+    parentId: null,
     monthlyLimit: null,
 
     restrictedCategories: [],
@@ -73,6 +74,7 @@ export const createParentalSlice: StateCreator<SpendWiseStore, [["zustand/persis
       ...state.parentalState, 
       enabled: false, 
       parentPinHash: null, 
+      parentId: null,
       isTeenMode: false, 
       sessionUnlocked: false 
     }

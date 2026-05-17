@@ -5,6 +5,7 @@ import {
   SharedGoalContribution, SharedStorage, mergeSharedStorage 
 } from '../lib/crdt';
 import { syncEngine, SyncState } from '../lib/syncEngine';
+import { useStore } from '../store';
 
 export type { SharedGroup, SharedGroupMember, SharedWalletEntry, SharedExpense, SharedExpenseSplit, SharedGoal, SharedGoalContribution };
 
@@ -16,34 +17,9 @@ export interface PendingInvite {
   invitedAt: string;
 }
 
-const STORAGE_KEY = 'spendwise_shared_wallets_v2';
-
-function loadStorage(): SharedStorage {
-  try {
-    const s = localStorage.getItem(STORAGE_KEY);
-    if (s) {
-      const parsed = JSON.parse(s);
-      // Migrate v1 to v2 (add tombstones)
-      if (!parsed.deleted_ids) parsed.deleted_ids = [];
-      return parsed;
-    }
-  } catch { /* ignore */ }
-  return {
-    groups: [],
-    members: [],
-    walletEntries: [],
-    expenses: [],
-    goals: [],
-    deleted_ids: [],
-  };
-}
-
-function saveStorage(s: SharedStorage) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch { /* ignore */ }
-}
-
 export function useSharedWallets(userId: string | null, userEmail?: string | null) {
-  const [data, setData] = useState<SharedStorage>(loadStorage);
+  const data = useStore(state => state.sharedData);
+  const setData = useStore(state => state.setSharedData);
   const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   
@@ -66,7 +42,6 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
         if (remoteData && Array.isArray(remoteData.groups)) {
           setData(prev => {
             const next = mergeSharedStorage(prev, remoteData as SharedStorage);
-            saveStorage(next);
             return next;
           });
         }
@@ -78,7 +53,7 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
     return () => {
       // Clean up
     };
-  }, []);
+  }, [setData]);
 
   // Broadcast full state when a new peer connects
   useEffect(() => {
@@ -136,7 +111,6 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
   const mutate = (updater: (prev: SharedStorage) => SharedStorage) => {
     setData(prev => {
       const next = updater(prev);
-      saveStorage(next);
       syncEngine.broadcast(next); // Broadcast on every mutation!
       return next;
     });
@@ -329,11 +303,20 @@ export function useSharedWallets(userId: string | null, userEmail?: string | nul
         exportedAt: new Date().toISOString()
       };
       
-      return btoa(JSON.stringify(exportData));
+      try {
+        return btoa(encodeURIComponent(JSON.stringify(exportData)));
+      } catch {
+        return btoa(JSON.stringify(exportData));
+      }
     },
     importGroup: async (encodedData: string) => {
       try {
-        const decoded = JSON.parse(atob(encodedData));
+        let decoded;
+        try {
+          decoded = JSON.parse(decodeURIComponent(atob(encodedData)));
+        } catch {
+          decoded = JSON.parse(atob(encodedData));
+        }
         if (decoded.type !== 'spendwise-shared-group') throw new Error('Invalid group data');
         
         mutate(prev => {

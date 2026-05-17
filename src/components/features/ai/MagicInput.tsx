@@ -45,7 +45,23 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
       return;
     }
     setIsProcessing(true);
-    const result = await processNaturalLanguageExpense(input);
+    const result = await processNaturalLanguageExpense(input, activeCurrency);
+    
+    if (!result) {
+      // Fallback: create a minimal transaction from the raw text
+      const amount = parseFloat(input.replace(/[^0-9.]/g, '')) || 0;
+      const fallbackResult = {
+        merchant: input.trim(),
+        category: 'Shopping' as any,
+        amount,
+        type: 'debit' as const,
+        confidence: 0.3,
+      };
+      setPrediction(fallbackResult);
+      setScanStatus('⚠️ Could not fully parse — please review and edit below');
+      setIsProcessing(false);
+      return;
+    }
     
     // Intelligent Default: If merchant matches history, suggest previous category
     if (result && result.merchant) {

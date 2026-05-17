@@ -159,4 +159,34 @@ describe('forecastNextMonth', () => {
     expect(result.daysRemaining).toBeGreaterThanOrEqual(0);
     expect(result.daysRemaining).toBeLessThanOrEqual(31);
   });
+
+  it('enforces 5-day minimum telemetry guard on current month forecast', () => {
+    const txs: Transaction[] = [];
+    for (let i = 1; i <= 4; i++) {
+      txs.push(makeTx(1000, 'debit', 'Food', monthsAgo(i)));
+    }
+    
+    // Add transaction on the 2nd day of current month
+    const d1 = new Date();
+    d1.setDate(2);
+    const dateStr1 = `${d1.getFullYear()}-${String(d1.getMonth() + 1).padStart(2, '0')}-02`;
+    txs.push(makeTx(100, 'debit', 'Food', dateStr1));
+
+    // Perform forecast with reference date on day 2
+    const result1 = forecastNextMonth(txs, d1);
+    expect(result1.confidence).toBe('low');
+    expect(result1.confidenceReason).toContain('Early in the month');
+    expect(result1.runRate).toBe(result1.predictedTotal);
+
+    // Add transaction on the 6th day of current month
+    const d2 = new Date();
+    d2.setDate(6);
+    const dateStr2 = `${d2.getFullYear()}-${String(d2.getMonth() + 1).padStart(2, '0')}-06`;
+    txs.push(makeTx(200, 'debit', 'Food', dateStr2)); // total 300 spent so far by day 6
+
+    // Perform forecast with reference date on day 6
+    const result2 = forecastNextMonth(txs, d2);
+    const daysInMonth = new Date(d2.getFullYear(), d2.getMonth() + 1, 0).getDate();
+    expect(result2.runRate).toBe(Math.round(50 * daysInMonth));
+  });
 });

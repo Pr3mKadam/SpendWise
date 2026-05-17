@@ -1,5 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { STORAGE_KEYS } from '../constants';
+import { useStore } from '../store';
+import { isSupabaseConfigured, signInWithEmail, signUpWithEmail } from '../services/supabase';
 
 export interface User {
   id: string;
@@ -15,6 +17,8 @@ export interface AuthContextType {
   mfaRequired: boolean;
   signOut: () => Promise<void>;
   signInAnonymously: () => void;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, metadata?: any) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -25,6 +29,8 @@ const AuthContext = createContext<AuthContextType>({
   mfaRequired: false,
   signOut: async () => {},
   signInAnonymously: () => {},
+  signIn: async () => {},
+  signUp: async () => {},
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -36,25 +42,84 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (storedUser) {
       setUser(JSON.parse(storedUser));
     } else {
-      // For hackathon: Auto-login as a guest if no user exists
-      const guestUser = { id: 'guest_' + Math.random().toString(36).substr(2, 9), email: 'guest@example.com' };
+      // Use a STABLE guest ID tied to the device, not random each time
+      const stableId = localStorage.getItem('spendwise_device_id')
+        || ('device_' + Math.random().toString(36).substr(2, 12));
+      localStorage.setItem('spendwise_device_id', stableId);
+
+      const guestUser = { id: stableId, email: 'guest@local' };
       localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
       setUser(guestUser);
+      
+      // Reset gamification for new guest so streak starts at 0
+      useStore.getState().checkStreak();
     }
     setAuthReady(true);
   }, []);
 
   const signOut = useCallback(async () => {
     localStorage.removeItem('spendwise_user');
-    localStorage.removeItem('spendwise_transactions_v2');
+    localStorage.removeItem('spendwise_supabase_token');
+    // Do NOT remove spendwise_device_id — keeps data stable
+    // Do NOT remove transactions — they're in IDB and tied to device
     localStorage.removeItem(STORAGE_KEYS.CONFIG);
     window.location.reload();
   }, []);
 
   const signInAnonymously = useCallback(() => {
-    const guestUser = { id: 'guest_' + Math.random().toString(36).substr(2, 9), email: 'guest@example.com' };
+    const stableId = localStorage.getItem('spendwise_device_id')
+      || ('device_' + Math.random().toString(36).substr(2, 12));
+    localStorage.setItem('spendwise_device_id', stableId);
+
+    const guestUser = { id: stableId, email: 'guest@local' };
     localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
     setUser(guestUser);
+  }, []);
+
+  const signIn = useCallback(async (email: string, password: string) => {
+    if (!isSupabaseConfigured) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const userObj = {
+        id: email.split('@')[0] || 'guest',
+        email,
+        user_metadata: { first_name: 'Guest', last_name: 'User' }
+      };
+      localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+      setUser(userObj);
+      return;
+    }
+    const res = await signInWithEmail(email, password);
+    const userObj = {
+      id: res.id,
+      email: res.email,
+      user_metadata: {}
+    };
+    localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+    localStorage.setItem('spendwise_supabase_token', res.access_token);
+    setUser(userObj);
+  }, []);
+
+  const signUp = useCallback(async (email: string, password: string, metadata?: any) => {
+    if (!isSupabaseConfigured) {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const userObj = {
+        id: email.split('@')[0] || 'guest',
+        email,
+        user_metadata: metadata || {}
+      };
+      localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+      setUser(userObj);
+      return;
+    }
+    const res = await signUpWithEmail(email, password);
+    const userObj = {
+      id: res.id,
+      email: res.email,
+      user_metadata: metadata || {}
+    };
+    localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+    localStorage.setItem('spendwise_supabase_token', res.access_token);
+    setUser(userObj);
   }, []);
 
   const value = useMemo<AuthContextType>(() => ({
@@ -65,7 +130,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     mfaRequired: false,
     signOut,
     signInAnonymously,
-  }), [user, authReady, signOut, signInAnonymously]);
+    signIn,
+    signUp,
+  }), [user, authReady, signOut, signInAnonymously, signIn, signUp]);
 
   return (
     <AuthContext.Provider value={value}>
