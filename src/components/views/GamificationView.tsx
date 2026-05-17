@@ -68,7 +68,7 @@ export default function GamificationView({ transactions, goals, currency = '₹'
             }}
           >
             <span className="text-white font-manrope font-black text-3xl leading-none">{level}</span>
-            <span className="text-teal-200 text-[9px] font-bold uppercase tracking-wider">Level</span>
+            <span className="text-teal-200 text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">Level</span>
           </motion.div>
 
           {/* Stats */}
@@ -86,7 +86,7 @@ export default function GamificationView({ transactions, goals, currency = '₹'
 
             {/* XP bar */}
             <div className="mb-2">
-              <div className="flex justify-between text-[10px] font-bold text-teal-300/70 mb-1">
+              <div className="flex justify-between text-[length:var(--fs-overline)] font-bold text-teal-300/70 mb-1">
                 <span>{currentLevelXP} XP</span>
                 <span>{XP_PER_LEVEL} XP needed</span>
               </div>
@@ -133,7 +133,7 @@ export default function GamificationView({ transactions, goals, currency = '₹'
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all"
+              className="flex-1 flex items-center justify-center gap-1.5 min-h-[48px] px-2.5 rounded-xl text-[var(--fs-caption)] font-bold transition-all"
               style={{
                 background: isActive ? 'var(--teal)' : 'transparent',
                 color: isActive ? '#fff' : 'var(--text-muted)',
@@ -215,7 +215,7 @@ export default function GamificationView({ transactions, goals, currency = '₹'
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold text-[var(--text-primary)] truncate">{tile.label}</p>
-                        <p className="text-[10px] text-[var(--text-muted)]">{tile.sub}</p>
+                        <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">{tile.sub}</p>
                       </div>
                       {tile.tab !== 'overview' && (
                         <ChevronRight size={14} className="text-[var(--text-muted)] shrink-0" />

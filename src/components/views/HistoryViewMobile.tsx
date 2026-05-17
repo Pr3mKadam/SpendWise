@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useCategories } from '../../hooks/useCategories';
 import { haptic } from '../../lib/haptic';
+import EmptyState from '../common/EmptyState';
 
 interface HistoryViewMobileProps {
   transactions: Transaction[];
@@ -55,13 +56,13 @@ export default function HistoryViewMobile({
         <div className="flex items-center justify-between mb-4">
           <div>
             <h2 className="text-2xl font-black text-[var(--text-primary)]">History</h2>
-            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-0.5">
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest mt-0.5">
               {filtered.length} TRANSACTIONS
             </p>
           </div>
           <div className={`px-4 py-2 rounded-2xl ${total >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'} border border-current/20`}>
-            <p className="text-[10px] font-black uppercase tracking-widest text-center opacity-70">Net</p>
-            <p className="text-sm font-black">{total >= 0 ? '+' : ''}{currency}{Math.abs(total).toLocaleString()}</p>
+            <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-center opacity-70">Net</p>
+            <p className="text-sm font-bold">{total >= 0 ? '+' : ''}{currency}{Math.abs(total).toLocaleString()}</p>
           </div>
         </div>
 
@@ -86,7 +87,7 @@ export default function HistoryViewMobile({
           <button
             key={cat}
             onClick={() => { haptic.light(); setActiveCategory(cat as any); }}
-            className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap border transition-all ${
+            className={`px-4 py-2 rounded-full text-[length:var(--fs-overline)] font-bold uppercase tracking-widest whitespace-nowrap border transition-all ${
               activeCategory === cat 
                 ? 'bg-[var(--teal)] text-white border-[var(--teal)] shadow-md' 
                 : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border)]'
@@ -98,16 +99,17 @@ export default function HistoryViewMobile({
       </div>
 
       {/* 3. Transaction List */}
-      <div className="flex-1 min-h-0 bg-[var(--surface-card)] rounded-[32px] border border-[var(--border)] shadow-sm overflow-hidden">
+      <div className="flex-1 min-h-0 bg-[var(--surface-card)] rounded-[var(--radius-sheet)] border border-[var(--border)] shadow-sm overflow-hidden">
         <Virtuoso
           totalCount={filtered.length}
           itemContent={(index) => {
             const tx = filtered[index];
             return (
-              <div 
+              <button 
                 key={tx.id}
                 onClick={() => handleRowClick(tx)}
-                className="p-4 border-b border-[var(--border)] flex items-center gap-4 active:bg-[var(--surface-light)] transition-colors"
+                className="w-full text-left p-4 border-b border-[var(--border)] flex items-center gap-4 active:bg-[var(--surface-light)] transition-colors focus:outline-none focus:bg-[var(--surface-light)]"
+                aria-label={`${tx.merchant}, ${tx.type === 'debit' ? 'spent' : 'received'} ${currency}${tx.amount}, ${tx.category}, ${new Date(tx.date).toLocaleDateString()}`}
               >
                 <div 
                   className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0"
@@ -117,14 +119,14 @@ export default function HistoryViewMobile({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start mb-0.5">
-                    <p className="text-sm font-black text-[var(--text-primary)] truncate">{tx.merchant}</p>
-                    <p className={`text-sm font-black ${tx.type === 'debit' ? 'text-red-500' : 'text-emerald-500'}`}>
+                    <p className="text-sm font-bold text-[var(--text-primary)] truncate">{tx.merchant}</p>
+                    <p className={`text-sm font-bold ${tx.type === 'debit' ? 'text-red-500' : 'text-emerald-500'}`}>
                       {tx.type === 'debit' ? '-' : '+'}{currency}{tx.amount.toLocaleString()}
                     </p>
                   </div>
                   <div className="flex justify-between items-center">
-                    <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">{tx.category}</p>
-                    <p className="text-[9px] text-[var(--text-dim)] font-medium">
+                    <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">{tx.category}</p>
+                    <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] font-medium">
                       {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}
                     </p>
                   </div>
@@ -133,25 +135,25 @@ export default function HistoryViewMobile({
                   {onDelete && (
                     <button
                       onClick={(e) => { e.stopPropagation(); haptic.medium(); onDelete(tx.id); }}
-                      className="p-1.5 rounded-lg active:bg-red-500/10 active:text-red-500 transition-colors"
+                      className="p-1.5 rounded-lg active:bg-red-500/10 active:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
+                      aria-label={`Delete ${tx.merchant} transaction`}
                     >
                       <Trash2 size={14} />
                     </button>
                   )}
-                  <ChevronRight size={16} />
+                  <ChevronRight size={16} aria-hidden="true" />
                 </div>
-              </div>
+              </button>
             );
           }}
           style={{ height: '100%' }}
         />
         
         {filtered.length === 0 && (
-          <div className="flex flex-col items-center justify-center h-full p-8 text-center opacity-50">
-            <Search size={48} className="mb-4" />
-            <p className="text-sm font-bold">No results found.</p>
-            <p className="text-xs">Try a different search term or category.</p>
-          </div>
+          <EmptyState 
+            message="No results found." 
+            subMessage="Try a different search term or category." 
+          />
         )}
       </div>
     </div>

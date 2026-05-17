@@ -38,11 +38,11 @@ export default function WealthCity() {
 
       {/* City Title */}
       <div className="absolute top-6 left-6 z-10">
-        <h3 className="font-manrope font-black text-base sm:text-xl text-[var(--text-primary)] tracking-tight flex items-center gap-2">
+        <h3 className="font-manrope font-bold text-base sm:text-xl text-[var(--text-primary)] tracking-tight flex items-center gap-2">
           Your Financial Kingdom
           {stage >= 5 && <Sparkles size={16} className="text-amber-500 animate-pulse" />}
         </h3>
-        <p className="font-inter text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+        <p className="font-inter text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">
           {stage === 1 ? 'Foundations' : stage === 2 ? 'Growing Town' : stage === 3 ? 'Emerging City' : stage === 4 ? 'Metropolis' : 'Infinite Empire'}
         </p>
       </div>
@@ -77,7 +77,7 @@ export default function WealthCity() {
             {level >= b.minLvl ? (
                <div className="flex flex-col items-center">
                   {b.icon}
-                  <span className="text-[8px] font-black uppercase tracking-tighter mt-1">{b.name}</span>
+                  <span className="text-[8px] font-bold uppercase tracking-tighter mt-1">{b.name}</span>
                </div>
             ) : (
               <Construction size={16} className="animate-pulse" />

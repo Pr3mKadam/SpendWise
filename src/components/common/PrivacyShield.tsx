@@ -121,7 +121,7 @@ export default function PrivacyShield({ onUnlock, isLocked: controlledLocked }: 
               Resume Session
             </button>
 
-            <p className="text-[10px] uppercase tracking-widest font-bold text-[var(--text-dim)]">
+            <p className="text-[length:var(--fs-overline)] uppercase tracking-widest font-bold text-[var(--text-dim)]">
               Securely protected by SpendWise
             </p>
           </motion.div>

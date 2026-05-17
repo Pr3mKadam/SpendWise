@@ -24,7 +24,7 @@ export const StatCard = memo(function StatCard({ label, value, icon: Icon, iconC
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110" style={{ background: iconBg }}>
             <Icon size={14} className={`sm:w-[16px] sm:h-[16px] ${iconColor}`} />
           </div>
-          <div className={`flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8px] sm:text-[9px] font-bold ${
+          <div className={`flex items-center gap-0.5 px-1 py-0.5 rounded-full text-[8px] sm:text-[length:var(--fs-overline)] font-bold ${
             trend === 'up' ? 'bg-emerald-500/10 text-emerald-500' : 
             trend === 'down' ? 'bg-red-500/10 text-red-500' : 
             'bg-slate-500/10 text-slate-500'
@@ -35,10 +35,10 @@ export const StatCard = memo(function StatCard({ label, value, icon: Icon, iconC
           </div>
         </div>
         <div className="min-w-0 overflow-hidden">
-          <p className={`stat-value-text text-[15px] sm:text-[18px] md:text-xl font-black truncate tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-manrope)' }}>
+          <p className={`stat-value-text text-[15px] sm:text-[18px] md:text-xl font-bold truncate tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-manrope)' }}>
             {value}
           </p>
-          <p className="text-[9px] sm:text-[10px] font-bold truncate uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{label}</p>
+          <p className="text-[length:var(--fs-overline)] sm:text-[length:var(--fs-overline)] font-bold truncate uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{label}</p>
         </div>
       </Card>
     </div>

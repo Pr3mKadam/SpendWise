@@ -44,7 +44,7 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
       {/* Header Summary */}
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <div className="bg-[var(--surface-card)] rounded-3xl p-6 border border-[var(--border)] shadow-sm">
-          <p className="text-[10px] font-black uppercase text-[var(--text-muted)] tracking-widest mb-1">Total Monthly Budget</p>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase text-[var(--text-muted)] tracking-widest mb-1">Total Monthly Budget</p>
           <h2 className="text-3xl font-black text-[var(--text-primary)]">{currency}{totalBudgeted.toLocaleString()}</h2>
           <div className="mt-4 flex items-center gap-2">
             <div className="flex-1 h-2 bg-[var(--surface-input)] rounded-full overflow-hidden">
@@ -54,16 +54,16 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
                 className={`h-full rounded-full ${overallBudgetPercent > 100 ? 'bg-red-500' : 'bg-[var(--teal)]'}`}
               />
             </div>
-            <span className="text-[10px] font-bold text-[var(--text-muted)]">{Math.round(overallBudgetPercent)}%</span>
+            <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)]">{Math.round(overallBudgetPercent)}%</span>
           </div>
         </div>
 
         <div className="bg-gradient-to-br from-[var(--teal)] to-[#0d9488] rounded-3xl p-6 text-white shadow-lg flex flex-col justify-between">
           <div>
-            <p className="text-[10px] font-black uppercase opacity-80 tracking-widest mb-1">Budgeting Strategy</p>
-            <h3 className="text-xl font-black">70/20/10 Rule</h3>
+            <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-80 tracking-widest mb-1">Budgeting Strategy</p>
+            <h3 className="text-xl font-bold">70/20/10 Rule</h3>
           </div>
-          <p className="text-[11px] opacity-90 mt-2 font-medium">You are currently budgeting {Math.round(overallBudgetPercent)}% of your typical monthly spend.</p>
+          <p className="text-[length:var(--fs-caption)] opacity-90 mt-2 font-medium">You are currently budgeting {Math.round(overallBudgetPercent)}% of your typical monthly spend.</p>
         </div>
       </div>
 
@@ -73,7 +73,7 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
           <h3 className="font-bold text-[var(--text-primary)]">Category Budgets</h3>
           <button 
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--teal)]/10 text-[var(--teal)] border-none rounded-xl cursor-pointer font-bold text-[11px] hover:bg-[var(--teal)]/20 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--teal)]/10 text-[var(--teal)] border-none rounded-xl cursor-pointer font-bold text-[length:var(--fs-caption)] hover:bg-[var(--teal)]/20 transition-all"
           >
             <Plus size={14} /> ADD LIMIT
           </button>
@@ -89,7 +89,7 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
                 className="p-4 bg-[var(--surface-input)] rounded-2xl flex flex-wrap gap-3 items-end border border-[var(--teal)]/30"
               >
                 <div className="flex-1 min-w-[150px]">
-                  <label className="block text-[10px] font-bold text-[var(--text-muted)] mb-1.5 uppercase">Category</label>
+                  <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-1.5 uppercase">Category</label>
                   <select 
                     value={selectedCategory} 
                     onChange={(e) => setSelectedCategory(e.target.value as Category)}
@@ -102,7 +102,7 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
                   </select>
                 </div>
                 <div className="w-[120px]">
-                  <label className="block text-[10px] font-bold text-[var(--text-muted)] mb-1.5 uppercase">Monthly Limit</label>
+                  <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-1.5 uppercase">Monthly Limit</label>
                   <input 
                     type="number" 
                     value={limitAmount}
@@ -158,14 +158,14 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
 
                 <div className="flex items-end justify-between mb-2">
                   <div>
-                    <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Spent</p>
-                    <p className="text-sm font-black text-[var(--text-primary)]">
-                      {currency}{b.spent.toLocaleString()} <span className="text-[10px] font-medium text-[var(--text-muted)]">/ {currency}{b.limit.toLocaleString()}</span>
+                    <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Spent</p>
+                    <p className="text-sm font-bold text-[var(--text-primary)]">
+                      {currency}{b.spent.toLocaleString()} <span className="text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">/ {currency}{b.limit.toLocaleString()}</span>
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Remaining</p>
-                    <p className={`text-sm font-black ${b.remaining < 0 ? 'text-red-500' : 'text-[var(--teal)]'}`}>
+                    <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Remaining</p>
+                    <p className={`text-sm font-bold ${b.remaining < 0 ? 'text-red-500' : 'text-[var(--teal)]'}`}>
                       {currency}{b.remaining.toLocaleString()}
                     </p>
                   </div>
@@ -180,7 +180,7 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
                 </div>
                 
                 {b.percent > 100 && (
-                  <div className="mt-2 flex items-center gap-1 text-[9px] font-bold text-red-500">
+                  <div className="mt-2 flex items-center gap-1 text-[length:var(--fs-overline)] font-bold text-red-500">
                     <AlertCircle size={10} />
                     OVER BUDGET BY {currency}{Math.abs(b.remaining).toLocaleString()}
                   </div>

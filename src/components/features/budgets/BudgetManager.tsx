@@ -135,7 +135,7 @@ export default function BudgetManager({
             <Sparkles size={15} />
             <span>AI Budget Suggestions</span>
             <span
-              className="ml-1 flex items-center justify-center h-5 min-w-[20px] rounded-full text-[10px] font-bold px-1"
+              className="ml-1 flex items-center justify-center h-5 min-w-[20px] rounded-full text-[length:var(--fs-overline)] font-bold px-1"
               style={{ background: 'rgba(99,102,241,0.2)', color: '#818cf8' }}
             >
               {unappliedSuggestions.length}
@@ -186,7 +186,7 @@ export default function BudgetManager({
                             {s.category}
                           </span>
                           <span
-                            className="text-[9px] font-bold rounded-full px-1.5 py-0.5"
+                            className="text-[length:var(--fs-overline)] font-bold rounded-full px-1.5 py-0.5"
                             style={{ background: CONFIDENCE_COLOR[s.confidence] + '20', color: CONFIDENCE_COLOR[s.confidence] }}
                           >
                             {CONFIDENCE_LABEL[s.confidence]}

@@ -107,7 +107,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                       }`}
                     >
                       <t.icon size={24} className="mb-2" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider">{t.label}</span>
+                      <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">{t.label}</span>
                     </button>
                   ))}
                 </div>

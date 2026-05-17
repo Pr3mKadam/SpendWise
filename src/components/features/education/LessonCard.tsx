@@ -57,20 +57,20 @@ export function LessonCard({ lesson, completed, locked, onClick }: LessonCardPro
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
-            <span className="text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: lesson.color + '12', color: lesson.color }}>
+            <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full flex items-center gap-1" style={{ background: lesson.color + '12', color: lesson.color }}>
               {cfg.icon} {cfg.label}
             </span>
-            <span className="text-[9px] font-bold text-[var(--text-muted)] flex items-center gap-1">
+            <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] flex items-center gap-1">
               <Clock size={9} /> {lesson.readingTime}m
             </span>
-            <span className="text-[9px] font-bold text-amber-500 flex items-center gap-1">
+            <span className="text-[length:var(--fs-overline)] font-bold text-amber-500 flex items-center gap-1">
               <Star size={9} className="fill-amber-500" /> +{lesson.xpReward} XP
             </span>
           </div>
           <h4 className="font-manrope font-bold text-[15px] text-[var(--text-primary)] leading-snug">{lesson.title}</h4>
           <p className="font-inter text-[12px] text-[var(--text-secondary)] mt-1 leading-relaxed line-clamp-2">{lesson.summary}</p>
           {lesson.level > 1 && (
-            <p className="text-[10px] font-bold text-[var(--text-dim)] mt-2">Unlocks at Level {lesson.level}</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-dim)] mt-2">Unlocks at Level {lesson.level}</p>
           )}
         </div>
         {!locked && (

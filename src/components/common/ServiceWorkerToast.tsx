@@ -43,7 +43,7 @@ export default function ServiceWorkerToast() {
               <h4 className="text-white text-sm font-bold font-manrope">
                 {needRefresh ? 'Update Available' : 'Ready for Offline'}
               </h4>
-              <p className="text-white/60 text-[10px] font-inter mt-0.5">
+              <p className="text-white/60 text-[length:var(--fs-overline)] font-inter mt-0.5">
                 {needRefresh 
                   ? 'A new version of SpendWise is ready. Refresh to update!' 
                   : 'App cached successfully. You can use it offline!'}
@@ -53,7 +53,7 @@ export default function ServiceWorkerToast() {
               {needRefresh && (
                 <button
                   onClick={() => updateServiceWorker(true)}
-                  className="px-3 py-1.5 bg-[var(--teal)] text-white text-[10px] font-black uppercase rounded-lg active:scale-95 transition-all"
+                  className="px-3 py-1.5 bg-[var(--teal)] text-white text-[length:var(--fs-overline)] font-bold uppercase rounded-lg active:scale-95 transition-all"
                 >
                   Update
                 </button>

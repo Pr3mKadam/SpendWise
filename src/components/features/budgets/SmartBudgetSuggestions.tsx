@@ -95,7 +95,7 @@ export function SmartBudgetSuggestions({ transactions, existingBudgets, onAccept
                 <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   {s.category}
                 </span>
-                <span className="px-1.5 py-0.5 rounded-full text-[10px] font-semibold" style={{ background: 'rgba(245,158,11,0.1)', color: '#d97706' }}>
+                <span className="px-1.5 py-0.5 rounded-full text-[length:var(--fs-overline)] font-semibold" style={{ background: 'rgba(245,158,11,0.1)', color: '#d97706' }}>
                   AI Suggested
                 </span>
               </div>

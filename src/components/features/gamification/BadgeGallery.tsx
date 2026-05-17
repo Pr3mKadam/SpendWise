@@ -176,7 +176,7 @@ export function BadgeGallery({ transactions, streak, level, goals, currency = 'â
       {/* Unlocked */}
       {unlocked.length > 0 && (
         <div className="mb-6">
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-3"
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest mb-3"
             style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)' }}>
             âœ… Unlocked ({unlocked.length})
           </p>
@@ -195,10 +195,10 @@ export function BadgeGallery({ transactions, streak, level, goals, currency = 'â
                 style={{ borderColor: `${badge.color}30`, background: `${badge.color}08` }}
               >
                 <div className="text-3xl mb-2 drop-shadow-sm">{badge.emoji}</div>
-                <p className="text-[11px] font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}>
+                <p className="text-[length:var(--fs-caption)] font-bold" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}>
                   {badge.name}
                 </p>
-                <p className="text-[10px] mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+                <p className="text-[length:var(--fs-overline)] mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
                   {badge.description}
                 </p>
                 <div className="absolute top-2 right-2">
@@ -213,7 +213,7 @@ export function BadgeGallery({ transactions, streak, level, goals, currency = 'â
       {/* Locked */}
       {locked.length > 0 && (
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-3"
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest mb-3"
             style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
             ðŸ”’ Locked ({locked.length})
           </p>
@@ -226,10 +226,10 @@ export function BadgeGallery({ transactions, streak, level, goals, currency = 'â
                 title={`To unlock: ${badge.criteria}`}
               >
                 <div className="text-3xl mb-2">{badge.emoji}</div>
-                <p className="text-[11px] font-bold" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+                <p className="text-[length:var(--fs-caption)] font-bold" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
                   {badge.name}
                 </p>
-                <p className="text-[10px] mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+                <p className="text-[length:var(--fs-overline)] mt-0.5 line-clamp-2" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
                   {badge.criteria}
                 </p>
                 <div className="absolute top-2 right-2">

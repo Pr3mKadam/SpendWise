@@ -60,7 +60,7 @@ export default function QuestCompletionOverlay() {
             </div>
 
             <h2 className="text-3xl font-black text-[var(--text-primary)] mb-2">Quest Complete!</h2>
-            <p className="text-[var(--teal)] font-black text-xl mb-4 uppercase tracking-tighter">
+            <p className="text-[var(--teal)] font-bold text-xl mb-4 uppercase tracking-tighter">
               {completedQuest.title}
             </p>
             
@@ -71,7 +71,7 @@ export default function QuestCompletionOverlay() {
             <div className="space-y-3">
               <button 
                 onClick={handleClose}
-                className="w-full py-4 bg-[var(--teal)] text-white border-none rounded-2xl font-black text-lg shadow-lg shadow-teal-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                className="w-full py-4 bg-[var(--teal)] text-white border-none rounded-2xl font-bold text-lg shadow-lg shadow-teal-500/20 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
               >
                 COLLECT REWARD <Sparkles size={20} />
               </button>

@@ -84,6 +84,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
   });
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(0);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -97,10 +98,30 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
     window.addEventListener('offline', handleOffline);
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
+    const handleViewportResize = () => {
+      if (!window.visualViewport) return;
+      const heightDiff = window.innerHeight - window.visualViewport.height;
+      // If height difference is significant, keyboard is likely open
+      if (heightDiff > 100) {
+        setKeyboardOffset(heightDiff);
+      } else {
+        setKeyboardOffset(0);
+      }
+    };
+    
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleViewportResize);
+      window.visualViewport.addEventListener('scroll', handleViewportResize);
+    }
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleViewportResize);
+        window.visualViewport.removeEventListener('scroll', handleViewportResize);
+      }
     };
   }, []);
 
@@ -142,6 +163,10 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
       setShowNotifications(false);
       setShowCommandPalette(false);
       setShowCategoriesModal(false);
+      
+      // Update activeView based on the new URL from the back gesture
+      const path = window.location.pathname.replace('/', '');
+      setActiveView(path ? (path as AppView) : 'dashboard');
     };
     window.addEventListener('popstate', handlePopState);
 
@@ -174,6 +199,9 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
 
   // Shake Detection for Feedback & AI Assistant
   useEffect(() => {
+    const shakeEnabled = localStorage.getItem('spendwise_shake_enabled') !== 'false';
+    if (!shakeEnabled || !window.DeviceMotionEvent) return;
+
     let lastX = 0, lastY = 0, lastZ = 0;
     let lastUpdate = 0;
     const threshold = 18; // Slightly higher threshold for fewer false positives
@@ -192,10 +220,6 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
         const deltaZ = Math.abs(z - lastZ);
 
         if ((deltaX > threshold && deltaY > threshold) || (deltaX > threshold && deltaZ > threshold) || (deltaY > threshold && deltaZ > threshold)) {
-          // Check if shake is enabled in settings
-          const shakeEnabled = localStorage.getItem('spendwise_shake_enabled') !== 'false';
-          if (!shakeEnabled) return;
-
           // Shake detected!
           haptic.heavy();
           
@@ -216,9 +240,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
       }
     };
 
-    if (window.DeviceMotionEvent) {
-      window.addEventListener('devicemotion', handleMotion);
-    }
+    window.addEventListener('devicemotion', handleMotion);
     return () => window.removeEventListener('devicemotion', handleMotion);
   }, [notifState]);
 
@@ -313,13 +335,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
             setActiveView('dashboard');
           }
         }
-        // Swipe from Right Edge -> Left (Forward/Contextual)
-        else if (touchStartX > (window.innerWidth - edgeThreshold) && distance < -swipeThreshold) {
-          haptic.light();
-          // Logic for "Forward" - contextual action? 
-          // Maybe open AI Advisor or Notifications
-          setShowNotifications(true);
-        }
+
       }
     };
 
@@ -425,7 +441,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
             initial={{ y: -50 }}
             animate={{ y: 0 }}
             exit={{ y: -50 }}
-            className="fixed top-0 left-0 right-0 z-[200] bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest py-1.5 text-center shadow-lg"
+            className="fixed top-0 left-0 right-0 z-[200] bg-amber-500 text-white text-[length:var(--fs-overline)] font-bold uppercase tracking-widest py-1.5 text-center shadow-lg"
           >
             Offline Mode · Using Cached Data
           </motion.div>
@@ -569,7 +585,8 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
           haptic.medium();
           setShowQuickAdd(true);
         }}
-        className="fixed bottom-20 right-6 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-[var(--teal)] to-[#0d9488] text-white shadow-lg shadow-teal-500/40 flex items-center justify-center md:hidden"
+        className="fixed right-6 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-[var(--teal)] to-[#0d9488] text-white shadow-lg shadow-teal-500/40 flex items-center justify-center md:hidden transition-all duration-300 ease-out"
+        style={{ bottom: `calc(5rem + ${keyboardOffset}px)` }}
         aria-label="Add Transaction"
       >
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">

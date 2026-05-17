@@ -152,19 +152,19 @@ export default function EducationView({
           <div className="relative z-10">
             <div className="flex flex-wrap items-start gap-8 mb-6">
               <div>
-                <p className="font-inter text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1">Your Progress</p>
+                <p className="font-inter text-[length:var(--fs-caption)] font-bold uppercase tracking-widest text-white/60 mb-1">Your Progress</p>
                 <p className="font-manrope font-black text-4xl text-white">{completionPct}%</p>
                 <p className="font-inter text-sm text-white/60 mt-1">{completedRoleLessonsCount} of {roleLessons.length} lessons</p>
               </div>
               <div className="h-14 w-px bg-white/10 hidden sm:block" />
               <div>
-                <p className="font-inter text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1">XP Earned</p>
+                <p className="font-inter text-[length:var(--fs-caption)] font-bold uppercase tracking-widest text-white/60 mb-1">XP Earned</p>
                 <p className="font-manrope font-black text-4xl text-white">{earnedXP.toLocaleString()}</p>
                 <p className="font-inter text-sm text-white/60 mt-1">of {totalXPAvailable.toLocaleString()} available</p>
               </div>
               <div className="h-14 w-px bg-white/10 hidden sm:block" />
               <div>
-                <p className="font-inter text-[11px] font-bold uppercase tracking-widest text-white/60 mb-1">Current Level</p>
+                <p className="font-inter text-[length:var(--fs-caption)] font-bold uppercase tracking-widest text-white/60 mb-1">Current Level</p>
                 <p className="font-manrope font-black text-4xl text-white">{level}</p>
                 <p className="font-inter text-sm text-white/60 mt-1">Keep learning to level up</p>
               </div>
@@ -224,7 +224,7 @@ export default function EducationView({
                 <p className="font-manrope font-bold text-sm text-[var(--text-primary)]">
                   Real-World Simulation Lab
                 </p>
-                <span className="text-[9px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded-full shrink-0 ml-2">Coming Soon</span>
+                <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-500 px-2 py-0.5 rounded-full shrink-0 ml-2">Coming Soon</span>
               </div>
               <p className="font-inter text-xs text-[var(--text-secondary)] leading-relaxed mt-2">
                 Test your skills in simulated environments like "Buying a Car" or "Market Crash". Earn massive XP for making the right choices under pressure.

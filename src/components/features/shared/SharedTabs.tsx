@@ -76,7 +76,7 @@ export function ExpensesTab({ expenses, members, splitBalances, onDelete, curren
               <div key={m.id} className="bg-[var(--bg)] border border-[var(--card-border)] rounded-2xl p-4 text-center flex flex-col items-center shadow-sm">
                 <Avatar emoji={m.emoji} size={32} />
                 <p className="m-0 mt-2 mb-1 text-[0.75rem] font-bold text-[var(--text)] truncate w-full">{m.display_name}</p>
-                <p className={`m-0 text-[0.8rem] font-black ${Math.abs(bal) < 0.01 ? 'text-[var(--text-secondary)]' : bal > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+                <p className={`m-0 text-[0.8rem] font-bold ${Math.abs(bal) < 0.01 ? 'text-[var(--text-secondary)]' : bal > 0 ? 'text-emerald-500' : 'text-red-500'}`}>
                    {Math.abs(bal) < 0.01 ? 'Settled ✓' : bal > 0 ? `+${fmt(bal, currency)}` : `-${fmt(Math.abs(bal), currency)}`}
                 </p>
               </div>
@@ -97,7 +97,7 @@ export function ExpensesTab({ expenses, members, splitBalances, onDelete, curren
                 <strong className="text-red-500">{s.from}</strong>
                 <span className="text-[var(--text-secondary)]">should pay</span>
                 <strong className="text-emerald-500">{s.to}</strong>
-                <span className="ml-auto font-black text-[var(--teal)]">{fmt(s.amount, currency)}</span>
+                <span className="ml-auto font-bold text-[var(--teal)]">{fmt(s.amount, currency)}</span>
               </div>
             ))}
           </div>

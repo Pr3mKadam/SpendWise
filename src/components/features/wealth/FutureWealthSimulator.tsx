@@ -51,7 +51,7 @@ export default function FutureWealthSimulator({
           </h3>
           <p className="text-xs text-[var(--text-muted)] mt-1">Project your net worth growth over {years} years.</p>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--teal-dim)] text-[var(--teal)] text-[10px] font-bold uppercase tracking-wider">
+        <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--teal-dim)] text-[var(--teal)] text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">
           <Landmark size={12} /> Predictive Engine
         </div>
       </div>
@@ -62,8 +62,8 @@ export default function FutureWealthSimulator({
           <div className="space-y-4">
             <div>
               <div className="flex flex-wrap justify-between items-end gap-1 mb-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Time Horizon</label>
-                <span className="text-xs font-black text-[var(--teal)]">{years} Years</span>
+                <label className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Time Horizon</label>
+                <span className="text-xs font-bold text-[var(--teal)]">{years} Years</span>
               </div>
               <input 
                 type="range" min="1" max="40" value={years} 
@@ -74,8 +74,8 @@ export default function FutureWealthSimulator({
 
             <div>
               <div className="flex flex-wrap justify-between items-end gap-1 mb-2">
-                <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Expected ROI (%)</label>
-                <span className="text-xs font-black text-[var(--green)]">{expectedROI}%</span>
+                <label className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Expected ROI (%)</label>
+                <span className="text-xs font-bold text-[var(--green)]">{expectedROI}%</span>
               </div>
               <input 
                 type="range" min="1" max="15" step="0.5" value={expectedROI} 
@@ -85,7 +85,7 @@ export default function FutureWealthSimulator({
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block mb-2">Initial Investment</label>
+              <label className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider block mb-2">Initial Investment</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">{currency}</span>
                 <input 
@@ -97,7 +97,7 @@ export default function FutureWealthSimulator({
             </div>
 
             <div>
-              <label className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider block mb-2">Monthly Savings</label>
+              <label className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider block mb-2">Monthly Savings</label>
               <div className="relative">
                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-muted)] font-bold">{currency}</span>
                 <input 
@@ -114,16 +114,16 @@ export default function FutureWealthSimulator({
         <div className="lg:col-span-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)]">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Total Contributions</span>
+              <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Total Contributions</span>
               <span className="text-lg font-bold text-[var(--text-primary)]">{currency}{totalContributions.toLocaleString()}</span>
             </div>
             <div className="p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)]">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Interest Earned</span>
+              <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--text-muted)] block mb-1">Interest Earned</span>
               <span className="text-lg font-bold text-[var(--green)]">+{currency}{totalInterest.toLocaleString()}</span>
             </div>
             <div className="p-4 rounded-xl bg-[var(--teal-dim)] border border-[var(--teal-dim)]">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--teal)] block mb-1">Final Wealth</span>
-              <span className="text-xl font-black text-[var(--teal)]">{currency}{finalBalance.toLocaleString()}</span>
+              <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--teal)] block mb-1">Final Wealth</span>
+              <span className="text-xl font-bold text-[var(--teal)]">{currency}{finalBalance.toLocaleString()}</span>
             </div>
           </div>
 
@@ -182,7 +182,7 @@ export default function FutureWealthSimulator({
             </AreaChart>
           </ResponsiveContainer>
           
-          <div className="absolute top-2 right-2 flex flex-wrap justify-end gap-3 text-[10px] text-[var(--text-muted)] font-inter bg-[var(--surface-card)]/80 backdrop-blur-sm p-2 rounded-lg">
+          <div className="absolute top-2 right-2 flex flex-wrap justify-end gap-3 text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter bg-[var(--surface-card)]/80 backdrop-blur-sm p-2 rounded-lg">
             <div className="flex items-center gap-1">
               <div className="w-2 h-2 rounded-full bg-[var(--teal)]" /> Projected
             </div>
@@ -195,7 +195,7 @@ export default function FutureWealthSimulator({
 
       <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 mt-4">
         <Info size={14} className="text-blue-400 shrink-0" />
-        <p className="text-[10px] text-[var(--text-secondary)] leading-tight">
+        <p className="text-[length:var(--fs-overline)] text-[var(--text-secondary)] leading-tight">
           This simulation uses the compound interest formula with monthly contributions. Actual market returns vary. Always consult with a human financial advisor before making large investment decisions.
         </p>
       </div>

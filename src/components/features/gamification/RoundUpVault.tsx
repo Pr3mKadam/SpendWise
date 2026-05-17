@@ -77,7 +77,7 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
           </div>
           <div>
             <h3 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Round-Up Vault</h3>
-            <p className="text-[10px] text-[var(--text-muted)] font-inter mt-0.5">Spare change from {vault.count} transactions</p>
+            <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter mt-0.5">Spare change from {vault.count} transactions</p>
           </div>
         </div>
         <button onClick={handleReset} className="p-1 text-[var(--text-dim)] hover:text-red-400 bg-transparent border-none cursor-pointer">
@@ -96,17 +96,17 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
         >
           {currency}{vault.total.toFixed(2)}
         </motion.p>
-        <p className="text-[11px] text-[var(--text-muted)] font-inter mt-1">saved in vault</p>
+        <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter mt-1">saved in vault</p>
       </div>
 
       {/* Pending sweep */}
       <div className="bg-[var(--surface-input)] border border-[var(--border)] rounded-xl p-3 mb-4 flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Pending Round-Ups</p>
-          <p className="font-manrope font-black text-base tabular-nums text-[var(--teal)]">
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Pending Round-Ups</p>
+          <p className="font-manrope font-bold text-base tabular-nums text-[var(--teal)]">
             +{currency}{pendingTotal.toFixed(2)}
           </p>
-          <p className="text-[9px] text-[var(--text-dim)] font-inter">{roundUps.length} transactions</p>
+          <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] font-inter">{roundUps.length} transactions</p>
         </div>
         <button
           onClick={handleSweep}
@@ -134,7 +134,7 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
       {vault.history.length > 0 && (
         <button
           onClick={() => setShowHistory(!showHistory)}
-          className="w-full flex items-center justify-between text-[11px] font-bold text-[var(--text-muted)] hover:text-[var(--teal)] bg-transparent border-none cursor-pointer transition-colors py-2"
+          className="w-full flex items-center justify-between text-[length:var(--fs-caption)] font-bold text-[var(--text-muted)] hover:text-[var(--teal)] bg-transparent border-none cursor-pointer transition-colors py-2"
         >
           <span>Recent sweeps</span>
           <ChevronRight size={14} className={`transition-transform ${showHistory ? 'rotate-90' : ''}`} />
@@ -150,7 +150,7 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
           >
             <div className="space-y-2 pt-2">
               {vault.history.slice(0, 5).map((h, i) => (
-                <div key={i} className="flex items-center justify-between text-[11px]">
+                <div key={i} className="flex items-center justify-between text-[length:var(--fs-caption)]">
                   <span className="text-[var(--text-muted)] font-inter truncate max-w-[60%]">{h.merchant}</span>
                   <span className="text-[var(--teal)] font-bold">+{currency}{h.amount.toFixed(2)}</span>
                 </div>

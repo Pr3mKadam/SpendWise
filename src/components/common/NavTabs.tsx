@@ -69,7 +69,7 @@ export default function NavTabs({ activeView, onViewChange, overBudgetCount }: N
                 )}
 
                 {tab.badge > 0 && (
-                  <span className="absolute right-0 top-0 badge-pill flex items-center justify-center h-[14px] min-w-[14px] bg-[var(--red)] text-white text-[9px] px-1">
+                  <span className="absolute right-0 top-0 badge-pill flex items-center justify-center h-[14px] min-w-[14px] bg-[var(--red)] text-white text-[length:var(--fs-overline)] px-1">
                     {tab.badge}
                   </span>
                 )}

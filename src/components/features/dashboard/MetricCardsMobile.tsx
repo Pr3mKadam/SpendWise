@@ -92,7 +92,7 @@ export default function MetricCardsMobile({
           >
             <div className="flex items-start justify-between mb-2">
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">
                   {card.label}
                 </span>
                 {card.ai && (
@@ -131,7 +131,7 @@ export default function MetricCardsMobile({
             <div className="flex items-center justify-between mt-auto">
               {card.trend ? (
                 <span
-                  className={`flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${card.trendUp ? 'bg-green-500/10' : 'bg-red-500/10'}`}
+                  className={`flex items-center gap-0.5 text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded-full ${card.trendUp ? 'bg-green-500/10' : 'bg-red-500/10'}`}
                   style={{
                     color: card.trendUp ? 'var(--green)' : 'var(--red)',
                   }}
@@ -139,7 +139,7 @@ export default function MetricCardsMobile({
                   {card.trendUp ? '↑' : '↓'} {card.trend}
                 </span>
               ) : (
-                <span className="text-[9px] text-[var(--text-muted)] font-medium truncate">
+                <span className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-medium truncate">
                   {card.sub}
                 </span>
               )}

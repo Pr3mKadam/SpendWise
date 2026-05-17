@@ -174,7 +174,7 @@ export function DashboardView({
             
             {streak > 0 && (
               <div className="inline-flex items-center self-start sm:self-auto gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-full">
-                <span className="text-[10px] font-black text-orange-500 uppercase tracking-widest">🔥 {streak} DAY STREAK</span>
+                <span className="text-[length:var(--fs-overline)] font-bold text-orange-500 uppercase tracking-widest">🔥 {streak} DAY STREAK</span>
               </div>
             )}
           </div>

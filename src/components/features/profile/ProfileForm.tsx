@@ -36,7 +36,7 @@ function FormField({ label, value, onChange, placeholder, type = 'text' }: Profi
           onBlur={e => (e.target.style.borderColor = 'transparent')}
         />
         {isPhone && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[length:var(--fs-overline)] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/30 px-2 py-0.5 rounded">
             Unverified
           </span>
         )}

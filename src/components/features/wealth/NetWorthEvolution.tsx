@@ -52,12 +52,12 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
 
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Current Balance</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Current Balance</p>
             <p className="text-2xl font-black text-[var(--text-primary)]">
               {currency}{currentNetWorth.toLocaleString()}
             </p>
           </div>
-          <div className={`px-3 py-1 rounded-full text-[10px] font-black flex items-center gap-1 ${netChange >= 0 ? 'bg-[var(--green-dim)] text-[var(--green)]' : 'bg-red-500/10 text-red-500'}`}>
+          <div className={`px-3 py-1 rounded-full text-[length:var(--fs-overline)] font-bold flex items-center gap-1 ${netChange >= 0 ? 'bg-[var(--green-dim)] text-[var(--green)]' : 'bg-red-500/10 text-red-500'}`}>
             {netChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
             {netChange >= 0 ? '+' : ''}{percentChange.toFixed(1)}%
           </div>
@@ -113,23 +113,23 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 border-t border-[var(--border)]">
         <div>
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Initial</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Initial</p>
           <p className="text-sm font-bold text-[var(--text-primary)]">{currency}{initialNetWorth.toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Total Change</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Total Change</p>
           <p className={`text-sm font-bold ${netChange >= 0 ? 'text-[var(--green)]' : 'text-red-500'}`}>
             {netChange >= 0 ? '+' : ''}{currency}{netChange.toLocaleString()}
           </p>
         </div>
         <div>
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Peak Worth</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Peak Worth</p>
           <p className="text-sm font-bold text-[var(--text-primary)]">
             {currency}{Math.max(...chartData.map(d => d.balance), 0).toLocaleString()}
           </p>
         </div>
         <div>
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest">Data Points</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Data Points</p>
           <p className="text-sm font-bold text-[var(--text-primary)]">{chartData.length} Days</p>
         </div>
       </div>

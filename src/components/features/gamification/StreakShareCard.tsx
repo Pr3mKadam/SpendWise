@@ -82,7 +82,7 @@ export function StreakShareCard({ streak, level, levelName, savingsRate, currenc
                 {/* Flame */}
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Flame size={32} style={{ color: streakColor }} className="drop-shadow-lg" />
-                  <span className="text-7xl font-black tabular-nums" style={{ color: streakColor, fontFamily: 'var(--font-manrope)', lineHeight: 1 }}>
+                  <span className="text-7xl font-bold tabular-nums" style={{ color: streakColor, fontFamily: 'var(--font-manrope)', lineHeight: 1 }}>
                     {streak}
                   </span>
                 </div>
@@ -92,18 +92,18 @@ export function StreakShareCard({ streak, level, levelName, savingsRate, currenc
                 {/* Stats row */}
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-2xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <p className="text-xl font-black text-white tabular-nums">{level}</p>
-                    <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mt-0.5">Level</p>
+                    <p className="text-xl font-bold text-white tabular-nums">{level}</p>
+                    <p className="text-[length:var(--fs-overline)] font-semibold text-white/50 uppercase tracking-wider mt-0.5">Level</p>
                     <p className="text-xs text-white/70 font-medium">{levelName}</p>
                   </div>
                   <div className="rounded-2xl p-3 text-center" style={{ background: 'rgba(255,255,255,0.06)' }}>
-                    <p className="text-xl font-black tabular-nums" style={{ color: '#14b8a6' }}>{savingsRate}%</p>
-                    <p className="text-[10px] font-semibold text-white/50 uppercase tracking-wider mt-0.5">Savings Rate</p>
+                    <p className="text-xl font-bold tabular-nums" style={{ color: '#14b8a6' }}>{savingsRate}%</p>
+                    <p className="text-[length:var(--fs-overline)] font-semibold text-white/50 uppercase tracking-wider mt-0.5">Savings Rate</p>
                     <p className="text-xs text-white/70 font-medium">This month</p>
                   </div>
                 </div>
 
-                <p className="text-white/30 text-[10px] mt-6">Track smarter · spendwise.app</p>
+                <p className="text-white/30 text-[length:var(--fs-overline)] mt-6">Track smarter · spendwise.app</p>
               </div>
             </div>
 

@@ -164,7 +164,7 @@ export default function ProfileView({
             {occupation || 'SpendWise Member'}{location ? ` · ${location}` : ''}
           </p>
           <div className="mt-2 flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] font-bold uppercase tracking-wider">
+            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">
               {config?.userRole || 'User'} Persona
             </span>
           </div>
@@ -249,7 +249,7 @@ export default function ProfileView({
       <div className="card px-6 py-5 flex items-center justify-between flex-wrap gap-4">
         <div>
           <p className="font-inter font-semibold text-[13px]" style={{ color: 'var(--text-primary)' }}>SpendWise</p>
-          <p className="font-inter text-[11px]" style={{ color: 'var(--text-muted)' }}>
+          <p className="font-inter text-[length:var(--fs-caption)]" style={{ color: 'var(--text-muted)' }}>
             v4.0 (PWA) · {transactions.length} transactions · All data stored locally
           </p>
         </div>

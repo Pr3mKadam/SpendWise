@@ -185,6 +185,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             <Wand2 size={20} />
           </div>
           <input 
+            id="magic-input-field"
             type="text" 
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -214,7 +215,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             >
               <div className="bg-[var(--surface-card)] border border-[var(--border)] rounded-full px-4 py-2 shadow-xl flex items-center gap-2">
                 {isScanning ? <Loader2 size={14} className="animate-spin text-[var(--teal)]" /> : null}
-                <span className="text-[10px] font-bold font-inter text-[var(--text-primary)]">{scanStatus}</span>
+                <span className="text-[length:var(--fs-overline)] font-bold font-inter text-[var(--text-primary)]">{scanStatus}</span>
               </div>
             </motion.div>
           )}
@@ -284,7 +285,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--teal)] to-blue-500" />
             
             <div className="flex items-center justify-between mb-4">
-              <span className="text-[10px] font-black uppercase text-[var(--teal)] tracking-widest">Local AI Prediction</span>
+              <span className="text-[length:var(--fs-overline)] font-bold uppercase text-[var(--teal)] tracking-widest">Local AI Prediction</span>
               <button onClick={() => setPrediction(null)} className="p-1 text-[var(--text-muted)] hover:text-red-500 bg-transparent border-none cursor-pointer">
                 <X size={18} />
               </button>

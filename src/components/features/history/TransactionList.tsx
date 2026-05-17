@@ -99,7 +99,7 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
       <div className="flex items-center gap-3 px-5 py-3 shrink-0" style={{ background: '#fafbfc', borderBottom: '1px solid var(--border)' }}>
         <button
           onClick={() => setSortOrder(s => s === 'latest' ? 'oldest' : 'latest')}
-          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-bold transition-colors"
+          className="flex items-center gap-1.5 px-2 py-1 rounded-lg text-[length:var(--fs-caption)] font-bold transition-colors"
           style={{ 
             background: 'white', 
             border: '1px solid var(--border)',
@@ -116,7 +116,7 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="flex-1 bg-transparent border-none text-[11px] font-bold text-[var(--text-secondary)] outline-none cursor-pointer p-0"
+            className="flex-1 bg-transparent border-none text-[length:var(--fs-caption)] font-bold text-[var(--text-secondary)] outline-none cursor-pointer p-0"
             style={{ fontFamily: 'var(--font-inter)' }}
           >
             <option value="all">All Categories</option>
@@ -183,7 +183,7 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
                         </p>
                         {tx.aiParsed && (
                           <span
-                            className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider shrink-0"
+                            className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider shrink-0"
                             style={{ background: 'var(--teal-dim)', color: 'var(--teal)' }}
                           >
                             <Bot size={8} />AI
@@ -193,7 +193,7 @@ export default function TransactionList({ transactions, onCategoryChange, onDele
                       
                       <div className="flex items-center gap-2 mt-0.5">
                         <span 
-                          className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider"
+                          className="px-2 py-0.5 rounded-full text-[length:var(--fs-overline)] font-bold uppercase tracking-wider"
                           style={{ background: `${catColor}15`, color: catColor }}
                         >
                           {tx.category}

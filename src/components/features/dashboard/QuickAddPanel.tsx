@@ -70,7 +70,7 @@ export default function QuickAddPanel({
 
       {recentMerchants.length > 0 && (
         <div className="mt-4">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-3">Recently Added</p>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-3">Recently Added</p>
           <div className="flex flex-wrap gap-2">
             {recentMerchants.map((merchant) => (
               <button

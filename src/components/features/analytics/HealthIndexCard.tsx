@@ -28,7 +28,7 @@ export function HealthIndexCard({ health }: { health: HealthResult }) {
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="text-4xl font-black text-white leading-none">{health.score}</span>
-            <span className="text-[10px] font-bold text-gray-400 tracking-widest uppercase mt-1">Health Index</span>
+            <span className="text-[length:var(--fs-overline)] font-bold text-gray-400 tracking-widest uppercase mt-1">Health Index</span>
           </div>
         </div>
 
@@ -46,7 +46,7 @@ export function HealthIndexCard({ health }: { health: HealthResult }) {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             {Object.entries(health.breakdown).map(([key, val]) => (
               <div key={key}>
-                <div className="flex justify-between text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">
+                <div className="flex justify-between text-[length:var(--fs-overline)] font-bold text-gray-500 uppercase tracking-wider mb-1">
                   <span>{key}</span><span>{val}%</span>
                 </div>
                 <div className="h-1 bg-white/5 rounded-full overflow-hidden">

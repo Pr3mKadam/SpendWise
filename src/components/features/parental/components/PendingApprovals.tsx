@@ -41,7 +41,7 @@ export const PendingApprovals: React.FC<PendingApprovalsProps> = ({
                   </h4>
                   <p className="text-xs text-[var(--text-muted)] font-medium uppercase tracking-wider">{t.category}</p>
                 </div>
-                <span className="text-xl font-black text-[var(--text-primary)] font-manrope">${t.amount}</span>
+                <span className="text-xl font-bold text-[var(--text-primary)] font-manrope">${t.amount}</span>
               </div>
               
               <div className="flex gap-2">

@@ -143,7 +143,7 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
       <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between">
         <div>
           <h3 className="font-manrope font-bold text-[var(--text-primary)] text-sm">Native CSV Import</h3>
-          <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Drag and drop bank statements</p>
+          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-0.5">Drag and drop bank statements</p>
         </div>
         {step !== 'upload' && (
           <button onClick={reset} className="p-2 rounded-lg hover:bg-[var(--surface-input)] text-[var(--text-muted)] border-none bg-transparent cursor-pointer">
@@ -164,7 +164,7 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
             <input ref={fileRef} type="file" accept=".csv" onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f); }} className="hidden" />
             <Upload size={24} className={`mx-auto mb-3 ${isDragging ? 'text-[var(--teal)]' : 'text-[var(--text-dim)]'}`} />
             <p className="font-inter text-xs font-bold text-[var(--text-primary)]">Drop CSV statement</p>
-            <p className="text-[10px] text-[var(--text-muted)] mt-1">or click to browse</p>
+            <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-1">or click to browse</p>
           </div>
         )}
 
@@ -172,19 +172,19 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
           <div className="space-y-3">
             <div className="p-2.5 rounded-lg bg-[var(--teal-dim)] border border-[var(--teal-glow)] flex items-center gap-2">
               <FileText size={12} className="text-[var(--teal)]" />
-              <span className="text-[10px] font-bold text-[var(--teal)] truncate">{fileName}</span>
+              <span className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] truncate">{fileName}</span>
             </div>
             <div className="max-h-[200px] overflow-y-auto space-y-2 pr-1">
               {headers.map((h, i) => (
                 <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-[var(--surface-input)] border border-[var(--border)]">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-[var(--text-primary)] truncate">{h || `Col ${i+1}`}</p>
-                    <p className="text-[9px] text-[var(--text-dim)] truncate">e.g. {rawRows[0]?.[i] || '—'}</p>
+                    <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-primary)] truncate">{h || `Col ${i+1}`}</p>
+                    <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] truncate">e.g. {rawRows[0]?.[i] || '—'}</p>
                   </div>
                   <select
                     value={mapping[i] ?? 'skip'}
                     onChange={e => setMapping(p => ({ ...p, [i]: e.target.value as MappingKey }))}
-                    className="text-[10px] font-bold text-[var(--teal)] bg-transparent border-none focus:outline-none cursor-pointer"
+                    className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] bg-transparent border-none focus:outline-none cursor-pointer"
                   >
                     {(Object.keys(FIELD_LABELS) as MappingKey[]).map(k => <option key={k} value={k}>{FIELD_LABELS[k]}</option>)}
                   </select>
@@ -207,10 +207,10 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
               {parsed.map((tx, i) => (
                 <div key={i} className="p-2.5 flex items-center gap-2">
                   <div className="flex-1 min-w-0">
-                    <p className="text-[11px] font-bold text-[var(--text-primary)] truncate">{tx.merchant}</p>
-                    <p className="text-[9px] text-[var(--text-muted)]">{tx.date} · {tx.category}</p>
+                    <p className="text-[length:var(--fs-caption)] font-bold text-[var(--text-primary)] truncate">{tx.merchant}</p>
+                    <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">{tx.date} · {tx.category}</p>
                   </div>
-                  <p className="text-[11px] font-bold text-[var(--text-primary)]">₹{tx.amount.toFixed(2)}</p>
+                  <p className="text-[length:var(--fs-caption)] font-bold text-[var(--text-primary)]">₹{tx.amount.toFixed(2)}</p>
                 </div>
               ))}
             </div>
@@ -231,8 +231,8 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
               <CheckCircle2 size={24} className="text-green-500" />
             </div>
             <p className="font-bold text-[var(--text-primary)] text-sm">Import Complete!</p>
-            <p className="text-[10px] text-[var(--text-muted)] mt-1">{parsed.length} transactions added</p>
-            <button onClick={reset} className="mt-4 px-6 py-2 rounded-lg bg-[var(--surface-input)] text-[var(--text-primary)] font-bold text-[10px] border border-[var(--border)] cursor-pointer">
+            <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-1">{parsed.length} transactions added</p>
+            <button onClick={reset} className="mt-4 px-6 py-2 rounded-lg bg-[var(--surface-input)] text-[var(--text-primary)] font-bold text-[length:var(--fs-overline)] border border-[var(--border)] cursor-pointer">
               Import Another
             </button>
           </div>
@@ -241,7 +241,7 @@ export default function CSVImporter({ onImport }: CSVImporterProps) {
         {error && (
           <div className="mt-3 p-2 rounded-lg bg-red-500/5 border border-red-500/20 flex gap-2 items-center">
             <AlertCircle size={12} className="text-red-500 shrink-0" />
-            <p className="text-[10px] text-red-500">{error}</p>
+            <p className="text-[length:var(--fs-overline)] text-red-500">{error}</p>
           </div>
         )}
       </div>

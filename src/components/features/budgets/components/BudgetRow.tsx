@@ -87,7 +87,7 @@ export function BudgetRow({ budget, onUpdate, onDelete, currency, rolloverEnable
               )}
               {isSynced && (
                 <span 
-                  className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-tight"
+                  className="flex items-center gap-1 rounded-full px-2 py-0.5 text-[length:var(--fs-overline)] font-bold uppercase tracking-tight"
                   style={{ background: 'var(--teal-dim)', color: 'var(--teal)', border: '1px solid var(--teal-glow)' }}
                   title="Limit synced from Category Settings"
                 >

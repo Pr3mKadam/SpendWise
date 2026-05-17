@@ -93,7 +93,7 @@ export default function DebtPlanner({ liabilities, currency, monthlyExtra = 0, u
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">Debt Lab</h3>
-              <p className="text-[11px] text-[var(--text-muted)] uppercase tracking-wider font-bold">Simulator & Optimizer</p>
+              <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] uppercase tracking-wider font-bold">Simulator & Optimizer</p>
             </div>
             <div className="flex bg-[var(--surface-input)] p-1 rounded-xl border border-[var(--border)]">
               <button
@@ -157,15 +157,15 @@ export default function DebtPlanner({ liabilities, currency, monthlyExtra = 0, u
               className="w-full h-1.5 bg-[var(--border)] rounded-lg appearance-none cursor-pointer accent-[var(--teal)]"
             />
             <div className="flex justify-between mt-2">
-              <span className="text-[10px] font-bold text-[var(--text-dim)]">{currency}0</span>
-              <span className="text-[10px] font-bold text-[var(--text-dim)]">{currency}50k</span>
+              <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-dim)]">{currency}0</span>
+              <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-dim)]">{currency}50k</span>
             </div>
           </div>
 
           {interestDifference > 10 && (
             <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/10 flex items-center gap-3">
               <Info size={16} className="text-amber-500 shrink-0" />
-              <p className="text-[11px] text-amber-700 dark:text-amber-400 font-medium leading-normal">
+              <p className="text-[length:var(--fs-caption)] text-amber-700 dark:text-amber-400 font-medium leading-normal">
                 {strategy === 'snowball' 
                   ? `Switching to Avalanche would save you ${currency}${interestDifference.toLocaleString(undefined, { maximumFractionDigits: 0 })} in interest and ${timeDifference} months of payments.`
                   : `Avalanche is saving you ${currency}${interestDifference.toLocaleString(undefined, { maximumFractionDigits: 0 })} compared to the Snowball method.`
@@ -178,7 +178,7 @@ export default function DebtPlanner({ liabilities, currency, monthlyExtra = 0, u
         {/* Quick Stats */}
         <div className="md:w-[320px] space-y-4">
           <div className="card p-5 bg-gradient-to-br from-[var(--teal)] to-[#0d9488] text-white">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-white/70 mb-1">Debt-Free Date Estimate</p>
+            <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-white/70 mb-1">Debt-Free Date Estimate</p>
             <div className="flex items-baseline gap-2">
               <h4 className="text-3xl font-manrope font-bold">
                 {simulation ? Math.floor(simulation.months / 12) : 0}
@@ -203,7 +203,7 @@ export default function DebtPlanner({ liabilities, currency, monthlyExtra = 0, u
                 <TrendingDown size={16} className="text-amber-500" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Monthly Commit</p>
+                <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">Monthly Commit</p>
                 <p className="text-sm font-manrope font-bold">{currency}{(totalMinPayment + extraPayment).toLocaleString()}</p>
               </div>
             </div>
@@ -212,7 +212,7 @@ export default function DebtPlanner({ liabilities, currency, monthlyExtra = 0, u
                 <Calendar size={16} className="text-blue-500" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Total Principal</p>
+                <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">Total Principal</p>
                 <p className="text-sm font-manrope font-bold">{currency}{totalBalance.toLocaleString()}</p>
               </div>
             </div>
@@ -224,7 +224,7 @@ export default function DebtPlanner({ liabilities, currency, monthlyExtra = 0, u
       <div className="card overflow-hidden">
         <div className="px-6 py-4 border-b border-[var(--border)] bg-[var(--surface-input)]/30 flex items-center justify-between">
           <h3 className="font-inter font-bold text-xs uppercase tracking-wider text-[var(--text-muted)]">Targeted Repayment Order</h3>
-          <span className="text-[10px] font-bold text-[var(--teal)] bg-[var(--teal-dim)] px-2 py-0.5 rounded-full uppercase">Priority View</span>
+          <span className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] bg-[var(--teal-dim)] px-2 py-0.5 rounded-full uppercase">Priority View</span>
         </div>
         <div className="divide-y divide-[var(--border)]">
           {sortedDebts.map((debt, idx) => (
@@ -234,12 +234,12 @@ export default function DebtPlanner({ liabilities, currency, monthlyExtra = 0, u
               </div>
               <div className="flex-1">
                 <p className="font-inter font-bold text-sm text-[var(--text-primary)]">{debt.name}</p>
-                <p className="text-[11px] text-[var(--text-muted)]">{debt.interestRate}% Interest · {currency}{debt.minPayment}/mo min</p>
+                <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)]">{debt.interestRate}% Interest · {currency}{debt.minPayment}/mo min</p>
               </div>
               <div className="text-right">
                 <p className="font-manrope font-bold text-sm text-[var(--text-primary)]">{currency}{debt.balance.toLocaleString()}</p>
                 {idx === 0 && (
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-[var(--teal)] text-white text-[9px] font-bold uppercase tracking-wider shadow-sm animate-pulse">Current Target</span>
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-[var(--teal)] text-white text-[length:var(--fs-overline)] font-bold uppercase tracking-wider shadow-sm animate-pulse">Current Target</span>
                 )}
               </div>
             </div>

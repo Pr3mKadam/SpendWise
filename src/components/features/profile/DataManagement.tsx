@@ -113,7 +113,7 @@ export function DataManagement({
             </div>
             <div>
               <h4 className="font-inter font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>Secure Encrypted Backup</h4>
-              <p className="font-inter text-[10px]" style={{ color: 'var(--teal)' }}>Professional Grade Security (AES-256)</p>
+              <p className="font-inter text-[length:var(--fs-overline)]" style={{ color: 'var(--teal)' }}>Professional Grade Security (AES-256)</p>
             </div>
           </div>
           <p className="font-inter text-xs mb-4" style={{ color: 'var(--text-muted)', lineHeight: 1.6 }}>

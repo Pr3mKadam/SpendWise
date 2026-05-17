@@ -17,9 +17,9 @@ function CustomTooltip({ active, payload, label }: any) {
   const color = score >= 80 ? '#14b8a6' : score >= 60 ? '#f59e0b' : '#ef4444';
   return (
     <div className="card px-4 py-3 shadow-lg text-center">
-      <p className="text-[11px] text-[var(--text-muted)] mb-1">{label}</p>
-      <p className="text-xl font-black tabular-nums" style={{ color }}>{score}</p>
-      <p className="text-[10px] text-[var(--text-muted)]">Health Score</p>
+      <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] mb-1">{label}</p>
+      <p className="text-xl font-bold tabular-nums" style={{ color }}>{score}</p>
+      <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">Health Score</p>
     </div>
   );
 }
@@ -63,7 +63,7 @@ export function HealthScoreChart({ currentScore }: Props) {
           <p className="text-2xl font-black tabular-nums" style={{ color: scoreColor, fontFamily: 'var(--font-manrope)' }}>
             {currentScore}
           </p>
-          <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>
             Today
           </p>
         </div>
@@ -105,7 +105,7 @@ export function HealthScoreChart({ currentScore }: Props) {
         ].map(({ color, label }) => (
           <div key={label} className="flex items-center gap-1.5">
             <div className="w-2 h-2 rounded-full" style={{ background: color }} />
-            <span className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>{label}</span>
+            <span className="text-[length:var(--fs-overline)] font-semibold" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>{label}</span>
           </div>
         ))}
       </div>

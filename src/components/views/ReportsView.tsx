@@ -151,7 +151,7 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
               </div>
               <div>
                 <h4 className="font-bold text-[var(--text-primary)]">AI Monthly Insights</h4>
-                <span className="text-[10px] text-[var(--text-muted)]">Powered by SpendWise Local AI</span>
+                <span className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">Powered by SpendWise Local AI</span>
               </div>
             </div>
             <div className="flex gap-2">

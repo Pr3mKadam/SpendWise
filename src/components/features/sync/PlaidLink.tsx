@@ -113,14 +113,14 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[var(--text-primary)]">{f.title}</p>
-                    <p className="text-[11px] text-[var(--text-muted)] font-inter">{f.desc}</p>
+                    <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter">{f.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 mb-6">
-              <p className="text-[11px] text-amber-400 font-inter text-center">
+              <p className="text-[length:var(--fs-caption)] text-amber-400 font-inter text-center">
                 ⚠️ Demo mode — using simulated Plaid OAuth. Real integration requires a Plaid account + backend server.
               </p>
             </div>
@@ -163,9 +163,9 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-[var(--text-primary)]">{bank.name}</p>
-                    <p className="text-[10px] text-[var(--text-muted)] font-inter">{bank.accounts} account{bank.accounts > 1 ? 's' : ''} available</p>
+                    <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">{bank.accounts} account{bank.accounts > 1 ? 's' : ''} available</p>
                   </div>
-                  <span className="text-[11px] font-bold text-[var(--text-muted)] group-hover:text-[var(--teal)] transition-colors">{bank.balance}</span>
+                  <span className="text-[length:var(--fs-caption)] font-bold text-[var(--text-muted)] group-hover:text-[var(--teal)] transition-colors">{bank.balance}</span>
                 </button>
               ))}
             </div>
@@ -186,7 +186,7 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
               </div>
               <div>
                 <h2 className="font-manrope font-bold text-lg text-[var(--text-primary)]">{selectedBank.name}</h2>
-                <p className="text-[11px] text-[var(--text-muted)] font-inter">Simulated sign-in · Demo only</p>
+                <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter">Simulated sign-in · Demo only</p>
               </div>
             </div>
 
@@ -203,7 +203,7 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
 
             <div className="bg-[var(--surface-input)] border border-[var(--border)] rounded-xl p-3 mb-5 flex items-start gap-2">
               <Lock size={13} className="text-[var(--teal)] mt-0.5 shrink-0" />
-              <p className="text-[10px] text-[var(--text-muted)] font-inter leading-relaxed">
+              <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter leading-relaxed">
                 Your credentials are sent directly to {selectedBank.name} via Plaid's secure encrypted channel. SpendWise never receives or stores them.
               </p>
             </div>
@@ -259,7 +259,7 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
                   transition={{ duration: 0.1 }}
                 />
               </div>
-              <p className="text-[10px] text-[var(--text-dim)] font-inter mt-3">
+              <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] font-inter mt-3">
                 AI categorisation running in parallel…
               </p>
             </div>
@@ -283,12 +283,12 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
                 { label: 'Balance', value: selectedBank.balance },
               ].map(s => (
                 <div key={s.label} className="bg-[var(--surface-input)] border border-[var(--border)] rounded-xl p-3">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)]">{s.label}</p>
-                  <p className="font-manrope font-black text-sm mt-1 text-[var(--text-primary)]">{s.value}</p>
+                  <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--text-muted)]">{s.label}</p>
+                  <p className="font-manrope font-bold text-sm mt-1 text-[var(--text-primary)]">{s.value}</p>
                 </div>
               ))}
             </div>
-            <p className="text-[11px] text-[var(--text-muted)] font-inter mt-6 animate-pulse">Redirecting to dashboard…</p>
+            <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter mt-6 animate-pulse">Redirecting to dashboard…</p>
           </motion.div>
         )}
 

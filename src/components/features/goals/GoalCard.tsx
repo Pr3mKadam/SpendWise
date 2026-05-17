@@ -107,7 +107,7 @@ export function GoalCard({
               <ProgressRing percent={pct} color={goal.color} size={72} />
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <span className="text-lg leading-none">{goal.emoji}</span>
-                <span className="text-[10px] font-bold" style={{ color: 'var(--text-primary)' }}>{pct}%</span>
+                <span className="text-[length:var(--fs-overline)] font-bold" style={{ color: 'var(--text-primary)' }}>{pct}%</span>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ export function GoalCard({
                 {currency}{goal.savedAmount.toLocaleString()} saved of {currency}{goal.targetAmount.toLocaleString()}
               </p>
               <span
-                className="mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                className="mt-1.5 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[length:var(--fs-overline)] font-semibold"
                 style={{ background: statusCfg.bg, color: statusCfg.color, fontFamily: 'var(--font-inter)' }}
               >
                 <StatusIcon size={10} />
@@ -127,15 +127,19 @@ export function GoalCard({
           </div>
 
           <div className="flex flex-shrink-0 items-center gap-1.5 opacity-100 md:opacity-0 transition-opacity md:group-hover:opacity-100">
-            <button onClick={onEdit}
-              className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors"
-              style={{ background: '#f5f7fa', color: 'var(--text-muted)', border: 'none', cursor: 'pointer' }}>
-              <Edit3 size={13} />
+            <button 
+              onClick={onEdit}
+              className="flex items-center justify-center w-11 h-11 rounded-xl transition-colors bg-[var(--surface-input)] border-none cursor-pointer text-[var(--text-muted)] active:text-[var(--teal)] active:bg-white/5"
+              aria-label={`Edit ${goal.name} goal`}
+            >
+              <Edit3 size={16} />
             </button>
-            <button onClick={onDelete}
-              className="flex items-center justify-center w-7 h-7 rounded-lg transition-colors"
-              style={{ background: 'var(--red-dim)', color: 'var(--red)', border: 'none', cursor: 'pointer' }}>
-              <Trash2 size={13} />
+            <button 
+              onClick={onDelete}
+              className="flex items-center justify-center w-11 h-11 rounded-xl transition-colors bg-red-500/10 border-none cursor-pointer text-red-500 active:bg-red-500/20"
+              aria-label={`Delete ${goal.name} goal`}
+            >
+              <Trash2 size={16} />
             </button>
           </div>
         </div>
@@ -152,7 +156,7 @@ export function GoalCard({
           <div className="mt-2 flex items-center gap-2 flex-wrap">
             {days > 0 && (
               <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[length:var(--fs-overline)] font-semibold"
                 style={{ background: days <= 30 ? 'var(--amber-dim)' : 'var(--teal-dim)', color: days <= 30 ? 'var(--amber)' : 'var(--teal)' }}
               >
                 <Clock size={9} />
@@ -161,7 +165,7 @@ export function GoalCard({
             )}
             {monthsToGo !== null && !isAchieved && (
               <span
-                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[length:var(--fs-overline)] font-semibold"
                 style={{ background: 'rgba(139,92,246,0.08)', color: '#7c3aed' }}
               >
                 <Target size={9} />
@@ -173,7 +177,7 @@ export function GoalCard({
 
         {/* Round-up active indicator */}
         {roundUpsEnabled && !isAchieved && (
-          <div className="mt-2 flex items-center gap-1.5 px-2 py-1 rounded-lg text-[11px] font-semibold"
+          <div className="mt-2 flex items-center gap-1.5 px-2 py-1 rounded-lg text-[length:var(--fs-caption)] font-semibold"
             style={{ background: 'rgba(147,51,234,0.08)', color: '#7c3aed' }}>
             <Coins size={11} className="animate-pulse" />
             Round-Ups active · ~{currency}{estMonthlyRoundUp}/mo added automatically

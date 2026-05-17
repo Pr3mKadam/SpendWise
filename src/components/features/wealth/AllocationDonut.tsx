@@ -50,7 +50,7 @@ export function AllocationDonut({ allocationByType, total, currency }: Allocatio
             <div className="w-3 h-3 rounded-full shrink-0" style={{ background: d.color }} />
             <div>
               <p className="font-inter text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{d.name}</p>
-              <p className="font-manrope text-[11px] font-bold" style={{ color: 'var(--text-muted)' }}>
+              <p className="font-manrope text-[length:var(--fs-caption)] font-bold" style={{ color: 'var(--text-muted)' }}>
                 {((d.value / total) * 100).toFixed(1)}%
               </p>
             </div>

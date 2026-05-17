@@ -53,8 +53,8 @@ export default function AdvisorViewMobile({
             <Bot size={20} />
           </div>
           <div>
-            <h2 className="text-lg font-black text-[var(--text-primary)]">AI Advisor</h2>
-            <p className="text-[9px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1">
+            <h2 className="text-lg font-bold text-[var(--text-primary)]">AI Advisor</h2>
+            <p className="text-[length:var(--fs-overline)] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1">
               <span className="w-1 h-1 rounded-full bg-green-500 animate-pulse" /> ONLINE
             </p>
           </div>
@@ -71,8 +71,8 @@ export default function AdvisorViewMobile({
         <div className="mx-1 mb-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
           <AlertTriangle className="text-yellow-500 mt-0.5 flex-shrink-0" size={14} />
           <div>
-            <p className="text-[10px] font-bold text-yellow-500 uppercase tracking-widest">Local Mode</p>
-            <p className="text-[10px] text-yellow-500/80 mt-1 leading-snug">Gemini API key missing. Using local rule-based advisor fallback.</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-yellow-500 uppercase tracking-widest">Local Mode</p>
+            <p className="text-[length:var(--fs-overline)] text-yellow-500/80 mt-1 leading-snug">Gemini API key missing. Using local rule-based advisor fallback.</p>
           </div>
         </div>
       )}
@@ -96,19 +96,19 @@ export default function AdvisorViewMobile({
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-[var(--teal)] mb-1">
                     <Zap size={14} className="fill-current" />
-                    <span className="text-[10px] font-black uppercase tracking-widest">Daily Briefing</span>
+                    <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest">Daily Briefing</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-[var(--surface-input)] p-2 rounded-xl border border-[var(--border)]">
                       <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase">Balance</p>
-                      <p className="text-xs font-black">{format(msg.data?.balance ?? 0)}</p>
+                      <p className="text-xs font-bold">{format(msg.data?.balance ?? 0)}</p>
                     </div>
                     <div className="bg-[var(--surface-input)] p-2 rounded-xl border border-[var(--border)]">
                       <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase">Savings</p>
-                      <p className="text-xs font-black text-purple-500">{msg.data?.savingsRate ?? '0'}%</p>
+                      <p className="text-xs font-bold text-purple-500">{msg.data?.savingsRate ?? '0'}%</p>
                     </div>
                   </div>
-                  <p className="text-[11px] leading-relaxed opacity-90">
+                  <p className="text-[length:var(--fs-caption)] leading-relaxed opacity-90">
                     Spent <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> on <span className="font-bold text-[var(--teal)]">{msg.data?.topCategory ?? 'Unknown'}</span>.
                   </p>
                 </div>
@@ -138,7 +138,7 @@ export default function AdvisorViewMobile({
           <button
             key={idx}
             onClick={() => { haptic.light(); setInput(action); }}
-            className="px-4 py-2 bg-[var(--surface-card)] border border-[var(--border)] rounded-full text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)] whitespace-nowrap active:bg-[var(--teal)] active:text-white active:border-[var(--teal)] transition-all"
+            className="px-4 py-2 bg-[var(--surface-card)] border border-[var(--border)] rounded-full text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] whitespace-nowrap active:bg-[var(--teal)] active:text-white active:border-[var(--teal)] transition-all"
           >
             {action}
           </button>
@@ -152,7 +152,7 @@ export default function AdvisorViewMobile({
             <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg">
               <Mic size={24} />
             </div>
-            <p className="text-[10px] font-black text-red-500 uppercase mt-2">Listening...</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-red-500 uppercase mt-2">Listening...</p>
           </div>
         )}
         <div className="flex items-center gap-2">

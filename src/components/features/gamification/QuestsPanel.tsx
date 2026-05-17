@@ -64,12 +64,12 @@ export function QuestsPanel({ transactions }: QuestsPanelProps) {
           <Sparkles size={18} className="text-[var(--teal)]" />
           <div>
             <h3 className="font-manrope font-bold text-[var(--text-primary)] text-sm">Daily Quests</h3>
-            <p className="text-[10px] text-[var(--text-muted)] font-inter">{completedCount}/{quests.length} completed</p>
+            <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">{completedCount}/{quests.length} completed</p>
           </div>
         </div>
         <div className="text-right">
            <span className="text-[12px] font-bold text-[var(--teal)] font-inter">+{totalXPToday} XP</span>
-           <p className="text-[9px] text-[var(--text-muted)] font-inter uppercase tracking-wider">Today</p>
+           <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter uppercase tracking-wider">Today</p>
         </div>
       </div>
 
@@ -93,14 +93,14 @@ export function QuestsPanel({ transactions }: QuestsPanelProps) {
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className={`text-[11px] font-bold truncate ${q.completed ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-primary)]'}`}>
+                  <h4 className={`text-[length:var(--fs-caption)] font-bold truncate ${q.completed ? 'text-[var(--text-muted)] line-through' : 'text-[var(--text-primary)]'}`}>
                     {q.title}
                   </h4>
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${q.completed ? 'bg-white/5 text-[var(--text-muted)]' : 'bg-[var(--teal)]/10 text-[var(--teal)]'}`}>
+                  <span className={`text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${q.completed ? 'bg-white/5 text-[var(--text-muted)]' : 'bg-[var(--teal)]/10 text-[var(--teal)]'}`}>
                     {q.completed ? 'Done' : q.reward}
                   </span>
                 </div>
-                <p className="text-[10px] text-[var(--text-muted)] mt-0.5 line-clamp-1">{q.description}</p>
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-0.5 line-clamp-1">{q.description}</p>
               </div>
             </div>
 

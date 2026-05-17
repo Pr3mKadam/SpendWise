@@ -103,7 +103,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                 </div>
                 <div>
                   <h3 className="font-bold text-[var(--text-primary)]">AI Receipt Scanner</h3>
-                  <p className="text-[10px] text-teal-500 font-bold uppercase tracking-wider flex items-center gap-1">
+                  <p className="text-[length:var(--fs-overline)] text-teal-500 font-bold uppercase tracking-wider flex items-center gap-1">
                     <Sparkles size={10} className="fill-current" /> Powered by Gemini AI
                   </p>
                 </div>
@@ -154,7 +154,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                           <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white -translate-x-1 translate-y-1" />
                           <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white translate-x-1 translate-y-1" />
                           <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                            <span className="bg-black/50 text-white text-[10px] px-2 py-1 rounded-md font-bold">Drag to adjust</span>
+                            <span className="bg-black/50 text-white text-[length:var(--fs-overline)] px-2 py-1 rounded-md font-bold">Drag to adjust</span>
                           </div>
                         </motion.div>
                       </div>
@@ -201,7 +201,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                           animate={{ width: `${progress}%` }}
                         />
                       </div>
-                      <p className="text-[10px] text-center text-[var(--text-muted)] italic">
+                      <p className="text-[length:var(--fs-overline)] text-center text-[var(--text-muted)] italic">
                         This stays on your device. Privacy first.
                       </p>
                     </div>
@@ -225,7 +225,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
               )}
             </div>
             
-            <div className="px-8 pb-8 flex items-center gap-3 text-[10px] text-[var(--text-muted)]">
+            <div className="px-8 pb-8 flex items-center gap-3 text-[length:var(--fs-overline)] text-[var(--text-muted)]">
               <CheckCircle2 size={12} className="text-teal-500" />
               <span>Processed securely via SpendWise Cloud (Gemini 1.5)</span>
             </div>

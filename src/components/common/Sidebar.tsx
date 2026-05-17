@@ -159,7 +159,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
                 <span>{item.label}</span>
                 {item.id === 'budget' && overBudgetCount > 0 && (
                   <span
-                    className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[10px] font-bold px-1"
+                    className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[length:var(--fs-overline)] font-bold px-1"
                     style={{ background: 'rgba(239,68,68,0.9)', color: '#fff' }}
                   >
                     {overBudgetCount}
@@ -250,6 +250,8 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
       {/* ── Mobile Bottom Nav ── */}
       <div
         className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 pt-2 pb-safe"
+        role="tablist"
+        aria-label="Mobile Navigation Bar"
         style={{ 
           background: 'var(--sidebar-bg)', 
           borderTop: '1px solid rgba(255,255,255,0.08)',
@@ -267,30 +269,29 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
                 haptic.light();
                 onViewChange(item.id);
               }}
-              className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px] outline-none"
+              role="tab"
+              aria-selected={isActive}
+              aria-label={item.label}
+              className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px] focus-visible:ring-2 focus-visible:ring-teal-500 rounded-xl"
               style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)', transition: 'color 0.2s' }}
             >
               {isActive && (
-                <motion.div
-                  layoutId="activeTab"
-                  className="absolute inset-0 bg-[var(--teal)]/10 rounded-xl -z-10"
-                  initial={false}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                <div
+                  className="absolute inset-0 bg-[var(--teal)]/10 rounded-xl -z-10 animate-fade-in"
                 />
               )}
               <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
               <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px', fontFamily: 'var(--font-inter)' }}>{item.label}</span>
               
               {isActive && (
-                <motion.div 
-                  layoutId="activeDot"
-                  className="absolute -bottom-1 w-1 h-1 rounded-full bg-[var(--teal)] shadow-[0_0_8px_var(--teal)]"
+                <div 
+                  className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_8px_var(--teal)] animate-scale-in"
                 />
               )}
 
               {item.id === 'budget' && overBudgetCount > 0 && (
                 <span
-                  className="absolute top-0 right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] px-1 font-bold"
+                  className="absolute top-0 right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[length:var(--fs-overline)] px-1 font-bold"
                   style={{ background: 'var(--red)', color: '#fff', boxShadow: '0 2px 4px rgba(239,68,68,0.4)' }}
                 >
                   {overBudgetCount > 9 ? '9+' : overBudgetCount}
@@ -304,6 +305,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
             haptic.light();
             setIsMobileMenuOpen(true);
           }}
+          role="button"
+          aria-haspopup="dialog"
+          aria-expanded={isMobileMenuOpen}
+          aria-label="Open secondary navigation menu"
           className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px]"
           style={{ color: 'var(--sidebar-text)' }}
         >
@@ -341,7 +346,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-1">
-              {navItems.filter(item => !['dashboard', 'history', 'budget', 'advisor', 'education', 'quests', 'reports', 'subscriptions', 'shared'].includes(item.id)).map((item) => {
+              {(() => {
+                const bottomNavIds = mobileNavItems.map(i => i.id);
+                return navItems.filter(item => !bottomNavIds.includes(item.id));
+              })().map((item) => {
                 const Icon = item.icon;
                 const isActive = activeView === item.id;
                 return (
@@ -364,7 +372,7 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
                     <span>{item.label}</span>
                     {item.id === 'budget' && overBudgetCount > 0 && (
                       <span
-                        className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[10px] font-bold px-1"
+                        className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[length:var(--fs-overline)] font-bold px-1"
                         style={{ background: 'var(--red)', color: '#fff' }}
                       >
                         {overBudgetCount}

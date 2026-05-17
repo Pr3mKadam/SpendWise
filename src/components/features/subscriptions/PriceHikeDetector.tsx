@@ -90,7 +90,7 @@ export function PriceHikeDetector({ transactions, currency }: PriceHikeDetectorP
         <span className="text-lg">✅</span>
         <div>
           <p className="text-sm font-bold text-emerald-400">No Price Hikes Detected</p>
-          <p className="text-[11px] text-emerald-400/70 font-inter">Your recurring charges appear stable</p>
+          <p className="text-[length:var(--fs-caption)] text-emerald-400/70 font-inter">Your recurring charges appear stable</p>
         </div>
       </div>
     );
@@ -104,7 +104,7 @@ export function PriceHikeDetector({ transactions, currency }: PriceHikeDetectorP
         <div className="flex items-center gap-2 mb-1">
           <AlertTriangle size={16} className="text-amber-500" />
           <h4 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Price Hike Alerts</h4>
-          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[9px] font-black">{hikeAlerts.length} detected</span>
+          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-500 text-[length:var(--fs-overline)] font-bold">{hikeAlerts.length} detected</span>
         </div>
         <AnimatePresence>
           {visible.map(alert => (
@@ -116,12 +116,12 @@ export function PriceHikeDetector({ transactions, currency }: PriceHikeDetectorP
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
                   <p className="text-sm font-bold text-[var(--text-primary)] truncate">{alert.merchant}</p>
-                  <span className="px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[9px] font-black">+{alert.changePct}%</span>
+                  <span className="px-1.5 py-0.5 rounded-full bg-red-500/10 text-red-400 text-[length:var(--fs-overline)] font-bold">+{alert.changePct}%</span>
                 </div>
-                <p className="text-[11px] text-[var(--text-muted)] font-inter">Was {currency}{alert.oldAmount} → Now {currency}{alert.newAmount}</p>
+                <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter">Was {currency}{alert.oldAmount} → Now {currency}{alert.newAmount}</p>
               </div>
               <button onClick={() => setCancelTarget(alert.merchant)}
-                className="shrink-0 px-3 py-1.5 rounded-lg text-[10px] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20 border-none cursor-pointer transition-colors">
+                className="shrink-0 px-3 py-1.5 rounded-lg text-[length:var(--fs-overline)] font-bold bg-red-500/10 text-red-400 hover:bg-red-500/20 border-none cursor-pointer transition-colors">
                 Cancel
               </button>
             </motion.div>
@@ -129,7 +129,7 @@ export function PriceHikeDetector({ transactions, currency }: PriceHikeDetectorP
         </AnimatePresence>
         {hikeAlerts.length > 2 && (
           <button onClick={() => setExpanded(!expanded)}
-            className="w-full flex items-center justify-center gap-1.5 text-[11px] font-bold text-[var(--text-muted)] hover:text-[var(--teal)] py-2 bg-transparent border-none cursor-pointer transition-colors">
+            className="w-full flex items-center justify-center gap-1.5 text-[length:var(--fs-caption)] font-bold text-[var(--text-muted)] hover:text-[var(--teal)] py-2 bg-transparent border-none cursor-pointer transition-colors">
             {expanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
             {expanded ? 'Show less' : `View ${hikeAlerts.length-2} more alerts`}
           </button>

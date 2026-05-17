@@ -26,7 +26,7 @@ export default function IOSInstallModal({ onClose }: IOSInstallModalProps) {
           <div className="w-14 h-14 rounded-2xl bg-[var(--teal-dim)] flex items-center justify-center mx-auto mb-4 border border-[var(--teal)]/20 shadow-inner">
             <span className="text-2xl">📱</span>
           </div>
-          <h3 className="font-manrope font-black text-lg text-[var(--text-primary)]">Install SpendWise</h3>
+          <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">Install SpendWise</h3>
           <p className="font-inter text-xs text-[var(--text-muted)] mt-1">Add SpendWise to your iOS Home Screen for full offline capabilities & secure biometric access.</p>
         </div>
 
@@ -42,7 +42,7 @@ export default function IOSInstallModal({ onClose }: IOSInstallModalProps) {
               <p className="font-inter font-bold text-xs text-[var(--text-primary)] flex items-center gap-1.5">
                 Tap the Share Button <Share size={12} className="text-[var(--teal)]" />
               </p>
-              <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Find the share option in Safari's bottom navigation bar.</p>
+              <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-0.5">Find the share option in Safari's bottom navigation bar.</p>
             </div>
           </div>
 
@@ -55,7 +55,7 @@ export default function IOSInstallModal({ onClose }: IOSInstallModalProps) {
               <p className="font-inter font-bold text-xs text-[var(--text-primary)] flex items-center gap-1.5">
                 Select 'Add to Home Screen' <PlusSquare size={12} className="text-indigo-500" />
               </p>
-              <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Scroll down the action sheet menu to find this option.</p>
+              <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-0.5">Scroll down the action sheet menu to find this option.</p>
             </div>
           </div>
 
@@ -68,7 +68,7 @@ export default function IOSInstallModal({ onClose }: IOSInstallModalProps) {
               <p className="font-inter font-bold text-xs text-[var(--text-primary)] flex items-center gap-1.5">
                 Tap 'Add' <ArrowUp size={12} className="text-amber-500 rotate-45" />
               </p>
-              <p className="text-[10px] text-[var(--text-muted)] mt-0.5">Tap the "Add" button in the upper-right corner of your screen.</p>
+              <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-0.5">Tap the "Add" button in the upper-right corner of your screen.</p>
             </div>
           </div>
 

@@ -80,7 +80,7 @@ export function GoalModal({
           <div className="space-y-4">
             <div className="flex gap-3">
               <div className="flex-shrink-0">
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Icon</label>
+                <label className="mb-1.5 block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Icon</label>
                 <div className="flex flex-wrap w-28 gap-1 rounded-xl p-1.5" style={{ background: '#f5f7fa' }}>
                   {GOAL_EMOJIS.map(e => (
                     <button
@@ -96,7 +96,7 @@ export function GoalModal({
               </div>
 
               <div className="flex-1">
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Goal Name *</label>
+                <label className="mb-1.5 block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Goal Name *</label>
                 <input
                   type="text"
                   value={form.name}
@@ -112,7 +112,7 @@ export function GoalModal({
             </div>
 
             <div>
-              <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Accent Color</label>
+              <label className="mb-1.5 block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Accent Color</label>
               <div className="flex gap-2">
                 {GOAL_COLORS.map(c => (
                   <button
@@ -127,7 +127,7 @@ export function GoalModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Target ({currency}) *</label>
+                <label className="mb-1.5 block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Target ({currency}) *</label>
                 <input type="number" min={1} value={form.targetAmount} onChange={set('targetAmount')}
                   placeholder="10000"
                   className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
@@ -135,10 +135,10 @@ export function GoalModal({
                   onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
                   onBlur={e => { e.target.style.borderColor = 'transparent'; }}
                 />
-                {errors.targetAmount && <p className="mt-1 text-[10px] text-red-400">{errors.targetAmount}</p>}
+                {errors.targetAmount && <p className="mt-1 text-[length:var(--fs-overline)] text-red-400">{errors.targetAmount}</p>}
               </div>
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Already Saved ({currency})</label>
+                <label className="mb-1.5 block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Already Saved ({currency})</label>
                 <input type="number" min={0} value={form.savedAmount} onChange={set('savedAmount')}
                   placeholder="0"
                   className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
@@ -151,17 +151,17 @@ export function GoalModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Target Date *</label>
+                <label className="mb-1.5 block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Target Date *</label>
                 <input type="date" value={form.targetDate} onChange={set('targetDate')}
                   className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"
                   style={{ background: '#f5f7fa', border: '1.5px solid transparent', color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}
                   onFocus={e => { e.target.style.borderColor = 'var(--teal)'; }}
                   onBlur={e => { e.target.style.borderColor = 'transparent'; }}
                 />
-                {errors.targetDate && <p className="mt-1 text-[10px] text-red-400">{errors.targetDate}</p>}
+                {errors.targetDate && <p className="mt-1 text-[length:var(--fs-overline)] text-red-400">{errors.targetDate}</p>}
               </div>
               <div>
-                <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Monthly ({currency}) *</label>
+                <label className="mb-1.5 block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Monthly ({currency}) *</label>
                 <input type="number" min={0} value={form.monthlyContribution} onChange={set('monthlyContribution')}
                   placeholder="500"
                   className="w-full rounded-xl px-3 py-2.5 text-sm focus:outline-none"

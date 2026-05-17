@@ -171,7 +171,7 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
       </div>
 
       <div className="absolute bottom-12 left-0 right-0 text-center">
-        <p className="text-[10px] text-white/20 uppercase tracking-[0.2em]">Secure Session Encrypted</p>
+        <p className="text-[length:var(--fs-overline)] text-white/20 uppercase tracking-[0.2em]">Secure Session Encrypted</p>
       </div>
     </motion.div>
   );

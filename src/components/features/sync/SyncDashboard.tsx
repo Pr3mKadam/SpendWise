@@ -79,7 +79,7 @@ export function SyncDashboard({
           <div key={stat.label} className="card px-4 py-4">
             <div className="flex items-center gap-2 mb-2">
               <span style={{ color: stat.color }}>{stat.icon}</span>
-              <span className="font-inter text-[10px] uppercase tracking-wider font-semibold text-[var(--text-muted)]">{stat.label}</span>
+              <span className="font-inter text-[length:var(--fs-overline)] uppercase tracking-wider font-semibold text-[var(--text-muted)]">{stat.label}</span>
             </div>
             <p className="font-manrope font-bold text-xl text-[var(--text-primary)]">{stat.value}</p>
           </div>
@@ -131,7 +131,7 @@ export function SyncDashboard({
                     <div key={acc.id} className="rounded-xl p-5 relative overflow-hidden border border-[var(--border)] bg-[var(--surface-card)]">
                       <div className="absolute top-4 right-4 flex items-center gap-1.5">
                         <div className="w-1.5 h-1.5 rounded-full bg-[var(--green)]" />
-                        <span className="font-inter text-[10px] uppercase tracking-wider font-bold text-[var(--green)]">Active</span>
+                        <span className="font-inter text-[length:var(--fs-overline)] uppercase tracking-wider font-bold text-[var(--green)]">Active</span>
                       </div>
                       <div className="flex items-start gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0" style={{ background: providerDef.color }}>
@@ -139,16 +139,16 @@ export function SyncDashboard({
                         </div>
                         <div>
                           <p className="font-inter font-semibold text-[14px] text-[var(--text-primary)]">{providerDef.name}</p>
-                          <p className="font-inter text-[11px] font-medium text-[var(--text-muted)]">{acc.upiId}</p>
+                          <p className="font-inter text-[length:var(--fs-caption)] font-medium text-[var(--text-muted)]">{acc.upiId}</p>
                         </div>
                       </div>
                       <div className="flex items-center justify-between pt-4 border-t border-dashed border-[var(--border)]">
                         <div className="flex items-center gap-1.5 text-[var(--text-muted)]">
                           <Activity size={12} />
-                          <span className="font-inter text-[10px]">{formatDate(acc.lastSynced)}</span>
+                          <span className="font-inter text-[length:var(--fs-overline)]">{formatDate(acc.lastSynced)}</span>
                         </div>
                         {!isRzp && (
-                          <button onClick={() => onSyncAccount(acc)} disabled={syncingAccountId === acc.id} className="flex items-center gap-1.5 text-[var(--teal)] border-none bg-transparent cursor-pointer font-bold text-[11px]">
+                          <button onClick={() => onSyncAccount(acc)} disabled={syncingAccountId === acc.id} className="flex items-center gap-1.5 text-[var(--teal)] border-none bg-transparent cursor-pointer font-bold text-[length:var(--fs-caption)]">
                             <RefreshCw size={13} className={syncingAccountId === acc.id ? 'animate-spin' : ''} />
                             Sync
                           </button>
@@ -179,14 +179,14 @@ export function SyncDashboard({
                       </div>
                       <div>
                         <p className="font-inter font-semibold text-[13px] text-[var(--text-primary)]">{tx.merchant}</p>
-                        <p className="font-inter text-[10px] text-[var(--text-muted)] flex items-center gap-1.5">
+                        <p className="font-inter text-[length:var(--fs-overline)] text-[var(--text-muted)] flex items-center gap-1.5">
                           <Clock size={9} /> {formatDate(tx.date)}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
                       <p className="font-inter font-bold text-[13px] text-[var(--red)]">−{currency}{tx.amount.toFixed(0)}</p>
-                      <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--surface-input)] text-[var(--text-muted)]">{tx.category}</span>
+                      <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-[var(--surface-input)] text-[var(--text-muted)]">{tx.category}</span>
                     </div>
                   </div>
                 ))}

@@ -76,7 +76,7 @@ export default function SpendingPersonality({ transactions }: SpendingPersonalit
             className="space-y-6"
           >
             <div>
-              <p className="text-[10px] font-bold text-[var(--teal)] uppercase tracking-widest mb-1">Your Archetype</p>
+              <p className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] uppercase tracking-widest mb-1">Your Archetype</p>
               <h4 className="text-2xl font-black text-[var(--text-primary)] tracking-tight">
                 {personality.archetype}
               </h4>
@@ -92,7 +92,7 @@ export default function SpendingPersonality({ transactions }: SpendingPersonalit
               {personality.traits.map((trait, i) => (
                 <span 
                   key={i} 
-                  className="px-3 py-1 rounded-full bg-[var(--surface-input)] border border-[var(--border)] text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-wider"
+                  className="px-3 py-1 rounded-full bg-[var(--surface-input)] border border-[var(--border)] text-[length:var(--fs-overline)] font-bold text-[var(--text-primary)] uppercase tracking-wider"
                 >
                   {trait}
                 </span>
@@ -102,7 +102,7 @@ export default function SpendingPersonality({ transactions }: SpendingPersonalit
             <div className="p-4 rounded-xl bg-gradient-to-br from-[var(--teal-dim)] to-transparent border border-[var(--teal)]/10">
               <div className="flex items-center gap-2 mb-2">
                 <Target size={14} className="text-[var(--teal)]" />
-                <p className="text-[10px] font-black text-[var(--text-primary)] uppercase tracking-widest">Growth Tip</p>
+                <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-primary)] uppercase tracking-widest">Growth Tip</p>
               </div>
               <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
                 {personality.advice}
@@ -111,7 +111,7 @@ export default function SpendingPersonality({ transactions }: SpendingPersonalit
 
             <button 
               onClick={analyze}
-              className="w-full py-2 rounded-xl text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--teal)] transition-colors flex items-center justify-center gap-2"
+              className="w-full py-2 rounded-xl text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] hover:text-[var(--teal)] transition-colors flex items-center justify-center gap-2"
             >
               <Zap size={10} /> Refresh Analysis
             </button>

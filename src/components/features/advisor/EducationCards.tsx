@@ -69,7 +69,7 @@ export default function EducationCards() {
           >
             <ChevronLeft size={18} />
           </button>
-          <span className="text-[10px] font-bold font-inter text-[var(--text-muted)] uppercase tracking-widest">
+          <span className="text-[length:var(--fs-overline)] font-bold font-inter text-[var(--text-muted)] uppercase tracking-widest">
             {index + 1} / {TIPS.length}
           </span>
           <button 

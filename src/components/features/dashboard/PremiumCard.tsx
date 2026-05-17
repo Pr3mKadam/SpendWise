@@ -31,13 +31,13 @@ export default function PremiumCard({ currentBalance, currency }: PremiumCardPro
       <div className="relative z-10">
         <div className="flex justify-between items-start mb-10">
           <div>
-            <p className="text-[10px] font-black text-white/50 uppercase tracking-widest mb-1">Vault Balance</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-white/50 uppercase tracking-widest mb-1">Vault Balance</p>
             <p className="text-3xl font-black font-manrope letter-tight tracking-tighter">
               {currency}{Math.abs(currentBalance).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
             </p>
           </div>
           <div className="glass-panel px-3 py-1.5 rounded-lg border-white/20">
-            <span className="text-[10px] font-black italic tracking-widest text-white/90">SPENDWISE</span>
+            <span className="text-[length:var(--fs-overline)] font-bold italic tracking-widest text-white/90">SPENDWISE</span>
           </div>
         </div>
 
@@ -45,7 +45,7 @@ export default function PremiumCard({ currentBalance, currency }: PremiumCardPro
           <div className="space-y-4">
             <p className="text-sm font-medium tracking-[0.25em] text-white/80 font-mono">•••• •••• •••• 8842</p>
             <div>
-              <p className="text-[8px] font-black text-white/40 uppercase tracking-widest mb-1">Premium Member</p>
+              <p className="text-[8px] font-bold text-white/40 uppercase tracking-widest mb-1">Premium Member</p>
               <p className="text-xs font-bold uppercase tracking-wider">SpendWise Pro</p>
             </div>
           </div>

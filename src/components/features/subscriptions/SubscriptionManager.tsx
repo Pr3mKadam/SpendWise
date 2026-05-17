@@ -72,7 +72,7 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
           <div key={s.label} className="card px-5 py-4">
             <div className="flex items-center gap-1.5 mb-3">
               <span style={{ color: s.color }}>{s.icon}</span>
-              <span className="font-inter text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{s.label}</span>
+              <span className="font-inter text-[length:var(--fs-overline)] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{s.label}</span>
             </div>
             <p className="font-manrope font-bold text-2xl" style={{ color: s.color }}>{s.value}</p>
           </div>
@@ -135,12 +135,12 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                       {mergedIcons[sub.category] ? <span className="text-lg">{mergedIcons[sub.category]}</span> : initials}
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="font-inter text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                      <span className="font-inter text-[length:var(--fs-overline)] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
                         style={{ background: color + '15', color }}>
                         {sub.frequency}
                       </span>
                       {sub.isTrial && (
-                        <span className="flex items-center gap-1 font-inter text-[9px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 rounded-full px-2 py-0.5 border border-amber-500/20">
+                        <span className="flex items-center gap-1 font-inter text-[length:var(--fs-overline)] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 rounded-full px-2 py-0.5 border border-amber-500/20">
                           <Zap size={10} /> Trial
                         </span>
                       )}
@@ -152,7 +152,7 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                   </p>
                   <p className="font-manrope font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
                     {format(sub.avgAmount)}
-                    <span className="font-inter text-[11px] font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
+                    <span className="font-inter text-[length:var(--fs-caption)] font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
                       /{sub.frequency === 'monthly' ? 'mo' : 'yr'}
                     </span>
                   </p>
@@ -160,7 +160,7 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                   {sub.isTrial && sub.trialEndsAt && (
                     <div className="flex items-center gap-1.5 mt-1">
                       <Clock size={11} className="text-amber-500" />
-                      <span className="font-inter text-[10px] text-amber-600 font-medium">
+                      <span className="font-inter text-[length:var(--fs-overline)] text-amber-600 font-medium">
                         Ends {new Date(sub.trialEndsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                       </span>
                     </div>
@@ -169,25 +169,25 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                   {sub.priceCreep && (
                     <div className="flex items-center gap-1.5 mt-1 animate-pulse">
                       <TrendingUp size={12} className="text-red-500" />
-                      <span className="font-inter text-[10px] font-bold text-red-500 uppercase tracking-tight">Price Increased Recently</span>
+                      <span className="font-inter text-[length:var(--fs-overline)] font-bold text-red-500 uppercase tracking-tight">Price Increased Recently</span>
                     </div>
                   )}
 
-                  <p className="font-inter text-[11px] mt-1" style={{ color: 'var(--text-muted)' }}>
+                  <p className="font-inter text-[length:var(--fs-caption)] mt-1" style={{ color: 'var(--text-muted)' }}>
                     {format(annualCost)} / year
                   </p>
 
                   <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: '1px dashed var(--border)' }}>
                     <div className="flex items-center gap-1.5">
                       <Calendar size={11} style={{ color: 'var(--text-muted)' }} />
-                      <span className="font-inter text-[11px]" style={{ color: 'var(--text-muted)' }}>
+                      <span className="font-inter text-[length:var(--fs-caption)]" style={{ color: 'var(--text-muted)' }}>
                         Next: <strong style={{ color: 'var(--text-primary)' }}>
                           {new Date(sub.nextExpected + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         </strong>
                       </span>
                     </div>
                     <span
-                      className="font-inter text-[10px] font-bold rounded-full px-2 py-0.5"
+                      className="font-inter text-[length:var(--fs-overline)] font-bold rounded-full px-2 py-0.5"
                       style={{
                         background: isUrgent ? 'var(--amber-dim)' : '#f5f7fa',
                         color:      isUrgent ? 'var(--amber)' : 'var(--text-muted)',

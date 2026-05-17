@@ -196,7 +196,7 @@ export default function PortfolioView({ currency = '₹', financeState, config }
               </div>
 
               <div>
-                <p className="font-inter text-[11px] font-semibold uppercase tracking-widest text-white/70 mb-1">Total Net Worth</p>
+                <p className="font-inter text-[length:var(--fs-caption)] font-semibold uppercase tracking-widest text-white/70 mb-1">Total Net Worth</p>
                 <p className="font-manrope font-bold text-4xl text-white">
                   {positive ? '' : '−'}{fmt(netWorth, currency)}
                 </p>
@@ -210,11 +210,11 @@ export default function PortfolioView({ currency = '₹', financeState, config }
               </div>
               <div className="flex gap-8 flex-wrap">
                 <div>
-                  <p className="font-inter text-[11px] text-white/60 uppercase tracking-wider mb-1">Total Assets</p>
+                  <p className="font-inter text-[length:var(--fs-caption)] text-white/60 uppercase tracking-wider mb-1">Total Assets</p>
                   <p className="font-manrope font-bold text-2xl text-white">{fmt(totalAssets, currency)}</p>
                 </div>
                 <div>
-                  <p className="font-inter text-[11px] text-white/60 uppercase tracking-wider mb-1">Total Liabilities</p>
+                  <p className="font-inter text-[length:var(--fs-caption)] text-white/60 uppercase tracking-wider mb-1">Total Liabilities</p>
                   <p className="font-manrope font-bold text-2xl text-white">{fmt(totalLiabilities, currency)}</p>
                 </div>
               </div>
@@ -229,7 +229,7 @@ export default function PortfolioView({ currency = '₹', financeState, config }
                   <div className="card p-5 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 border-indigo-500/10">
                     <div className="flex items-center gap-2 mb-4">
                       <Sparkles size={16} className="text-indigo-400" />
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-muted)]">AI Insight</span>
+                      <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--text-muted)]">AI Insight</span>
                     </div>
                     <p className="text-sm font-manrope font-bold text-[var(--text-primary)] mb-2">
                       {config?.userRole === 'student' ? 'Future value is promising.' : config?.userRole === 'business' ? 'Business velocity is high.' : 'Growth potential is high.'}
@@ -253,7 +253,7 @@ export default function PortfolioView({ currency = '₹', financeState, config }
                 <div className="mt-8 pt-6 border-t border-[var(--border)]">
                    <div className="flex items-center gap-2 mb-3">
                       <BrainCircuit size={16} className="text-[var(--teal)]" />
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Wealth Tip</span>
+                      <span className="text-[length:var(--fs-caption)] font-bold uppercase tracking-wider text-[var(--text-muted)]">Wealth Tip</span>
                    </div>
                    <p className="text-[12px] leading-relaxed text-[var(--text-secondary)] font-inter">
                       {config?.userRole === 'student'
@@ -275,11 +275,11 @@ export default function PortfolioView({ currency = '₹', financeState, config }
                   <div className="flex items-end justify-between">
                     <div>
                       <p className="font-manrope font-bold text-lg text-green-500">+12.4%</p>
-                      <p className="font-inter text-[10px] text-gray-400 uppercase">Your Portfolio</p>
+                      <p className="font-inter text-[length:var(--fs-overline)] text-gray-400 uppercase">Your Portfolio</p>
                     </div>
                     <div className="text-right">
                       <p className="font-manrope font-bold text-lg text-gray-500 dark:text-gray-400">+10.2%</p>
-                      <p className="font-inter text-[10px] text-gray-400 uppercase">S&P 500 (YTD)</p>
+                      <p className="font-inter text-[length:var(--fs-overline)] text-gray-400 uppercase">S&P 500 (YTD)</p>
                     </div>
                   </div>
                   <div className="mt-3 bg-green-50 dark:bg-green-900/20 rounded-lg p-2 flex justify-center items-center">
@@ -340,7 +340,7 @@ export default function PortfolioView({ currency = '₹', financeState, config }
                       </div>
                       <div>
                         <h3 className="font-manrope font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>Crypto Portfolio</h3>
-                        <p className="font-inter text-[11px]" style={{ color: 'var(--text-muted)' }}>Web3 Assets</p>
+                        <p className="font-inter text-[length:var(--fs-caption)]" style={{ color: 'var(--text-muted)' }}>Web3 Assets</p>
                       </div>
                     </div>
                     <span className="font-manrope font-bold text-[15px] text-orange-500">
@@ -352,7 +352,7 @@ export default function PortfolioView({ currency = '₹', financeState, config }
                     <div className="flex flex-col items-center justify-center py-6 rounded-2xl border border-dashed border-[var(--border)]">
                       <span className="text-2xl mb-1">🪙</span>
                       <p className="font-inter font-semibold text-[12px]" style={{ color: 'var(--text-muted)' }}>No crypto assets tracked.</p>
-                      <button onClick={() => setModal('asset')} className="mt-2 text-[11px] font-bold text-[var(--teal)] bg-transparent border-none cursor-pointer hover:underline">Add Crypto Asset</button>
+                      <button onClick={() => setModal('asset')} className="mt-2 text-[length:var(--fs-caption)] font-bold text-[var(--teal)] bg-transparent border-none cursor-pointer hover:underline">Add Crypto Asset</button>
                     </div>
                   ) : (
                     <div className="space-y-2.5">

@@ -205,7 +205,7 @@ export default function AuthView() {
               Link to Parent Account
             </button>
           </div>
-          <p className="absolute bottom-6 text-[11px] text-[var(--text-dim)]">© 2026 SpendWise · Local-first experience</p>
+          <p className="absolute bottom-6 text-[length:var(--fs-caption)] text-[var(--text-dim)]">© 2026 SpendWise · Local-first experience</p>
         </div>
       </div>
 

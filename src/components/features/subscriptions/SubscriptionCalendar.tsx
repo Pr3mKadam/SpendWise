@@ -91,7 +91,7 @@ export function SubscriptionCalendar({ subscriptions, currency = '₹' }: Props)
       {/* Day Headers */}
       <div className="grid grid-cols-7 mb-1">
         {DAY_NAMES.map(d => (
-          <div key={d} className="text-center text-[10px] font-bold uppercase tracking-wider py-1"
+          <div key={d} className="text-center text-[length:var(--fs-overline)] font-bold uppercase tracking-wider py-1"
             style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
             {d}
           </div>
@@ -116,7 +116,7 @@ export function SubscriptionCalendar({ subscriptions, currency = '₹' }: Props)
               }}
             >
               <span
-                className="text-[11px] font-bold mb-0.5"
+                className="text-[length:var(--fs-caption)] font-bold mb-0.5"
                 style={{ color: isToday ? 'var(--teal)' : hasBills ? '#3b82f6' : 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
               >
                 {day}
@@ -142,7 +142,7 @@ export function SubscriptionCalendar({ subscriptions, currency = '₹' }: Props)
       {/* Upcoming bills list */}
       {subscriptions.length > 0 && (
         <div className="mt-4 pt-4 border-t border-[var(--border)]">
-          <p className="text-[10px] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Bills This Month</p>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>Bills This Month</p>
           <div className="space-y-1.5">
             {[...subscriptions]
               .sort((a, b) => (a.billingDay ?? 1) - (b.billingDay ?? 1))

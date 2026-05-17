@@ -36,7 +36,7 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
         </div>
         <div className="text-right shrink-0">
           <p className="font-manrope font-bold text-xs sm:text-sm text-[var(--text-primary)]">{currentLevelXP} / {XP_PER_LEVEL} XP</p>
-          <p className="font-inter text-[9px] sm:text-[10px] font-bold text-[var(--teal)] uppercase tracking-wider">Next Rank Lvl {level < 2 ? 2 : level < 5 ? 5 : level < 10 ? 10 : 20}</p>
+          <p className="font-inter text-[length:var(--fs-overline)] sm:text-[length:var(--fs-overline)] font-bold text-[var(--teal)] uppercase tracking-wider">Next Rank Lvl {level < 2 ? 2 : level < 5 ? 5 : level < 10 ? 10 : 20}</p>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
             className="h-full bg-gradient-to-r from-[var(--teal)] via-[#2dd4bf] to-[var(--teal)] bg-[length:200%_100%] animate-shimmer shadow-[0_0_12px_rgba(20,184,166,0.4)]"
           />
         </div>
-        <div className="flex justify-between items-center text-[10px] font-bold text-[var(--text-dim)] uppercase tracking-tighter">
+        <div className="flex justify-between items-center text-[length:var(--fs-overline)] font-bold text-[var(--text-dim)] uppercase tracking-tighter">
           <span>{level}</span>
           <span>Next Milestone</span>
           <span>{level + 1}</span>
@@ -63,7 +63,7 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
             <Zap size={14} className="text-amber-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">Today's XP</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Today's XP</p>
             <p className="text-xs font-manrope font-bold text-[var(--text-primary)]">
               {totalXPToday > 0 ? `+${totalXPToday} earned` : completedCount === 0 ? 'Do a quest!' : 'Claimed'}
             </p>
@@ -75,7 +75,7 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
             <TrendingUp size={14} className="text-[var(--teal)]" />
           </div>
           <div className="min-w-0">
-            <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">XP Multiplier</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">XP Multiplier</p>
             <p className="text-xs font-manrope font-bold text-[var(--text-primary)]">1.2x Active</p>
           </div>
         </div>

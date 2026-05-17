@@ -69,7 +69,7 @@ function PatternCard({ pattern, currency }: { pattern: RecurringPattern; currenc
           <div className="flex flex-wrap items-center gap-1.5">
             <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>{pattern.merchant}</p>
             <span
-              className="rounded-full px-1.5 py-0.5 text-[10px] font-bold"
+              className="rounded-full px-1.5 py-0.5 text-[length:var(--fs-overline)] font-bold"
               style={{ backgroundColor: `${freq.color}15`, color: freq.color, fontFamily: 'var(--font-inter)' }}
             >
               {freq.emoji} {freq.label}
@@ -198,7 +198,7 @@ export default function RecurringView({ patterns = [], currency = '$', transacti
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold transition-colors border-none cursor-pointer"
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[length:var(--fs-caption)] font-bold transition-colors border-none cursor-pointer"
                 style={{
                   background: view === v ? 'var(--teal)' : 'var(--surface-card)',
                   color: view === v ? '#fff' : 'var(--text-muted)',

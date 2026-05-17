@@ -44,10 +44,10 @@ function InviteBanner({ invites, onAccept, onDecline }: {
             <p className="m-0 mt-0.5 text-[0.72rem] text-[var(--text-secondary)]">Invited {relTime(inv.invitedAt)}</p>
           </div>
           <div className="flex gap-2 shrink-0">
-            <button type="button" onClick={() => onAccept(inv.memberId)} className="flex items-center gap-1.5 px-3.5 py-[7px] bg-emerald-500 text-white border-none rounded-lg cursor-pointer font-bold text-[0.78rem]">
+            <button type="button" onClick={() => onAccept(inv.memberId)} className="flex justify-center items-center gap-1.5 px-3.5 min-h-[48px] min-w-[48px] bg-emerald-500 text-white border-none rounded-lg cursor-pointer font-bold text-[var(--fs-caption)]">
               <Ico.Check /> Accept
             </button>
-            <button type="button" onClick={() => onDecline(inv.memberId)} className="flex items-center gap-1.5 px-2.5 py-[7px] bg-red-500/10 text-red-500 border border-red-500/30 rounded-lg cursor-pointer font-bold text-[0.78rem]">
+            <button type="button" onClick={() => onDecline(inv.memberId)} className="flex justify-center items-center gap-1.5 px-2.5 min-h-[48px] min-w-[48px] bg-red-500/10 text-red-500 border border-red-500/30 rounded-lg cursor-pointer font-bold text-[var(--fs-caption)]">
               <Ico.X /> Decline
             </button>
           </div>
@@ -64,10 +64,10 @@ function EmptyState({ onCreateGroup }: { onCreateGroup: () => void }) {
     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
       <div className="text-[80px] mb-6 leading-none">🤝</div>
       <h2 className="m-0 mb-3 text-[1.6rem] font-extrabold text-[var(--text)] tracking-tight">No Shared Groups Yet</h2>
-      <p className="m-0 mb-10 text-[var(--text-secondary)] max-w-[380px] leading-relaxed text-[0.95rem]">
+      <p className="m-0 mb-10 text-[var(--text-secondary)] max-w-[380px] leading-relaxed text-[var(--fs-body)]">
         Create a shared wallet to track joint expenses, split bills and save towards group goals — all synced in real time.
       </p>
-      <button type="button" onClick={onCreateGroup} className="flex items-center gap-2 px-8 py-3.5 bg-[var(--teal)] text-white border-none rounded-[14px] cursor-pointer font-extrabold text-[1rem] tracking-tight">
+      <button type="button" onClick={onCreateGroup} className="flex justify-center items-center gap-2 px-8 min-h-[48px] bg-[var(--teal)] text-white border-none rounded-[14px] cursor-pointer font-extrabold text-[var(--fs-title)] tracking-tight">
         <Ico.Plus /> Create First Group
       </button>
     </div>
@@ -84,10 +84,10 @@ function GroupSelector({ groups, selectedId, onSelect, onCreate }: { groups: any
       <button 
         type="button" 
         onClick={() => setOpen(v => !v)} 
-        className="flex items-center gap-2.5 px-4 py-3 bg-[var(--card)] border-[1.5px] border-[var(--card-border)] rounded-xl cursor-pointer w-full text-left hover:border-[var(--teal)] transition-colors shadow-sm"
+        className="flex items-center gap-2.5 px-4 min-h-[48px] bg-[var(--card)] border-[1.5px] border-[var(--card-border)] rounded-xl cursor-pointer w-full text-left hover:border-[var(--teal)] transition-colors shadow-sm"
       >
         <span className="text-[20px] leading-none">{PURPOSE_EMOJI[sel?.purpose ?? 'friends'] ?? '🤝'}</span>
-        <span className="flex-1 font-bold text-[var(--text)] text-[0.9rem] truncate">{sel?.name ?? 'Select Group'}</span>
+        <span className="flex-1 font-bold text-[var(--text)] text-[var(--fs-body)] truncate">{sel?.name ?? 'Select Group'}</span>
         <Ico.Chevron />
       </button>
 
@@ -101,10 +101,10 @@ function GroupSelector({ groups, selectedId, onSelect, onCreate }: { groups: any
                   key={g.id} 
                   type="button" 
                   onClick={() => { onSelect(g.id); setOpen(false); }} 
-                  className={`flex items-center gap-3 px-4 py-3 w-full text-left border-none cursor-pointer transition-colors ${selectedId === g.id ? 'bg-[var(--teal)]/10 text-[var(--teal)] font-bold' : 'bg-transparent text-[var(--text)] hover:bg-[var(--bg)]'}`}
+                  className={`flex items-center gap-3 px-4 min-h-[48px] w-full text-left border-none cursor-pointer transition-colors ${selectedId === g.id ? 'bg-[var(--teal)]/10 text-[var(--teal)] font-bold' : 'bg-transparent text-[var(--text)] hover:bg-[var(--bg)]'}`}
                 >
                   <span className="text-[18px]">{PURPOSE_EMOJI[g.purpose] ?? '🤝'}</span>
-                  <span className="text-[0.875rem]">{g.name}</span>
+                  <span className="text-[var(--fs-body)]">{g.name}</span>
                   {selectedId === g.id && <Ico.Check className="ml-auto" size={14} />}
                 </button>
               ))}
@@ -113,7 +113,7 @@ function GroupSelector({ groups, selectedId, onSelect, onCreate }: { groups: any
               <button 
                 type="button" 
                 onClick={() => { onCreate(); setOpen(false); }} 
-                className="flex items-center gap-2 px-3 py-2.5 w-full bg-transparent border-none rounded-lg cursor-pointer text-[var(--teal)] font-bold text-[0.8rem] hover:bg-[var(--teal)]/5 transition-colors"
+                className="flex items-center gap-2 px-3 min-h-[48px] w-full bg-transparent border-none rounded-lg cursor-pointer text-[var(--teal)] font-bold text-[var(--fs-body)] hover:bg-[var(--teal)]/5 transition-colors"
               >
                 <Ico.Plus size={14} /> New Group
               </button>
@@ -226,7 +226,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                     const id = prompt('Enter Peer ID to connect:');
                     if (id) sw.connectToPeer(id);
                   }}
-                  className="ml-2 px-3 py-1.5 bg-[var(--teal)]/10 text-[var(--teal)] hover:bg-[var(--teal)]/20 rounded-lg font-bold cursor-pointer transition-colors border-none text-[0.8rem]"
+                  className="ml-2 px-3 min-h-[48px] min-w-[48px] bg-[var(--teal)]/10 text-[var(--teal)] hover:bg-[var(--teal)]/20 rounded-lg font-bold cursor-pointer transition-colors border-none text-[var(--fs-caption)] flex justify-center items-center"
                 >
                   Connect
                 </button>
@@ -237,7 +237,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
               {sw.selectedGroupId && (
                 <button 
                   onClick={() => setQR(true)}
-                  className="flex items-center gap-2 px-4 py-3 bg-[var(--teal)]/10 text-[var(--teal)] border-none rounded-xl cursor-pointer font-bold text-[0.85rem] hover:bg-[var(--teal)]/20 transition-all shadow-sm"
+                  className="flex items-center justify-center gap-2 px-4 min-h-[48px] min-w-[48px] bg-[var(--teal)]/10 text-[var(--teal)] border-none rounded-xl cursor-pointer font-bold text-[var(--fs-caption)] hover:bg-[var(--teal)]/20 transition-all shadow-sm"
                 >
                   <Ico.Share size={16} /> Share QR
                 </button>
@@ -247,7 +247,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                   const code = prompt('Enter the Join Code (Base64 string from QR):');
                   if (code) sw.importGroup(code);
                 }}
-                className="flex items-center gap-2 px-4 py-3 bg-[var(--card)] border-[1.5px] border-[var(--card-border)] rounded-xl cursor-pointer text-[var(--text)] font-bold text-[0.85rem] hover:border-[var(--teal)] transition-all shadow-sm"
+                className="flex items-center justify-center gap-2 px-4 min-h-[48px] min-w-[48px] bg-[var(--card)] border-[1.5px] border-[var(--card-border)] rounded-xl cursor-pointer text-[var(--text)] font-bold text-[var(--fs-caption)] hover:border-[var(--teal)] transition-all shadow-sm"
               >
                 <Ico.Scan size={16} /> Join Group
               </button>
@@ -274,9 +274,9 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                       key={t.id} 
                       type="button" 
                       onClick={() => setTab(t.id)} 
-                      className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 px-2.5 rounded-[9px] border-none cursor-pointer font-semibold text-[0.8rem] transition-all font-inherit ${tab === t.id ? 'bg-[var(--card)] text-[var(--teal)] shadow-sm' : 'bg-transparent text-[var(--text-secondary)]'}`}
+                      className={`flex-1 flex items-center justify-center gap-1.5 min-h-[48px] px-2.5 rounded-[9px] border-none cursor-pointer font-semibold text-[var(--fs-caption)] transition-all font-inherit ${tab === t.id ? 'bg-[var(--card)] text-[var(--teal)] shadow-sm' : 'bg-transparent text-[var(--text-secondary)]'}`}
                     >
-                      {t.icon} {t.label}
+                      {t.icon} <span className="hidden sm:inline">{t.label}</span>
                     </button>
                   ))}
                 </div>

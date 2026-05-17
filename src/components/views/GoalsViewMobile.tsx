@@ -47,8 +47,8 @@ export default function GoalsViewMobile({
       {/* 1. Slim Header */}
       <div className="flex items-center justify-between px-1">
         <div>
-          <h2 className="text-xl font-black text-[var(--text-primary)]">Savings</h2>
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+          <h2 className="text-xl font-bold text-[var(--text-primary)]">Savings</h2>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">
             {stats.activeCount} Active · {stats.achievedCount} Achieved
           </p>
         </div>
@@ -68,13 +68,13 @@ export default function GoalsViewMobile({
               <TrendingUp size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-black text-[var(--text-muted)] uppercase">Overall Progress</p>
-              <p className="text-lg font-black text-[var(--text-primary)]">{stats.overallPercent}%</p>
+              <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">Overall Progress</p>
+              <p className="text-lg font-bold text-[var(--text-primary)]">{stats.overallPercent}%</p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[10px] font-black text-[var(--text-muted)] uppercase">Total Saved</p>
-            <p className="text-sm font-black text-[var(--teal)]">{currency}{stats.totalSaved.toLocaleString()}</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">Total Saved</p>
+            <p className="text-sm font-bold text-[var(--teal)]">{currency}{stats.totalSaved.toLocaleString()}</p>
           </div>
         </div>
         <div className="h-2 w-full bg-[var(--surface-input)] rounded-full overflow-hidden">
@@ -88,7 +88,7 @@ export default function GoalsViewMobile({
       {/* 3. Goals List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Your Goals</h3>
+          <h3 className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Your Goals</h3>
         </div>
 
         {goals.length === 0 ? (
@@ -124,8 +124,8 @@ export default function GoalsViewMobile({
       {/* 4. Badges Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Achievements</h3>
-          <button className="text-[10px] font-black text-[var(--teal)] uppercase tracking-widest flex items-center gap-1">
+          <h3 className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Achievements</h3>
+          <button className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] uppercase tracking-widest flex items-center gap-1">
             View All <ChevronRight size={10} />
           </button>
         </div>

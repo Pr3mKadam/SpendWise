@@ -40,16 +40,16 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
   return (
     <div className="flex flex-col space-y-5 pb-10">
       {/* Summary Header */}
-      <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-[2rem] p-6 shadow-xl border border-white/5 relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] rounded-[var(--radius-hero)] p-6 shadow-xl border border-white/5 relative overflow-hidden">
         {/* Abstract background shapes */}
         <div className="absolute -right-4 -top-4 w-24 h-24 bg-[var(--teal)]/10 rounded-full blur-2xl" />
         <div className="absolute -left-4 -bottom-4 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl" />
         
         <div className="relative z-10">
-          <p className="text-[10px] font-black uppercase text-teal-400/80 tracking-[0.2em] mb-1">Total Monthly Budget</p>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase text-teal-400/80 tracking-[0.2em] mb-1">Total Monthly Budget</p>
           <div className="flex items-baseline gap-2">
             <h2 className="text-3xl font-black text-white">{currency}{totalBudgeted.toLocaleString()}</h2>
-            <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${overallBudgetPercent > 90 ? 'bg-red-500/20 text-red-400' : 'bg-teal-500/20 text-teal-400'}`}>
+            <span className={`text-[length:var(--fs-caption)] font-bold px-2 py-0.5 rounded-full ${overallBudgetPercent > 90 ? 'bg-red-500/20 text-red-400' : 'bg-teal-500/20 text-teal-400'}`}>
               {Math.round(overallBudgetPercent)}% Used
             </span>
           </div>
@@ -65,11 +65,11 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
           </div>
           
           <div className="mt-4 flex items-center justify-between">
-            <div className="flex items-center gap-1.5 text-white/50 text-[10px] font-bold uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 text-white/50 text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">
               <TrendingUp size={10} />
               <span>Healthy Strategy</span>
             </div>
-            <p className="text-white/70 text-[11px] font-medium italic">
+            <p className="text-white/70 text-[length:var(--fs-caption)] font-medium italic">
               Keep it under 80% for maximum savings
             </p>
           </div>
@@ -78,7 +78,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
 
       {/* Action Bar */}
       <div className="flex items-center justify-between px-1">
-        <h3 className="font-black text-lg text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)' }}>
+        <h3 className="font-bold text-lg text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)' }}>
           Categories
         </h3>
         <button 
@@ -96,7 +96,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            className="bg-[var(--surface-card)] p-5 rounded-[2rem] border border-[var(--teal)]/20 shadow-xl"
+            className="bg-[var(--surface-card)] p-5 rounded-[var(--radius-hero)] border border-[var(--teal)]/20 shadow-xl"
           >
             <div className="flex items-center justify-between mb-4">
               <h4 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
@@ -107,7 +107,8 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
               </h4>
               <button 
                 onClick={() => { setIsAdding(false); setEditingCategory(null); }}
-                className="p-1 text-[var(--text-muted)] hover:text-red-500 bg-transparent border-none cursor-pointer"
+                className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] hover:text-red-500 bg-transparent border-none cursor-pointer rounded-xl"
+                aria-label="Close budget form"
               >
                 <X size={20} />
               </button>
@@ -115,7 +116,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-[10px] font-black text-[var(--text-muted)] mb-2 uppercase tracking-widest">Select Category</label>
+                <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-2 uppercase tracking-widest">Select Category</label>
                 <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1">
                   {categories.map(cat => (
                     <button
@@ -124,14 +125,14 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
                       className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${selectedCategory === cat ? 'bg-[var(--teal)]/10 border-[var(--teal)]' : 'bg-[var(--surface-input)] border-[var(--border)]'}`}
                     >
                       <span className="text-lg mb-1">{mergedIcons[cat] || '📦'}</span>
-                      <span className="text-[9px] font-bold text-center truncate w-full">{cat}</span>
+                      <span className="text-[length:var(--fs-overline)] font-bold text-center truncate w-full">{cat}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-black text-[var(--text-muted)] mb-2 uppercase tracking-widest">Monthly Limit ({currency})</label>
+                <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-2 uppercase tracking-widest">Monthly Limit ({currency})</label>
                 <input 
                   type="number" 
                   value={limitAmount}
@@ -145,7 +146,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
               <button 
                 onClick={handleAdd}
                 disabled={!selectedCategory || !limitAmount}
-                className="w-full py-4 bg-[var(--teal)] disabled:opacity-50 text-white rounded-2xl shadow-lg shadow-teal-500/20 font-black text-sm border-none cursor-pointer active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
+                className="w-full py-4 bg-[var(--teal)] disabled:opacity-50 text-white rounded-2xl shadow-lg shadow-teal-500/20 font-bold text-sm border-none cursor-pointer active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
               >
                 <Check size={18} strokeWidth={3} /> {editingCategory ? 'SAVE CHANGES' : 'CONFIRM BUDGET'}
               </button>
@@ -157,7 +158,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
       {/* Budget List */}
       <div className="space-y-4">
         {budgetStats.length === 0 && !isAdding && (
-          <div className="text-center py-16 px-6 bg-[var(--surface-input)]/50 rounded-[2rem] border border-dashed border-[var(--border)]">
+          <div className="text-center py-16 px-6 bg-[var(--surface-input)]/50 rounded-[var(--radius-hero)] border border-dashed border-[var(--border)]">
             <div className="w-16 h-16 bg-[var(--surface-card)] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <Target size={32} className="text-[var(--text-muted)] opacity-30" />
             </div>
@@ -172,7 +173,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
           <motion.div 
             layout
             key={b.category} 
-            className="group p-5 bg-[var(--surface-card)] rounded-[2rem] border border-[var(--border)] shadow-sm active:scale-[0.98] transition-transform relative overflow-hidden"
+            className="group p-5 bg-[var(--surface-card)] rounded-[var(--radius-card)] border border-[var(--border)] shadow-sm active:scale-[0.98] transition-transform relative overflow-hidden"
           >
             {/* Background progress indicator (subtle) */}
             <div 
@@ -193,7 +194,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
                 </div>
                 <div>
                   <h4 className="font-bold text-[var(--text-primary)] text-sm">{b.category}</h4>
-                  <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+                  <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">
                     {Math.round(b.percent)}% Used
                   </p>
                 </div>
@@ -201,33 +202,35 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
               <div className="flex items-center gap-1">
                 <button 
                   onClick={() => handleEdit(b.category, b.limit)}
-                  className="p-2 text-[var(--text-muted)] active:text-[var(--teal)] bg-white/5 rounded-lg border-none cursor-pointer"
+                  className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-[var(--teal)] bg-white/5 rounded-xl border-none cursor-pointer"
+                  aria-label={`Edit ${b.category} budget`}
                 >
-                  <Edit2 size={14} />
+                  <Edit2 size={16} />
                 </button>
                 <button 
                   onClick={() => { haptic.medium(); removeBudget(b.category); }}
-                  className="p-2 text-[var(--text-muted)] active:text-red-500 bg-white/5 rounded-lg border-none cursor-pointer"
+                  className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-red-500 bg-white/5 rounded-xl border-none cursor-pointer"
+                  aria-label={`Delete ${b.category} budget`}
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={16} />
                 </button>
               </div>
             </div>
 
             <div className="flex items-end justify-between mb-3 relative z-10">
               <div>
-                <p className="text-xl font-black text-[var(--text-primary)]">
+                <p className="text-xl font-bold text-[var(--text-primary)]">
                   {currency}{b.spent.toLocaleString()}
                 </p>
-                <p className="text-[10px] font-bold text-[var(--text-muted)]">
+                <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)]">
                    / {currency}{b.limit.toLocaleString()} limit
                 </p>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-black ${b.remaining < 0 ? 'text-red-500' : 'text-[var(--teal)]'}`}>
+                <p className={`text-sm font-bold ${b.remaining < 0 ? 'text-red-500' : 'text-[var(--teal)]'}`}>
                   {b.remaining < 0 ? '-' : ''}{currency}{Math.abs(b.remaining).toLocaleString()}
                 </p>
-                <p className="text-[10px] font-bold text-[var(--text-muted)]">
+                <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)]">
                   {b.remaining < 0 ? 'Exceeded' : 'Left'}
                 </p>
               </div>
@@ -242,7 +245,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
             </div>
             
             {b.percent > 100 && (
-              <div className="mt-3 flex items-center gap-2 text-[10px] font-black text-red-500 bg-red-500/10 py-1.5 px-3 rounded-full w-fit">
+              <div className="mt-3 flex items-center gap-2 text-[length:var(--fs-overline)] font-bold text-red-500 bg-red-500/10 py-1.5 px-3 rounded-full w-fit">
                 <AlertCircle size={12} strokeWidth={3} />
                 <span>OVER BUDGET BY {currency}{Math.abs(b.remaining).toLocaleString()}</span>
               </div>

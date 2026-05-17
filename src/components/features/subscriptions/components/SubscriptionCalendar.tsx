@@ -68,7 +68,7 @@ export function SubscriptionCalendar({ subscriptions, currency }: {
 
       <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-          <div key={d} className="text-center text-[10px] sm:text-xs font-semibold text-gray-400 py-1 uppercase">{d}</div>
+          <div key={d} className="text-center text-[length:var(--fs-overline)] sm:text-xs font-semibold text-gray-400 py-1 uppercase">{d}</div>
         ))}
         {Array.from({ length: firstDay }).map((_, i) => (
           <div key={`empty-${i}`} className="h-14 sm:h-20 bg-transparent rounded-lg" />
@@ -86,14 +86,14 @@ export function SubscriptionCalendar({ subscriptions, currency }: {
                   : 'bg-white border-gray-100 dark:bg-[#1a2235] dark:border-[#2d3748] hover:border-teal-100'
               }`}
             >
-              <span className={`text-[11px] sm:text-xs font-semibold ${isToday ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500'}`}>
+              <span className={`text-[length:var(--fs-caption)] sm:text-xs font-semibold ${isToday ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500'}`}>
                 {day}
               </span>
               <div className="flex-1 w-full flex flex-col items-center justify-center gap-0.5 mt-1 overflow-hidden">
                 {subs.slice(0, 2).map((s, idx) => (
                   <div
                     key={idx}
-                    className="w-full text-[9px] sm:text-[10px] truncate text-center font-medium rounded px-1"
+                    className="w-full text-[length:var(--fs-overline)] sm:text-[length:var(--fs-overline)] truncate text-center font-medium rounded px-1"
                     style={{ backgroundColor: getServiceColor(s.merchant) + '20', color: getServiceColor(s.merchant) }}
                     title={`${s.merchant}: ${currency}${s.avgAmount}`}
                   >
@@ -101,7 +101,7 @@ export function SubscriptionCalendar({ subscriptions, currency }: {
                   </div>
                 ))}
                 {subs.length > 2 && (
-                  <div className="w-full text-[9px] text-center font-bold text-gray-400">+{subs.length - 2}</div>
+                  <div className="w-full text-[length:var(--fs-overline)] text-center font-bold text-gray-400">+{subs.length - 2}</div>
                 )}
               </div>
             </div>

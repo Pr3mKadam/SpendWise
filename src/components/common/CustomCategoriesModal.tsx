@@ -189,7 +189,7 @@ export default function CustomCategoriesModal({
                         </div>
                         <div className="flex items-center gap-2">
                           {cat.monthlyLimit && (
-                            <span className="px-2 py-1 rounded-lg bg-[var(--surface-submerged)] border border-[var(--surface-border)] text-[10px] font-bold text-[var(--text-primary)]">
+                            <span className="px-2 py-1 rounded-lg bg-[var(--surface-submerged)] border border-[var(--surface-border)] text-[length:var(--fs-overline)] font-bold text-[var(--text-primary)]">
                               ${cat.monthlyLimit}
                             </span>
                           )}
@@ -266,7 +266,7 @@ export default function CustomCategoriesModal({
                               });
                             });
                           }}
-                          className="text-[10px] font-bold text-[var(--teal)] hover:underline"
+                          className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] hover:underline"
                         >
                           Add All
                         </button>
@@ -348,7 +348,7 @@ export default function CustomCategoriesModal({
                     onBlur={e => { e.target.style.border = '2px solid transparent'; }}
                   />
                 </div>
-                <p className="text-[10px] text-[var(--text-muted)] mt-2 italic">
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-2 italic">
                   Leave empty for no limit. This helps SpendWise track your budget health.
                 </p>
               </div>

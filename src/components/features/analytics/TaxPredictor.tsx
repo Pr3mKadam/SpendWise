@@ -37,30 +37,30 @@ export function TaxPredictor({ income, categorySpending, currency }: TaxPredicto
     <div className="space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="p-4 rounded-2xl bg-[var(--surface-input)] border border-[var(--border)]">
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Taxable Income</p>
-          <p className="text-xl font-black text-[var(--text-primary)]">{currency}{taxableIncome.toLocaleString()}</p>
-          <p className="text-[10px] text-[var(--text-muted)] mt-1">After {currency}{deductibles.toLocaleString()} in deductions</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Taxable Income</p>
+          <p className="text-xl font-bold text-[var(--text-primary)]">{currency}{taxableIncome.toLocaleString()}</p>
+          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-1">After {currency}{deductibles.toLocaleString()} in deductions</p>
         </div>
         <div className="p-4 rounded-2xl bg-[var(--surface-input)] border border-[var(--border)]">
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Est. Tax Liability</p>
-          <p className="text-xl font-black text-red-500">{currency}{estimatedTax.toLocaleString()}</p>
-          <p className="text-[10px] text-[var(--text-muted)] mt-1">Effective rate: {taxRate.toFixed(1)}%</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Est. Tax Liability</p>
+          <p className="text-xl font-bold text-red-500">{currency}{estimatedTax.toLocaleString()}</p>
+          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-1">Effective rate: {taxRate.toFixed(1)}%</p>
         </div>
         <div className="p-4 rounded-2xl bg-green-500/10 border border-green-500/20">
-          <p className="text-[10px] font-bold text-green-600 uppercase tracking-widest mb-1">Potential Savings</p>
-          <p className="text-xl font-black text-green-600">{currency}{(deductibles * 0.2).toLocaleString()}</p>
-          <p className="text-[10px] text-green-700/70 mt-1">Via tax-efficient spending</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-green-600 uppercase tracking-widest mb-1">Potential Savings</p>
+          <p className="text-xl font-bold text-green-600">{currency}{(deductibles * 0.2).toLocaleString()}</p>
+          <p className="text-[length:var(--fs-overline)] text-green-700/70 mt-1">Via tax-efficient spending</p>
         </div>
       </div>
 
       <div className="space-y-3">
-        <h4 className="text-[10px] font-black text-[var(--text-muted)] uppercase tracking-widest">Tax Buckets</h4>
+        <h4 className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Tax Buckets</h4>
         <div className="h-4 w-full bg-[var(--surface-input)] rounded-full overflow-hidden flex">
           <div className="h-full bg-[var(--teal)] opacity-30" style={{ width: '40%' }} title="Standard Deduction" />
           <div className="h-full bg-[var(--teal)] opacity-60" style={{ width: '30%' }} title="10% Bracket" />
           <div className="h-full bg-[var(--teal)]" style={{ width: '30%' }} title="20% Bracket" />
         </div>
-        <div className="flex justify-between text-[9px] font-bold text-[var(--text-muted)] uppercase tracking-tighter">
+        <div className="flex justify-between text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-tighter">
           <span>0 - 50k</span>
           <span>50k - 100k</span>
           <span>100k+</span>

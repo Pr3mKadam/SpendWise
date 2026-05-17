@@ -267,7 +267,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               <Sparkles size={20} />
             </div>
             <div>
-              <p className="text-[10px] font-bold opacity-80 uppercase tracking-widest">Financial Health</p>
+              <p className="text-[length:var(--fs-overline)] font-bold opacity-80 uppercase tracking-widest">Financial Health</p>
               <h4 className="font-manrope font-bold text-lg">Smart Insights</h4>
             </div>
           </div>
@@ -282,7 +282,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                 style={{ width: `${Math.min(100, Math.max(0, monthlyStats.totalIncome > 0 ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome * 100) : 0))}%` }} 
               />
             </div>
-            <p className="text-[10px] opacity-70 leading-relaxed mt-2">
+            <p className="text-[length:var(--fs-overline)] opacity-70 leading-relaxed mt-2">
               {(() => {
                 const rate = monthlyStats.totalIncome > 0
                   ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome * 100)
@@ -310,7 +310,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               <h2 className="text-sm font-bold text-[var(--text-primary)]">AI Financial Advisor</h2>
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[10px] text-[var(--text-muted)]">Active • Powered by Local Intelligence</span>
+                <span className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">Active • Powered by Local Intelligence</span>
               </div>
             </div>
           </div>
@@ -319,7 +319,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               <button 
                 onClick={handleAnalyzePersonality}
                 disabled={isAnalyzingPersonality || transactions.length < 5}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--teal)] text-white text-[10px] font-bold hover:opacity-90 disabled:opacity-50 transition-all shadow-sm"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--teal)] text-white text-[length:var(--fs-overline)] font-bold hover:opacity-90 disabled:opacity-50 transition-all shadow-sm"
               >
                 {isAnalyzingPersonality ? 'Analyzing...' : 'Analyze Personality'}
               </button>
@@ -339,7 +339,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
             <AlertTriangle className="text-yellow-500 mt-0.5 flex-shrink-0" size={16} />
             <div>
               <p className="text-xs font-bold text-yellow-500">Local Advisor Mode Active</p>
-              <p className="text-[10px] text-yellow-500/80 mt-0.5">Gemini API key is not configured. The advisor is using the local rule-based fallback engine. Set VITE_GEMINI_API_KEY in .env for AI advice.</p>
+              <p className="text-[length:var(--fs-overline)] text-yellow-500/80 mt-0.5">Gemini API key is not configured. The advisor is using the local rule-based fallback engine. Set VITE_GEMINI_API_KEY in .env for AI advice.</p>
             </div>
           </div>
         )}
@@ -354,7 +354,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                 </div>
                 <div>
                   <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">{personality.archetype}</h3>
-                  <p className="text-[10px] font-bold text-purple-500 uppercase tracking-widest">Your Spending Archetype</p>
+                  <p className="text-[length:var(--fs-overline)] font-bold text-purple-500 uppercase tracking-widest">Your Spending Archetype</p>
                 </div>
               </div>
               <button 
@@ -369,13 +369,13 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
             </p>
             <div className="flex flex-wrap gap-2 mb-4">
               {personality.traits.map((trait: string, i: number) => (
-                <span key={i} className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[10px] font-medium text-[var(--text-muted)]">
+                <span key={i} className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">
                   {trait}
                 </span>
               ))}
             </div>
             <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/10">
-              <p className="text-[10px] font-bold text-purple-500 uppercase mb-1">Expert Advice</p>
+              <p className="text-[length:var(--fs-overline)] font-bold text-purple-500 uppercase mb-1">Expert Advice</p>
               <p className="text-xs text-[var(--text-primary)]">{personality.advice}</p>
             </div>
           </div>
@@ -385,7 +385,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         {transactions.length === 0 && messages.length <= 1 && (
           <div className="mx-6 mt-4 p-4 rounded-2xl bg-[var(--teal)]/5 border border-[var(--teal)]/20">
             <p className="text-xs font-bold text-[var(--teal)] mb-1">👋 Getting Started</p>
-            <p className="text-[11px] text-[var(--text-muted)] leading-relaxed">
+            <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] leading-relaxed">
               Add your first transaction to unlock AI-powered financial insights. Try asking: <span className="text-[var(--teal)] font-semibold">"How can I save more?"</span>
             </p>
           </div>
@@ -417,16 +417,16 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Net Balance</p>
+                          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">Net Balance</p>
                           <p className="text-sm font-bold text-[var(--teal)]">{format(msg.data?.balance ?? 0)}</p>
                         </div>
                         <div>
-                          <p className="text-[10px] text-[var(--text-muted)] uppercase font-bold">Savings Rate</p>
+                          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">Savings Rate</p>
                           <p className="text-sm font-bold text-purple-500">{msg.data?.savingsRate ?? '0'}%</p>
                         </div>
                       </div>
                       <div className="mt-3 pt-3 border-t border-[var(--border)]">
-                        <p className="text-[11px] text-[var(--text-secondary)]">
+                        <p className="text-[length:var(--fs-caption)] text-[var(--text-secondary)]">
                           You've spent <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> this month. 
                           Your top category is <span className="font-bold text-[var(--teal)]">{msg.data?.topCategory ?? 'Unknown'}</span>.
                         </p>
@@ -445,17 +445,17 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                       {msg.type === 'action_card' && msg.data?.action && (
                         <div className="flex gap-2">
                           {msg.data.action === 'CREATE_BUDGET' && (
-                            <button onClick={() => onNavigate && onNavigate('budget')} className="px-4 py-2 bg-[var(--teal)] text-white rounded-xl text-xs font-bold hover:opacity-90 shadow-sm border-none cursor-pointer">
+                            <button onClick={() => onNavigate && onNavigate('budget')} className="px-4 min-h-[48px] bg-[var(--teal)] text-white rounded-xl text-[var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
                               Create a Budget
                             </button>
                           )}
                           {msg.data.action === 'VIEW_ANALYTICS' && (
-                            <button onClick={() => onNavigate && onNavigate('analytics')} className="px-4 py-2 bg-[var(--purple)] text-white rounded-xl text-xs font-bold hover:opacity-90 shadow-sm border-none cursor-pointer">
+                            <button onClick={() => onNavigate && onNavigate('analytics')} className="px-4 min-h-[48px] bg-[var(--purple)] text-white rounded-xl text-[var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
                               View Analytics
                             </button>
                           )}
                           {msg.data.action === 'SET_GOAL' && (
-                            <button onClick={() => onNavigate && onNavigate('goals')} className="px-4 py-2 bg-yellow-500 text-white rounded-xl text-xs font-bold hover:opacity-90 shadow-sm border-none cursor-pointer">
+                            <button onClick={() => onNavigate && onNavigate('goals')} className="px-4 min-h-[48px] bg-yellow-500 text-white rounded-xl text-[var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
                               Set a Goal
                             </button>
                           )}
@@ -464,7 +464,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                     </div>
                   )}
                   
-                  <span className={`text-[9px] text-[var(--text-dim)] ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
+                  <span className={`text-[length:var(--fs-overline)] text-[var(--text-dim)] ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>
                 </div>
@@ -492,7 +492,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
           <div className="px-6 py-3 bg-[var(--surface-input)] border-t border-[var(--border)] flex gap-4 overflow-x-auto scrollbar-hide">
             <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
               <TrendingUp size={12} className="text-[var(--teal)]" />
-              <span className="text-[10px] font-medium text-[var(--text-muted)]">
+              <span className="text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">
                 Saved {format(monthlyStats.totalIncome - monthlyStats.totalExpenses > 0 
                   ? (monthlyStats.totalIncome - monthlyStats.totalExpenses) 
                   : 0)} this month
@@ -501,7 +501,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
             {monthlyStats.topCategory && (
               <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
                 <TrendingDown size={12} className="text-red-500" />
-                <span className="text-[10px] font-medium text-[var(--text-muted)]">
+                <span className="text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">
                   Most spent on {monthlyStats.topCategory}
                 </span>
               </div>
@@ -518,7 +518,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                 onClick={() => {
                   setInput(action);
                 }}
-                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[var(--surface-input)] border border-[var(--border)] text-[10px] font-medium text-[var(--text-primary)] hover:bg-[var(--teal)] hover:text-white hover:border-[var(--teal)] transition-all cursor-pointer"
+                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[var(--surface-input)] border border-[var(--border)] text-[length:var(--fs-overline)] font-medium text-[var(--text-primary)] hover:bg-[var(--teal)] hover:text-white hover:border-[var(--teal)] transition-all cursor-pointer"
               >
                 {action}
               </button>

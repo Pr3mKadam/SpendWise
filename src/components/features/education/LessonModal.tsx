@@ -53,14 +53,14 @@ export function LessonModal({ lesson, onClose, onComplete, completed }: LessonMo
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: lesson.color + '15', color: lesson.color }}>
+              <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full" style={{ background: lesson.color + '15', color: lesson.color }}>
                 {CATEGORY_CONFIG[lesson.category].label}
               </span>
-              <span className="text-[10px] font-bold text-[var(--text-muted)] flex items-center gap-1">
+              <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] flex items-center gap-1">
                 <Clock size={10} /> {lesson.readingTime} min read
               </span>
             </div>
-            <h3 className="font-manrope font-black text-xl text-[var(--text-primary)] leading-tight">{lesson.title}</h3>
+            <h3 className="font-manrope font-bold text-xl text-[var(--text-primary)] leading-tight">{lesson.title}</h3>
           </div>
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1 font-bold text-xs text-amber-500">

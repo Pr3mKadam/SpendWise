@@ -253,7 +253,7 @@ export default function AnalyticsView({
             <h3 className="truncate" style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Tax Liability Estimator</h3>
             <p className="truncate hidden sm:block" style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Simplified estimate based on your income and spending</p>
           </div>
-          <span className="ml-auto text-[10px] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full shrink-0">BETA</span>
+          <span className="ml-auto text-[length:var(--fs-overline)] font-bold uppercase tracking-widest bg-amber-500/10 text-amber-600 px-2 py-1 rounded-full shrink-0">BETA</span>
         </div>
         <TaxPredictor income={monthlyStats.totalIncome} categorySpending={categorySpending} currency={currency} />
       </div>

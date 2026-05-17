@@ -29,7 +29,7 @@ export function TopMerchants({ transactions, currency }: Props) {
       <div className="space-y-3">
         {topMerchants.map(([merchant, amount], i) => (
           <div key={merchant} className="flex items-center gap-3">
-            <span className="text-[11px] font-black tabular-nums w-4 shrink-0" style={{ color: i < 3 ? 'var(--teal)' : 'var(--text-muted)' }}>#{i + 1}</span>
+            <span className="text-[length:var(--fs-caption)] font-bold tabular-nums w-4 shrink-0" style={{ color: i < 3 ? 'var(--teal)' : 'var(--text-muted)' }}>#{i + 1}</span>
             <div className="flex-1 min-w-0">
               <div className="flex justify-between mb-1">
                 <span className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-inter)' }}>{merchant}</span>

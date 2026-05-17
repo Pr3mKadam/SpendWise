@@ -48,14 +48,14 @@ export function EntryCard({
         <p className="font-inter font-semibold text-[14px] truncate" style={{ color: 'var(--text-primary)' }}>{label}</p>
         {simulatedTrend && (
           <div className="flex items-center gap-1 mt-0.5">
-             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ 
+             <span className="text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded" style={{ 
                 background: Number(simulatedTrend) >= 0 ? 'var(--teal-dim)' : 'var(--red-dim)',
                 color: Number(simulatedTrend) >= 0 ? 'var(--teal)' : 'var(--red)',
                 fontFamily: 'var(--font-inter)'
              }}>
                {Number(simulatedTrend) >= 0 ? '▲' : '▼'} {Math.abs(Number(simulatedTrend))}%
              </span>
-             <span className="text-[10px] font-medium" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-inter)' }}>24h change</span>
+             <span className="text-[length:var(--fs-overline)] font-medium" style={{ color: 'var(--text-dim)', fontFamily: 'var(--font-inter)' }}>24h change</span>
           </div>
         )}
       </div>

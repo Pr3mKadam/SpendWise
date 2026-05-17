@@ -29,7 +29,7 @@ export function RestoreModal({ onClose, onRestore, isRestoring }: RestoreModalPr
         
         <div className="space-y-4 mb-8">
           <div>
-            <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase mb-2">Backup File</label>
+            <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">Backup File</label>
             <input
               type="file"
               accept=".swb"
@@ -39,7 +39,7 @@ export function RestoreModal({ onClose, onRestore, isRestoring }: RestoreModalPr
             />
           </div>
           <div>
-            <label className="block text-[10px] font-bold text-[var(--text-muted)] uppercase mb-2">Password</label>
+            <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">Password</label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
               <input

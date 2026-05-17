@@ -69,8 +69,6 @@ export default function Header({
   /* ── helpers for responsive styles ── */
   const isMobileGlassBtn: React.CSSProperties = {
     background: 'rgba(255,255,255,0.13)',
-    backdropFilter: 'blur(10px)',
-    WebkitBackdropFilter: 'blur(10px)',
     border: '1px solid rgba(255,255,255,0.18)',
     cursor: 'pointer',
   };
@@ -83,36 +81,13 @@ export default function Header({
         paddingTop: 'env(safe-area-inset-top)',
       }}
     >
-      {/* ─── MOBILE background: rich navy-to-teal gradient with curve ─── */}
+      {/* ─── MOBILE background: flat high-performance gradient (no separate compositing blur layers) ─── */}
       <div
         className="md:hidden absolute inset-0 pointer-events-none"
         style={{
           background: 'linear-gradient(120deg, #0f1c35 0%, #0d2d3f 55%, #0b3d3a 100%)',
           borderRadius: '0 0 24px 24px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-        }}
-      />
-      {/* Decorative shimmer line for mobile */}
-      <div
-        className="md:hidden absolute bottom-0 left-1/4 right-1/4 h-[3px] pointer-events-none rounded-full"
-        style={{
-          background: 'linear-gradient(90deg, transparent, #2dd4bf, transparent)',
-          opacity: 0.6,
-          filter: 'blur(1px)'
-        }}
-      />
-      {/* Subtle left-side teal glow orb (mobile only) */}
-      <div
-        className="md:hidden absolute -left-10 top-0 w-32 h-32 rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(20,184,166,0.15) 0%, transparent 70%)',
-        }}
-      />
-      {/* Subtle right-side glow orb (mobile only) */}
-      <div
-        className="md:hidden absolute -right-10 bottom-0 w-40 h-40 rounded-full pointer-events-none"
-        style={{
-          background: 'radial-gradient(circle, rgba(99,102,241,0.1) 0%, transparent 70%)',
         }}
       />
 
@@ -181,7 +156,7 @@ export default function Header({
                 {/* Mobile date */}
                 <div
                   className="md:hidden"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.5)', marginTop: 1 }}
+                  style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.78)', marginTop: 1 }}
                 >
                   {dateStr}
                 </div>
@@ -200,34 +175,37 @@ export default function Header({
         {/* Right — Action buttons */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
-          {/* Hide theme/privacy toggle on mobile header to reduce crowding */}
-          <div className="hidden md:flex items-center gap-2">
-            {/* Theme toggle */}
+          {/* Theme toggle - Visible on all viewports */}
+          <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                onToggleTheme();
-              }}
+              onClick={onToggleTheme}
               className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               style={{ padding: 0, border: 'none' }}
             >
-              <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+              <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
+                {theme === 'dark' ? <Sun size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Moon size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
+              </span>
+              <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
                 {theme === 'dark' ? <Sun size={16} style={{ color: 'var(--text-secondary)' }} /> : <Moon size={16} style={{ color: 'var(--text-secondary)' }} />}
               </span>
             </button>
-
-            {/* Privacy toggle */}
-            <button
-              onClick={onTogglePrivacy}
-              className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
-              aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
-              style={{ padding: 0, border: 'none' }}
-            >
-              <span className="flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
-                {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
-              </span>
-            </button>
           </div>
+
+          {/* Privacy toggle - Visible on all devices */}
+          <button
+            onClick={onTogglePrivacy}
+            className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+            aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
+            style={{ padding: 0, border: 'none' }}
+          >
+            <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
+              {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Eye size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
+            </span>
+            <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+              {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
+            </span>
+          </button>
 
           {/* Global Search */}
           {onOpenSearch && (
@@ -276,7 +254,7 @@ export default function Header({
             </span>
             {unreadCount > 0 && (
               <span
-                className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold text-white px-1 z-10"
+                className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[length:var(--fs-overline)] font-bold text-white px-1 z-10"
                 style={{ background: 'var(--red)', boxShadow: '0 2px 6px rgba(239,68,68,0.6)' }}
               >
                 {unreadCount > 9 ? '9+' : unreadCount}

@@ -27,7 +27,7 @@ export const ChoreVerification: React.FC = () => {
                 <p className="text-xs text-[var(--text-muted)] mb-1 font-medium">{chore.date}</p>
                 <h4 className="font-bold text-[var(--text-primary)]">{chore.title}</h4>
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-500 text-xs font-black">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 text-amber-500 text-xs font-bold">
                 <Star className="w-3.5 h-3.5 fill-amber-500" />
                 +${chore.reward}
               </div>

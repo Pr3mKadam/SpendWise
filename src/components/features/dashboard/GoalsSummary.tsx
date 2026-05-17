@@ -43,7 +43,7 @@ export default function GoalsSummary({ goals, onNavigate }: GoalsSummaryProps) {
              <Target size={20} className="text-slate-400" />
           </div>
           <p className="text-[13px] font-bold text-[var(--text-primary)] mb-1">No goals yet</p>
-          <p className="text-[11px] text-[var(--text-muted)] max-w-[160px]">Create a goal to start saving.</p>
+          <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] max-w-[160px]">Create a goal to start saving.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

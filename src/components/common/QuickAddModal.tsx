@@ -42,11 +42,18 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                 onClose();
               }
             }}
+            onAnimationComplete={() => {
+              setTimeout(() => {
+                const input = document.getElementById('magic-input-field');
+                if (input) input.focus();
+              }, 50);
+            }}
             initial={{ opacity: 0, y: '100%' }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[101] bg-[var(--surface-card)] rounded-t-[32px] border-t border-[var(--border)] shadow-2xl p-6 pb-12 max-h-[85vh] overflow-y-auto"
+            transition={{ duration: 0.4, ease: [0.2, 0, 0, 1] }}
+            className="fixed bottom-0 left-0 right-0 z-[101] bg-[var(--surface-card)] rounded-[var(--radius-sheet)] rounded-b-none border-t border-[var(--border)] shadow-2xl p-6 pb-12 overflow-y-auto"
+            style={{ maxHeight: 'min(85vh, 85dvh)' }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="quick-add-title"
@@ -70,12 +77,12 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                 <div>
                   <h2 
                     id="quick-add-title"
-                    className="text-lg font-black text-[var(--text-primary)]" 
+                    className="text-[length:var(--fs-title)] font-bold text-[var(--text-primary)]" 
                     style={{ fontFamily: 'var(--font-manrope)' }}
                   >
                     Quick Add
                   </h2>
-                  <p className="text-xs text-[var(--text-muted)] font-medium">Add transaction via text, voice, or OCR</p>
+                  <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-medium">Add transaction via text, voice, or OCR</p>
                 </div>
               </div>
               <button 
@@ -84,7 +91,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                   haptic.light();
                   onClose();
                 }}
-                className="p-2 hover:bg-[var(--border)] rounded-full transition-colors"
+                className="p-2 hover:bg-[var(--border)] rounded-full transition-colors min-h-[48px] min-w-[48px] flex items-center justify-center"
                 aria-label="Close modal"
               >
                 <X size={20} className="text-[var(--text-muted)]" />
@@ -100,11 +107,10 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                   onClose();
                 }}
                 transactions={transactions}
-                autoFocus
               />
               
               <div className="flex items-center justify-center p-4">
-                <p className="text-[10px] text-[var(--text-muted)] font-bold uppercase tracking-[0.1em] text-center">
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-bold uppercase tracking-[0.1em] text-center">
                   Tip: Say "Spent 500 on Coffee" or scan a receipt
                 </p>
               </div>

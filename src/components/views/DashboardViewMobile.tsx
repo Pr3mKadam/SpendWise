@@ -15,10 +15,12 @@ import { AppView, Transaction } from '../../types';
 import { FinanceState } from '../../types/state';
 import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 import { haptic } from '../../lib/haptic';
+import { useCategories } from '../../hooks/useCategories';
 
 // Lazy load non-critical widgets
 const QuickAddPanel = lazy(() => import('../features/dashboard/QuickAddPanel'));
 const LevelProgress = lazy(() => import('../features/gamification/LevelProgress'));
+import EmptyState from '../common/EmptyState';
 
 interface DashboardViewMobileProps {
   financeState: FinanceState;
@@ -38,6 +40,7 @@ export default function DashboardViewMobile({
   config
 }: DashboardViewMobileProps) {
   const { transactions, currentBalance, monthlyStats } = financeState;
+  const { mergedIcons } = useCategories();
   const [isAddOpen, setIsAddOpen] = useState(false);
 
   const recentTransactions = useMemo(() => transactions.slice(0, 5), [transactions]);
@@ -51,13 +54,13 @@ export default function DashboardViewMobile({
     <div className="view-enter space-y-6 pb-24">
       {/* 1. High-Impact Balance Hero */}
       <section className="relative px-1 pt-2">
-        <div className="bg-gradient-to-br from-[var(--teal)] to-[#0d9488] rounded-[32px] p-6 text-white shadow-lg overflow-hidden relative">
+        <div className="bg-gradient-to-br from-[var(--teal)] to-[#0d9488] rounded-[var(--radius-hero)] p-6 text-white shadow-lg overflow-hidden relative">
           {/* Background Decorative Pattern */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl" />
           
           <div className="flex justify-between items-start mb-6">
             <div>
-              <p className="text-[10px] font-black uppercase opacity-70 tracking-widest mb-1">Total Balance</p>
+              <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-70 tracking-widest mb-1">Total Balance</p>
               <h2 className="text-4xl font-black tracking-tight">
                 {hideBalances ? '••••••' : `${currency}${currentBalance.toLocaleString()}`}
               </h2>
@@ -73,9 +76,9 @@ export default function DashboardViewMobile({
                 <div className="w-4 h-4 rounded-full bg-emerald-400/20 flex items-center justify-center">
                   <TrendingUp size={10} className="text-emerald-400" />
                 </div>
-                <span className="text-[9px] font-bold uppercase opacity-80">Income</span>
+                <span className="text-[length:var(--fs-overline)] font-bold uppercase opacity-80">Income</span>
               </div>
-              <p className="text-sm font-black">
+              <p className="text-sm font-bold">
                 {hideBalances ? '•••' : `${currency}${monthlyStats.totalIncome.toLocaleString()}`}
               </p>
             </div>
@@ -84,9 +87,9 @@ export default function DashboardViewMobile({
                 <div className="w-4 h-4 rounded-full bg-red-400/20 flex items-center justify-center">
                   <TrendingDown size={10} className="text-red-400" />
                 </div>
-                <span className="text-[9px] font-bold uppercase opacity-80">Spent</span>
+                <span className="text-[length:var(--fs-overline)] font-bold uppercase opacity-80">Spent</span>
               </div>
-              <p className="text-sm font-black">
+              <p className="text-sm font-bold">
                 {hideBalances ? '•••' : `${currency}${monthlyStats.totalExpenses.toLocaleString()}`}
               </p>
             </div>
@@ -111,7 +114,7 @@ export default function DashboardViewMobile({
               <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center text-white shadow-md active:scale-95 transition-transform`}>
                 {action.icon}
               </div>
-              <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">{action.label}</span>
+              <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">{action.label}</span>
             </button>
           ))}
         </div>
@@ -120,10 +123,10 @@ export default function DashboardViewMobile({
       {/* 3. Recent Transactions */}
       <section className="px-1">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-black text-[var(--text-primary)]">Recent</h3>
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">Recent</h3>
           <button 
             onClick={() => onNavigate('history')}
-            className="text-[var(--teal)] text-xs font-black uppercase tracking-widest flex items-center gap-1 p-2 -mr-2"
+            className="text-[var(--teal)] text-xs font-bold uppercase tracking-widest flex items-center gap-1 p-2 -mr-2"
           >
             See All <ChevronRight size={16} />
           </button>
@@ -133,46 +136,43 @@ export default function DashboardViewMobile({
           {recentTransactions.map((tx: Transaction) => (
             <div 
               key={tx.id}
-              className="bg-[var(--surface-card)] rounded-2xl p-4 flex items-center gap-4 border border-[var(--border)] shadow-sm active:bg-[var(--surface-light)] transition-colors"
+              className="bg-[var(--surface-card)] rounded-[var(--radius-card)] p-4 flex items-center gap-4 border border-[var(--border)] shadow-sm active:bg-[var(--surface-light)] transition-colors"
             >
               <div className="w-10 h-10 rounded-xl bg-[var(--surface-input)] flex items-center justify-center text-xl">
-                {/* Simplified icon logic for mobile speed */}
-                {tx.type === 'credit' ? '💰' : '💸'}
+                {mergedIcons[tx.category] || (tx.type === 'credit' ? '💰' : '💸')}
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-[var(--text-primary)] truncate">{tx.merchant}</p>
-                <p className="text-[10px] text-[var(--text-muted)]">{tx.category}</p>
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">{tx.category}</p>
               </div>
               <div className="text-right">
-                <p className={`text-sm font-black ${tx.type === 'debit' ? 'text-red-500' : 'text-emerald-500'}`}>
+                <p className={`text-sm font-bold ${tx.type === 'debit' ? 'text-red-500' : 'text-emerald-500'}`}>
                   {tx.type === 'debit' ? '-' : '+'}{currency}{tx.amount.toLocaleString()}
                 </p>
-                <p className="text-[9px] text-[var(--text-dim)] uppercase font-bold">
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] uppercase font-bold">
                   {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                 </p>
               </div>
             </div>
           ))}
           {recentTransactions.length === 0 && (
-            <div className="text-center py-8 opacity-50">
-              <p className="text-sm font-medium">No transactions yet.</p>
-            </div>
+            <EmptyState onAction={() => setIsAddOpen(true)} />
           )}
         </div>
       </section>
 
       {/* 4. Gamification / Progress */}
       <section className="px-1">
-        <Suspense fallback={<div className="h-24 bg-[var(--surface-input)] rounded-3xl animate-pulse" />}>
+        <Suspense fallback={<div className="h-24 bg-[var(--surface-input)] rounded-[var(--radius-card)] animate-pulse" />}>
           <LevelProgress onNavigate={onNavigate} />
         </Suspense>
       </section>
 
       {/* 5. Quick Add Panel Expansion */}
       <section className="px-1">
-        <div className="bg-[var(--surface-card)] rounded-[32px] p-6 border border-[var(--border)] shadow-sm">
+        <div className="bg-[var(--surface-card)] rounded-[var(--radius-hero)] p-6 border border-[var(--border)] shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-black text-[var(--text-primary)] flex items-center gap-2">
+            <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
               <Plus size={18} className="text-[var(--teal)]" /> Quick Entry
             </h3>
           </div>
@@ -204,10 +204,10 @@ export default function DashboardViewMobile({
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative bg-[var(--surface-card)] rounded-t-[40px] p-8 max-h-[90vh] overflow-y-auto border-t border-[var(--border)] shadow-2xl"
+              className="relative bg-[var(--surface-card)] rounded-t-[var(--radius-sheet)] p-8 max-h-[90vh] overflow-y-auto border-t border-[var(--border)] shadow-2xl"
             >
               <div className="w-12 h-1.5 bg-[var(--border)] rounded-full mx-auto mb-8" />
-              <Suspense fallback={<div className="h-64 animate-pulse bg-[var(--surface-input)] rounded-3xl" />}>
+              <Suspense fallback={<div className="h-64 animate-pulse bg-[var(--surface-input)] rounded-[var(--radius-card)]" />}>
                 <QuickAddPanel 
                   onAdd={(tx) => { onAdd(tx); setIsAddOpen(false); haptic.success(); }} 
                   transactions={transactions}

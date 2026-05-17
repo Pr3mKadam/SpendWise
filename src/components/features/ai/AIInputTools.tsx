@@ -96,7 +96,7 @@ export function AIInputTools({
       {/* Live scan/voice status hint */}
       {scanStatus && (
         <p
-          className="text-center text-[11px] font-medium px-2 py-1 rounded-lg"
+          className="text-center text-[length:var(--fs-caption)] font-medium px-2 py-1 rounded-lg"
           style={{
             background: 'var(--surface-input)',
             color: 'var(--text-secondary)',

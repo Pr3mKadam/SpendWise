@@ -52,7 +52,7 @@ export function SavingsChallenges({ onNavigate }: { onNavigate?: (view: any) => 
         </div>
         <button
           onClick={() => onNavigate?.('goals')}
-          className="text-[10px] font-bold text-[var(--teal)] hover:underline bg-transparent border-none cursor-pointer"
+          className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] hover:underline bg-transparent border-none cursor-pointer"
         >
           VIEW ALL
         </button>
@@ -74,12 +74,12 @@ export function SavingsChallenges({ onNavigate }: { onNavigate?: (view: any) => 
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center justify-between gap-2">
-                  <h4 className="text-[11px] font-bold text-[var(--text-primary)] truncate">{c.title}</h4>
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-muted)] whitespace-nowrap">
+                  <h4 className="text-[length:var(--fs-caption)] font-bold text-[var(--text-primary)] truncate">{c.title}</h4>
+                  <span className="text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-muted)] whitespace-nowrap">
                     {c.reward}
                   </span>
                 </div>
-                <p className="text-[10px] text-[var(--text-muted)] mt-0.5 line-clamp-1">{c.description}</p>
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-0.5 line-clamp-1">{c.description}</p>
               </div>
             </div>
             

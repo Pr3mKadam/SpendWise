@@ -18,27 +18,40 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['apple-touch-icon.png', 'icons/*'],
       manifest: {
-        name: 'SpendWise Finance',
+        name: 'SpendWise Premium',
         short_name: 'SpendWise',
-        description: 'Predictive Finance Dashboard',
+        description: 'Premium High-Fidelity Financial Suite',
         theme_color: '#14b8a6', // Teal
-        background_color: '#0f172a', // Dark blue background
+        background_color: '#0f1117', // Dark blue background
         display: 'standalone',
         orientation: 'portrait',
         categories: ['finance', 'lifestyle'],
+        share_target: {
+          action: "/?action=share-receipt",
+          method: "POST",
+          enctype: "multipart/form-data",
+          params: { files: [{ name: "receipt", accept: ["image/*"] }] }
+        },
         shortcuts: [
           {
-            name: 'Add Expense',
+            name: 'New Transaction',
             short_name: 'Add',
-            description: 'Quickly record a new expense',
-            url: '/?open-add=true',
+            description: 'Quickly record a new expense or income',
+            url: '/?action=new',
             icons: [{ src: 'icons/pwa-192x192.png', sizes: '192x192' }]
           },
           {
             name: 'View History',
             short_name: 'History',
             description: 'View your transaction history',
-            url: '/history',
+            url: '/?view=history',
+            icons: [{ src: 'icons/pwa-192x192.png', sizes: '192x192' }]
+          },
+          {
+            name: 'AI Assistant',
+            short_name: 'AI',
+            description: 'Talk to SpendWise AI',
+            url: '/?view=advisor',
             icons: [{ src: 'icons/pwa-192x192.png', sizes: '192x192' }]
           }
         ],
@@ -54,10 +67,16 @@ export default defineConfig({
             type: 'image/png'
           },
           {
-            src: 'icons/pwa-512x512.png',
+            src: 'icons/maskable-icon.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
+          },
+          {
+            src: 'icons/monochrome-icon.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'monochrome'
           }
         ]
       },

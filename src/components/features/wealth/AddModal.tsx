@@ -144,7 +144,7 @@ export function AddModal({
                     }}
                   >
                     <span className="text-xl">{t.icon}</span>
-                    <span className="font-inter text-[11px] font-semibold" style={{ color: selectedType === t.value ? t.color : 'var(--text-muted)' }}>
+                    <span className="font-inter text-[length:var(--fs-caption)] font-semibold" style={{ color: selectedType === t.value ? t.color : 'var(--text-muted)' }}>
                       {t.label}
                     </span>
                   </button>

@@ -97,7 +97,7 @@ export function TransactionRow({
           <div className="flex flex-wrap items-center gap-1.5 mt-0.5" style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
             <span>{dateStr}</span>
             {tx.tags?.map(t => (
-              <span key={t} className="rounded-md px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: '#f1f5f9', color: 'var(--text-secondary)' }}>
+              <span key={t} className="rounded-md px-1.5 py-0.5 text-[length:var(--fs-overline)] font-semibold" style={{ background: '#f1f5f9', color: 'var(--text-secondary)' }}>
                 #{t}
               </span>
             ))}

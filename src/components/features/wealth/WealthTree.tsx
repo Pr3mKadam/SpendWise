@@ -26,7 +26,7 @@ export function WealthTree({ score, savingsRate, role }: WealthTreeProps) {
   return (
     <div className="relative w-full h-48 flex flex-col items-center justify-end pb-4 bg-gradient-to-b from-transparent to-[var(--bg-secondary)] rounded-2xl overflow-hidden border border-[var(--card-border)]">
       <div className="absolute top-4 left-4 flex flex-col gap-1">
-        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+        <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">
           {role === 'student' ? 'Study Fund Tree' : role === 'business' ? 'Capital Growth Tree' : 'Wealth Tree'}
         </span>
         <div className="flex items-center gap-1.5">
@@ -86,8 +86,8 @@ export function WealthTree({ score, savingsRate, role }: WealthTreeProps) {
       </motion.div>
 
       <div className="mt-4 flex flex-col items-center">
-        <span className="text-[10px] font-bold text-[var(--text-muted)] uppercase">Growth Score</span>
-        <span className="text-xl font-manrope font-black text-[var(--text-primary)]">{score}%</span>
+        <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">Growth Score</span>
+        <span className="text-xl font-manrope font-bold text-[var(--text-primary)]">{score}%</span>
       </div>
     </div>
   );

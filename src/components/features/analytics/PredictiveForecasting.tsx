@@ -16,11 +16,11 @@ function ForecastTooltip({ active, payload, label, currency }: any) {
   const isFuture = payload[0]?.payload?.future;
   return (
     <div className="card px-3 py-2 shadow-lg border border-[var(--border)]">
-      <p className="text-[10px] font-bold text-[var(--text-muted)] mb-1">{label}</p>
-      <p className="font-manrope font-black text-sm" style={{ color: v >= 0 ? 'var(--teal)' : 'var(--red)' }}>
+      <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-1">{label}</p>
+      <p className="font-manrope font-bold text-sm" style={{ color: v >= 0 ? 'var(--teal)' : 'var(--red)' }}>
         {currency}{Math.round(v).toLocaleString('en-IN')}
       </p>
-      {isFuture && <p className="text-[9px] text-[var(--text-muted)] mt-0.5">Projected</p>}
+      {isFuture && <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mt-0.5">Projected</p>}
     </div>
   );
 }
@@ -84,10 +84,10 @@ export function PredictiveForecasting({ transactions, currency, currentBalance }
           </div>
           <div>
             <h3 className="font-manrope font-bold text-base text-[var(--text-primary)]">Month-End Forecast</h3>
-            <p className="text-[11px] text-[var(--text-muted)] font-inter mt-0.5">AI-powered balance prediction · {data.daysLeft}d remaining</p>
+            <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter mt-0.5">AI-powered balance prediction · {data.daysLeft}d remaining</p>
           </div>
         </div>
-        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[length:var(--fs-overline)] font-bold ${isPositive ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
           {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
           {isPositive ? 'Surplus' : 'Deficit'}
         </div>
@@ -101,8 +101,8 @@ export function PredictiveForecasting({ transactions, currency, currentBalance }
           { label: 'Net Daily Flow', value: `${data.dailyNetRate >= 0 ? '+' : ''}${currency}${Math.round(data.dailyNetRate).toLocaleString('en-IN')}`, color: data.dailyNetRate >= 0 ? '#10b981' : '#ef4444' },
         ].map(kpi => (
           <div key={kpi.label} className="bg-[var(--surface-input)] rounded-xl p-3 border border-[var(--border)]">
-            <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)]">{kpi.label}</p>
-            <p className="font-manrope font-black text-sm mt-1 tabular-nums" style={{ color: kpi.color }}>{kpi.value}</p>
+            <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--text-muted)]">{kpi.label}</p>
+            <p className="font-manrope font-bold text-sm mt-1 tabular-nums" style={{ color: kpi.color }}>{kpi.value}</p>
           </div>
         ))}
       </div>
@@ -157,8 +157,8 @@ export function PredictiveForecasting({ transactions, currency, currentBalance }
           { label: '⚠️ Pessimistic (spend 20% more)', value: data.pessimistic, color: '#f59e0b' },
         ].map(s => (
           <div key={s.label} className="bg-[var(--surface-input)] rounded-xl p-3 border border-[var(--border)]">
-            <p className="text-[9px] font-bold text-[var(--text-muted)] mb-1">{s.label}</p>
-            <p className="font-manrope font-black text-sm tabular-nums" style={{ color: s.color }}>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-1">{s.label}</p>
+            <p className="font-manrope font-bold text-sm tabular-nums" style={{ color: s.color }}>
               {currency}{s.value.toLocaleString('en-IN')}
             </p>
           </div>

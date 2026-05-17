@@ -16,7 +16,7 @@ export function CurrencySelector({ activeCurrency, baseCurrency, onSelect }: Cur
       <label className="flex items-center gap-1.5 font-inter text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: 'var(--text-muted)' }}>
         <Globe size={13} /> Global Display Currency
       </label>
-      <p className="text-[10px] text-[var(--text-muted)] mb-4 font-inter leading-relaxed italic">
+      <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] mb-4 font-inter leading-relaxed italic">
         SpendWise uses real-time simulated rates to convert your base currency ({baseCurrency}) to your preferred display currency.
       </p>
       <div className="grid grid-cols-2 gap-2">
@@ -39,7 +39,7 @@ export function CurrencySelector({ activeCurrency, baseCurrency, onSelect }: Cur
                 <p className="font-inter font-bold text-sm" style={{ color: isSelected ? 'var(--teal)' : 'var(--text-primary)' }}>
                   {c.code}
                 </p>
-                <p className="font-inter text-[9px] truncate opacity-60" style={{ color: 'var(--text-muted)' }}>
+                <p className="font-inter text-[length:var(--fs-overline)] truncate opacity-60" style={{ color: 'var(--text-muted)' }}>
                   1 {baseCurrency} ≈ {rate} {c.code}
                 </p>
               </div>

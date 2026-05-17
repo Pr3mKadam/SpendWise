@@ -27,7 +27,7 @@ export function RazorpayLink({ onSetView, onConnect }: RazorpayLinkProps) {
         <p className="text-sm text-[var(--text-muted)] mb-6">Use your test keys for simulation.</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">Key ID</label>
+            <label className="block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">Key ID</label>
             <input type="text" value={rzpKeyId} onChange={e => setRzpKeyId(e.target.value)} placeholder="rzp_test_..." className="w-full p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] outline-none text-sm font-inter" />
           </div>
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs">

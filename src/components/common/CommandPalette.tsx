@@ -117,7 +117,7 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, transactio
 
             {matchedViews.length > 0 && (
               <div className="mb-2">
-                <div className="px-4 py-2 text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider font-inter">
+                <div className="px-4 py-2 text-[length:var(--fs-caption)] font-bold text-[var(--text-muted)] uppercase tracking-wider font-inter">
                   Navigation
                 </div>
                 {matchedViews.map((view, i) => {
@@ -143,7 +143,7 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, transactio
 
             {matchedTx.length > 0 && (
               <div>
-                <div className="px-4 py-2 text-[11px] font-bold text-[var(--text-muted)] uppercase tracking-wider font-inter border-t border-[var(--border)]">
+                <div className="px-4 py-2 text-[length:var(--fs-caption)] font-bold text-[var(--text-muted)] uppercase tracking-wider font-inter border-t border-[var(--border)]">
                   Transactions
                 </div>
                 {matchedTx.map((tx, i) => {
@@ -163,7 +163,7 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, transactio
                         </div>
                         <div>
                           <p className="font-inter font-semibold text-[13px] text-[var(--text-primary)] leading-tight">{tx.merchant}</p>
-                          <p className="font-inter text-[11px] text-[var(--text-muted)]">{tx.category} • {new Date(tx.date).toLocaleDateString()}</p>
+                          <p className="font-inter text-[length:var(--fs-caption)] text-[var(--text-muted)]">{tx.category} • {new Date(tx.date).toLocaleDateString()}</p>
                         </div>
                       </div>
                       <span className="font-inter font-semibold text-[13px]" style={{ color: tx.type === 'credit' ? 'var(--green)' : 'var(--text-primary)' }}>
@@ -176,7 +176,7 @@ export default function CommandPalette({ isOpen, onClose, onNavigate, transactio
             )}
           </div>
           
-          <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--surface-input)] flex items-center gap-4 text-[11px] text-[var(--text-muted)] font-inter">
+          <div className="px-4 py-2 border-t border-[var(--border)] bg-[var(--surface-input)] flex items-center gap-4 text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter">
             <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">↑</kbd> <kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">↓</kbd> to navigate</span>
             <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm font-sans">↵</kbd> to select</span>
             <span className="flex items-center gap-1"><kbd className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded border border-[var(--border)] shadow-sm">esc</kbd> to dismiss</span>

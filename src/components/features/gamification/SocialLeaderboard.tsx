@@ -48,12 +48,12 @@ export function SocialLeaderboard() {
           </div>
           <div>
             <h3 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Social Leaderboard</h3>
-            <p className="text-[10px] text-[var(--text-muted)] font-inter mt-0.5">
+            <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter mt-0.5">
               You're ranked #{youRank} of {allEntries.length}
             </p>
           </div>
         </div>
-        <span className="text-[10px] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full">
+        <span className="text-[length:var(--fs-overline)] font-bold text-amber-500 bg-amber-500/10 px-2 py-1 rounded-full">
           {userRank}
         </span>
       </div>
@@ -64,7 +64,7 @@ export function SocialLeaderboard() {
           <button
             key={t.key}
             onClick={() => setSortKey(t.key)}
-            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[10px] font-bold transition-all border-none cursor-pointer"
+            className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-lg text-[length:var(--fs-overline)] font-bold transition-all border-none cursor-pointer"
             style={{
               background: sortKey === t.key ? 'var(--teal)' : 'transparent',
               color: sortKey === t.key ? '#fff' : 'var(--text-muted)',
@@ -95,7 +95,7 @@ export function SocialLeaderboard() {
                 {rank <= 3 ? (
                   <span style={{ fontSize: 16 }}>{['🥇','🥈','🥉'][rank-1]}</span>
                 ) : (
-                  <span className="text-xs font-black text-[var(--text-muted)]">#{rank}</span>
+                  <span className="text-xs font-bold text-[var(--text-muted)]">#{rank}</span>
                 )}
               </div>
 
@@ -110,14 +110,14 @@ export function SocialLeaderboard() {
                   <p className={`text-xs font-bold truncate ${isYou ? 'text-[var(--teal)]' : 'text-[var(--text-primary)]'}`}>
                     {entry.name}
                   </p>
-                  {isYou && <span className="text-[8px] font-black bg-[var(--teal)] text-white px-1.5 py-0.5 rounded-full">YOU</span>}
+                  {isYou && <span className="text-[8px] font-bold bg-[var(--teal)] text-white px-1.5 py-0.5 rounded-full">YOU</span>}
                 </div>
-                <p className="text-[10px] text-[var(--text-muted)] font-inter">Lvl {entry.level} · {entry.streak}d streak</p>
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">Lvl {entry.level} · {entry.streak}d streak</p>
               </div>
 
               {/* Sort value */}
               <div className="text-right shrink-0">
-                <p className="font-manrope font-black text-sm tabular-nums" style={{ color: isYou ? 'var(--teal)' : 'var(--text-primary)' }}>
+                <p className="font-manrope font-bold text-sm tabular-nums" style={{ color: isYou ? 'var(--teal)' : 'var(--text-primary)' }}>
                   {sortKey === 'xp'          ? `${entry.xp.toLocaleString()} XP`
                   : sortKey === 'level'      ? `L${entry.level}`
                   : sortKey === 'streak'     ? `${entry.streak}d`
@@ -129,7 +129,7 @@ export function SocialLeaderboard() {
         })}
       </div>
 
-      <p className="text-[10px] text-[var(--text-dim)] text-center mt-4 font-inter">
+      <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] text-center mt-4 font-inter">
         🌐 Connect friends to see real data — demo shows sample leaderboard
       </p>
     </div>

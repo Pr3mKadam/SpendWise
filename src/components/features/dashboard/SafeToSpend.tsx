@@ -61,12 +61,12 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
 
       <div className="flex items-start justify-between mb-4">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-[var(--text-muted)]">
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)]">
             Safe to Spend
           </p>
-          <p className="text-[11px] text-[var(--text-dim)] mt-0.5 font-inter">Today's budget</p>
+          <p className="text-[length:var(--fs-caption)] text-[var(--text-dim)] mt-0.5 font-inter">Today's budget</p>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[9px] font-bold"
+        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[length:var(--fs-overline)] font-bold"
           style={{ background: cfg.bg, color: cfg.color }}>
           <cfg.icon size={10} />
           {cfg.label}
@@ -84,7 +84,7 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
 
       {/* Progress bar */}
       <div className="mb-3">
-        <div className="flex justify-between text-[10px] font-bold text-[var(--text-muted)] mb-1.5">
+        <div className="flex justify-between text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-1.5">
           <span>Spent: {currency}{Math.round(data.todaySpent).toLocaleString('en-IN')}</span>
           <span>Budget: {currency}{Math.round(data.safePerDay).toLocaleString('en-IN')}</span>
         </div>
@@ -101,12 +101,12 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
 
       {/* Mini stats */}
       <div className="flex items-center gap-3 pt-3 border-t border-[var(--border)]">
-        <div className="flex items-center gap-1 text-[10px] text-[var(--text-muted)] font-inter">
+        <div className="flex items-center gap-1 text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">
           <TrendingDown size={10} />
           <span>{data.daysLeft}d left in month</span>
         </div>
         <div className="w-px h-3 bg-[var(--border)]" />
-        <div className="text-[10px] text-[var(--text-muted)] font-inter">
+        <div className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">
           Saving target: {currency}{Math.round(data.savingsTarget).toLocaleString('en-IN')}
         </div>
       </div>

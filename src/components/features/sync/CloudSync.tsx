@@ -114,22 +114,22 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
           </div>
           <div>
             <h3 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Cloud Sync</h3>
-            <p className="text-[10px] text-[var(--text-muted)] font-inter mt-0.5">Supabase not configured</p>
+            <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter mt-0.5">Supabase not configured</p>
           </div>
-          <span className="ml-auto px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-400 text-[9px] font-black">SETUP REQUIRED</span>
+          <span className="ml-auto px-2 py-0.5 rounded-full bg-slate-500/10 text-slate-400 text-[length:var(--fs-overline)] font-bold">SETUP REQUIRED</span>
         </div>
         <div className="bg-[var(--surface-input)] border border-[var(--border)] rounded-xl p-4 space-y-2">
           <p className="text-xs font-bold text-[var(--text-primary)]">To enable cloud sync:</p>
-          <ol className="text-[11px] text-[var(--text-muted)] font-inter space-y-1.5 list-decimal list-inside">
+          <ol className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-inter space-y-1.5 list-decimal list-inside">
             <li>Create a free project at <strong className="text-[var(--teal)]">supabase.com</strong></li>
             <li>Copy your Project URL and anon key</li>
             <li>Add to <code className="bg-[var(--surface-card)] px-1.5 py-0.5 rounded">.env</code> file:</li>
           </ol>
           <div className="bg-[var(--surface-card)] rounded-lg p-3 mt-2">
-            <code className="text-[10px] font-mono text-[var(--teal)] block">VITE_SUPABASE_URL=https://xxx.supabase.co</code>
-            <code className="text-[10px] font-mono text-[var(--teal)] block">VITE_SUPABASE_ANON_KEY=eyJ...</code>
+            <code className="text-[length:var(--fs-overline)] font-mono text-[var(--teal)] block">VITE_SUPABASE_URL=https://xxx.supabase.co</code>
+            <code className="text-[length:var(--fs-overline)] font-mono text-[var(--teal)] block">VITE_SUPABASE_ANON_KEY=eyJ...</code>
           </div>
-          <p className="text-[10px] text-[var(--text-dim)] font-inter">
+          <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] font-inter">
             Run the SQL schema from <code className="bg-[var(--surface-card)] px-1 rounded">src/services/supabase.ts</code> in Supabase SQL editor.
           </p>
         </div>
@@ -146,14 +146,14 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Cloud Sync</h3>
-          <p className="text-[10px] text-[var(--text-muted)] font-inter mt-0.5">
+          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter mt-0.5">
             {user ? `Signed in as ${user.email}` : 'Not signed in'}
           </p>
         </div>
         {user && (
           <div className="flex items-center gap-1.5 shrink-0">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-[9px] font-black text-emerald-500">LIVE</span>
+            <span className="text-[length:var(--fs-overline)] font-bold text-emerald-500">LIVE</span>
           </div>
         )}
       </div>
@@ -192,7 +192,7 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
                 {showPw ? <EyeOff size={14} /> : <Eye size={14} />}
               </button>
             </div>
-            {error && <p className="text-[11px] text-red-400 font-inter flex items-center gap-1.5"><AlertTriangle size={11} />{error}</p>}
+            {error && <p className="text-[length:var(--fs-caption)] text-red-400 font-inter flex items-center gap-1.5"><AlertTriangle size={11} />{error}</p>}
             <div className="flex gap-2">
               <button onClick={() => { setMode('idle'); setError(null); }}
                 className="flex-1 py-2.5 rounded-xl font-bold text-xs border border-[var(--border)] text-[var(--text-muted)] bg-transparent cursor-pointer hover:border-[var(--teal)] transition-colors">
@@ -234,8 +234,8 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
                 { label: 'Last Sync', value: lastSync ? new Intl.DateTimeFormat('en-IN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' }).format(new Date(lastSync)) : 'Never', icon: RefreshCw },
               ].map(stat => (
                 <div key={stat.label} className="bg-[var(--surface-input)] border border-[var(--border)] rounded-xl p-3">
-                  <p className="text-[9px] font-bold uppercase tracking-wider text-[var(--text-muted)]">{stat.label}</p>
-                  <p className="font-manrope font-black text-sm mt-1 text-[var(--text-primary)]">{stat.value}</p>
+                  <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--text-muted)]">{stat.label}</p>
+                  <p className="font-manrope font-bold text-sm mt-1 text-[var(--text-primary)]">{stat.value}</p>
                 </div>
               ))}
             </div>
@@ -246,7 +246,7 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
                 <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                   className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
                   <CheckCircle2 size={14} className="text-emerald-500 shrink-0" />
-                  <p className="text-[11px] font-bold text-emerald-400">
+                  <p className="text-[length:var(--fs-caption)] font-bold text-emerald-400">
                     ↑ {syncResult.pushed} pushed · ↓ {syncResult.pulled} pulled
                   </p>
                 </motion.div>
@@ -256,7 +256,7 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
             {error && (
               <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
                 <AlertTriangle size={14} className="text-red-400 shrink-0" />
-                <p className="text-[11px] font-bold text-red-400">{error}</p>
+                <p className="text-[length:var(--fs-caption)] font-bold text-red-400">{error}</p>
               </div>
             )}
 
@@ -280,7 +280,7 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
       </AnimatePresence>
 
       {/* Info footer */}
-      <p className="text-[10px] text-[var(--text-dim)] text-center mt-3 font-inter">
+      <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] text-center mt-3 font-inter">
         🔒 End-to-end encrypted · Supabase (Postgres) backend
       </p>
     </div>

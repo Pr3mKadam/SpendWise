@@ -49,12 +49,12 @@ export default function RecentTransactions({ recentTx, onNavigate, hideBalances,
             >
               {/* Avatar */}
               <div className="w-8 h-8 rounded-xl shrink-0 flex items-center justify-center" style={{ background: bg }}>
-                <span className="text-[11px] font-bold text-white">{initials(tx.merchant)}</span>
+                <span className="text-[length:var(--fs-caption)] font-bold text-white">{initials(tx.merchant)}</span>
               </div>
               {/* Name + date (mobile) */}
               <div className="flex flex-col overflow-hidden min-w-0 flex-1">
                 <span className="text-[13px] font-semibold truncate" style={{ color: TEXT_PRIMARY }}>{tx.merchant}</span>
-                <span className="text-[10px]" style={{ color: TEXT_MUTED }}>
+                <span className="text-[length:var(--fs-overline)]" style={{ color: TEXT_MUTED }}>
                   {new Date(tx.date + 'T00:00:00').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: '2-digit' })}
                 </span>
               </div>
@@ -69,7 +69,7 @@ export default function RecentTransactions({ recentTx, onNavigate, hideBalances,
               </span>
               {/* Amount */}
               <span 
-                className={`text-[13px] font-black tabular-nums shrink-0 transition-all ${hideBalances ? 'blur-md select-none' : ''}`} 
+                className={`text-[13px] font-bold tabular-nums shrink-0 transition-all ${hideBalances ? 'blur-md select-none' : ''}`} 
                 style={{ color: tx.type === 'credit' ? '#10b981' : TEXT_PRIMARY }}
               >
                 {tx.type === 'credit' ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-IN', { minimumFractionDigits: 0 })}

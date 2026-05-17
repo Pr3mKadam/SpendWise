@@ -28,10 +28,10 @@ export function AnomalyDetector({ transactions, currency }: AnomalyDetectorProps
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Anomaly Detection</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest mb-1">Anomaly Detection</p>
           <p className="text-xs text-[var(--text-muted)]">Unusual spikes in your spending</p>
         </div>
-        <span className="text-[10px] font-bold uppercase tracking-widest bg-red-500/10 text-red-600 px-2 py-1 rounded-full">
+        <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest bg-red-500/10 text-red-600 px-2 py-1 rounded-full">
           {anomalies.length} Flagged
         </span>
       </div>

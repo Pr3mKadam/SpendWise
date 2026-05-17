@@ -181,7 +181,7 @@ export function FilterBar({
                 haptic.light();
                 setCategoryFilter(cat as Category | 'All');
               }}
-              className="shrink-0 rounded-full px-2.5 py-1 text-[10px] sm:text-xs font-semibold transition-all"
+              className="shrink-0 rounded-full px-2.5 py-1 text-[length:var(--fs-overline)] sm:text-xs font-semibold transition-all"
               style={{
                 fontFamily: 'var(--font-inter)',
                 background: categoryFilter === cat ? 'var(--teal-dim)' : '#f5f7fa',
