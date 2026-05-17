@@ -4,7 +4,7 @@ import { Transaction } from "../../types";
  * SpendWise Local Advisor Engine
  * Provides contextual financial advice based on transaction history without any cloud dependency.
  */
-export async function getFinancialAdvice(query: string, transactions: Transaction[]): Promise<string> {
+export async function getFinancialAdvice(query: string, transactions: Transaction[], currency = '₹'): Promise<string> {
   const debits = transactions.filter(t => t.type === 'debit');
   const credits = transactions.filter(t => t.type === 'credit');
   const totalSpent = debits.reduce((a, t) => a + t.amount, 0);
@@ -28,11 +28,11 @@ export async function getFinancialAdvice(query: string, transactions: Transactio
 The user is asking: "${query}"
 
 Here is their current financial summary:
-- Total Income: ₹${totalIncome.toLocaleString()}
-- Total Spent: ₹${totalSpent.toLocaleString()}
-- Net Savings: ₹${net.toLocaleString()}
+- Total Income: ${currency}${totalIncome.toLocaleString()}
+- Total Spent: ${currency}${totalSpent.toLocaleString()}
+- Net Savings: ${currency}${net.toLocaleString()}
 - Savings Rate: ${savingsRate}%
-- Top Spending Category: ${topCat ? `${topCat[0]} (₹${topCat[1].toLocaleString()})` : 'N/A'}
+- Top Spending Category: ${topCat ? `${topCat[0]} (${currency}${topCat[1].toLocaleString()})` : 'N/A'}
 
 Provide personalized, insightful, and actionable financial advice based on their query and data. 
 Keep the response concise (2-3 paragraphs max), encouraging, and professional. 
@@ -91,25 +91,25 @@ If the query is not related to finance, politely redirect them to ask about thei
   if (q.includes('largest') || q.includes('biggest') || q.includes('highest') || q.includes('most expensive')) {
     if (debits.length === 0) return "You haven't logged any expenses yet.";
     const largest = debits.reduce((max, t) => t.amount > max.amount ? t : max, debits[0]);
-    return `Your largest single expense recently was **${largest.merchant}** for **₹${largest.amount.toLocaleString()}** on ${new Date(largest.date).toLocaleDateString()}. This was categorized under **${largest.category}**.\n\n[ACTION:VIEW_ANALYTICS]`;
+    return `Your largest single expense recently was **${largest.merchant}** for **${currency}${largest.amount.toLocaleString()}** on ${new Date(largest.date).toLocaleDateString()}. This was categorized under **${largest.category}**.\n\n[ACTION:VIEW_ANALYTICS]`;
   }
 
   // Category specific queries
   if (q.includes('spend') || q.includes('expense') || q.includes('where')) {
     if (!topCat) return "You haven't logged enough transactions for me to analyze your spending yet. Start adding your daily expenses!";
-    return `You've spent a total of **₹${totalSpent.toLocaleString()}** recently. Your biggest expense category is **${topCat[0]}** (₹${topCat[1].toLocaleString()}), accounting for **${Math.round((topCat[1] / totalSpent) * 100)}%** of your total spending.\n\n[ACTION:VIEW_ANALYTICS]`;
+    return `You've spent a total of **${currency}${totalSpent.toLocaleString()}** recently. Your biggest expense category is **${topCat[0]}** (${currency}${topCat[1].toLocaleString()}), accounting for **${Math.round((topCat[1] / totalSpent) * 100)}%** of your total spending.\n\n[ACTION:VIEW_ANALYTICS]`;
   }
 
   // Budget queries
   if (q.includes('budget')) {
     if (net < 0) {
-      return `You're currently in a deficit of **₹${Math.abs(net).toLocaleString()}**. I suggest creating a strict 'Zero-Based Budget' where every rupee is assigned a job before the month starts to stop the leak.\n\n[ACTION:CREATE_BUDGET]`;
+      return `You're currently in a deficit of **${currency}${Math.abs(net).toLocaleString()}**. I suggest creating a strict 'Zero-Based Budget' where every rupee is assigned a job before the month starts to stop the leak.\n\n[ACTION:CREATE_BUDGET]`;
     }
-    return `Your budget looks healthy with a **₹${net.toLocaleString()}** surplus. Have you considered setting up automated transfers to your savings goals to 'pay yourself first'?\n\n[ACTION:CREATE_BUDGET]`;
+    return `Your budget looks healthy with a **${currency}${net.toLocaleString()}** surplus. Have you considered setting up automated transfers to your savings goals to 'pay yourself first'?\n\n[ACTION:CREATE_BUDGET]`;
   }
 
   // General catch-all financial advice
-  return `Based on your **${transactions.length} transactions**, you have a net balance of **₹${net.toLocaleString()}**. Your spending is most active in **${topCat ? topCat[0] : 'various categories'}**. Would you like to set a specific savings goal for next month?\n\n[ACTION:SET_GOAL]`;
+  return `Based on your **${transactions.length} transactions**, you have a net balance of **${currency}${net.toLocaleString()}**. Your spending is most active in **${topCat ? topCat[0] : 'various categories'}**. Would you like to set a specific savings goal for next month?\n\n[ACTION:SET_GOAL]`;
 }
 
 export interface GeneratedQuest {
@@ -121,7 +121,7 @@ export interface GeneratedQuest {
   completed: boolean;
 }
 
-export function generateQuests(transactions: Transaction[]): GeneratedQuest[] {
+export function generateQuests(transactions: Transaction[], currency = '₹'): GeneratedQuest[] {
   const debits = transactions.filter(t => t.type === 'debit');
   const credits = transactions.filter(t => t.type === 'credit');
   const totalSpent = debits.reduce((a, t) => a + t.amount, 0);
@@ -240,7 +240,7 @@ export function generateQuests(transactions: Transaction[]): GeneratedQuest[] {
     {
       id: 'quest_budget_checkin',
       title: 'Budget Check-In',
-      description: `Review your spending — you've spent ${totalSpent > 0 ? `₹${Math.round(totalSpent).toLocaleString('en-IN')}` : 'nothing'} this month.`,
+      description: `Review your spending — you've spent ${totalSpent > 0 ? `${currency}${Math.round(totalSpent).toLocaleString('en-IN')}` : 'nothing'} this month.`,
       reward: '+20 XP',
       type: 'budget',
       completed: false

@@ -35,14 +35,17 @@ Return ONLY the JSON.`;
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, response_mime_type: "application/json" }
+          // BUG-09 fix: correct field name is `responseMimeType` (not `response_mime_type`)
+          generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
         })
       });
 
       const data = await response.json();
       const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (rawText) {
-        const parsed = JSON.parse(rawText);
+        // Safe parse: strip potential markdown fences before parsing
+        const cleanJson = rawText.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
+        const parsed = JSON.parse(cleanJson);
         return {
           merchant: parsed.merchant || text,
           category: (parsed.category as Category) || 'Shopping',

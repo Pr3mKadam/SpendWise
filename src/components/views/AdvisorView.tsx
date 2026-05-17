@@ -63,7 +63,7 @@ const INITIAL_MESSAGE: Message = {
 export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
   const isMobile = useIsMobile();
   const { transactions, monthlyStats } = useTransactions();
-  const { format } = useCurrency();
+  const { format, activeCurrency } = useCurrency();
   const [input, setInput] = useState('');
   const hasGemini = !!import.meta.env.VITE_GEMINI_API_KEY;
 
@@ -106,7 +106,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     setIsLoading(true);
 
     try {
-      let response = await getFinancialAdvice(text, transactions);
+      let response = await getFinancialAdvice(text, transactions, activeCurrency);
       
       let actionTag = null;
       const actionMatch = response.match(/\[ACTION:([A-Z_]+)\]/);

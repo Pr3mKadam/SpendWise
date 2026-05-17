@@ -1,366 +1,741 @@
-# SpendWise — Production Roadmap
+# SpendWise — Full Production Roadmap
 
-> **Deep codebase analysis · All source files reviewed · May 17, 2026**
-> Version 1.8 → Production 2.0+
+**Version:** 2026.05 · **Codebase Phase:** 1.8 · **Analysis Date:** May 17, 2026  
+**Stack:** React 19 · TypeScript 5.9 · Vite 7 · Zustand 5 · Dexie 4 · Tailwind v4 · Supabase · Gemini 1.5 Flash
 
 ---
 
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
-2. [Tech Stack](#2-tech-stack)
-3. [Critical Bugs — Fix Immediately](#3-critical-bugs--fix-immediately)
-4. [Medium Bugs — Fix Soon](#4-medium-bugs--fix-soon)
-5. [User-Reported Issues (15)](#5-user-reported-issues-15)
-6. [Production Gaps](#6-production-gaps)
-7. [Missing Features & Dashboards](#7-missing-features--dashboards)
-8. [Phased Roadmap](#8-phased-roadmap)
-9. [Priority Matrix](#9-priority-matrix)
-10. [Quick Wins — Do Today](#10-quick-wins--do-today)
-11. [Antigravity Master Prompt](#11-antigravity-master-prompt)
-12. [Recommended Antigravity Skills](#12-recommended-antigravity-skills)
+2. [Tech Stack Map](#2-tech-stack-map)
+3. [All Screens & Views](#3-all-screens--views)
+4. [Critical Bugs — Fix First](#4-critical-bugs--fix-first)
+5. [Medium Bugs — Fix Soon](#5-medium-bugs--fix-soon)
+6. [User-Reported Bugs (Handwritten Notes)](#6-user-reported-bugs-handwritten-notes)
+7. [Production Gaps](#7-production-gaps)
+8. [Quick Wins — Under 1 Day](#8-quick-wins--under-1-day)
+9. [Phased Roadmap](#9-phased-roadmap)
+10. [Antigravity Skills Roadmap](#10-antigravity-skills-roadmap)
+11. [Master Prompt for AI Coding Assistants](#11-master-prompt-for-ai-coding-assistants)
+12. [Priority Matrix](#12-priority-matrix)
 13. [Safe Editing Rules](#13-safe-editing-rules)
 
 ---
 
 ## 1. Project Overview
 
-| Property | Value |
-|---|---|
-| **Type** | Progressive Web App (PWA) · Single Page App |
-| **Tagline** | Local-first personal finance tracker with AI |
-| **Current Phase** | 1.8 (stable demo) |
-| **Target Phase** | 2.0 (production launch) |
-| **Deployment** | Netlify (`finance-manager.netlify.app`) |
-| **Users** | Consumer (India-first) |
-| **Language** | English (en-IN locale) |
-| **Default Currency** | ₹ INR |
+SpendWise is a **local-first personal finance PWA** for Indian users. All data is stored on-device in AES-256-GCM encrypted IndexedDB. No cloud backend is required for core functionality. Gemini 1.5 Flash powers AI features with full local fallbacks.
 
-### Views / Screens (23 total)
-
-Dashboard · Analytics · History · Budget · Goals · Reports · Recurring · Subscriptions · Portfolio · Shared Wallets · Bank Sync · AI Advisor · Education · Gamification · Profile · Parental Control · Auth · Settings
-
-> Every view has a **Mobile variant** (`*ViewMobile.tsx`) with responsive switching at the `xl` breakpoint via `useIsMobile()`.
+| Attribute | Value |
+|-----------|-------|
+| Type | PWA · SPA · Local-first |
+| Deployment | Vercel (finance-manager.netlify.app currently) |
+| Primary Market | India (₹, UPI, Razorpay) |
+| Auth Status | ⚠️ Fake localStorage auth — not production-ready |
+| DB | Dexie v4 (IndexedDB) + Zustand 5 persist |
+| Encryption | AES-256-GCM · PBKDF2 (100k iterations · SHA-256) |
+| AI | Gemini 1.5 Flash · Tesseract.js v7 · Web Speech API |
+| P2P | PeerJS 1.5 (WebRTC) for shared wallets |
+| Phase | 1.8 complete · Phase 2.0 next |
 
 ---
 
-## 2. Tech Stack
+## 2. Tech Stack Map
 
 ### Frontend
 | Package | Version | Purpose |
-|---|---|---|
+|---------|---------|---------|
 | React | 19.2 | UI framework |
 | TypeScript | 5.9 | Type safety |
 | Vite | 7 | Build tool |
-| Tailwind CSS | v4 | Utility styling |
+| Tailwind CSS | v4 | Styling |
 | Framer Motion | 12 | Animations |
-| Recharts | 3 | Charts & graphs |
+| Recharts | 3 | Charts |
 | Lucide React | latest | Icons |
 | react-hot-toast | latest | Toast notifications |
 | react-virtuoso | latest | Virtualised lists |
 
 ### Storage & State
 | Package | Version | Purpose |
-|---|---|---|
-| Zustand | 5 | Global state (4 slices) |
+|---------|---------|---------|
+| Zustand | 5 | Global state |
 | Dexie.js | 4 | IndexedDB ORM |
 | dexie-export-import | latest | Backup/restore |
 | Web Crypto API | native | AES-256-GCM encryption |
-| PBKDF2 | native | Key derivation (100k iterations) |
 
-### AI & Services
+### AI & Integrations
 | Package | Version | Purpose |
-|---|---|---|
-| Gemini 1.5 Flash | API | NLP, OCR, voice, advisor |
+|---------|---------|---------|
+| Gemini 1.5 Flash | API | NLP · OCR · Advisor · Voice |
 | Tesseract.js | 7 | Local OCR fallback |
-| PeerJS | 1.5 | WebRTC P2P sync |
-| Web Speech API | native | Voice commands |
+| PeerJS | 1.5 | P2P shared wallets |
+| canvas-confetti | latest | Gamification celebrations |
 
 ### Tooling
 | Package | Version | Purpose |
-|---|---|---|
-| vite-plugin-pwa | latest | PWA manifest + service worker |
-| Workbox | latest | Offline caching (sw.js) |
-| Vitest | 4 | Unit tests |
-| happy-dom | latest | Test DOM environment |
-| canvas-confetti | latest | Level-up celebration |
-
-### State Store Slices
-```
-src/store/
-  index.ts              ← Zustand store composition + dexieStorage adapter
-  slices/
-    financeSlice.ts     ← Transactions, budgets, categories, balance
-    portfolioSlice.ts   ← Assets, liabilities, net worth
-    gamificationSlice.ts← XP, levels, quests, badges, streak
-    parentalSlice.ts    ← PIN, child mode, parental settings
-```
+|---------|---------|---------|
+| vite-plugin-pwa | latest | PWA + service worker |
+| Workbox | latest | Offline caching strategy |
+| Vitest | 4 | Unit testing |
+| happy-dom | latest | DOM testing environment |
 
 ---
 
-## 3. Critical Bugs — Fix Immediately
+## 3. All Screens & Views
 
-> 🔴 These cause data loss, security issues, or completely broken features.
+Every view has a **Mobile variant** (e.g., `DashboardView.tsx` + `DashboardViewMobile.tsx`) switched via `useIsMobile()` at the `xl` breakpoint.
+
+| View | File | Status |
+|------|------|--------|
+| Dashboard | `DashboardView.tsx` | ✅ Working (balance chart bug) |
+| Analytics | `AnalyticsView.tsx` | ✅ Working (percent bug) |
+| Transaction History | `HistoryView.tsx` | ✅ Working |
+| Budget Manager | `BudgetView.tsx` | ⚠️ `resetLimits` crash |
+| Goals | `GoalsView.tsx` | ⚠️ Unencrypted localStorage |
+| Reports | `ReportsView.tsx` | ✅ Working |
+| Recurring Transactions | `RecurringView.tsx` | ✅ Working |
+| Subscriptions | `SubscriptionView.tsx` | ✅ Working |
+| Portfolio | `PortfolioView.tsx` | ✅ Working |
+| Shared Wallets | `SharedView.tsx` | ⚠️ QR broken · invite broken |
+| Bank Sync (UPI/Razorpay) | `BankSyncView.tsx` | ⚠️ Secret exposure |
+| AI Advisor | `AIAdvisorView.tsx` | ❌ Broken without Gemini key |
+| Financial Education | `EducationView.tsx` | ⚠️ Not personalised |
+| Gamification | `GamificationView.tsx` | ⚠️ Fake streak |
+| Profile / Settings | `ProfileView.tsx` | ⚠️ No phone OTP |
+| Parental Controls | `ParentalView.tsx` | ⚠️ QR not working |
+| Authentication | `AuthView.tsx` | ❌ Fake — no real auth |
+
+---
+
+## 4. Critical Bugs — Fix First
+
+> Fix **one bug at a time**. Test in browser after each fix. Never batch multiple bug fixes.
 
 ---
 
 ### BUG-01 · Authentication is Fake
-**File:** `src/hooks/useAuth.tsx` (lines 35–43)
 
-**Problem:**
-- `useAuth` auto-creates a guest user with a random ID if no stored user found
-- `AuthView.tsx` `handleSubmit` only does `localStorage.setItem + window.location.reload()`
-- No password hashing, no token validation, no real sessions
-- Anyone can "sign in" with any email string — no server check
+**File:** `src/hooks/useAuth.tsx` (lines 35–43)  
+**Severity:** 🔴 Critical — Security  
+**Effort:** 2 days
 
-**Fix:**
+**Problem:**  
+`useAuth` auto-creates a guest user if no stored user is found. `AuthView.tsx`'s `handleSubmit` only does `localStorage.setItem('spendwise_user', ...) + window.location.reload()`. No real password validation, no hashing, no session tokens. Anyone can sign up with any email string and gain access.
+
+**Fix:**  
+The `supabase.ts` service file is already fully written — it just needs to be wired to `useAuth`.
+
 ```typescript
-// Wire the already-written Supabase service:
-// src/services/supabase.ts already has signInWithEmail() and signUpWithEmail()
-// They just need to be called from useAuth instead of the localStorage fake
-
-// In useAuth.tsx — replace handleSignIn:
-const signIn = async (email: string, password: string) => {
-  const result = await supabaseRequest('auth/v1/token?grant_type=password', {
-    method: 'POST',
-    body: JSON.stringify({ email, password }),
+// src/hooks/useAuth.tsx — replace fake signIn with:
+const signIn = useCallback(async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  
+  // Store token in sessionStorage (auto-cleared on tab close)
+  sessionStorage.setItem(STORAGE_KEYS.SUPABASE_SESSION, data.session.access_token);
+  setUser({
+    id: data.user.id,
+    email: data.user.email!,
+    name: data.user.user_metadata?.name,
   });
-  if (result.access_token) {
-    sessionStorage.setItem(STORAGE_KEYS.SUPABASE_SESSION, result.access_token);
-    setUser({ id: result.user.id, email: result.user.email });
-  }
-};
+}, []);
 ```
+
+**Also required:**
+- Set up Supabase project → get `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`
+- Add Google OAuth redirect URI in Supabase dashboard
+- Run the RLS SQL policies already written in `supabase.ts` comments
 
 ---
 
 ### BUG-02 · Goals Stored in Plaintext localStorage
-**File:** `src/hooks/useGoals.ts` (line 5 — `GOALS_KEY = 'spendwise_goals_v1'`)
 
-**Problem:**
-- Goals bypass the AES-256-GCM encrypted IDB store entirely
-- Stored as plaintext in `localStorage`
-- Lost when `resetData()` is called (wipes Zustand but not localStorage)
-- `db.goals` table already exists in `src/db/db.ts` — completely unused
+**File:** `src/hooks/useGoals.ts` (lines 5–12)  
+**Severity:** 🔴 Critical — Security + Data Loss  
+**Effort:** 4 hours
 
-**Fix:**
+**Problem:**  
+Goals are saved to `localStorage` key `spendwise_goals_v1` directly, bypassing the Dexie IndexedDB + AES-256-GCM store. Goals are lost on `resetData()` and stored in plaintext. The `db.goals` table exists in Dexie but is never used.
+
+**Fix:**  
+Create a `GoalsSlice` in Zustand and delete the hook's direct localStorage usage:
+
 ```typescript
-// Create src/store/slices/goalsSlice.ts — add GoalsSlice to the store
-// The existing dexieStorage adapter encrypts automatically
-// Then update useGoals.ts to read from useStore() instead of localStorage
+// NEW: src/store/slices/goalsSlice.ts
+export interface GoalsSlice {
+  goals: Goal[];
+  addGoal: (goal: Goal) => void;
+  updateGoal: (id: string, updates: Partial<Goal>) => void;
+  deleteGoal: (id: string) => void;
+  addContribution: (id: string, amount: number) => void;
+}
+
+export const createGoalsSlice: StateCreator<SpendWiseStore, [['zustand/persist', unknown]], [], GoalsSlice> = (set) => ({
+  goals: [],
+  addGoal: (goal) => set(state => ({ goals: [...state.goals, goal] })),
+  updateGoal: (id, updates) => set(state => ({
+    goals: state.goals.map(g => g.id === id ? { ...g, ...updates } : g)
+  })),
+  deleteGoal: (id) => set(state => ({ goals: state.goals.filter(g => g.id !== id) })),
+  addContribution: (id, amount) => set(state => ({
+    goals: state.goals.map(g => g.id === id
+      ? { ...g, savedAmount: Math.min(g.savedAmount + amount, g.targetAmount) }
+      : g
+    )
+  })),
+});
+// Then merge into SpendWiseStore in src/store/index.ts
 ```
 
 ---
 
-### BUG-03 · Shared Wallets in Plaintext localStorage
-**File:** `src/hooks/useSharedWallets.ts` (line 21 — `'spendwise_shared_wallets_v2'`)
+### BUG-03 · Shared Wallets Stored in Plaintext localStorage
 
-**Problem:** Group financial data, expense splits, member info — all plaintext. This is worse than individual data because it exposes other people's financial information.
+**File:** `src/hooks/useSharedWallets.ts` (line 21)  
+**Severity:** 🔴 Critical — Security  
+**Effort:** 1 day
 
-**Fix:** Same as BUG-02 — create a `SharedSlice` in Zustand persisted through `dexieStorage`.
+**Problem:**  
+`localStorage.setItem('spendwise_shared_wallets_v2', ...)` — all group financial data, expense splits, and member info in plaintext. Group data is more sensitive than individual data because it exposes other people's financial information.
+
+**Fix:**  
+Same pattern as BUG-02 — create a `SharedSlice` in Zustand. The `db.sharedWalletEntries` and `db.sharedExpenses` tables already exist in Dexie.
 
 ---
 
 ### BUG-04 · Razorpay Secret Key in Plaintext localStorage
-**File:** `src/components/views/BankSyncView.tsx` + `src/constants/index.ts` (`STORAGE_KEYS.RZP_SECRET`)
 
-**Problem:**
-- Razorpay secret key (authorises real payments) stored in plaintext localStorage
-- Old key remains after "migration" to encrypted store
-- Any XSS or malicious browser extension can steal it
+**File:** `src/components/views/BankSyncView.tsx` (lines 28–32)  
+**Severity:** 🔴 Critical — Security  
+**Effort:** 2 hours
+
+**Problem:**  
+`localStorage.getItem('spendwise_rzp_secret')` — Razorpay secret key (which can authorise real payments) stored in plaintext. Migration code moves it to encrypted store but leaves the old plaintext key until manually removed.
 
 **Fix:**
+
 ```typescript
-// Remove ALL plaintext localStorage fallbacks for API keys
-// Always read through Zustand → dexieStorage (encrypted)
-// One-time migration: read old key → encrypt → delete old key
-// Long-term: Route Razorpay calls through Supabase Edge Function
-// Secret never touches the client browser
+// src/components/views/BankSyncView.tsx — remove plaintext read entirely:
+// BEFORE:
+const key = useStore.getState().getRazorpayKey() || localStorage.getItem('spendwise_rzp_secret');
+
+// AFTER:
+const key = useStore.getState().getRazorpayKey(); // Only read from encrypted store
+
+// Add a one-time migration on app startup (src/db/migration.ts):
+export function migrateRazorpayKey() {
+  const oldKey = localStorage.getItem('spendwise_rzp_secret');
+  if (oldKey) {
+    useStore.getState().setRazorpayKey(oldKey); // Stores encrypted in IDB
+    localStorage.removeItem('spendwise_rzp_secret'); // Wipe immediately
+  }
+}
 ```
+
+**Long-term:** Route all Razorpay API calls through a Supabase Edge Function. The secret key should never exist client-side at all.
 
 ---
 
 ### BUG-05 · Balance Trend Chart Shows Inverted Movements
-**File:** `src/hooks/useTransactions.ts` — `balanceTrend` useMemo (~lines 130–155)
 
-**Problem:** Sign error in the rolling-balance reconstruction loop. Debits appear as increases and credits appear as decreases. The 14-day chart is backwards.
+**File:** `src/hooks/useTransactions.ts` — `balanceTrend` useMemo (~lines 130–155)  
+**Severity:** 🔴 Critical — Wrong Data  
+**Effort:** 30 minutes
 
-**Fix (30 minutes):**
+**Problem:**  
+Sign error in the rolling-balance reconstruction. For debit transactions going backwards: `runningBalance -= -amount` equals `runningBalance += amount` — wrong direction. Debits appear as gains, credits appear as losses.
+
+**Fix:**
+
 ```typescript
-// WRONG:
+// BEFORE (wrong):
 runningBalance -= (tx.type === 'credit' ? amount : -amount);
 
-// CORRECT:
+// AFTER (correct):
 runningBalance += tx.type === 'credit' ? -amount : amount;
 ```
 
 ---
 
 ### BUG-06 · categorySpending.percent Always Returns 0
-**File:** `src/hooks/useTransactions.ts` — `categorySpending` useMemo (~line 75)
 
-**Problem:** `percent: 0` is hardcoded and never recalculated. Every spending donut tooltip, analytics percentage, and category breakdown shows 0%.
+**File:** `src/hooks/useTransactions.ts` — `categorySpending` useMemo (~line 75)  
+**Severity:** 🔴 Critical — Wrong Data  
+**Effort:** 30 minutes
 
-**Fix (30 minutes):**
+**Problem:**  
+Each `CategorySpend` object is created with `percent: 0` hardcoded and never recalculated. Spending Donut tooltips and Analytics category breakdowns always show 0%.
+
+**Fix:**
+
 ```typescript
 const totalDebitAmount = Array.from(map.values()).reduce((a, b) => a + b, 0);
-
 return Array.from(map.entries())
   .map(([name, value]) => ({
     name,
     value: Math.round(value * 100) / 100,
     color: mergedColors[name] || '#14b8a6',
-    percent: totalDebitAmount > 0                          // ← was always 0
-      ? Math.round((value / totalDebitAmount) * 100)
-      : 0,
+    percent: totalDebitAmount > 0 ? Math.round((value / totalDebitAmount) * 100) : 0, // ← was 0
   }))
   .sort((a, b) => b.value - a.value);
 ```
 
 ---
 
-### BUG-07 · Voice Command Categories Don't Match App Categories
-**File:** `src/services/VoiceService.ts` (Gemini prompt, line ~28)
+### BUG-07 · Privacy Mode Button Not Working
 
-**Problem:**
+**File:** `src/components/layout/MainShell.tsx` + `src/components/common/Header.tsx`  
+**Severity:** 🔴 Critical — Broken Feature  
+**Effort:** 1 hour
 
-| Prompt says (wrong) | App actually uses |
-|---|---|
-| Bills | Utilities |
-| Investment | Business |
-| Others | *(doesn't exist)* |
-| *(missing)* | Subscriptions |
-| *(missing)* | Travel |
-
-Voice-added transactions silently get wrong categories.
-
-**Fix (1 hour):**
-```typescript
-// Update the Gemini prompt string to use exact DefaultCategory values:
-`category must be one of: Food, Subscriptions, Transport, Entertainment,
- Shopping, Utilities, Health, Travel, Education, Business, Income`
-```
-
----
-
-### BUG-08 · addContribution Stale Closure Bug
-**File:** `src/hooks/useGoals.ts` (~line 70)
-
-**Problem:** `addContribution` reads `goals` from the render-time closure. Two rapid contributions read stale state and the second overwrites the first.
+**Problem:**  
+`togglePrivacy()` in the parental slice modifies `parentalState.hideBalances`, but the Header and Dashboard read a different state path. The toggle fires but the UI never re-reads the updated value.
 
 **Fix:**
+
 ```typescript
-const addContribution = useCallback(async (id: string, amount: number) => {
-  setGoals(prev => {                              // ← functional update = no stale closure
-    const existing = prev.find(g => g.id === id);
-    if (!existing) return prev;
-    const newSaved = Math.min(existing.savedAmount + amount, existing.targetAmount);
-    const next = prev.map(g =>
-      g.id === id
-        ? { ...g, savedAmount: Math.round(newSaved * 100) / 100,
-               status: computeStatus({ ...g, savedAmount: newSaved }) }
-        : g
-    );
-    saveGoals(next);
-    return next;
-  });
-}, []);  // No deps — pure functional update, no stale closure possible
+// src/components/layout/MainShell.tsx — ensure both read from same store path:
+const privacyEnabled = useStore(state => state.parentalState.hideBalances);
+const togglePrivacy  = useStore(state => state.togglePrivacy);
+
+// Pass to Header:
+<Header isPrivacyEnabled={privacyEnabled} onTogglePrivacy={togglePrivacy} />
+
+// In DashboardView.tsx — blur all balance displays:
+const privacyOn = useStore(state => state.parentalState.hideBalances);
+<span style={{ filter: privacyOn ? 'blur(8px)' : 'none', transition: 'filter 0.2s' }}>
+  {format(currentBalance)}
+</span>
 ```
 
 ---
 
-### BUG-09 · Merchant Memory in Plaintext localStorage
-**File:** `src/utils/razorpaySync.ts` (`MEMORY_KEY = 'spendwise_merchant_memory'`)
+### BUG-08 · Old Data Lost on Re-Login
 
-**Problem:** Merchant name → category mappings in plaintext. Merchant names are financial PII (reveals where you shop, eat, travel).
+**File:** `src/hooks/useAuth.tsx`  
+**Severity:** 🔴 Critical — Data Loss  
+**Effort:** 45 minutes
 
-**Fix:** Move merchant memory into the Zustand store persisted through `dexieStorage`.
-
----
-
-### BUG-10 · resetLimits() and toggleRollover() Not Implemented
-**File:** `src/types/state.ts` (declared) + `src/store/slices/financeSlice.ts` (missing)
-
-**Problem:** `BudgetState` interface declares both methods. Neither is in `financeSlice.ts`. Calling either throws `TypeError: store.resetLimits is not a function`. `useBudgets` hook also doesn't expose `toggleRollover`.
+**Problem:**  
+Each "signup" creates a new guest user with a random ID. On sign-out + reload, a new random ID is created. The encrypted IDB data still exists but is now under a different user context, so the new session sees no data.
 
 **Fix:**
-```typescript
-// Add to financeSlice.ts:
-resetLimits: () => set(state => ({
-  budgets: state.budgets.map(b => ({ ...b, spent: 0 })),
-})),
 
-toggleRollover: (categoryId: string) => set(state => ({
-  budgets: state.budgets.map(b =>
-    b.category === categoryId ? { ...b, rollover: !b.rollover } : b
-  ),
-})),
+```typescript
+// src/hooks/useAuth.tsx — use a STABLE device ID instead of random each time:
+useEffect(() => {
+  const storedUser = localStorage.getItem('spendwise_user');
+  if (storedUser) {
+    setUser(JSON.parse(storedUser));
+  } else {
+    // Generate once per device, never change it
+    const stableId = localStorage.getItem('spendwise_device_id')
+      || ('device_' + Math.random().toString(36).substr(2, 12));
+    localStorage.setItem('spendwise_device_id', stableId);
+
+    const guestUser = { id: stableId, email: 'guest@local' };
+    localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
+    setUser(guestUser);
+  }
+  setAuthReady(true);
+}, []);
+
+// signOut — don't touch the stable device ID:
+const signOut = useCallback(async () => {
+  localStorage.removeItem('spendwise_user');
+  // Do NOT remove spendwise_device_id
+  window.location.reload();
+}, []);
 ```
 
 ---
 
-## 4. Medium Bugs — Fix Soon
+### BUG-09 · Quick Add Shows $0 DEBIT Instead of ₹5000 CREDIT
 
-> 🟡 Incorrect behaviour that users will notice but doesn't cause data loss.
+**File:** `src/contexts/CurrencyContext.tsx` + `src/utils/parsers/nlp.ts`  
+**Severity:** 🔴 Critical — 3 bugs in one  
+**Effort:** 2 hours
 
----
+**Problem:**  
+Three separate bugs compound:
+1. `CurrencyContext` initialises synchronously as `'$'` before async config loads
+2. NLP parser regex doesn't handle `"5000RS"` or `"5000rs"` Indian format
+3. `"INCOME"` keyword not in type-detection — defaults to DEBIT
 
-### BUG-11 · MonthlyStats.topCategory and categoryDistribution Always Undefined
-**File:** `src/hooks/useTransactions.ts` — `monthlyStats` useMemo
+**Fix 1 — Currency default:**
 
-**Problem:** Both fields declared in `MonthlyStats` type but never computed. AI Advisor and Reports views silently get `undefined`.
-
-**Fix:** Compute both fields inside `monthlyStats` useMemo:
 ```typescript
-const sorted = Object.entries(catMap).sort(([,a],[,b]) => b - a);
+// src/contexts/CurrencyContext.tsx
+const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(() => {
+  try {
+    const raw = localStorage.getItem('spendwise_config_v1');
+    if (raw) {
+      const config = JSON.parse(raw);
+      if (config.currency) return config.currency as CurrencyCode;
+    }
+  } catch { /* ignore */ }
+  return '₹'; // Default to Indian Rupees, not '$'
+});
+```
+
+**Fix 2 — NLP parser amount extraction:**
+
+```typescript
+// src/utils/parsers/nlp.ts — handle Indian formats:
+const amountMatch =
+  text.match(/(?:rs\.?|inr|₹)\s*([\d,]+\.?\d*)/i) ||  // prefix: "RS 500", "₹500"
+  text.match(/\b([\d,]+\.?\d*)\s*(?:rs\.?|inr|rupees?)\b/i) || // suffix: "500RS"
+  text.match(/([\d,]+\.?\d*)/);                          // plain number fallback
+
+const amount = amountMatch
+  ? parseFloat(amountMatch[1].replace(/,/g, ''))
+  : undefined;
+```
+
+**Fix 3 — Type detection:**
+
+```typescript
+// src/utils/parsers/nlp.ts — add credit/debit keyword detection:
+const isCredit = /\b(income|salary|received|credited|earned|bonus|refund|cashback|reward)\b/i.test(text);
+
 return {
-  // ...existing fields...
-  topCategory: sorted[0]?.[0],
-  categoryDistribution: Object.fromEntries(sorted),
+  merchant,
+  category,
+  amount,
+  type: isCredit ? 'credit' : 'debit', // was hardcoded 'debit'
+  confidence: 0.6,
 };
 ```
 
 ---
 
-### BUG-12 · forecastNextMonth Inflated on 1st of Month
-**File:** `src/utils/insights/forecast.ts`
+### BUG-10 · Mic "No Speech Detected" on Desktop/Laptop
 
-**Problem:** `daysElapsed = 1` on the 1st → burn rate × 30 = wildly inflated forecast shown on the 1st of every month.
+**File:** `src/hooks/useMasterVoice.ts`  
+**Severity:** 🔴 Critical — Broken Feature  
+**Effort:** 1 hour
+
+**Problem:**  
+On desktop Chrome, `SpeechRecognition` fires `onend` within ~0.5 seconds of silence, triggering "no speech detected" before the user finishes speaking. Mobile has a longer default timeout. Also: no microphone permission check before starting.
 
 **Fix:**
+
 ```typescript
-const MIN_DAYS = 5; // Need at least 5 days of data for reliable forecast
-if (daysElapsed < MIN_DAYS) {
-  return { forecast: null, confidence: 'low', reason: 'Insufficient data — check back after day 5' };
+// src/hooks/useMasterVoice.ts — add before recognition.start():
+recognition.continuous = true;      // Keep listening until manually stopped
+recognition.interimResults = true;  // Show partial results
+recognition.lang = 'en-IN';         // Indian English — better for Indian accents
+
+// Add 2.5 second minimum listen time:
+const MIN_LISTEN_MS = 2500;
+const startTime = Date.now();
+
+recognition.onend = async () => {
+  const elapsed = Date.now() - startTime;
+  const transcript = finalTranscriptRef.current;
+
+  // If stopped too fast with no speech, restart once (mic warmup)
+  if (!transcript.trim() && elapsed < MIN_LISTEN_MS) {
+    try { recognition.start(); return; } catch { /* already stopped */ }
+  }
+
+  if (!transcript.trim()) {
+    setResult({ success: false, message: 'No speech detected. Check microphone permissions.' });
+    setState('error');
+    scheduleReset(3000);
+    return;
+  }
+  // ... rest of existing onend logic
+};
+
+// Add permission check at start:
+const permResult = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+if (permResult.state === 'denied') {
+  setResult({ success: false, message: '🎙️ Microphone blocked. Enable in browser settings → Privacy → Microphone.' });
+  setState('error');
+  return;
 }
 ```
 
 ---
 
-### BUG-13 · Education Lessons Not Personalised by userRole
-**File:** `src/data/lessons.ts` + `src/components/views/EducationView.tsx`
+### BUG-11 · Fake 3/5-Day Streak on First Login
 
-**Problem:** `userRole` from onboarding (`student/professional/business`) is stored in config but never used to filter lessons. Student and CEO see identical content.
+**File:** `src/store/slices/gamificationSlice.ts`  
+**Severity:** 🔴 Critical — Bad UX  
+**Effort:** 30 minutes
 
-**Fix:** Filter lessons array by `userRole` tag before rendering. Each lesson in `lessons.ts` needs a `roles: string[]` field.
+**Problem:**  
+Because auth is fake, all sessions share the same IDB database. Dev/test sessions have already accumulated streak days. New users see a streak that belongs to previous sessions.
+
+**Fix:**
+
+```typescript
+// src/store/slices/gamificationSlice.ts — fix checkStreak logic:
+checkStreak: () => set((state) => {
+  const today = new Date().toISOString().split('T')[0];
+  if (state.lastLoginDate === today) return state; // Already ran today
+
+  let newStreak = 1; // Today always counts
+  let xpBonus = 0;
+
+  if (state.lastLoginDate) {
+    const diffDays = Math.round(
+      (new Date(today).getTime() - new Date(state.lastLoginDate).getTime()) / 86400000
+    );
+    if (diffDays === 1) {
+      newStreak = state.streak + 1; // Genuine consecutive day
+      xpBonus = 10;
+    }
+    // diffDays > 1 → streak broken, newStreak stays 1
+  }
+
+  if (xpBonus > 0) setTimeout(() => get().addXP(xpBonus), 0);
+  return { streak: newStreak, lastLoginDate: today };
+}),
+```
 
 ---
 
-### BUG-14 · PWA Install Prompt Never Works on iOS
-**File:** `src/hooks/usePWAInstall.ts` + `index.html`
+### BUG-12 · Voice Command Categories Don't Match App Categories
 
-**Problem:** `beforeinstallprompt` is Android Chrome only. iOS uses a different flow. Missing critical Apple meta tags in `index.html`.
+**File:** `src/services/VoiceService.ts`  
+**Severity:** 🔴 Critical — Wrong Data  
+**Effort:** 1 hour
 
-**Fix — `index.html`:**
+**Problem:**  
+Gemini prompt uses `Bills`, `Investment`, `Others` — none of which exist in `DefaultCategory` type. Voice-added transactions get silently miscategorised.
+
+**Fix:**
+
+```typescript
+// src/services/VoiceService.ts — update Gemini prompt category list:
+// BEFORE:
+`category: one of Food, Transport, Shopping, Bills, Entertainment, Health, Education, Investment, Income, Others`
+
+// AFTER (matching DefaultCategory type exactly):
+`category: MUST be one of exactly: Food, Subscriptions, Transport, Entertainment, Shopping, Utilities, Health, Travel, Education, Business, Income`
+```
+
+Also update `src/lib/voiceCommands/commandParser.ts` to use the same list.
+
+---
+
+### BUG-13 · Receipt Scan Fails — "Failed to parse receipt with Gemini"
+
+**File:** `src/services/OCRService.ts`  
+**Severity:** 🔴 Critical — Broken Feature  
+**Effort:** 2 hours
+
+**Problem:**  
+`OCRService.ts` throws immediately if `VITE_GEMINI_API_KEY` is not set, with no Tesseract.js fallback attempted. Tesseract.js v7 is already installed but never called from OCRService.
+
+**Fix:**
+
+```typescript
+// src/services/OCRService.ts — add Tesseract fallback:
+export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+
+  if (apiKey) {
+    try {
+      // ... existing Gemini OCR code (keep unchanged) ...
+      return geminiResult;
+    } catch (geminiError) {
+      console.warn('Gemini OCR failed, falling back to Tesseract:', geminiError);
+    }
+  }
+
+  // Tesseract.js fallback:
+  const { createWorker } = await import('tesseract.js');
+  const worker = await createWorker('eng');
+  const { data: { text } } = await worker.recognize(imageFile);
+  await worker.terminate();
+
+  // Extract total amount from receipt text:
+  const totalMatch = text.match(/(?:total|amount|sub.?total)[^\d]*([\d,]+\.?\d*)/i)
+                  || text.match(/([\d]{2,6}\.?\d{0,2})\s*$/m);
+  const amount = totalMatch ? parseFloat(totalMatch[1].replace(',', '')) : 0;
+
+  const lines = text.split('\n').filter(l => l.trim().length > 2);
+  return {
+    merchant: lines[0]?.trim().substring(0, 40) || 'Unknown',
+    amount,
+    date: new Date().toISOString().split('T')[0],
+    rawText: text,
+  };
+};
+```
+
+---
+
+### BUG-14 · AI Advisor Not Working
+
+**File:** `src/utils/insights/advisor.ts`  
+**Severity:** 🔴 Critical — Broken Feature  
+**Effort:** 1.5 hours
+
+**Problem:**  
+`getFinancialAdvice()` returns `null` or throws when Gemini key is missing. The local rule-based fallback is incomplete — it may return `undefined` for certain query types, which the UI doesn't handle and shows a broken state.
+
+**Fix:**
+
+```typescript
+// src/utils/insights/advisor.ts — ensure local fallback ALWAYS returns a string:
+function generateLocalAdvice(stats: FinanceStats): string {
+  const { savingsRate, topCategories, net, totalSpent, totalIncome } = stats;
+
+  if (totalIncome === 0) {
+    return `## 📊 No Income Recorded Yet\n\nAdd your income transactions to unlock personalised advice.\n\n**[ACTION:ADD_TRANSACTION]**`;
+  }
+  if (savingsRate < 0) {
+    return `## ⚠️ Spending More Than You Earn\n\nYou're spending **₹${Math.abs(net).toLocaleString()}** more than you earn this period. Your top expense: **${topCategories[0]?.name || 'Unknown'}**.\n\n**Tip:** Set a budget for your top 3 categories.\n\n**[ACTION:CREATE_BUDGET]**`;
+  }
+  if (savingsRate < 20) {
+    return `## 💡 Room to Save More\n\nYou're saving **${savingsRate}%** of income. The 50/30/20 rule targets 20% savings. You're ${20 - savingsRate}% away.\n\n**[ACTION:VIEW_ANALYTICS]**`;
+  }
+  return `## ✅ Healthy Finances\n\nYou're saving **${savingsRate}%** this period — great work! Net balance: **₹${net.toLocaleString()}**.\n\n**Next:** Set a savings goal to make your money work harder.\n\n**[ACTION:SET_GOAL]**`;
+}
+
+// In getFinancialAdvice — guarantee return:
+export async function getFinancialAdvice(query: string, transactions: Transaction[]): Promise<string> {
+  const stats = computeStats(transactions);
+
+  if (import.meta.env.VITE_GEMINI_API_KEY) {
+    try {
+      // ... existing Gemini call ...
+    } catch { /* fall through */ }
+  }
+
+  return generateLocalAdvice(stats); // Always returns
+}
+```
+
+---
+
+### BUG-15 · UPI Sync Not Proper
+
+**File:** `src/utils/razorpaySync.ts`  
+**Severity:** 🔴 Critical — Core Feature  
+**Effort:** 2 hours
+
+**Problem:**  
+UPI string parser regex doesn't handle all Indian bank SMS formats (PhonePe, GPay, Paytm, HDFC all differ). Imported transactions don't auto-categorise correctly.
+
+**Fix:**
+
+```typescript
+// src/utils/razorpaySync.ts — replace UPI parser:
+export function parseUPIDescription(description: string): ParsedUPI {
+  const vpaMatch = description.match(/[\w.\-]+@[\w]+/);
+  const upiId = vpaMatch ? vpaMatch[0].toLowerCase() : '';
+
+  // Try multiple bank/app patterns:
+  const merchantPatterns = [
+    /UPI\/(?:CR|DR)\/[^\/]+\/([^\/]+)\//i,   // PhonePe
+    /UPI-([A-Z0-9\s]+)-[a-z@]/i,              // GPay / HDFC
+    /PAYTM\/UPI\/([^\/]+)\//i,                // Paytm
+    /TO\s+([A-Z\s]{3,30})\s+REF/i,           // Generic NEFT/IMPS
+  ];
+
+  let merchant = '';
+  for (const pattern of merchantPatterns) {
+    const m = description.match(pattern);
+    if (m?.[1]) { merchant = m[1].trim(); break; }
+  }
+  if (!merchant && upiId) merchant = upiId.split('@')[0];
+
+  const amountMatch = description.match(/(?:rs|inr|₹)\.?\s*([\d,]+\.?\d*)/i);
+  const amount = amountMatch ? parseFloat(amountMatch[1].replace(',', '')) : undefined;
+
+  return { merchant: merchant || 'UPI Payment', upiId, amount };
+}
+```
+
+---
+
+## 5. Medium Bugs — Fix Soon
+
+### BUG-M01 · resetLimits() and toggleRollover() Not Implemented
+
+**File:** `src/store/slices/financeSlice.ts`  
+**Problem:** Both are declared in `BudgetState` interface but not implemented. Calling either throws a TypeError crash.  
+**Fix:** Add both to `createFinanceSlice`:
+
+```typescript
+resetLimits: () => set(state => ({
+  budgetState: { ...state.budgetState, limits: {} }
+})),
+toggleRollover: () => set(state => ({
+  budgetState: { ...state.budgetState, rolloverEnabled: !state.budgetState.rolloverEnabled }
+})),
+```
+
+---
+
+### BUG-M02 · MonthlyStats.topCategory and categoryDistribution Always Undefined
+
+**File:** `src/hooks/useTransactions.ts` — `monthlyStats` useMemo  
+**Problem:** Both fields declared in type but never populated. AI Advisor and Reports may silently show incorrect data.  
+**Fix:** Compute them in the useMemo:
+
+```typescript
+const sortedCats = Array.from(catMap.entries()).sort((a, b) => b[1] - a[1]);
+return {
+  ...existingStats,
+  topCategory: sortedCats[0]?.[0],
+  categoryDistribution: Object.fromEntries(sortedCats),
+};
+```
+
+---
+
+### BUG-M03 · forecastNextMonth Inflated on 1st of Month
+
+**File:** `src/utils/insights/forecast.ts`  
+**Problem:** `daysElapsed = 1` on the 1st → one day of spending × 30 = absurd forecast.  
+**Fix:** Add minimum-data guard:
+
+```typescript
+const MIN_DAYS = 3;
+if (daysElapsed < MIN_DAYS) {
+  return { forecast: null, confidence: 'insufficient_data', message: 'Not enough data yet this month.' };
+}
+```
+
+---
+
+### BUG-M04 · Education Lessons Not Personalised by userRole
+
+**File:** `src/data/lessons.ts` + `src/components/views/EducationView.tsx`  
+**Problem:** `userRole` from onboarding (student/professional/business) stored in config but never used to filter lessons.  
+**Fix:** Filter lessons array before rendering:
+
+```typescript
+const userRole = useStore(state => state.config.userRole);
+const filteredLessons = lessons.filter(l =>
+  !l.targetRoles || l.targetRoles.includes(userRole)
+);
+```
+
+---
+
+### BUG-M05 · PWA Install Prompt Never Works on iOS
+
+**File:** `src/hooks/usePWAInstall.ts` + `index.html`  
+**Problem:** `beforeinstallprompt` is Android-only. iOS Safari needs different meta tags and manual guide.  
+**Fix (index.html):**
+
 ```html
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SpendWise">
 <link rel="apple-touch-icon" href="/icons/pwa-192x192.png">
-<link rel="apple-touch-startup-image" href="/icons/pwa-512x512.png">
 ```
 
-**Fix — `usePWAInstall.ts`:**
+**Fix (usePWAInstall.ts):**
+
 ```typescript
 const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
 if (isIOS) setShowIOSGuide(true); // Show "tap Share → Add to Home Screen"
@@ -368,1003 +743,891 @@ if (isIOS) setShowIOSGuide(true); // Show "tap Share → Add to Home Screen"
 
 ---
 
-### BUG-15 · Notifications Stored Outside Encrypted Store
-**File:** `src/hooks/useNotifications.ts`
+### BUG-M06 · Notifications and Merchant Memory Unencrypted
 
-**Problem:** `spendwise_read_notifications_v1` and `spendwise_snoozed_notifications_v1` in plain localStorage. Notification content references budget amounts (financial PII).
-
-**Fix:** Consolidate into Zustand `NotificationSlice` persisted through `dexieStorage`.
-
----
-
-### BUG-16 · Voice Router Stale Navigate Callback
-**File:** `src/lib/voiceCommands/commandRouter.ts` + `src/hooks/useMasterVoice.ts`
-
-**Problem:** `navigate` callback passed to `executeCommand()` can become stale if the component re-renders between voice initiation and execution.
-
-**Fix:**
-```typescript
-// In useMasterVoice.ts — use a stable ref:
-const navigateRef = useRef(navigate);
-useEffect(() => { navigateRef.current = navigate; }, [navigate]);
-
-// Pass navigateRef.current (not navigate) to executeCommand
-```
+**Files:** `src/hooks/useNotifications.ts` · `src/utils/merchantMapper.ts`  
+**Problem:** Both stored in plaintext localStorage. Notification alerts reference budget amounts (PII). Merchant names reveal spending habits.  
+**Fix:** Move both into Zustand store slices with the same pattern as BUG-02 fix.
 
 ---
 
-### BUG-17 · Default Balance Hardcoded as ₹5,200
-**File:** `src/constants/index.ts` (`FINANCE_DEFAULTS.INITIAL_BALANCE = 5200`)
+### BUG-M07 · Parental QR and Shared Wallet QR Not Showing
 
-**Problem:** If onboarding save fails silently, new users start with ₹5,200. Should be `0`.
+**File:** `src/components/features/parental/` + `src/components/features/shared/`  
+**Problem:** No QR code library installed. Buttons are UI stubs.  
+**Fix:** Add qrcode.js via CDN in `index.html`:
 
-**Fix:** Change `INITIAL_BALANCE: 5200` → `INITIAL_BALANCE: 0`
-
----
-
-## 5. User-Reported Issues (15)
-
-> From handwritten notes + app screenshots · May 16–17, 2026
-
----
-
-### Issue 1 · Privacy Mode Button Not Working
-**Root cause:** `togglePrivacy()` updates `parentalState.hideBalances` in store, but Dashboard/Header reads a stale local state copy. Toggle and read are disconnected.
-
-**Fix:** In `MainShell.tsx`:
-```typescript
-const privacyEnabled = useStore(state => state.parentalState.hideBalances);
-const togglePrivacy  = useStore(state => state.togglePrivacy);
-// Pass both to Header and all balance-displaying components
-```
-
-In every balance display:
-```tsx
-<span style={{ filter: privacyEnabled ? 'blur(8px)' : 'none', transition: 'filter 0.2s' }}>
-  {formatCurrency(balance)}
-</span>
-```
-
----
-
-### Issue 2 · Fake 3/5-Day Streak on First Login
-**Root cause:** Fake auth creates random guest IDs. All sessions share the same IDB. Dev sessions accumulated streak days in that shared IDB. New "first login" reads old streak data.
-
-**Fix — Stable device ID (immediate):**
-```typescript
-// useAuth.tsx — use stable device ID instead of random:
-const stableId = localStorage.getItem('spendwise_device_id')
-  || ('device_' + Math.random().toString(36).substr(2, 12));
-localStorage.setItem('spendwise_device_id', stableId);
-```
-
-**Fix — Correct streak logic:**
-```typescript
-// gamificationSlice.ts — checkStreak():
-const diffDays = Math.round((curr - last) / 86400000);
-if (diffDays === 1) newStreak = state.streak + 1; // consecutive ✓
-else if (diffDays > 1) newStreak = 1;             // broken
-else return state;                                  // same day
-```
-
----
-
-### Issue 3 · Quick Add Not Working
-**Root cause:** `processNaturalLanguageExpense()` returns `null` when Gemini key is missing and local heuristic also fails. UI has no null-guard — crashes silently.
-
-**Fix in `MagicInput.tsx`:**
-```typescript
-if (!result) {
-  const amount = parseFloat(input.replace(/[^0-9.]/g, '')) || 0;
-  setPrediction({
-    merchant: input.trim(), category: 'Shopping',
-    amount, type: 'debit', confidence: 0.3,
-  });
-  setScanStatus('⚠️ Could not fully parse — please review below');
-  return;
-}
-```
-
----
-
-### Issue 4 · Snap Receipt: "Failed to parse receipt with Gemini"
-**Root cause:** `OCRService.ts` throws immediately without Gemini key. Tesseract.js fallback (already installed) is never attempted.
-
-**Fix — Add Tesseract fallback:**
-```typescript
-// After Gemini try/catch, add:
-const { createWorker } = await import('tesseract.js');
-const worker = await createWorker('eng');
-const { data: { text } } = await worker.recognize(imageFile);
-await worker.terminate();
-// Then parse text for amount, date, merchant
-```
-
----
-
-### Issue 5 · Which Notifications Go to OS Notification Bar?
-**Root cause:** Currently zero OS notifications. Everything is in-app toast only. Web Push API not implemented.
-
-**Fix — Phase 1 (basic browser notifications):**
-```typescript
-// src/utils/pushNotification.ts (new file)
-export async function requestNotificationPermission() {
-  if (Notification.permission !== 'default') return Notification.permission === 'granted';
-  return (await Notification.requestPermission()) === 'granted';
-}
-
-export function sendBrowserNotification(title: string, body: string) {
-  if (Notification.permission !== 'granted') return;
-  new Notification(title, { body, icon: '/icons/pwa-192x192.png' });
-}
-```
-
-Trigger notifications for: budget 80% used · anomaly detected · goal target date approaching · subscription renewal tomorrow.
-
----
-
-### Issue 6 · Phone Number Field Has No Verification
-**Root cause:** No SMS provider configured. It's a plain text field.
-
-**Immediate fix:** Mark as "Unverified" with a label badge.
-
-**Real fix (Phase 2.0):** Supabase phone OTP via Twilio:
-```typescript
-await supabase.auth.signInWithOtp({ phone: '+91XXXXXXXXXX' });
-await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
-```
-
----
-
-### Issue 7 · Login / Signup: Old Data Is Gone
-**Root cause:** `signOut()` calls `window.location.reload()` which creates a NEW random guest ID. New ID sees empty store.
-
-**Fix:** Use stable device ID (see Issue 2 fix). Also fix `signOut`:
-```typescript
-const signOut = useCallback(async () => {
-  localStorage.removeItem('spendwise_user');
-  // Do NOT remove 'spendwise_device_id' — preserves data linkage
-  window.location.reload();
-}, []);
-```
-
----
-
-### Issue 8 · Quick Add Shows "+$0 DEBIT" (3 bugs in 1)
-
-**Bug A — Wrong currency ($):**
-```typescript
-// CurrencyContext.tsx — initialise synchronously from config:
-const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(() => {
-  try {
-    const raw = localStorage.getItem('spendwise_config_v1');
-    if (raw) { const c = JSON.parse(raw); if (c.currency) return c.currency; }
-  } catch {}
-  return '₹'; // Default INR, not $
-});
-```
-
-**Bug B — Amount = 0 (NLP parser doesn't handle "5000RS" format):**
-```typescript
-// src/utils/parsers/nlp.ts — extend amount regex:
-const amountMatch =
-  text.match(/(?:rs\.?|inr|₹)\s*([\d,]+\.?\d*)/i) ||   // ₹500 / RS 500
-  text.match(/\b([\d,]+\.?\d*)\s*(?:rs\.?|inr|rupees?)\b/i) || // 500rs
-  text.match(/([\d,]+\.?\d*)/);                           // plain number
-```
-
-**Bug C — DEBIT when it should be CREDIT:**
-```typescript
-// Add income keyword detection to local NLP fallback:
-const isCredit = /\b(income|salary|received|credited|earned|bonus|refund|cashback)\b/i.test(text);
-return { ..., type: isCredit ? 'credit' : 'debit' };
-```
-
----
-
-### Issue 9 · Parental "Show Linking QR" Doesn't Show QR
-
-**Root cause:** No QR library installed. Button is a stub.
-
-**Fix — Step 1: Add to `index.html`:**
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 ```
 
-**Fix — Step 2: Create `LinkingQRModal.tsx`:**
-```typescript
-// In useEffect when modal opens:
-new window.QRCode(qrRef.current, {
-  text: JSON.stringify({ type: 'spendwise_child_link', parentId: user.id }),
-  width: 200, height: 200,
-});
-```
+Then create `LinkingQRModal.tsx` and `GroupQRModal.tsx` components that use `new window.QRCode(ref.current, { text: data, width: 200, height: 200 })`.
 
 ---
 
-### Issue 10 · Where Does Child Scan the QR?
-**Root cause:** No child-side scanner exists anywhere in the app.
+### BUG-M08 · Invite via Email Not Working
 
-**Fix:** Add a "Link to Parent Account" button in `AuthView.tsx` that opens a camera-based QR scanner using `navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })` + `jsqr` for decoding.
-
----
-
-### Issue 11 · Mic: "No Speech Detected" on Laptop
-**Root cause:** Desktop Chrome fires `onend` within ~0.5s of silence (before user finishes speaking). Mobile has longer timeout. `continuous: false` also stops recording after first speech segment.
-
-**Fix in `useMasterVoice.ts`:**
-```typescript
-recognition.continuous = true;    // Keep listening until manually stopped
-recognition.interimResults = true; // Capture partial speech
-recognition.lang = 'en-IN';        // Better for Indian accents
-
-const MIN_LISTEN_MS = 2500;
-const startTime = Date.now();
-
-recognition.onend = async () => {
-  const elapsed = Date.now() - startTime;
-  if (!finalTranscript.trim() && elapsed < MIN_LISTEN_MS) {
-    try { recognition.start(); return; } catch {} // Restart if too quick
-  }
-  // ... rest of logic
-};
-```
+**File:** `src/components/features/shared/SharedModals.tsx`  
+**Problem:** No email service configured. Invite saved locally but nothing sent.  
+**Short-term fix:** Use `mailto:` link to open user's email client with pre-filled invite body and Group ID.  
+**Long-term fix (Phase 2.0):** Supabase Edge Function + Resend email API (3000 free emails/month).
 
 ---
 
-### Issue 12 · Shared Wallet "Share QR" Doesn't Show QR
-**Root cause:** Same as Issue 9 — no QR library.
+### BUG-M09 · Phone Number in Profile Has No Verification
 
-**Fix:** Reuse the QRCode CDN script from Issue 9 fix. Create an inline `GroupQRModal` component in `SharedTabs.tsx` that encodes `spendwise://join-group?id={groupId}`.
-
----
-
-### Issue 13 · Shared Money "Invite via Email" Not Working
-**Root cause:** No email sending service configured. The invite is stored locally but nothing is sent.
-
-**Immediate fix — Use `mailto:` link:**
-```typescript
-const subject = encodeURIComponent(`Join my SpendWise group: ${groupName}`);
-const body = encodeURIComponent(
-  `Join "${groupName}" on SpendWise.\nGroup ID: ${groupId}`
-);
-window.open(`mailto:${email}?subject=${subject}&body=${body}`, '_blank');
-```
-
-**Also add:** Copy invite link button → `navigator.clipboard.writeText(inviteLink)`.
-
-**Real fix (Phase 2.0):** Supabase Edge Function + Resend API (3,000 free emails/month).
+**File:** `src/components/features/profile/PersonalInfo.tsx`  
+**Problem:** Plain text input, no OTP verification.  
+**Fix:** Add "Unverified" badge label. Wire Supabase Phone Auth with Twilio OTP in Phase 2.0.
 
 ---
 
-### Issue 14 · AI Advisor Not Working
-**Root cause:** `getFinancialAdvice()` needs `VITE_GEMINI_API_KEY`. Without it, Gemini fails and the local fallback returns null/incomplete response. UI has no graceful handling.
+### BUG-M10 · Initial Balance Hardcoded ₹5200 Default
 
-**Fix — Ensure local fallback always returns advice:**
-```typescript
-// At end of advisor.ts — always run local engine as final fallback:
-function generateLocalAdvice(stats: FinancialStats): string {
-  if (stats.savingsRate < 0)
-    return `## ⚠️ Spending More Than Earning\n...`;
-  if (stats.savingsRate < 20)
-    return `## 💡 Savings Opportunity\n...`;
-  return `## ✅ Great Financial Health\n...`;
-}
-```
-
-**Also add:** Show a "Using local engine — add Gemini API key for AI advice" banner when key is missing.
+**File:** `src/constants/index.ts` (`FINANCE_DEFAULTS.INITIAL_BALANCE = 5200`)  
+**Problem:** Arbitrary default. If onboarding save fails, user starts with ₹5,200 as their balance.  
+**Fix:** Change to `0`. Require onboarding to set the initial balance explicitly.
 
 ---
 
-### Issue 15 · UPI Sync Not Proper
-**Root cause:** UPI string parser regex doesn't cover all Indian bank formats (PhonePe/GPay/Paytm all differ). No review step before import.
+## 6. User-Reported Bugs (Handwritten Notes)
 
-**Fix — Improved parser covering all major Indian formats:**
-```typescript
-export function parseUPIDescription(desc: string) {
-  const patterns = [
-    /UPI\/(?:CR|DR)\/[^\/]+\/([^\/]+)\//i,  // PhonePe
-    /UPI-([A-Z0-9\s]+)-[a-z@]/i,             // GPay / HDFC
-    /PAYTM\/UPI\/([^\/]+)\//i,               // Paytm
-    /TO\s+([A-Z\s]{3,30})\s+REF/i,          // Generic
-  ];
-  // ... try each pattern, extract merchant + UPI VPA + amount
-}
-```
+Summary of all 15 issues from handwritten notebook + screenshot PDF, mapped to the bug IDs above:
 
-**Also add:** Show a review table before importing so users can correct categories before saving.
-
----
-
-## 6. Production Gaps
-
-### A. Authentication & Sessions
-
-| Gap | Status | Fix |
-|---|---|---|
-| Real auth (Supabase) | ❌ Fake | Wire `supabase.ts` → `useAuth` |
-| Token refresh | ❌ Missing | Refresh JWT before 1hr expiry |
-| Google OAuth | ❌ Missing | Supabase OAuth config |
-| Row-Level Security | ❌ Not run | Run SQL in Supabase dashboard |
-| WebAuthn / Biometric | ❌ PIN only | `navigator.credentials.get()` |
-| MFA / TOTP | ❌ Hardcoded false | Supabase MFA AMR claim |
-| Rate limiting (client) | ❌ Missing | Exponential backoff on login |
+| Note # | Reported Issue | Bug ID | Status |
+|--------|---------------|--------|--------|
+| 1 | Privacy mode button not working | BUG-07 | Fix documented |
+| 2 | 3-day streak on first login | BUG-11 | Fix documented |
+| 3 | Quick add not working | BUG-09 (Quick Win) | Fix documented |
+| 4 | Snap receipt "Failed to parse" | BUG-13 | Fix documented |
+| 5 | Which notifications on notification bar? | BUG-M06 | Web Push feature needed |
+| 6 | Phone number no verification | BUG-M09 | Fix documented |
+| 7 | Login/signup — old data lost | BUG-08 | Fix documented |
+| 8 | $0 DEBIT instead of ₹5000 CREDIT | BUG-09 | Fix documented |
+| 9 | Parental "Show Linking QR" not working | BUG-M07 | Fix documented |
+| 10 | Where does child scan QR? | New feature | Implementation documented |
+| 11 | Mic fails on laptop | BUG-10 | Fix documented |
+| 12 | Shared wallet "Share QR" not showing | BUG-M07 | Fix documented |
+| 13 | Invite via email not working | BUG-M08 | Fix documented |
+| 14 | AI Advisor not working | BUG-14 | Fix documented |
+| 15 | UPI sync not proper | BUG-15 | Fix documented |
 
 ---
 
-### B. Data Architecture
+## 7. Production Gaps
 
-| Gap | Status | Fix |
-|---|---|---|
-| Goals in encrypted IDB | ❌ localStorage | Create `GoalsSlice` |
-| Shared wallets in encrypted IDB | ❌ localStorage | Create `SharedSlice` |
-| Notifications in encrypted IDB | ❌ localStorage | Create `NotificationSlice` |
-| Merchant memory in encrypted IDB | ❌ localStorage | Move to Zustand slice |
-| Supabase bidirectional sync | ❌ Written but not wired | Call `syncAll()` post-login |
-| Legacy data migration | ❌ Missing | Auto-migrate on first load |
+### Gap A — Authentication & Sessions
 
----
+**Current state:** Fake localStorage auth. `mfaRequired: false` hardcoded. No token refresh.
 
-### C. Payment Services
-
-| Gap | Status | Fix |
-|---|---|---|
-| Razorpay (server-side) | ⚠️ Client-exposed | Supabase Edge Function proxy |
-| Setu Account Aggregator | ❌ Not built | India bank import (RBI-approved) |
-| Plaid | ❌ UI stub only | Wire Plaid Link SDK |
-| UPI deep link | ❌ Missing | `upi://pay?...` intent URL |
-| Razorpay webhook | ❌ Missing | Edge Function → auto-import paid |
+**Required for production:**
+- Wire `supabase.ts` service to `useAuth.tsx` (already written — just unwired)
+- Store `access_token` + `refresh_token` in `sessionStorage`
+- Add token refresh before 1-hour JWT expiry
+- Enable Google OAuth and magic link flows via Supabase dashboard
+- Run RLS SQL policies (already written in `supabase.ts` comments)
+- Replace PIN-only `BiometricLock.tsx` with WebAuthn (`navigator.credentials.get()`)
+- Rate-limit login attempts client-side with exponential backoff
 
 ---
 
-### D. Security Hardening
+### Gap B — Data Architecture
 
-| Gap | Status | Fix |
-|---|---|---|
-| CSP headers | ❌ Missing | `connect-src` limited to known domains |
-| API key proxy | ❌ Client-exposed | Supabase Edge Functions for Gemini + Razorpay |
-| Key rotation | ❌ Missing | Re-encrypt IDB when PIN changes |
-| Audit log | ❌ Missing | Append-only IDB log (login/export/delete) |
-| Subresource Integrity | ❌ Missing | `integrity` attr on CDN scripts |
+**Current state:** Data split across 4 places: Zustand+IDB (transactions, budgets, gamification), plain localStorage (goals, shared wallets, notifications, merchant memory), Supabase (inactive), PeerJS (shared wallets).
 
----
-
-### E. UX & Accessibility
-
-| Gap | Status | Fix |
-|---|---|---|
-| ARIA roles | ❌ Zero in custom components | Add role + aria-label everywhere |
-| Focus trap in modals | ❌ Missing | `focus-trap-react` or custom hook |
-| Keyboard navigation | ❌ Missing | `tabIndex` + `onKeyDown` |
-| Reduced motion | ❌ Missing | Wrap Motion in `useReducedMotion()` |
-| Color contrast | ⚠️ Barely passes | `--text-muted` → `#475569` |
-| iOS PWA tags | ❌ Missing | 5 Apple meta tags in `index.html` |
-| Loading skeletons | ⚠️ Inconsistent | Add to Portfolio, Goals, Shared views |
+**Required for production:**
+- Consolidate ALL state into Zustand + encrypted dexieStorage adapter
+- Add `GoalsSlice`, `SharedSlice`, `NotificationSlice` to store
+- Wire `syncAll()` from `supabase.ts` — called after login and on 5-minute interval
+- Add `lastSyncAt` timestamp for incremental sync
+- Add a one-time migration utility for legacy localStorage keys
 
 ---
 
-### F. Testing
+### Gap C — Payment Services
 
-| Coverage | Status | Target |
-|---|---|---|
-| Unit tests | 3 files only | 30+ files |
-| Component tests | 0 | All major components |
-| Integration tests | 0 | All hooks with mocked IDB |
-| E2E tests (Playwright) | 0 | Login → add tx → export flow |
-| CI pipeline | ❌ Missing | GitHub Actions: lint + test + build |
+**Current state:** Razorpay secret in localStorage. Plaid and Web3 are UI stubs.
 
----
+**Required for production:**
 
-## 7. Missing Features & Dashboards
-
-### Dashboards to Add
-
-| Dashboard | Components Exist? | Work Needed |
-|---|---|---|
-| Monthly Statement | `generateMonthlyReport()` (markdown only) | PDF with opening/closing balance |
-| Financial Health Report Card | `HealthScoreChart` + `HealthIndexCard` | Unify into single report screen |
-| Tax Estimator (dedicated) | `TaxPredictor.tsx` (buried in Analytics) | Promote to dedicated view |
-| Subscription Intelligence | `SubscriptionManager` | Add annual cost + price creep + cancel ROI |
-| Net Worth (dedicated) | `PortfolioView` (partial) | Full assets vs liabilities with trend |
-| Cash Flow Statement | `CashFlowWaterfall.tsx` | Wire to dedicated view |
-
-### Features to Add
-
-| Feature | Priority | Notes |
-|---|---|---|
-| Split transaction | High | One tx → multiple categories |
-| Duplicate transaction detection | High | Same amount ±1 min → flag |
-| Multi-currency live rates | Medium | `open.er-api.com` (free) |
-| Web Push notifications | High | Budget alerts, anomaly, goal risk |
-| Auto-categorisation ML | High | TF.js on-device after 50+ transactions |
-| Recurring bill detection | High | Auto-detect from patterns |
-| Parental QR linking | High | Issues 9 + 10 — completely missing |
-| Child-side QR scanner | High | No scanner exists |
-| Email invites (real) | Medium | Supabase + Resend |
+| Service | What's Needed | Priority |
+|---------|--------------|---------|
+| Razorpay | Supabase Edge Function proxy — secret never client-side | P0 |
+| Setu Account Aggregator | RBI-approved Indian bank import (Plaid doesn't work in India) | P1 |
+| UPI deep link | `upi://pay?...` intent URL for in-app payments | P2 |
+| Plaid | Wire actual PlaidLink SDK (global users) | P3 |
+| Resend email | Transactional email for group invites | P1 |
 
 ---
 
-## 8. Phased Roadmap
+### Gap D — Security Hardening
+
+| Item | Action |
+|------|--------|
+| Content Security Policy | `connect-src` limited to Supabase + Gemini + Razorpay only |
+| API key proxy | Gemini + Razorpay routed through Supabase Edge Functions |
+| Key rotation | "Re-encrypt" option on PIN change |
+| Audit log | Append-only IDB log: login, export, PIN change, parental override |
+| SRI | `integrity` attributes on CDN scripts |
+| Unify encryption | All persistence through `dexieStorage` — remove all direct `localStorage.setItem` for financial data |
 
 ---
 
-### Phase 2.0 — Production Launch
-**Timeline:** 3–4 weeks | **Focus:** Fix + Secure
+### Gap E — Missing Dashboards
 
-```
-[ ] BUG-01 → BUG-10 — All critical bugs fixed
-[ ] Issue 1–15 — All user-reported bugs fixed
-[ ] Real Supabase auth (email + Google OAuth)
-[ ] Consolidate ALL localStorage → encrypted IDB
-[ ] Supabase Edge Functions as API key proxy (Gemini + Razorpay)
-[ ] CSP headers + SRI on CDN assets
-[ ] iOS PWA meta tags
-[ ] Accessibility pass (ARIA + keyboard nav + focus traps)
-[ ] Vercel/Netlify deployment with proper cache headers
-[ ] GitHub Actions CI: lint → test → build → deploy
-[ ] Unit tests: encryption, crdt, commandParser, nlp, all store slices
-```
+| Dashboard | What Exists | What's Missing |
+|-----------|-------------|----------------|
+| Monthly Statement | `generateMonthlyReport()` (markdown only) | Bank-statement view + PDF export |
+| Financial Health Report Card | `HealthScoreChart`, `HealthIndexCard` (separate) | Unified single-screen summary |
+| Tax Estimator | `TaxPredictor.tsx` buried in Analytics | Dedicated view + India old vs new regime |
+| Subscription Intelligence | `SubscriptionManager` (basic) | Annual cost total + cancellation ROI |
+| Net Worth Dashboard | `PortfolioView` (partial) | Debt payoff projector + asset allocation donut |
 
 ---
 
-### Phase 2.1 — Smart Finance Engine
-**Timeline:** 4–6 weeks | **Focus:** AI + Data Quality
+### Gap F — UX / Accessibility
 
-```
-[ ] Auto-categorisation (TF.js on-device ML after 50+ transactions)
-[ ] Setu Account Aggregator — real Indian bank statement import
-[ ] Recurring bill detection with one-tap "Add to Subscriptions"
-[ ] Smart savings automation ("set aside ₹X every payday")
-[ ] Duplicate transaction detection (same amount ± 1 min)
-[ ] Split transaction across multiple categories
-[ ] Multi-currency with live exchange rates (open.er-api.com)
-[ ] Supabase bidirectional sync — wired end-to-end
-[ ] Web Push notifications (budget alerts, anomaly, goal risk)
-[ ] UPI SMS parser (Android — auto-import from bank SMS)
-```
+| Issue | Fix Required |
+|-------|-------------|
+| ARIA roles | Add `role`, `aria-label`, `aria-describedby` to all interactive custom components (currently: none) |
+| Focus trap in modals | `Modal.tsx` has no focus trap — Tab key escapes the modal |
+| Reduced motion | Wrap all Framer Motion animations in `useReducedMotion()` check |
+| Color contrast | `--text-muted: #64748b` on `#f8fafc` = 4.2:1 (barely WCAG AA). Darken to `#475569` |
+| Keyboard navigation | Add `tabIndex` and `onKeyDown` Enter/Space to all custom div buttons |
+| Screen reader | Add `aria-live="polite"` for toast and transaction confirmations |
+| Error states | `Err` component exists but not used consistently — add to all forms |
+| Loading states | Add `SkeletonLoader` to PortfolioView, GoalsView, SharedView |
 
 ---
 
-### Phase 2.2 — Social & Collaboration
-**Timeline:** 3–4 weeks | **Focus:** Shared Features
+### Gap G — Testing
 
-```
-[ ] Replace PeerJS P2P with Supabase Realtime (shared wallets)
-[ ] Bill splitting — equal or custom ratio + settlement tracking
-[ ] Family Plan — 1 primary + 5 linked members
-[ ] Social savings challenges — invite friends, leaderboard
-[ ] Shareable read-only monthly report link
-[ ] Real email invites (Supabase Edge Function + Resend)
-[ ] Parental QR linking + child-side scanner (complete flow)
-```
+**Current state:** 3 test files only — `anomaly.ts`, `forecast.ts`, `healthScore.ts`.
 
----
+**Required for production:**
 
-### Phase 2.3 — Wealth Builder
-**Timeline:** 4–5 weeks | **Focus:** Investment & Goals
-
-```
-[ ] Investment portfolio tracker — stocks, MF, ETFs with live NSE prices
-[ ] SIP planner with step-up SIP calculator
-[ ] Debt avalanche / snowball payoff planner
-[ ] Emergency fund calculator (6-month expense target)
-[ ] FIRE number / retirement calculator
-[ ] Insurance gap analyser
-[ ] India tax estimator — old vs new regime side-by-side
-[ ] Dedicated Net Worth dashboard
-[ ] Monthly PDF statement generator
-```
+| Type | Files to Test |
+|------|--------------|
+| Unit | `encryption.ts`, `crdt.ts`, `commandParser.ts`, `nlp.ts`, `budgetSuggestions.ts`, all store slices |
+| Hook integration | `useTransactions`, `useBudgets`, `useGoals` with mocked IDB |
+| Component | `MagicInput`, `BudgetManager`, `GoalCard`, `AuthView` with React Testing Library |
+| E2E | Login flow, add transaction, set budget, voice command, data export (Playwright) |
 
 ---
 
-### Phase 2.4 — Advanced AI
-**Timeline:** 3–4 weeks | **Focus:** Proactive Intelligence
+## 8. Quick Wins — Under 1 Day
 
-```
-[ ] Multi-turn AI advisor chat (persistent context — Anthropic Claude API)
-[ ] Proactive Web Push notifications (budget, anomaly, goal risk)
-[ ] Receipt auto-import via email forwarding (Supabase email hook)
-[ ] Spend forecast with seasonality detection
-[ ] WhatsApp bot ("spent 500 on food" → auto-adds transaction)
-[ ] Spending personality deep-dive (not just archetype label)
-```
-
----
-
-### Phase 2.5 — Platform Expansion
-**Timeline:** 6–8 weeks | **Focus:** New Surfaces
-
-```
-[ ] React Native app (shared store + utils, UI layer rebuilt)
-[ ] Browser extension (Chrome/Firefox — auto-capture online purchases)
-[ ] CA / Accountant mode — manage multiple clients' finances
-[ ] Tally / QuickBooks / Zoho export formats
-[ ] Public API (OAuth-secured) for third-party integrations
-```
-
----
-
-## 9. Priority Matrix
-
-| Priority | Item | File(s) | Effort | Impact | Act Now? |
-|---|---|---|---|---|---|
-| **P0** | BUG-01: Real auth | `useAuth.tsx` + `supabase.ts` | 2 days | 🔴 Critical | ✅ |
-| **P0** | BUG-02: Goals → encrypted | `useGoals.ts` + new slice | 4h | 🔴 Critical | ✅ |
-| **P0** | BUG-04: Razorpay secret | `BankSyncView.tsx` | 2h | 🔴 Security | ✅ |
-| **P0** | BUG-05: Balance chart reversed | `useTransactions.ts` | 30m | 🔴 Wrong data | ✅ |
-| **P0** | BUG-06: percent = 0 | `useTransactions.ts` | 30m | 🔴 Wrong data | ✅ |
-| **P0** | Issue 8: $0 DEBIT | `CurrencyContext` + `nlp.ts` | 2h | 🔴 Broken UX | ✅ |
-| **P0** | Issue 7: Data loss on re-login | `useAuth.tsx` | 45m | 🔴 Data loss | ✅ |
-| **P1** | BUG-03: Shared wallets → encrypted | new slice | 1 day | 🟠 Security | Soon |
-| **P1** | BUG-07: Voice categories | `VoiceService.ts` | 1h | 🟠 Wrong data | ✅ |
-| **P1** | Issue 1: Privacy mode | `MainShell.tsx` | 1h | 🟠 Broken UX | ✅ |
-| **P1** | Issue 2: Fake streak | `gamificationSlice.ts` | 30m | 🟠 Wrong data | ✅ |
-| **P1** | Issue 3: Quick Add | `MagicInput.tsx` | 45m | 🟠 Core feature | ✅ |
-| **P1** | Issue 4: Receipt scan | `OCRService.ts` | 2h | 🟠 Core feature | ✅ |
-| **P1** | Issue 11: Mic on laptop | `useMasterVoice.ts` | 1h | 🟠 Core feature | ✅ |
-| **P1** | Issue 13: Email invite | `SharedModals.tsx` | 1h | 🟠 Broken UX | ✅ |
-| **P1** | Issue 14: AI Advisor | `advisor.ts` | 1.5h | 🟠 Core feature | ✅ |
-| **P1** | Supabase bidirectional sync | `syncEngine.ts` | 2 days | 🟠 Cloud backup | Sprint 1 |
-| **P1** | Edge Function API proxy | New Edge Functions | 1 day | 🟠 Security | Sprint 1 |
-| **P2** | CSP headers | `vite.config.ts` / Netlify | 2h | 🟡 Security | Sprint 2 |
-| **P2** | iOS PWA meta tags | `index.html` | 15m | 🟡 ~50% of users | ✅ |
-| **P2** | BUG-10: Missing store actions | `financeSlice.ts` | 1h | 🟡 Crash risk | ✅ |
-| **P2** | Issue 9+12: QR codes | New modal components | 2h | 🟡 Stub feature | Sprint 2 |
-| **P2** | ARIA + keyboard nav | All components | 3 days | 🟡 Compliance | Sprint 2 |
-| **P2** | Unit test suite | `src/__tests__/` | 3 days | 🟡 Reliability | Sprint 2 |
-| **P3** | Auto-categorisation ML | New `src/ml/` module | 1 week | 🟢 UX | Phase 2.1 |
-| **P3** | Setu AA bank import | New service | 2 weeks | 🟢 India market | Phase 2.1 |
-| **P3** | Supabase Realtime (shared) | `syncEngine.ts` | 1 week | 🟢 Reliability | Phase 2.2 |
-| **P3** | WhatsApp bot | Supabase Edge Function | 1 week | 🟢 India UX | Phase 2.4 |
-| **P4** | React Native app | New project | 6 weeks | 🔵 Mobile | Phase 2.5 |
-| **P4** | Browser extension | New project | 2 weeks | 🔵 Auto-capture | Phase 2.5 |
-
----
-
-## 10. Quick Wins — Do Today
-
-Each fix below takes under 30 minutes and directly resolves a real user-facing bug.
-
----
+These can be fixed today, each in under 30 minutes:
 
 ### QW-1 · Fix categorySpending percent (30 min)
-**File:** `src/hooks/useTransactions.ts`
+
 ```typescript
-// Add before the .map():
+// src/hooks/useTransactions.ts — categorySpending useMemo
 const totalDebitAmount = Array.from(map.values()).reduce((a, b) => a + b, 0);
-
-// In the .map(), change percent:
-percent: totalDebitAmount > 0 ? Math.round((value / totalDebitAmount) * 100) : 0,
+return Array.from(map.entries()).map(([name, value]) => ({
+  name, value: Math.round(value * 100) / 100,
+  color: mergedColors[name] || '#14b8a6',
+  percent: totalDebitAmount > 0 ? Math.round((value / totalDebitAmount) * 100) : 0,
+})).sort((a, b) => b.value - a.value);
 ```
-
----
 
 ### QW-2 · Fix balance trend reversal (30 min)
-**File:** `src/hooks/useTransactions.ts`
+
 ```typescript
-// WRONG:
-runningBalance -= (tx.type === 'credit' ? amount : -amount);
-// CORRECT:
-runningBalance += tx.type === 'credit' ? -amount : amount;
+// src/hooks/useTransactions.ts — balanceTrend useMemo
+runningBalance += tx.type === 'credit' ? -amount : amount; // was wrong
 ```
 
----
+### QW-3 · Fix voice categories (1 hour)
 
-### QW-3 · Fix voice command categories (1 hour)
-**File:** `src/services/VoiceService.ts`
 ```typescript
-// Update the Gemini prompt — change category list to:
-`category must be one of: Food, Subscriptions, Transport, Entertainment,
- Shopping, Utilities, Health, Travel, Education, Business, Income`
+// src/services/VoiceService.ts — update Gemini prompt
+// Change to: "Food, Subscriptions, Transport, Entertainment, Shopping, Utilities, Health, Travel, Education, Business, Income"
 ```
-
----
 
 ### QW-4 · Fix addContribution stale closure (20 min)
-**File:** `src/hooks/useGoals.ts`
+
 ```typescript
+// src/hooks/useGoals.ts
 const addContribution = useCallback(async (id: string, amount: number) => {
   setGoals(prev => {
     const existing = prev.find(g => g.id === id);
     if (!existing) return prev;
     const newSaved = Math.min(existing.savedAmount + amount, existing.targetAmount);
-    const next = prev.map(g =>
-      g.id === id
-        ? { ...g, savedAmount: Math.round(newSaved * 100) / 100,
-               status: computeStatus({ ...g, savedAmount: newSaved }) }
-        : g
+    return prev.map(g => g.id === id
+      ? { ...g, savedAmount: Math.round(newSaved * 100) / 100 }
+      : g
     );
-    saveGoals(next);
-    return next;
   });
-}, []); // No deps — pure functional update
+}, []); // pure functional update — no deps needed
 ```
 
----
-
 ### QW-5 · iOS PWA meta tags (15 min)
-**File:** `index.html`
+
 ```html
+<!-- index.html — add in <head> -->
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SpendWise">
 <link rel="apple-touch-icon" href="/icons/pwa-192x192.png">
-<link rel="apple-touch-startup-image" href="/icons/pwa-512x512.png">
 ```
 
 ---
 
-### QW-6 · Fix default currency from $ to ₹ (20 min)
-**File:** `src/contexts/CurrencyContext.tsx`
-```typescript
-const [baseCurrency, setBaseCurrency] = useState<CurrencyCode>(() => {
+## 9. Phased Roadmap
+
+### Phase 2.0 — Production Launch
+
+**Timeline:** 3–4 weeks | **Goal:** Secure, stable, deployable
+
+- [ ] Real Supabase auth (email + Google OAuth + magic link)
+- [ ] Consolidate ALL localStorage data into encrypted IDB store (Goals, SharedWallets, Notifications, MerchantMemory)
+- [ ] Fix all BUG-01 through BUG-15
+- [ ] Fix all BUG-M01 through BUG-M10
+- [ ] Supabase Edge Functions as API key proxy (Gemini + Razorpay)
+- [ ] Content Security Policy headers
+- [ ] iOS PWA meta tags + iOS install guide
+- [ ] Accessibility pass: ARIA + keyboard nav + focus traps
+- [ ] Vercel deployment with correct cache headers (`stale-while-revalidate`)
+- [ ] GitHub Actions CI: lint + test + build on every PR
+- [ ] Unit test suite: crypto, crdt, commandParser, nlp, all store slices
+
+---
+
+### Phase 2.1 — Smart Finance Engine
+
+**Timeline:** 4–6 weeks | **Goal:** Smarter automation
+
+- [ ] Auto-categorisation TF.js on-device ML (triggers after 50+ transactions)
+- [ ] Setu Account Aggregator — real Indian bank statement import (RBI-approved)
+- [ ] Recurring bill auto-detection from transaction patterns
+- [ ] Smart savings automation — "set aside ₹X every payday" with voice confirmation
+- [ ] Duplicate transaction detection (same amount within ±60 seconds)
+- [ ] Split transaction across multiple categories
+- [ ] Multi-currency with live exchange rates (open.er-api.com)
+- [ ] Supabase bidirectional sync wired end-to-end with conflict resolution
+- [ ] Real-time budget alerts via Web Push API
+
+---
+
+### Phase 2.2 — Social & Collaboration
+
+**Timeline:** 3–4 weeks | **Goal:** Family and group finance
+
+- [ ] Replace PeerJS P2P with Supabase Realtime for shared wallets (scalable, no NAT issues)
+- [ ] Bill splitting — equal or custom ratio + settlement tracking
+- [ ] Family plan — 1 primary account + up to 5 linked members
+- [ ] Social savings challenges — invite friends, leaderboard via Supabase
+- [ ] Shareable read-only monthly report link
+- [ ] Parental controls integrated with Family Plan hierarchy
+- [ ] Group invite via Resend email + SMS
+
+---
+
+### Phase 2.3 — Wealth Builder
+
+**Timeline:** 4–5 weeks | **Goal:** Investment and long-term planning
+
+- [ ] Investment portfolio tracker — stocks, mutual funds, ETFs with live prices (NSE API)
+- [ ] SIP / Investment planner with step-up SIP calculator
+- [ ] Debt avalanche / snowball payoff planner
+- [ ] Emergency fund calculator (6-month expense target)
+- [ ] FIRE / retirement calculator
+- [ ] Insurance gap analyser
+- [ ] Tax estimator — India old vs new regime side-by-side comparison
+
+---
+
+### Phase 2.4 — Advanced AI
+
+**Timeline:** 3–4 weeks | **Goal:** Proactive and conversational AI
+
+- [ ] Multi-turn AI advisor chat (persistent conversation context, not single-query)
+- [ ] Android UPI SMS parser — auto-import from bank OTP messages (requires SMS permission)
+- [ ] Receipt auto-import via email forwarding (Supabase email webhook)
+- [ ] Seasonal spending forecast — detect December spikes, summer patterns
+- [ ] WhatsApp bot — send "spent 500 on food" → auto-adds transaction via webhook
+
+---
+
+### Phase 2.5 — Platform Expansion
+
+**Timeline:** 6–10 weeks | **Goal:** Multi-platform
+
+- [ ] React Native app (shared `src/utils/` + `src/store/` logic works as-is)
+- [ ] Browser extension — auto-capture online shopping transactions
+- [ ] CA / Accountant mode — manage multiple clients from one dashboard
+- [ ] Tally / QuickBooks export format
+- [ ] WhatsApp Business integration
+- [ ] Chrome extension for UPI-enabled websites
+
+---
+
+## 10. Antigravity Skills Roadmap
+
+These are custom SKILL.md files to add to the Antigravity AI coding system. Each skill teaches the AI exactly how SpendWise works, preventing it from making common mistakes.
+
+---
+
+### SKILL 1 — `spendwise-core` (MUST ADD FIRST)
+
+**Purpose:** Prevents the AI from repeating the most common architecture mistakes.  
+**Trigger:** Any SpendWise code generation task.
+
+```markdown
+---
+name: spendwise-core
+description: Load before ANY SpendWise code task. Defines the architecture rules, 
+  banned patterns, and critical type system for the SpendWise finance PWA (React 19 + 
+  TypeScript + Zustand + Dexie IDB + Tailwind v4). Prevents localStorage misuse, 
+  wrong category names, missing mobile variants, and other project-specific mistakes.
+---
+
+# SpendWise Core Architecture Rules
+
+## Stack
+React 19.2 · TypeScript 5.9 · Vite 7 · Tailwind v4 · Zustand 5 · Dexie 4 · Framer Motion 12
+
+## THE ONE RULE: Never localStorage for Financial Data
+ALL financial data MUST go through: Zustand store → dexieStorage adapter → encrypted IDB.
+NEVER: localStorage.setItem() for transactions, goals, budgets, wallets, or any money data.
+OK: localStorage for non-financial config (theme, device ID, session token).
+
+## Category Names (copy exactly, from src/types/finance.ts DefaultCategory)
+Food | Subscriptions | Transport | Entertainment | Shopping | Utilities | Health | Travel | Education | Business | Income
+
+## Known Bugs — Do NOT Propagate
+- useGoals.ts uses localStorage → BUG, don't copy
+- categorySpending.percent = 0 → BUG, compute yourself if needed
+- MonthlyStats.topCategory = undefined → BUG, null-check always
+- resetLimits() not in store → BUG, don't call it
+- VoiceService.ts has wrong categories → BUG, use list above
+
+## File Locations
+src/components/common/ui/     # Button, Input, Select, Modal
+src/components/features/      # ai/, analytics/, budgets/, gamification/, goals/, parental/, shared/
+src/components/views/         # *View.tsx + *ViewMobile.tsx for every view
+src/hooks/                    # useTransactions, useBudgets, useGoals, useSharedWallets
+src/store/slices/             # financeSlice, gamificationSlice, parentalSlice
+src/types/                    # finance.ts, state.ts, ui.ts — check here FIRST before making new types
+src/utils/insights/           # advisor.ts, forecast.ts, anomaly.ts, healthScore.ts
+
+## Mobile Rule
+Every new view needs TWO files: MyView.tsx (desktop) + MyViewMobile.tsx
+Switch in MainShell via: const isMobile = useIsMobile(); // src/hooks/useMediaQuery.ts
+
+## Design Tokens (CSS vars — never hardcode)
+--teal: #14b8a6 (brand)  --bg  --surface-card  --text-primary  --text-secondary
+--text-muted  --border  --shadow-card  --radius-card  --font-manrope  --font-inter
+Dark mode: class .dark on <html>. All vars have dark overrides in src/index.css.
+Card: className="card" (defined in src/index.css)
+
+## Gemini Call Pattern (ALWAYS with local fallback)
+if (import.meta.env.VITE_GEMINI_API_KEY) {
   try {
-    const raw = localStorage.getItem('spendwise_config_v1');
-    if (raw) { const c = JSON.parse(raw); if (c.currency) return c.currency; }
-  } catch {}
-  return '₹'; // ← change from '$' to '₹'
-});
-```
-
----
-
-### QW-7 · Fix default initial balance (5 min)
-**File:** `src/constants/index.ts`
-```typescript
-// Change:
-INITIAL_BALANCE: 5200,
-// To:
-INITIAL_BALANCE: 0,
-```
-
----
-
-### QW-8 · Add QRCode CDN for all QR features (5 min)
-**File:** `index.html`
-```html
-<!-- Add in <head> — fixes Issues 9, 10, 12 all at once -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-```
-
----
-
-## 11. Antigravity Master Prompt
-
-> Copy this entire prompt and paste it at the start of any AI coding session on SpendWise. It gives the AI full project context so it generates accurate, idiomatic code without repeating known mistakes.
-
-```
-You are an expert full-stack TypeScript engineer working on SpendWise,
-a production-grade personal finance PWA.
-
-## Tech Stack
-- React 19 + TypeScript 5.9, Vite 7, Tailwind CSS v4
-- State: Zustand 5 with custom Dexie.js (IndexedDB) persistence adapter
-- ALL financial data encrypted via AES-256-GCM through dexieStorage adapter
-- DB: Dexie v4 — tables: transactions, goals, budgets, customCategories,
-  sharedWalletEntries, sharedExpenses, householdSettings, assets, liabilities, config, keyval
-- Cloud: Supabase — auth + sync in src/services/supabase.ts (NOT YET wired to useAuth)
-- AI: Gemini 1.5 Flash for NLP/OCR/voice/advisor. ALL calls need local fallbacks.
-- Animations: Framer Motion 12 | Icons: Lucide React | Charts: Recharts 3
-- PWA: vite-plugin-pwa + Workbox service worker
-
-## Design System (NEVER override)
-- CSS variables: --teal (#14b8a6), --bg, --surface-card, --text-primary,
-  --text-secondary, --text-muted, --border, --shadow-card, --radius-card
-- Fonts: Manrope (var(--font-manrope)) for headings, Inter (var(--font-inter)) for body
-- Dark mode: class .dark on <html>. All vars have dark overrides.
-- Card pattern: className="card" (defined in src/index.css)
-- Brand color: #14b8a6 (teal). Use var(--teal), never hardcode.
-
-## File Structure
-src/
-  components/common/         # Header, Sidebar, NavTabs, Modal, etc.
-  components/common/ui/      # Button, Input, Select, Modal, Icons (atomic)
-  components/features/       # ai/, analytics/, budgets/, gamification/, goals/, etc.
-  components/views/          # Full-page views + Mobile variants (*ViewMobile.tsx)
-  components/layout/         # MainShell, ViewRenderer, AppModals
-  hooks/                     # useTransactions, useBudgets, useGoals, etc.
-  store/                     # Zustand store (index.ts + slices/)
-  db/                        # Dexie database (db.ts, migration.ts, backup.ts)
-  lib/                       # encryption.ts, crdt.ts, syncEngine.ts, voiceCommands/
-  services/                  # supabase.ts, OCRService.ts, VoiceService.ts
-  utils/                     # insights/, parsers/, merchantMapper.ts, razorpaySync.ts
-  types/                     # finance.ts, state.ts, ui.ts, shared.ts
-  contexts/                  # CurrencyContext.tsx
-  constants/                 # index.ts (STORAGE_KEYS, FINANCE_DEFAULTS, FEATURES)
-
-## Architecture Rules (follow strictly)
-1. ALL financial data MUST persist through Zustand → dexieStorage (encrypted).
-   NEVER use localStorage.setItem directly for financial data.
-2. Zustand mutations: useStore.getState().action() outside React;
-   useStore(state => state.action) inside React.
-3. Every new view MUST have a Mobile variant. Switch via useIsMobile().
-4. ALL external API calls (Gemini, Razorpay) MUST have a local fallback.
-   The feature must work without the API key being set.
-5. Use existing types from src/types/ before creating new ones.
-6. Use existing UI primitives from src/components/common/ui/.
-7. Animations: Framer Motion motion components only. Never CSS @keyframes
-   for component transitions.
-8. Loading states: show SkeletonLoader (src/components/common/SkeletonLoader.tsx).
-9. No 'any' types except where truly unavoidable — add a comment explaining why.
-10. Add aria-label and role to all interactive elements.
-
-## Known Bugs — Do NOT Propagate These Patterns
-- useGoals.ts uses localStorage → BUG. Always use Zustand store instead.
-- useSharedWallets.ts uses localStorage → BUG. Same fix needed.
-- categorySpending.percent is always 0 → BUG. Compute percent yourself if needed.
-- MonthlyStats.topCategory is undefined → BUG. Null-check before reading.
-- resetLimits() not implemented in store → BUG. Do not call it.
-- VoiceService.ts has wrong category names → BUG. Use exact DefaultCategory values.
-- CurrencyContext defaults to '$' → BUG. Default should be '₹'.
-- INITIAL_BALANCE = 5200 → BUG. Should be 0.
-
-## Exact Category Names (DefaultCategory type in src/types/finance.ts)
-Food | Subscriptions | Transport | Entertainment | Shopping
-Utilities | Health | Travel | Education | Business | Income
-
-## Gemini API Call Pattern (ALWAYS follow this — with local fallback)
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-if (apiKey) {
-  try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-      }
-    );
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+    });
     const data = await res.json();
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (text) return text; // success
+    if (text) return text;
   } catch { /* fall through to local fallback */ }
 }
 // LOCAL FALLBACK ALWAYS HERE — feature must work without Gemini
 
-## Adding a New Zustand Slice
+## New Zustand Slice Template
 // src/store/slices/mySlice.ts
+import { StateCreator } from 'zustand';
+import { SpendWiseStore } from '../index';
+export interface MySlice { data: T[]; addItem: (item: T) => void; }
+export const createMySlice: StateCreator<SpendWiseStore, [['zustand/persist', unknown]], [], MySlice> = (set) => ({
+  data: [],
+  addItem: (item) => set(state => ({ data: [...state.data, item] })),
+});
+// Then add to SpendWiseStore type and compose in src/store/index.ts
+```
+
+---
+
+### SKILL 2 — `spendwise-bugfix`
+
+**Purpose:** Stops the AI from "fixing" bugs in ways that break other things.  
+**Trigger:** Any bug fix, debugging, or error investigation task.
+
+```markdown
+---
+name: spendwise-bugfix
+description: Load when fixing bugs in SpendWise. Provides safe editing rules, known 
+  fragile areas, and surgical fix patterns that avoid breaking other features. The 
+  SpendWise codebase has many interdependencies — this skill prevents cascade failures.
+---
+
+# SpendWise Safe Bug Fix Rules
+
+## The Golden Rule
+Fix ONE thing at a time. Test in browser after EACH fix. Never batch multiple bug fixes.
+
+## Do NOT
+- Rename or delete existing files (breaks imports across the project)
+- Rewrite a whole component to fix one behavior
+- Change import paths of working features
+- Install new npm packages without checking package.json first
+- Add any localStorage.setItem() for financial data
+
+## Do
+- Add new files rather than rewriting old ones
+- Add null guards / fallbacks rather than restructuring logic
+- Use functional setState updates (prev => ...) to avoid stale closure bugs
+- Add the fix, then add a comment: // FIXED: BUG-XX description
+
+## Fragile Areas — Extra Care
+- src/lib/encryption.ts: Changing this breaks ALL stored data
+- src/db/db.ts: Adding columns requires a migration version bump
+- src/store/index.ts: Wrong persist config loses all user data
+- src/hooks/useMasterVoice.ts: SpeechRecognition state machine is delicate
+- src/lib/crdt.ts: Changing merge logic corrupts shared wallet sync
+
+## Null-Safe Patterns Required In
+- MonthlyStats.topCategory → always undefined, use ?.
+- categorySpending[i].percent → always 0, compute yourself
+- Gemini API responses → data.candidates?.[0]?.content?.parts?.[0]?.text
+- useStore.getState() calls outside React → wrap in try/catch
+
+## Before Any Fix
+1. Read the specific file mentioned in the bug
+2. Identify the exact line(s) to change
+3. Change ONLY those lines
+4. Test that specific feature in the browser
+5. Check that nearby features still work
+```
+
+---
+
+### SKILL 3 — `spendwise-store`
+
+**Purpose:** Correct Zustand + Dexie patterns for state management.  
+**Trigger:** Any task involving state, data persistence, or new data types.
+
+```markdown
+---
+name: spendwise-store
+description: Load when adding new state, slices, or persistence to SpendWise. Covers 
+  the Zustand 5 + Dexie 4 + AES-256-GCM encrypted storage architecture. Prevents 
+  the #1 mistake: using localStorage instead of the encrypted IDB store.
+---
+
+# SpendWise State Management
+
+## Architecture
+User Data → Zustand Store → dexieStorage adapter → Dexie IDB → AES-256-GCM encrypted
+
+## Existing Slices
+- financeSlice: transactions, budgets, config, assets/liabilities
+- gamificationSlice: XP, level, streak, quests, badges
+- parentalSlice: PIN, child limits, approval queue, hideBalances
+
+## Dexie Tables (src/db/db.ts)
+transactions | goals | budgets | customCategories | sharedWalletEntries
+sharedExpenses | householdSettings | assets | liabilities | config | keyval
+
+## Adding a New Slice — Full Template
+// 1. Create src/store/slices/mySlice.ts
 import { StateCreator } from 'zustand';
 import { SpendWiseStore } from '../index';
 
 export interface MySlice {
-  myData: SomeType[];
-  addItem: (item: SomeType) => void;
+  myData: MyType[];
+  addItem: (item: MyType) => void;
+  updateItem: (id: string, updates: Partial<MyType>) => void;
+  removeItem: (id: string) => void;
 }
 
 export const createMySlice: StateCreator<
   SpendWiseStore, [['zustand/persist', unknown]], [], MySlice
 > = (set) => ({
   myData: [],
-  addItem: (item) => set(state => ({ myData: [...state.myData, item] })),
+  addItem:    (item)          => set(s => ({ myData: [...s.myData, item] })),
+  updateItem: (id, updates)   => set(s => ({ myData: s.myData.map(i => i.id === id ? {...i, ...updates} : i) })),
+  removeItem: (id)            => set(s => ({ myData: s.myData.filter(i => i.id !== id) })),
 });
-// Then: add MySlice to SpendWiseStore type and createMySlice to useStore in src/store/index.ts
 
-## Feature Implementation Checklist
-Before writing any code, verify:
-[ ] Required types exist in src/types/ (don't create duplicates)
-[ ] Required store actions exist (don't duplicate)
-[ ] Using existing UI primitives from src/components/common/ui/
-[ ] Mobile view variant added if new view
-[ ] Gemini API call has local fallback
-[ ] New state persists through Zustand (not localStorage)
-[ ] TypeScript strict — no 'any'
-[ ] aria-label on all interactive elements
-[ ] Loading state handled (SkeletonLoader or spinner)
-[ ] Error state handled (don't fail silently)
+// 2. src/store/index.ts — add to SpendWiseStore type intersection and useStore composition
+// 3. The dexieStorage adapter automatically encrypts it — no extra work needed
+
+## Reading State
+// Inside React:
+const myData = useStore(state => state.myData);
+// Outside React (in utils, services, etc.):
+const myData = useStore.getState().myData;
+
+## NEVER DO THIS
+localStorage.setItem('spendwise_my_data', JSON.stringify(data)); // ← WRONG
+// Data is unencrypted and bypasses resetData() and sync
+
+## Migration (if adding new Dexie table columns)
+// src/db/db.ts — bump version and add migration:
+this.version(N).stores({ myTable: '++id, userId, createdAt' }).upgrade(tx => {
+  return tx.table('myTable').toCollection().modify(item => {
+    item.newField = item.newField ?? 'defaultValue';
+  });
+});
 ```
 
 ---
 
-## 12. Recommended Antigravity Skills
+### SKILL 4 — `spendwise-ai`
 
-> Skills are context files you add to your AI coding assistant project so it generates better, more accurate SpendWise code every time.
+**Purpose:** Correct patterns for all Gemini/AI integrations.  
+**Trigger:** Any task involving AI features, voice, OCR, NLP, or advisor.
+
+```markdown
+---
+name: spendwise-ai
+description: Load when working on AI features in SpendWise — Magic Input NLP, 
+  Receipt OCR, Voice Commands, AI Advisor, anomaly detection, or forecasting. 
+  Ensures every Gemini call has a local fallback and uses the correct API pattern.
+---
+
+# SpendWise AI Integration Rules
+
+## AI Features Map
+| Feature | File | Gemini Use | Local Fallback |
+|---------|------|-----------|----------------|
+| Magic Input (NLP) | src/utils/parsers/nlp.ts | Text → transaction JSON | Regex heuristics |
+| Receipt OCR | src/services/OCRService.ts | Image → receipt JSON | Tesseract.js v7 |
+| Voice Commands | src/services/VoiceService.ts | Speech → intent JSON | commandParser.ts |
+| AI Advisor | src/utils/insights/advisor.ts | Query → markdown advice | Rule-based engine |
+| Anomaly Detection | src/utils/insights/anomaly.ts | NOT USED | Z-score algorithm |
+| Forecast | src/utils/insights/forecast.ts | NOT USED | Weighted average |
+
+## Gemini API Call — Standard Pattern
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+if (apiKey) {
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) }
+    );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (text?.trim()) return parseResult(text); // Always parse/validate before returning
+  } catch (err) {
+    console.warn('[SpendWise AI] Gemini failed, using local fallback:', err);
+    // Fall through — NEVER rethrow here
+  }
+}
+return localFallback(input); // ALWAYS present
+
+## Gemini for JSON — Add JSON extraction
+const jsonMatch = text.match(/```json\s*([\s\S]*?)\s*```/) || text.match(/(\{[\s\S]*\})/);
+if (!jsonMatch) throw new Error('No JSON in response');
+return JSON.parse(jsonMatch[1]);
+
+## Voice Command Category Names (MUST match DefaultCategory type exactly)
+Food | Subscriptions | Transport | Entertainment | Shopping | Utilities | Health | Travel | Education | Business | Income
+NEVER use: Bills, Investment, Others (these don't exist in the type)
+
+## OCR Fallback — Tesseract.js v7 (already installed)
+const { createWorker } = await import('tesseract.js');
+const worker = await createWorker('eng');
+const { data: { text } } = await worker.recognize(imageFile);
+await worker.terminate();
+
+## Advisor Response Format
+Always return markdown. Action buttons use this format:
+**[ACTION:ADD_TRANSACTION]** | **[ACTION:CREATE_BUDGET]** | **[ACTION:SET_GOAL]** | **[ACTION:VIEW_ANALYTICS]**
+The UI parses these tags and renders interactive buttons.
+```
 
 ---
 
-### SKILL-01 · `spendwise-architecture`
-**Triggers:** Any code generation in SpendWise project
+### SKILL 5 — `spendwise-ui`
 
-**What it contains:**
-- Complete file structure map
-- Design system CSS variables (exact values)
-- All 4 Zustand slice interfaces (typed)
-- Dexie table schema
-- The `dexieStorage` adapter explanation
-- The `CurrencyContext` API
-- All `STORAGE_KEYS` constants
-- The `DefaultCategory` union type
-- Known bugs reference list
+**Purpose:** Correct component patterns, design tokens, and mobile variants.  
+**Trigger:** Any UI component creation or styling task.
 
-**Why it's needed:** Without this, AI generates code using `localStorage` for new state (like Goals and SharedWallets already incorrectly do). This skill prevents the most common category of bugs in SpendWise.
+```markdown
+---
+name: spendwise-ui
+description: Load when building UI components or views for SpendWise. Covers the 
+  design system tokens, component primitives, Framer Motion patterns, mobile variants, 
+  and Tailwind v4 usage specific to this codebase.
+---
+
+# SpendWise UI System
+
+## Design Tokens — Always Use CSS Vars (never hardcode colors)
+--teal: #14b8a6        Brand primary
+--bg                   Page background
+--surface-card         Card background
+--text-primary         Main text
+--text-secondary       Muted text
+--text-muted           Very muted text (#64748b light / darker in dark mode)
+--border               Dividers
+--shadow-card          Card drop shadow
+--radius-card          Card border radius
+--font-manrope         Headings (Manrope)
+--font-inter           Body (Inter)
+
+## Dark Mode
+Class-based: .dark on <html>. All vars have dark overrides in src/index.css.
+NEVER use Tailwind dark: prefix — use CSS vars instead.
+
+## Component Primitives (src/components/common/ui/)
+Button   Input   Select   Modal   Badge   SkeletonLoader   Spinner
+
+## Card Pattern
+<div className="card p-4">  {/* "card" class defined in src/index.css */}
+
+## Mobile Variants — Required for Every New View
+const isMobile = useIsMobile(); // src/hooks/useMediaQuery.ts — xl breakpoint
+return isMobile ? <MyViewMobile /> : <MyView />;
+// Create: src/components/views/MyView.tsx + MyViewMobile.tsx
+
+## Loading State
+Always show SkeletonLoader during async data load — never null or empty:
+if (isLoading) return <SkeletonLoader rows={5} />;
+
+## Animations — Framer Motion 12
+import { motion, AnimatePresence } from 'framer-motion';
+// Standard card entrance:
+<motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+// ALWAYS add useReducedMotion() guard:
+const shouldAnimate = !useReducedMotion();
+initial={shouldAnimate ? { opacity: 0, y: 12 } : false}
+
+## Charts — Recharts 3
+import { LineChart, BarChart, PieChart, ... } from 'recharts';
+// Always use CSS var colors in charts:
+<Line stroke="var(--teal)" strokeWidth={2} dot={false} />
+
+## Accessibility (Required on all interactive custom elements)
+<div
+  role="button"
+  tabIndex={0}
+  aria-label="Descriptive label"
+  onKeyDown={(e) => e.key === 'Enter' || e.key === ' ' ? handler() : null}
+  onClick={handler}
+>
+
+## Toast Notifications
+import toast from 'react-hot-toast';
+toast.success('Transaction added');
+toast.error('Failed to save');
+```
 
 ---
 
-### SKILL-02 · `spendwise-gemini-patterns`
-**Triggers:** Any AI feature, voice command, OCR, NLP, advisor
+### SKILL 6 — `spendwise-security`
 
-**What it contains:**
-- Standard Gemini API call template (with local fallback)
-- Exact model name: `gemini-1.5-flash`
-- Prompt templates for: NLP parser, OCR, voice commands, advisor, category classification
-- Correct `DefaultCategory` names for prompts
-- Tesseract.js fallback pattern for OCR
-- Local rule-based fallback patterns for NLP and advisor
+**Purpose:** Prevents introducing security regressions.  
+**Trigger:** Any task touching auth, encryption, API keys, payments, or data export.
 
-**Why it's needed:** AI assistants frequently generate Gemini calls without fallbacks, use wrong model names, or generate prompts with category names that don't match the app's type system. This skill prevents all three.
+```markdown
+---
+name: spendwise-security
+description: Load when working on authentication, encryption, API key handling, 
+  payment integrations, or data export in SpendWise. Prevents introducing security 
+  vulnerabilities into this financial application.
+---
+
+# SpendWise Security Rules
+
+## Encryption Architecture
+Web Crypto API → AES-256-GCM → dexieStorage adapter → IndexedDB
+Key derivation: PBKDF2 (100,000 iterations · SHA-256)
+Session seed: localStorage. Salt: IndexedDB. Never send keys to any server.
+
+## API Keys — Never Client-Side (Long Term)
+Gemini API Key:   Supabase Edge Function proxy (Phase 2.0)
+Razorpay Secret:  Supabase Edge Function proxy (Phase 2.0)
+Current workaround: Store in Zustand encrypted store (encrypted IDB) — NOT localStorage
+
+## Banned Patterns
+localStorage.setItem('*key*', apiKey);          // NEVER — plaintext
+localStorage.setItem('*secret*', secret);       // NEVER — plaintext
+fetch('https://api.razorpay.com', { headers: { 'Authorization': `Basic ${btoa(key + ':' + secret)}` } }) // NEVER from browser
+
+## Auth Rules
+- Session tokens: sessionStorage only (auto-clear on tab close)
+- Never store passwords — Supabase handles hashing (bcrypt)
+- Rate-limit login attempts: 5 attempts → 30 second lockout → exponential backoff
+- Token refresh: check expiry 5 minutes before, refresh silently
+
+## Data Export Security
+- Backup files (.swb): password-encrypted with AES-256-GCM before download
+- PDF reports: generated client-side, never sent to server
+- CSV export: add a warning "This file contains sensitive financial data"
+
+## Content Security Policy (add to Vercel vercel.json)
+{
+  "headers": [{ "source": "/(.*)", "headers": [{
+    "key": "Content-Security-Policy",
+    "value": "default-src 'self'; connect-src 'self' https://*.supabase.co https://generativelanguage.googleapis.com https://api.razorpay.com; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com"
+  }]}]
+}
+```
 
 ---
 
-### SKILL-03 · `spendwise-component-patterns`
-**Triggers:** Creating or editing any React component
+## 11. Master Prompt for AI Coding Assistants
 
-**What it contains:**
-- Card component pattern (`className="card"` usage)
-- Mobile/Desktop view switching pattern (`useIsMobile()`)
-- Animation pattern (Framer Motion `motion` + `AnimatePresence`)
-- Loading state pattern (`SkeletonLoader` usage)
-- Toast pattern (`react-hot-toast` with SpendWise styling)
-- Modal pattern (with focus trap requirement)
-- Form pattern (no `<form>` tag — use button onClick)
-- ARIA requirements for each component type
+Copy this entire prompt and paste it at the start of any AI coding session for SpendWise:
 
-**Why it's needed:** Without this, AI generates components with hardcoded colors, missing mobile variants, CSS @keyframes instead of Framer Motion, and no ARIA attributes.
+```
+You are an expert full-stack TypeScript engineer working on SpendWise, a production-grade 
+personal finance PWA for Indian users.
 
----
+## Project
+React 19 · TypeScript 5.9 · Vite 7 · Tailwind CSS v4 · Zustand 5 · Dexie 4 (IndexedDB)
+Framer Motion 12 · Recharts 3 · Lucide React · Supabase · Gemini 1.5 Flash · Tesseract.js 7
 
-### SKILL-04 · `spendwise-voice-commands`
-**Triggers:** Any change to voice commands, mic button, speech recognition
+## THE ONE RULE
+ALL financial data MUST be persisted through: Zustand store → dexieStorage adapter → AES-256-GCM encrypted IndexedDB.
+NEVER use localStorage.setItem() for any financial data. This is the #1 mistake to avoid.
 
-**What it contains:**
-- Complete list of 30+ supported voice intents
-- `commandRouter.ts` intent-to-action mapping
-- `VoiceService.ts` Gemini prompt template
-- `useMasterVoice.ts` state machine (idle → listening → processing → done)
-- Correct `recognition.continuous = true` and `lang = 'en-IN'` settings
-- The `executeCommand()` function signature
-- Known bug: navigate callback staleness (useRef pattern)
+## Category Names (match DefaultCategory type EXACTLY)
+Food | Subscriptions | Transport | Entertainment | Shopping | Utilities | Health | Travel | Education | Business | Income
+NEVER use: Bills, Investment, Others
 
-**Why it's needed:** Voice system is the most complex feature. Without this skill, AI breaks the state machine, adds duplicate intents, or forgets the stale-navigate bug.
+## Known Bugs — Do NOT Repeat
+- useGoals.ts uses localStorage (BUG — don't copy)
+- categorySpending.percent = 0 (BUG — compute it yourself)
+- MonthlyStats.topCategory = undefined (BUG — null-check always)
+- resetLimits() not implemented in store (BUG — don't call it)
+- VoiceService.ts has wrong categories (BUG — use list above)
 
----
+## File Structure
+src/components/common/ui/    # Button, Input, Select, Modal (use these, don't recreate)
+src/components/features/     # Feature domain components
+src/components/views/        # Full-page views (*View.tsx + *ViewMobile.tsx for each)
+src/hooks/                   # useTransactions, useBudgets, useGoals, etc.
+src/store/slices/            # financeSlice, gamificationSlice, parentalSlice
+src/types/                   # Check here FIRST before creating new interfaces
+src/utils/insights/          # advisor, forecast, anomaly, healthScore
 
-### SKILL-05 · `spendwise-security`
-**Triggers:** Any feature involving data persistence, auth, API keys, payments
+## Design Tokens (use CSS vars — never hardcode)
+--teal: #14b8a6 (brand)  --bg  --surface-card  --text-primary  --text-secondary
+--text-muted  --border  --shadow-card  --radius-card  --font-manrope  --font-inter
 
-**What it contains:**
-- Encryption flow: Zustand → `dexieStorage` → AES-256-GCM → IndexedDB
-- What is and isn't encrypted (known gaps)
-- PBKDF2 key derivation config (100k iterations, SHA-256)
-- `STORAGE_KEYS` constants — which are safe vs sensitive
-- API key proxy pattern (Edge Function template)
-- Razorpay secret key rules (never client-side after Phase 2.0)
-- Auth token storage rules (sessionStorage, not localStorage)
+## Gemini Call Pattern
+if (import.meta.env.VITE_GEMINI_API_KEY) {
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${import.meta.env.VITE_GEMINI_API_KEY}`,
+      { method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }) });
+    const data = await res.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (text?.trim()) return parseResult(text);
+  } catch { /* fall through */ }
+}
+return localFallback(input); // ALWAYS present
 
-**Why it's needed:** Most critical skill. Without it, AI generates new `localStorage.setItem` calls for financial data, repeating the Goals and SharedWallets bugs.
+## New Slice Template
+// src/store/slices/mySlice.ts
+import { StateCreator } from 'zustand';
+import { SpendWiseStore } from '../index';
+export interface MySlice { data: T[]; addItem: (item: T) => void; }
+export const createMySlice: StateCreator<SpendWiseStore, [['zustand/persist', unknown]], [], MySlice> = (set) => ({
+  data: [],
+  addItem: (item) => set(state => ({ data: [...state.data, item] })),
+});
 
----
-
-### SKILL-06 · `spendwise-india-finance`
-**Triggers:** Any feature involving payments, bank import, currency, tax, UPI
-
-**What it contains:**
-- Indian number formatting (lakhs/crores — `toLocaleString('en-IN')`)
-- UPI string formats for PhonePe, GPay, Paytm, HDFC, ICICI, SBI
-- Indian tax slabs (old regime vs new regime, FY 2025-26)
-- Common Indian expense categories and merchant names
-- Setu Account Aggregator API overview
-- Razorpay API reference (order create, payment fetch, webhook)
-- INR as default currency (symbol: ₹, code: INR)
-
-**Why it's needed:** AI assistants default to US financial conventions. SpendWise is India-first. This skill ensures tax calculations use Indian slabs, UPI parsing covers all Indian bank formats, and amounts display in Indian number format.
-
----
-
-### SKILL-07 · `spendwise-testing`
-**Triggers:** Any test file, CI config, or `vitest` usage
-
-**What it contains:**
-- Vitest + happy-dom setup
-- How to mock Dexie IDB in tests
-- How to mock the Zustand store
-- How to mock Gemini API calls
-- Existing test file examples (`anomaly.test.ts`, `forecast.test.ts`)
-- Test coverage targets per module
-- Playwright E2E test patterns for SpendWise flows
-
-**Why it's needed:** Without this, AI-generated tests import wrong mock libraries, fail to mock IDB correctly, or write tests that pass in isolation but fail in CI.
+## Feature Checklist
+Before implementing any feature:
+1. Check src/types/ for existing interfaces
+2. Check store for existing actions
+3. Use UI primitives from src/components/common/ui/
+4. Add Mobile variant if it's a new view
+5. Wire Gemini with local fallback
+6. Persist through Zustand store (NOT localStorage)
+7. No 'any' types without a comment explaining why
+8. Add aria-label and role to all interactive elements
+```
 
 ---
 
-### SKILL-08 · `spendwise-parental`
-**Triggers:** Any change to parental controls, teen mode, chore system, child linking
+## 12. Priority Matrix
 
-**What it contains:**
-- Parental slice state shape (full TypeScript interface)
-- PIN gate flow (how `ParentalPinGate` wraps the view)
-- Teen mode vs Child mode differences
-- Chore verification flow
-- QR linking flow (parent generates → child scans)
-- Approval queue data structure
-- Spending limit enforcement points
-
-**Why it's needed:** Parental controls are complex and have multiple interconnected states. AI frequently breaks the PIN gate when editing this module.
-
----
-
-### Skills Priority Order
-
-| Priority | Skill | Add When |
-|---|---|---|
-| 1 | `spendwise-architecture` | Day 1 — add to every session |
-| 2 | `spendwise-security` | Day 1 — prevents most dangerous bugs |
-| 3 | `spendwise-gemini-patterns` | Before any AI feature work |
-| 4 | `spendwise-india-finance` | Before any payment/currency work |
-| 5 | `spendwise-component-patterns` | Before any UI component work |
-| 6 | `spendwise-voice-commands` | Before any voice feature work |
-| 7 | `spendwise-testing` | Before writing any test |
-| 8 | `spendwise-parental` | Before any parental feature work |
+| Priority | Item | Effort | Impact | Do First? |
+|----------|------|--------|--------|-----------|
+| P0 | BUG-01: Real Supabase auth | 2 days | Critical — security | ✅ Yes |
+| P0 | BUG-02: Goals → encrypted store | 4h | Critical — security | ✅ Yes |
+| P0 | BUG-04: Razorpay secret exposure | 2h | Critical — security | ✅ Yes |
+| P0 | BUG-05: Balance chart reversal | 30min | Wrong data | ✅ Yes |
+| P0 | BUG-06: categorySpending percent = 0 | 30min | Wrong data | ✅ Yes |
+| P0 | BUG-07: Privacy mode broken | 1h | Feature broken | ✅ Yes |
+| P0 | BUG-08: Old data lost on re-login | 45min | Data loss | ✅ Yes |
+| P0 | BUG-09: $0 DEBIT / wrong currency | 2h | Wrong data | ✅ Yes |
+| P0 | BUG-10: Mic fails on laptop | 1h | Feature broken | ✅ Yes |
+| P0 | BUG-11: Fake streak | 30min | Bad UX | ✅ Yes |
+| P0 | BUG-12: Voice wrong categories | 1h | Wrong data | ✅ Yes |
+| P0 | BUG-13: Receipt scan fails | 2h | Feature broken | ✅ Yes |
+| P0 | BUG-14: AI Advisor broken | 1.5h | Feature broken | ✅ Yes |
+| P0 | BUG-15: UPI sync not proper | 2h | Feature broken | ✅ Yes |
+| P1 | BUG-03: Shared wallets → encrypted | 1 day | Security | Sprint 1 |
+| P1 | BUG-M01: resetLimits crash | 1h | Crash | ✅ Yes |
+| P1 | BUG-M07: QR codes not working | 2h | Feature broken | Sprint 1 |
+| P1 | BUG-M08: Invite via email | 1h | Feature broken | Sprint 1 |
+| P1 | Supabase bidirectional sync | 2 days | Cloud backup | Sprint 1 |
+| P1 | Edge Function API key proxy | 1 day | Security | Sprint 1 |
+| P2 | Content Security Policy | 2h | XSS protection | Sprint 2 |
+| P2 | Accessibility ARIA + keyboard nav | 3 days | Compliance | Sprint 2 |
+| P2 | iOS PWA meta tags | 15min | iOS users | ✅ Yes |
+| P2 | Unit test suite | 3 days | Reliability | Sprint 2 |
+| P2 | BUG-M02: MonthlyStats missing fields | 1h | Wrong data | Sprint 2 |
+| P2 | BUG-M03: Forecast inflated on 1st | 30min | Wrong data | Sprint 2 |
+| P3 | Auto-categorisation TF.js ML | 1 week | UX | Phase 2.1 |
+| P3 | Setu Account Aggregator | 2 weeks | India market | Phase 2.1 |
+| P3 | Supabase Realtime shared wallets | 1 week | Reliability | Phase 2.2 |
+| P3 | Investment portfolio tracker | 2 weeks | Feature | Phase 2.3 |
+| P4 | React Native app | 6 weeks | Mobile | Phase 2.5 |
+| P4 | WhatsApp bot | 1 week | India market | Phase 2.4 |
+| P4 | Browser extension | 2 weeks | Automation | Phase 2.5 |
 
 ---
 
 ## 13. Safe Editing Rules
 
-> Follow these every time you use an AI coding assistant on SpendWise.
+These rules prevent the most common ways AI coding assistants break a working project:
 
-```
-✅ Fix ONE bug per session — test in browser before starting the next
-✅ Only change the specific lines shown in the fix
-✅ Add new files rather than rewriting existing ones
-✅ If adding a feature, check src/types/ for existing types first
-✅ If adding state, check the Zustand store for existing actions first
-✅ Test on both mobile (Chrome DevTools) and desktop after every change
-✅ Check dark mode after any style change
+### Always Do
 
-❌ Never rename existing files
-❌ Never change import paths of working features
-❌ Never use localStorage.setItem for financial data
-❌ Never make Gemini/Razorpay calls without a local fallback
-❌ Never hardcode '#14b8a6' — use var(--teal)
-❌ Never install an npm package without checking if it's already installed
-❌ Never rewrite a whole component to fix one behaviour
-❌ Never batch multiple bug fixes in a single AI session
-```
+- Fix ONE bug at a time
+- Test in the browser after each individual fix
+- Add new files rather than rewriting existing ones
+- Add null guards / fallbacks rather than restructuring logic
+- Use functional `setState(prev => ...)` updates to avoid stale closure bugs
+- Check `src/types/` for existing interfaces before creating new ones
+- Copy the exact Gemini API call pattern from this document
+- Add `// FIXED: BUG-XX short description` comment on changed lines
 
----
+### Never Do
 
-## Appendix: File Quick Reference
+- Rename or delete existing files (breaks imports across the whole project)
+- Rewrite a whole component to fix one behaviour
+- Change import paths of working features
+- Install new npm packages without checking `package.json` first
+- Add `localStorage.setItem()` for any financial data
+- Batch multiple bug fixes in one commit
+- Use `any` type without a comment explaining why
+- Change `src/lib/encryption.ts` without understanding key derivation
 
-### Most-Edited Files (in order of change frequency)
-```
-src/hooks/useTransactions.ts     ← Core data hook (5 known bugs here)
-src/hooks/useGoals.ts            ← Goals (needs migration to Zustand)
-src/hooks/useAuth.tsx            ← Auth (needs real Supabase wiring)
-src/store/slices/financeSlice.ts ← Finance state (missing 2 actions)
-src/services/VoiceService.ts     ← Voice (wrong categories)
-src/services/OCRService.ts       ← Receipt scan (missing Tesseract fallback)
-src/utils/parsers/nlp.ts         ← NLP parser (weak regex for Indian formats)
-src/utils/insights/advisor.ts   ← AI Advisor (broken fallback)
-src/contexts/CurrencyContext.tsx ← Currency (wrong default $)
-src/constants/index.ts           ← Constants (INITIAL_BALANCE = 5200)
-index.html                       ← Missing iOS PWA tags + QRCode CDN
-```
+### Fragile Files — Extra Caution
 
-### Key Type Locations
-```
-src/types/finance.ts   → Transaction, Category, DefaultCategory, Budget, Goal
-src/types/state.ts     → SpendWiseStore, FinanceState, BudgetState, GamificationState
-src/types/ui.ts        → ModalProps, ViewProps, ChartData
-src/types/shared.ts    → SharedWallet, SharedExpense, Member
-```
-
-### Environment Variables Required
-```bash
-VITE_GEMINI_API_KEY=        # Gemini 1.5 Flash — NLP, OCR, voice, advisor
-VITE_SUPABASE_URL=          # Supabase project URL
-VITE_SUPABASE_ANON_KEY=     # Supabase anon/public key
-VITE_RAZORPAY_KEY_ID=       # Razorpay key ID (public — safe client-side)
-# NEVER put RAZORPAY_KEY_SECRET in .env — use Edge Function only
-```
+| File | Why Fragile | Safe Change |
+|------|-------------|-------------|
+| `src/lib/encryption.ts` | Changing breaks ALL stored data | Read only |
+| `src/db/db.ts` | Adding columns needs migration version bump | Add migration |
+| `src/store/index.ts` | Wrong persist config loses all user data | Additive only |
+| `src/hooks/useMasterVoice.ts` | SpeechRecognition state machine is delicate | Add to onend only |
+| `src/lib/crdt.ts` | Changing merge logic corrupts shared wallet sync | Read only |
+| `src/contexts/CurrencyContext.tsx` | Affects every monetary display in the app | Test all views |
 
 ---
 
-*Last updated: May 17, 2026 · Based on full source analysis of SpendWise v1.8*
+*SpendWise Production Roadmap · Generated May 17, 2026 · Codebase Phase 1.8*  
+*Total bugs documented: 25 (15 critical · 10 medium) · Roadmap phases: 5 · Skills to add: 6*

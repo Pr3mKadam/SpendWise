@@ -36,10 +36,15 @@ export const GAMIFICATION = {
 
 // ─── Feature Flags ────────────────────────────────────────────────────────────
 // Set these via .env (VITE_FEATURE_*) for runtime configuration.
+// BUG-M01 fix: guard `window` access so this module is safe to import in tests / edge workers
+const _hasSpeechRecognition =
+  typeof window !== 'undefined' &&
+  ('speechRecognition' in window || 'webkitSpeechRecognition' in window);
+
 export const FEATURES = {
   CLOUD_SYNC:  !!import.meta.env.VITE_SUPABASE_URL,
   PLAID_LIVE:  !!import.meta.env.VITE_PLAID_CLIENT_ID,
-  VOICE_INPUT: 'speechRecognition' in window || 'webkitSpeechRecognition' in window,
+  VOICE_INPUT: _hasSpeechRecognition,
 } as const;
 
 // ─── App Metadata ─────────────────────────────────────────────────────────────

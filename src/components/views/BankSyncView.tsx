@@ -7,6 +7,7 @@ import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/parsers/
 import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant, parseUPIDescription, loadMerchantMemory } from '../../utils/razorpaySync';
 import { predictCategory } from '../../utils/merchantMapper';
 import { useStore } from '../../store';
+import { Category as CategoryType } from '../../types';
 
 import SyncDashboard from '../features/sync/SyncDashboard';
 import SelectSource from '../features/sync/SelectSource';
@@ -32,7 +33,7 @@ export default function BankSyncView({
   recentTransactions = [],
   currency = '₹',
 }: BankSyncViewProps) {
-  const { razorpayKeys, setRazorpayKeys } = useStore();
+  const { razorpayKeys, setRazorpayKeys, updateTransactionCategory } = useStore();
   const [view, setView] = useState<SyncView>('dashboard');
   const [accounts, setAccounts] = useState<LinkedAccount[]>([]);
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
@@ -148,8 +149,10 @@ export default function BankSyncView({
 
   const applyCorrection = () => {
     if (!lastTx) return;
-    rememberMerchant('', lastTx.merchant, corrCategory);
-    onAutoAddTransactions([{ ...lastTx, category: corrCategory }]);
+    // BUG-15 fix: use merchant name as fallback key when no UPI VPA is available
+    rememberMerchant(lastTx.merchant.toLowerCase(), lastTx.merchant, corrCategory);
+    // BUG-15 fix: update the existing transaction instead of re-adding (was causing duplicates)
+    updateTransactionCategory(lastTx.id, corrCategory as CategoryType);
     setView('dashboard');
   };
 
