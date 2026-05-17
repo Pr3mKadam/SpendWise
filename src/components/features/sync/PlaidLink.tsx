@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useCurrency } from '../../../contexts/CurrencyContext';
 import { ArrowLeft, CheckCircle2, Building2, ShieldCheck, Loader2, Search, Lock, CreditCard, Landmark } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -8,14 +9,14 @@ export interface PlaidLinkProps {
 }
 
 const BANKS = [
-  { id: 'hdfc',   name: 'HDFC Bank',           color: '#004C8F', accounts: 2, balance: '₹1,24,500' },
-  { id: 'icici',  name: 'ICICI Bank',           color: '#F05A28', accounts: 1, balance: '₹67,200'  },
-  { id: 'sbi',    name: 'State Bank of India',  color: '#00539B', accounts: 3, balance: '₹2,10,000' },
-  { id: 'axis',   name: 'Axis Bank',            color: '#97144D', accounts: 1, balance: '₹88,900'  },
-  { id: 'kotak',  name: 'Kotak Mahindra',       color: '#ED1C24', accounts: 2, balance: '₹1,05,400' },
-  { id: 'pnb',    name: 'Punjab National Bank', color: '#1B4E9B', accounts: 1, balance: '₹45,600'  },
-  { id: 'chase',  name: 'Chase Bank',           color: '#117ACA', accounts: 2, balance: '₹3,20,000' },
-  { id: 'boa',    name: 'Bank of America',      color: '#E31837', accounts: 1, balance: '₹2,80,000' },
+  { id: 'hdfc',   name: 'HDFC Bank',           color: '#004C8F', accounts: 2, balance: 124500 },
+  { id: 'icici',  name: 'ICICI Bank',           color: '#F05A28', accounts: 1, balance: 67200  },
+  { id: 'sbi',    name: 'State Bank of India',  color: '#00539B', accounts: 3, balance: 210000 },
+  { id: 'axis',   name: 'Axis Bank',            color: '#97144D', accounts: 1, balance: 88900  },
+  { id: 'kotak',  name: 'Kotak Mahindra',       color: '#ED1C24', accounts: 2, balance: 105400 },
+  { id: 'pnb',    name: 'Punjab National Bank', color: '#1B4E9B', accounts: 1, balance: 45600  },
+  { id: 'chase',  name: 'Chase Bank',           color: '#117ACA', accounts: 2, balance: 320000 },
+  { id: 'boa',    name: 'Bank of America',      color: '#E31837', accounts: 1, balance: 280000 },
 ];
 
 // Simulated OAuth steps
@@ -29,6 +30,7 @@ const OAUTH_STEPS = [
 ];
 
 export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkProps) {
+  const { format: formatCurrency } = useCurrency();
   const [step, setStep] = useState<'intro' | 'select' | 'credentials' | 'oauth' | 'import' | 'success'>('intro');
   const [selectedBank, setSelectedBank] = useState<typeof BANKS[0] | null>(null);
   const [query, setQuery] = useState('');
@@ -165,7 +167,7 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
                     <p className="font-bold text-sm text-[var(--text-primary)]">{bank.name}</p>
                     <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">{bank.accounts} account{bank.accounts > 1 ? 's' : ''} available</p>
                   </div>
-                  <span className="text-[length:var(--fs-caption)] font-bold text-[var(--text-muted)] group-hover:text-[var(--teal)] transition-colors">{bank.balance}</span>
+                  <span className="text-[length:var(--fs-caption)] font-bold text-[var(--text-muted)] group-hover:text-[var(--teal)] transition-colors">{formatCurrency(bank.balance)}</span>
                 </button>
               ))}
             </div>
@@ -280,7 +282,7 @@ export default function PlaidLink({ onSetView, onPlaidLinkSuccess }: PlaidLinkPr
               {[
                 { label: 'Accounts', value: selectedBank.accounts },
                 { label: 'Transactions', value: '~47' },
-                { label: 'Balance', value: selectedBank.balance },
+                { label: 'Balance', value: formatCurrency(selectedBank.balance) },
               ].map(s => (
                 <div key={s.label} className="bg-[var(--surface-input)] border border-[var(--border)] rounded-xl p-3">
                   <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider text-[var(--text-muted)]">{s.label}</p>

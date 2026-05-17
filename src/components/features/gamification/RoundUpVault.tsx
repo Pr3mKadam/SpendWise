@@ -9,20 +9,9 @@ interface RoundUpVaultProps {
   currency: string;
 }
 
-const VAULT_KEY = 'spendwise_roundup_vault_v1';
-
-function loadVault(): { total: number; count: number; history: { date: string; amount: number; merchant: string }[] } {
-  try {
-    const raw = localStorage.getItem(VAULT_KEY);
-    return raw ? JSON.parse(raw) : { total: 0, count: 0, history: [] };
-  } catch { return { total: 0, count: 0, history: [] }; }
-}
-function saveVault(vault: ReturnType<typeof loadVault>) {
-  localStorage.setItem(VAULT_KEY, JSON.stringify(vault));
-}
-
 export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
-  const [vault, setVault] = useState(loadVault);
+  const vault = useStore(s => s.roundUpVault);
+  const setVault = useStore(s => s.setRoundUpVault);
   const [showHistory, setShowHistory] = useState(false);
   const [lastAdded, setLastAdded] = useState<number | null>(null);
   const addXP = useStore(s => s.addXP);
@@ -54,7 +43,6 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
       history: [...newHistory, ...vault.history].slice(0, 20),
     };
     setVault(updated);
-    saveVault(updated);
     setLastAdded(pendingTotal);
     addXP(15);
     setTimeout(() => setLastAdded(null), 3000);
@@ -63,7 +51,6 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
   const handleReset = () => {
     const empty = { total: 0, count: 0, history: [] };
     setVault(empty);
-    saveVault(empty);
   };
 
   return (

@@ -3,6 +3,22 @@ import { SavingsGoal } from '../../types';
 import { SharedStorage } from '../../lib/crdt';
 import { SpendWiseStore } from '../index';
 
+export interface VaultData {
+  total: number;
+  count: number;
+  history: { date: string; amount: number; merchant: string }[];
+}
+
+export interface UserPreferences {
+  fontSize: string;
+  darkMode: boolean;
+  highContrast: boolean;
+  hapticsEnabled: boolean;
+  shakeEnabled: boolean;
+  biometricEnabled: boolean;
+  avatar: string | null;
+}
+
 export interface SecuredSlice {
   goals: SavingsGoal[];
   setGoals: (goals: SavingsGoal[] | ((prev: SavingsGoal[]) => SavingsGoal[])) => void;
@@ -25,6 +41,15 @@ export interface SecuredSlice {
   snoozedNotifications: Record<string, number>;
   setSnoozedNotifications: (
     snoozed: Record<string, number> | ((prev: Record<string, number>) => Record<string, number>)
+  ) => void;
+
+  // BUG-02 fix: Round-Up Vault moved from localStorage to encrypted IDB
+  roundUpVault: VaultData;
+  setRoundUpVault: (vault: VaultData | ((prev: VaultData) => VaultData)) => void;
+
+  userPreferences: UserPreferences;
+  setUserPreferences: (
+    prefs: UserPreferences | ((prev: UserPreferences) => UserPreferences)
   ) => void;
 }
 
@@ -77,5 +102,32 @@ export const createSecuredSlice: StateCreator<
         typeof snoozedOrUpdater === 'function'
           ? snoozedOrUpdater(state.snoozedNotifications)
           : snoozedOrUpdater,
+    })),
+
+  // BUG-02 fix: vault migrated from localStorage to encrypted IDB
+  roundUpVault: { total: 0, count: 0, history: [] },
+  setRoundUpVault: (vaultOrUpdater) =>
+    set((state) => ({
+      roundUpVault:
+        typeof vaultOrUpdater === 'function'
+          ? vaultOrUpdater(state.roundUpVault)
+          : vaultOrUpdater,
+    })),
+
+  userPreferences: {
+    fontSize: 'text-base',
+    darkMode: typeof window !== 'undefined' ? document.documentElement.getAttribute('data-theme') === 'dark' : false,
+    highContrast: false,
+    hapticsEnabled: true,
+    shakeEnabled: true,
+    biometricEnabled: false,
+    avatar: null,
+  },
+  setUserPreferences: (prefsOrUpdater) =>
+    set((state) => ({
+      userPreferences:
+        typeof prefsOrUpdater === 'function'
+          ? prefsOrUpdater(state.userPreferences)
+          : prefsOrUpdater,
     })),
 });

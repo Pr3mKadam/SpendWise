@@ -38,73 +38,58 @@ export function useProfileView(
   const [isExporting,          setIsExporting]          = useState(false);
   const [isRestoring,          setIsRestoring]          = useState(false);
 
-  // Avatar
+  // Preferences from secure store
+  const prefs = store.userPreferences;
+  
   const avatarInputRef = useRef<HTMLInputElement>(null);
-  const [avatar, setAvatar] = useState<string | null>(() => localStorage.getItem('spendwise_avatar'));
+  const avatar = prefs.avatar;
+  const fontSize = prefs.fontSize as FontSizeKey;
+  const darkMode = prefs.darkMode;
+  const highContrast = prefs.highContrast;
+  const hapticsEnabled = prefs.hapticsEnabled;
+  const shakeEnabled = prefs.shakeEnabled;
+  const biometricEnabled = prefs.biometricEnabled;
 
-  // Font size
-  const [fontSize, setFontSize] = useState<FontSizeKey>(
-    () => (localStorage.getItem('spendwise_font_size') as FontSizeKey) ?? 'text-base'
-  );
-  useEffect(() => {
-    FONT_SIZES.forEach(s => document.documentElement.classList.remove(s));
-    document.documentElement.classList.add(fontSize);
-  }, [fontSize]);
-
-  // Dark mode
-  const [darkMode, setDarkMode] = useState(
-    () => document.documentElement.getAttribute('data-theme') === 'dark'
-  );
-
-  // High contrast
-  const [highContrast, setHighContrast] = useState(
-    () => document.documentElement.classList.contains('high-contrast')
-  );
-
-  // Device settings
-  const [hapticsEnabled, setHapticsEnabled] = useState(
-    () => localStorage.getItem('spendwise_haptics_enabled') !== 'false'
-  );
-  const [shakeEnabled, setShakeEnabled] = useState(
-    () => localStorage.getItem('spendwise_shake_enabled') !== 'false'
-  );
-  const [biometricEnabled, setBiometricEnabled] = useState(
-    () => localStorage.getItem('spendwise_biometric_enabled') === 'true'
-  );
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
   );
+
+  // Sync DOM with font size (in case it wasn't caught globally)
+  useEffect(() => {
+    if (!fontSize) return;
+    FONT_SIZES.forEach(s => document.documentElement.classList.remove(s));
+    document.documentElement.classList.add(fontSize);
+  }, [fontSize]);
 
   // Handlers
   const handleFontSize = (size: FontSizeKey) => {
     FONT_SIZES.forEach(s => document.documentElement.classList.remove(s));
     document.documentElement.classList.add(size);
-    localStorage.setItem('spendwise_font_size', size);
-    setFontSize(size);
+    store.setUserPreferences({ ...prefs, fontSize: size });
   };
   const handleDarkMode = (on: boolean) => {
     document.documentElement.setAttribute('data-theme', on ? 'dark' : 'light');
-    localStorage.setItem('spendwise_dark_mode', on ? 'dark' : 'light');
-    setDarkMode(on);
+    if (on) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    store.setUserPreferences({ ...prefs, darkMode: on });
   };
   const toggleHighContrast = (checked: boolean) => {
-    setHighContrast(checked);
     document.documentElement.classList.toggle('high-contrast', checked);
-    localStorage.setItem('spendwise_high_contrast', String(checked));
+    store.setUserPreferences({ ...prefs, highContrast: checked });
   };
   const toggleHaptics = (enabled: boolean) => {
-    setHapticsEnabled(enabled);
-    localStorage.setItem('spendwise_haptics_enabled', String(enabled));
+    store.setUserPreferences({ ...prefs, hapticsEnabled: enabled });
     if (enabled) haptic.medium();
   };
   const toggleShake = (enabled: boolean) => {
-    setShakeEnabled(enabled);
-    localStorage.setItem('spendwise_shake_enabled', String(enabled));
+    store.setUserPreferences({ ...prefs, shakeEnabled: enabled });
     if (enabled) haptic.medium();
   };
   const toggleBiometric = (enabled: boolean) => {
-    setBiometricEnabled(enabled);
-    localStorage.setItem('spendwise_biometric_enabled', String(enabled));
+    store.setUserPreferences({ ...prefs, biometricEnabled: enabled });
     if (enabled) haptic.medium();
   };
   const requestNotifPermission = async () => {
@@ -128,8 +113,7 @@ export function useProfileView(
     const reader = new FileReader();
     reader.onload = () => {
       const b64 = reader.result as string;
-      setAvatar(b64);
-      localStorage.setItem('spendwise_avatar', b64);
+      store.setUserPreferences({ ...prefs, avatar: b64 });
     };
     reader.readAsDataURL(file);
   };

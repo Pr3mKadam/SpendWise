@@ -9,6 +9,24 @@
 import { VoiceCommand, CommandResult } from './types';
 import { useStore } from '../../store';
 import { Transaction, Category, AppView } from '../../types';
+import { STORAGE_KEYS } from '../../constants';
+
+// Utility: format currency dynamically based on config
+function formatCurrency(amount: number): string {
+  let symbol = '₹';
+  try {
+    const raw = localStorage.getItem(STORAGE_KEYS.CONFIG);
+    if (raw) {
+      const config = JSON.parse(raw);
+      if (config.currency) symbol = config.currency;
+    }
+  } catch (e) {
+    // ignore
+  }
+
+  const locale = symbol === '₹' ? 'en-IN' : 'en-US';
+  return `${symbol}${amount.toLocaleString(locale, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+}
 
 // Utility: generate a short unique id
 function shortId(): string {
@@ -95,13 +113,13 @@ export async function executeCommand(
       
       if (searchQuery === 'balance') {
         const bal = transactions.reduce((sum, t) => sum + (t.type === 'credit' ? t.amount : -t.amount), 0);
-        return { success: true, message: `💰 Your current balance is ₹${bal.toLocaleString('en-IN')}.` };
+        return { success: true, message: `💰 Your current balance is ${formatCurrency(bal)}.` };
       }
 
       const entityLabel = searchQuery?.includes('_') ? searchQuery.split('_')[1] : searchQuery;
       return { 
         success: true, 
-        message: `📊 ${pLabel} ${entityLabel}: ₹${absTotal.toLocaleString('en-IN')}.` 
+        message: `📊 ${pLabel} ${entityLabel}: ${formatCurrency(absTotal)}.` 
       };
     }
 
@@ -138,7 +156,7 @@ export async function executeCommand(
       // Zustand might not have a simple "delete last", we usually delete by ID
       // The store correctly has deleteTransaction from FinanceSlice
       store.deleteTransaction(lastTx.id);
-      return { success: true, message: `🗑️ Deleted last transaction: ₹${lastTx.amount} at ${lastTx.merchant}.` };
+      return { success: true, message: `🗑️ Deleted last transaction: ${formatCurrency(lastTx.amount)} at ${lastTx.merchant}.` };
       return { success: false, message: "I can see the last transaction, but I don't have permission to delete it yet." };
     }
 
@@ -150,7 +168,7 @@ export async function executeCommand(
       store.setBudget(category as Category, amount);
       return {
         success: true,
-        message: `✅ ${category} budget set to ₹${amount.toLocaleString('en-IN')}`,
+        message: `✅ ${category} budget set to ${formatCurrency(amount)}`,
         undoable: true,
       };
     }
@@ -196,7 +214,7 @@ export async function executeCommand(
       store.addTransaction(tx);
       return {
         success: true,
-        message: `✅ ${type === 'credit' ? 'Income' : 'Expense'} of ₹${amount.toLocaleString('en-IN')} added${name ? ` — ${name}` : ''}`,
+        message: `✅ ${type === 'credit' ? 'Income' : 'Expense'} of ${formatCurrency(amount)} added${name ? ` — ${name}` : ''}`,
         undoable: true,
       };
     }
@@ -212,7 +230,7 @@ export async function executeCommand(
       });
       return {
         success: true,
-        message: `✅ Liability "${name || 'Loan'}" of ₹${amount.toLocaleString('en-IN')} added`,
+        message: `✅ Liability "${name || 'Loan'}" of ${formatCurrency(amount)} added`,
         undoable: false,
       };
     }
@@ -228,7 +246,7 @@ export async function executeCommand(
       });
       return {
         success: true,
-        message: `✅ Investment "${ticker || 'Portfolio'}" of ₹${amount.toLocaleString('en-IN')} recorded`,
+        message: `✅ Investment "${ticker || 'Portfolio'}" of ${formatCurrency(amount)} recorded`,
         undoable: false,
       };
     }
@@ -245,7 +263,7 @@ export async function executeCommand(
       });
       return {
         success: true,
-        message: `✅ Goal "${name || 'Savings Goal'}" created with target ₹${amount.toLocaleString('en-IN')}`,
+        message: `✅ Goal "${name || 'Savings Goal'}" created with target ${formatCurrency(amount)}`,
         undoable: false,
       };
     }
@@ -266,7 +284,7 @@ export async function executeCommand(
       });
       return {
         success: true,
-        message: `✅ Subscription "${name}" of ₹${amount.toLocaleString('en-IN')}/${frequency || 'month'} added`,
+        message: `✅ Subscription "${name}" of ${formatCurrency(amount)}/${frequency || 'month'} added`,
         undoable: false,
       };
     }
@@ -310,7 +328,7 @@ export async function executeCommand(
       
       return {
         success: true,
-        message: `✅ Batch added: ${addedCount} expenses (${items.map(i => `₹${i.amount}`).join(', ')}).`,
+        message: `✅ Batch added: ${addedCount} expenses (${items.map(i => formatCurrency(i.amount || 0)).join(', ')}).`,
         undoable: true,
       };
     }
@@ -339,12 +357,12 @@ export async function executeCommand(
       const pLabel = period === 'today' ? 'Today' : period === 'week' ? 'This week' : 'This month';
       
       if (category === 'Income') {
-        return { success: true, message: `📊 ${pLabel}'s total income: ₹${totalIncome.toLocaleString('en-IN')}.` };
+        return { success: true, message: `📊 ${pLabel}'s total income: ${formatCurrency(totalIncome)}.` };
       }
       
       return { 
         success: true, 
-        message: `📊 ${pLabel} overview: You spent ₹${totalExpense.toLocaleString('en-IN')}${totalIncome > 0 ? ` and earned ₹${totalIncome.toLocaleString('en-IN')}` : ''}.` 
+        message: `📊 ${pLabel} overview: You spent ${formatCurrency(totalExpense)}${totalIncome > 0 ? ` and earned ${formatCurrency(totalIncome)}` : ''}.` 
       };
     }
 
@@ -389,7 +407,7 @@ export async function executeCommand(
       
       return {
         success: true,
-        message: `✅ Recorded ₹${amount.toLocaleString('en-IN')} payment towards ${liability.name}.`,
+        message: `✅ Recorded ${formatCurrency(amount)} payment towards ${liability.name}.`,
         undoable: true,
       };
     }
@@ -441,7 +459,7 @@ export async function executeCommand(
         };
         store.addTransaction(tx);
         
-        return { success: true, message: `✅ Added ₹${amount.toLocaleString('en-IN')} to ${goal.name}.`, undoable: true };
+        return { success: true, message: `✅ Added ${formatCurrency(amount)} to ${goal.name}.`, undoable: true };
       } else if (targetAmount && targetAmount > 0) {
          // Changing the target amount? We don't have a target amount field in asset. We could return a message.
          return { success: false, message: `I can add money to the goal, but changing the target isn't supported yet.` };
@@ -503,7 +521,7 @@ export async function executeCommand(
       });
       return {
         success: true,
-        message: `✅ Recurring ${type === 'credit' ? 'income' : 'expense'} "${name || 'Transaction'}" of ₹${amount.toLocaleString('en-IN')}/${frequency || 'month'} added.`,
+        message: `✅ Recurring ${type === 'credit' ? 'income' : 'expense'} "${name || 'Transaction'}" of ${formatCurrency(amount)}/${frequency || 'month'} added.`,
         undoable: false,
       };
     }
@@ -542,7 +560,7 @@ export async function executeCommand(
       const { amount } = command.entities;
       if (!amount || amount <= 0) return { success: false, message: 'What should the monthly limit be?' };
       store.setMonthlyLimit(amount);
-      return { success: true, message: `🛡️ Monthly spending limit set to ₹${amount.toLocaleString('en-IN')}.`, undoable: true };
+      return { success: true, message: `🛡️ Monthly spending limit set to ${formatCurrency(amount)}.`, undoable: true };
     }
     
     // ── QUEST CLAIM ───────────────────────────────────────────────────────────
@@ -571,7 +589,7 @@ export async function executeCommand(
       if (!asset) return { success: false, message: `I couldn't find an asset named ${target}.` };
       
       store.updateAsset(asset.id, { balance: amount });
-      return { success: true, message: `✅ Updated ${asset.name} value to ₹${amount.toLocaleString('en-IN')}.`, undoable: true };
+      return { success: true, message: `✅ Updated ${asset.name} value to ${formatCurrency(amount)}.`, undoable: true };
     }
 
     // ── BUDGET RESET ──────────────────────────────────────────────────────────

@@ -190,6 +190,16 @@ export const useStore = create<SpendWiseStore>()(
           merchantMemory: {},
           readNotificationIds: [],
           snoozedNotifications: {},
+          roundUpVault: { total: 0, count: 0, history: [] },
+          userPreferences: {
+            fontSize: 'text-base',
+            darkMode: false,
+            highContrast: false,
+            hapticsEnabled: true,
+            shakeEnabled: true,
+            biometricEnabled: false,
+            avatar: null,
+          },
           parentalState: { 
             enabled: false,
             isTeenMode: false, 
@@ -301,6 +311,33 @@ function migrateLegacyLocalStorage(store: SpendWiseStore) {
       localStorage.removeItem('spendwise_rzp_key');
       localStorage.removeItem('spendwise_rzp_secret');
     }
+
+    // 6. Migrate Round-Up Vault
+    const legacyVault = localStorage.getItem('spendwise_roundup_vault_v1');
+    if (legacyVault) {
+      const vault = JSON.parse(legacyVault);
+      if (vault && typeof vault === 'object') {
+        store.setRoundUpVault(vault);
+      }
+      localStorage.removeItem('spendwise_roundup_vault_v1');
+    }
+
+    // 7. Migrate User Preferences
+    const migratedPrefs = false;
+    const currentPrefs = store.userPreferences || {
+      fontSize: 'text-base', darkMode: false, highContrast: false, hapticsEnabled: true, shakeEnabled: true, biometricEnabled: false, avatar: null
+    };
+    
+    if (localStorage.getItem('spendwise_font_size')) { currentPrefs.fontSize = localStorage.getItem('spendwise_font_size')!; localStorage.removeItem('spendwise_font_size'); }
+    if (localStorage.getItem('spendwise_dark_mode')) { currentPrefs.darkMode = localStorage.getItem('spendwise_dark_mode') === 'dark'; localStorage.removeItem('spendwise_dark_mode'); }
+    if (localStorage.getItem('spendwise_high_contrast')) { currentPrefs.highContrast = localStorage.getItem('spendwise_high_contrast') === 'true'; localStorage.removeItem('spendwise_high_contrast'); }
+    if (localStorage.getItem('spendwise_haptics_enabled')) { currentPrefs.hapticsEnabled = localStorage.getItem('spendwise_haptics_enabled') === 'true'; localStorage.removeItem('spendwise_haptics_enabled'); }
+    if (localStorage.getItem('spendwise_shake_enabled')) { currentPrefs.shakeEnabled = localStorage.getItem('spendwise_shake_enabled') === 'true'; localStorage.removeItem('spendwise_shake_enabled'); }
+    if (localStorage.getItem('spendwise_biometric_enabled')) { currentPrefs.biometricEnabled = localStorage.getItem('spendwise_biometric_enabled') === 'true'; localStorage.removeItem('spendwise_biometric_enabled'); }
+    if (localStorage.getItem('spendwise_avatar')) { currentPrefs.avatar = localStorage.getItem('spendwise_avatar'); localStorage.removeItem('spendwise_avatar'); }
+    
+    store.setUserPreferences(currentPrefs);
+    
   } catch (err) {
     console.error('[SpendWise Store] Failed to migrate legacy local storage:', err);
   }

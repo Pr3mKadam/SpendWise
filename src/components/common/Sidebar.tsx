@@ -43,6 +43,19 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
   const settings = store.parentalState;
   const isKidMode = settings.isTeenMode;
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const mql = window.matchMedia('(max-width: 767px)');
+    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
 
   // Close mobile menu when view changes
   useEffect(() => {
@@ -92,8 +105,9 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
   return (
     <>
       {/* ── Desktop Sidebar ── */}
-      <aside
-        className="hidden md:flex flex-col fixed left-0 top-0 h-full z-40"
+      {!isMobile && (
+        <aside
+          className="hidden md:flex flex-col fixed left-0 top-0 h-full z-40"
         style={{
           width: 'var(--sidebar-width, 240px)',
           background: 'var(--sidebar-bg)',
@@ -246,11 +260,13 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
           </button>
         </div>
       </aside>
+      )}
 
       {/* ── Mobile Bottom Nav ── */}
-      <div
-        className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 pt-2 pb-safe"
-        role="tablist"
+      {isMobile && (
+        <div
+          className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 pt-2 pb-safe"
+          role="tablist"
         aria-label="Mobile Navigation Bar"
         style={{ 
           background: 'var(--sidebar-bg)', 
@@ -316,9 +332,10 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
           <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px', fontFamily: 'var(--font-inter)' }}>Menu</span>
         </button>
       </div>
+      )}
 
       {/* ── Mobile Drawer (Overlay) ── */}
-      {isMobileMenuOpen && (
+      {isMobile && isMobileMenuOpen && (
         <div className="fixed inset-0 z-[70] md:hidden flex">
           {/* Backdrop */}
           <div 
@@ -455,7 +472,9 @@ export default function Sidebar({ activeView, onViewChange, overBudgetCount, con
       )}
 
       {/* ── Sidebar spacer (Desktop) ── */}
-      <div className="hidden md:block shrink-0" style={{ width: 'var(--sidebar-width, 240px)' }} />
+      {!isMobile && (
+        <div className="hidden md:block shrink-0" style={{ width: 'var(--sidebar-width, 240px)' }} />
+      )}
     </>
   );
 }

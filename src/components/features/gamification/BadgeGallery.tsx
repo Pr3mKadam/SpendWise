@@ -27,7 +27,7 @@ interface Props {
 }
 
 function computeBadges(props: Props): Badge[] {
-  const { transactions, streak, level, goals } = props;
+  const { transactions, streak, level, goals, currency = '₹' } = props;
   const totalTx = transactions.length;
   const totalSpent = transactions.filter(t => t.type === 'debit').reduce((s, t) => s + t.amount, 0);
   const totalIncome = transactions.filter(t => t.type === 'credit').reduce((s, t) => s + t.amount, 0);
@@ -129,8 +129,8 @@ function computeBadges(props: Props): Badge[] {
     },
     {
       id: 'spent_big',      emoji: '💸', color: '#ef4444', name: 'Big Spender',
-      description: 'Total lifetime spending over ₹1,00,000',
-      criteria: 'Spend more than ₹1,00,000 lifetime',
+      description: `Total lifetime spending over ${currency}1,00,000`,
+      criteria: `Spend more than ${currency}1,00,000 lifetime`,
       unlocked: totalSpent >= 100000,
     },
   ];

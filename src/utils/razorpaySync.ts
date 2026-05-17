@@ -204,7 +204,23 @@ export interface RazorpayPaymentResult {
 // Razorpay types are now in src/types/dom.ts
 
 /** Opens the Razorpay checkout popup for a UPI payment. */
-export function initiateRazorpayPayment(opts: RazorpayPaymentOptions): void {
+export async function initiateRazorpayPayment(opts: RazorpayPaymentOptions): Promise<void> {
+  if (!window.Razorpay) {
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('Razorpay SDK failed to load'));
+        document.head.appendChild(script);
+      });
+    } catch (err) {
+      alert('Razorpay SDK failed to load. Check your internet connection.');
+      return;
+    }
+  }
+
   const RazorpaySDK = window.Razorpay;
   if (!RazorpaySDK) {
     alert('Razorpay SDK not loaded. Check your internet connection.');

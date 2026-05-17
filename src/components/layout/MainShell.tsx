@@ -125,13 +125,28 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
     };
   }, []);
 
-  // Sync URL with active view
+  // Sync URL with active view and maintain proper history state object
   useEffect(() => {
     const path = activeView === 'dashboard' ? '/' : `/${activeView}`;
     if (window.location.pathname !== path) {
-      window.history.pushState(null, '', path);
+      window.history.pushState({ view: activeView }, '', path);
+    } else if (!window.history.state) {
+      window.history.replaceState({ view: activeView }, '', path);
     }
   }, [activeView]);
+
+  // Handle incoming share target at startup:
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+
+    if (action === 'share-receipt') {
+      window.dispatchEvent(new CustomEvent('open-quick-add'));
+      const url = new URL(window.location.href);
+      url.searchParams.delete('action');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  }, []);
 
   const handleInstallClick = async () => {
     if (!deferredPrompt) return;
@@ -164,9 +179,14 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
       setShowCommandPalette(false);
       setShowCategoriesModal(false);
       
-      // Update activeView based on the new URL from the back gesture
-      const path = window.location.pathname.replace('/', '');
-      setActiveView(path ? (path as AppView) : 'dashboard');
+      // Update activeView based on state
+      if (e.state && e.state.view) {
+        setActiveView(e.state.view);
+      } else {
+        const params = new URLSearchParams(window.location.search);
+        const view = params.get('view') as AppView;
+        setActiveView(view || 'dashboard');
+      }
     };
     window.addEventListener('popstate', handlePopState);
 
@@ -199,8 +219,8 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
 
   // Shake Detection for Feedback & AI Assistant
   useEffect(() => {
-    const shakeEnabled = localStorage.getItem('spendwise_shake_enabled') !== 'false';
-    if (!shakeEnabled || !window.DeviceMotionEvent) return;
+    const enabled = store.userPreferences?.shakeEnabled ?? true;
+    if (!enabled || !window.DeviceMotionEvent) return;
 
     let lastX = 0, lastY = 0, lastZ = 0;
     let lastUpdate = 0;
@@ -240,9 +260,25 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
       }
     };
 
-    window.addEventListener('devicemotion', handleMotion);
-    return () => window.removeEventListener('devicemotion', handleMotion);
-  }, [notifState]);
+    let isSubscribed = true;
+
+    if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
+      (DeviceMotionEvent as any).requestPermission()
+        .then((permission: string) => {
+          if (permission === 'granted' && isSubscribed) {
+            window.addEventListener('devicemotion', handleMotion, { passive: true });
+          }
+        })
+        .catch((err: any) => console.error('DeviceMotion permission error:', err));
+    } else {
+      window.addEventListener('devicemotion', handleMotion, { passive: true });
+    }
+
+    return () => {
+      isSubscribed = false;
+      window.removeEventListener('devicemotion', handleMotion);
+    };
+  }, [notifState, store.userPreferences?.shakeEnabled]);
 
   const onAdd = useCallback((tx: Transaction) => {
     // Safety check: ensure tx is a valid transaction object, not a browser event
@@ -330,10 +366,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
         // Swipe from Left Edge -> Right (Back)
         if (touchStartX < edgeThreshold && distance > swipeThreshold) {
           haptic.light();
-          // Logic for "Back" - for now go to dashboard or previous
-          if (activeView !== 'dashboard') {
-            setActiveView('dashboard');
-          }
+          window.history.back();
         }
 
       }

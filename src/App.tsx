@@ -6,6 +6,7 @@ import AuthView from './components/views/AuthView';
 import { MainShell } from './components/layout/MainShell';
 import { AppView } from './types';
 import { STORAGE_KEYS, FINANCE_DEFAULTS } from './constants';
+import { useStore } from './store';
 
 function LoadingScreen() {
   return (
@@ -63,6 +64,41 @@ function parseConfig(raw: string | null): SpendWiseConfig {
   }
 }
 
+function ThemeHydrator() {
+  const prefs = useStore(s => s.userPreferences);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(useStore.persist.hasHydrated());
+    const unsub = useStore.persist.onFinishHydration(() => {
+      setHydrated(true);
+    });
+    return unsub;
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || !prefs) return;
+
+    // Apply Dark Mode
+    document.documentElement.setAttribute('data-theme', prefs.darkMode ? 'dark' : 'light');
+    if (prefs.darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+
+    // Apply Font Size
+    const FONT_SIZES = ['text-sm', 'text-base', 'text-lg', 'text-xl'];
+    FONT_SIZES.forEach(s => document.documentElement.classList.remove(s));
+    document.documentElement.classList.add(prefs.fontSize);
+
+    // Apply High Contrast
+    document.documentElement.classList.toggle('high-contrast', prefs.highContrast);
+  }, [prefs, hydrated]);
+
+  return null;
+}
+
 export default function App() {
   const { user, authReady } = useAuth();
   
@@ -86,6 +122,7 @@ export default function App() {
 
   return (
     <div className="app-container">
+      <ThemeHydrator />
       {user ? (
         <AppAuthenticated initialView={initialView} />
       ) : (

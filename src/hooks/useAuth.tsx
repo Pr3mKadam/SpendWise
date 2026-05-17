@@ -79,8 +79,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signIn = useCallback(async (email: string, password: string) => {
     if (!isSupabaseConfigured) {
       await new Promise(resolve => setTimeout(resolve, 800));
+      // BUG-08 fix: use full-email-based stable id (not just prefix) to avoid collisions
       const userObj = {
-        id: email.split('@')[0] || 'guest',
+        id: 'local_' + btoa(email).replace(/[^a-z0-9]/gi, '').substring(0, 20),
         email,
         user_metadata: { first_name: 'Guest', last_name: 'User' }
       };
@@ -102,8 +103,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = useCallback(async (email: string, password: string, metadata?: any) => {
     if (!isSupabaseConfigured) {
       await new Promise(resolve => setTimeout(resolve, 800));
+      // BUG-08 fix: use full-email-based stable id (not just prefix) to avoid collisions
       const userObj = {
-        id: email.split('@')[0] || 'guest',
+        id: 'local_' + btoa(email).replace(/[^a-z0-9]/gi, '').substring(0, 20),
         email,
         user_metadata: metadata || {}
       };

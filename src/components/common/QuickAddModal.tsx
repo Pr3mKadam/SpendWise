@@ -46,7 +46,7 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
               setTimeout(() => {
                 const input = document.getElementById('magic-input-field');
                 if (input) input.focus();
-              }, 50);
+              }, 450);
             }}
             initial={{ opacity: 0, y: '100%' }}
             animate={{ opacity: 1, y: 0 }}
