@@ -9,6 +9,8 @@ import EducationCards from '../features/advisor/EducationCards';
 import { SpeechRecognition, SpeechRecognitionEvent } from '../../types/dom';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import AdvisorViewMobile from './AdvisorViewMobile';
+import { isSupabaseConfigured } from '../../services/supabase';
+
 
 const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';
 const MAX_HISTORY = 20;
@@ -65,7 +67,8 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
   const { transactions, monthlyStats } = useTransactions();
   const { format, activeCurrency } = useCurrency();
   const [input, setInput] = useState('');
-  const hasGemini = !!import.meta.env.VITE_GEMINI_API_KEY;
+  const hasGemini = !!import.meta.env.VITE_GEMINI_API_KEY || isSupabaseConfigured;
+
 
   // Persist messages in localStorage
   const [messages, setMessages] = useState<Message[]>(() => {

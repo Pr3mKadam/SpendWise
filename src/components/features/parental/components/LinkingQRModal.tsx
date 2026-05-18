@@ -19,16 +19,28 @@ export function LinkingQRModal({ show, onClose }: LinkingQRModalProps) {
       timestamp: Date.now(),
     });
     
-    // Allow script to load if missing
-    setTimeout(() => {
+    const tryRender = (attempts = 0) => {
       if (typeof window !== 'undefined' && (window as any).QRCode) {
         new (window as any).QRCode(qrRef.current, {
           text: linkData,
           width: 200, height: 200,
           colorDark: '#0f172a', colorLight: '#ffffff',
         });
+      } else if (attempts < 15) {
+        setTimeout(() => tryRender(attempts + 1), 200); // retry every 200ms, up to 3s
+      } else {
+        // Fallback: show the raw data as text the child can type
+        if (qrRef.current) {
+          qrRef.current.innerHTML = `
+            <div style="padding:16px;background:#f1f5f9;border-radius:12px;font-size:11px;word-break:break-all;color:#0f172a">
+              <p style="font-weight:700;margin-bottom:8px">QR unavailable offline</p>
+              <p>Share this code manually:</p>
+              <code>${btoa(linkData).substring(0, 24)}...</code>
+            </div>`;
+        }
       }
-    }, 100);
+    };
+    setTimeout(() => tryRender(), 150);
   }, [show, user]);
 
   if (!show) return null;

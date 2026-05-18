@@ -87,6 +87,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       };
       localStorage.setItem('spendwise_user', JSON.stringify(userObj));
       setUser(userObj);
+      
+      const { db } = await import('../db/db');
+      const { toast } = await import('react-hot-toast');
+      const existingTx = await db.transactions.count();
+      if (existingTx === 0) {
+        toast('Welcome back! Your data will sync once cloud backup is set up.', { icon: '☁️', duration: 5000 });
+      }
       return;
     }
     const res = await signInWithEmail(email, password);

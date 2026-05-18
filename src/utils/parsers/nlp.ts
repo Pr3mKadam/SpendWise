@@ -1,3 +1,4 @@
+import { callGemini } from "../../services/gemini";
 import { Category } from "../../types";
 
 export interface AIParseResult {
@@ -14,11 +15,8 @@ export interface AIParseResult {
  * Supports extracting multiple transactions from a single sentence (e.g., "500 on food 700 on travel 800 on subscription").
  */
 export async function processNaturalLanguageExpense(text: string, currencyContext?: string): Promise<AIParseResult[] | null> {
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-  if (GEMINI_API_KEY) {
-    try {
-      const prompt = `Analyze this transaction description and extract ALL distinct expense/income items as a JSON ARRAY of objects.
+  try {
+    const prompt = `Analyze this transaction description and extract ALL distinct expense/income items as a JSON ARRAY of objects.
 Description: "${text}"
 ${currencyContext ? `Context: User's base currency is ${currencyContext}.` : ''}
 
@@ -27,24 +25,19 @@ If description is "I got 2000 rs" or "received 5000 salary", return an object wi
 
 Each object in the JSON array must have:
 - merchant: The business, person name, or short description (e.g. "Food", "Starbucks", "Travel", "Salary", "Refund", "Income", "Rahul")
-- category: One of [Food, Subscriptions, Transport, Entertainment, Shopping, Utilities, Health, Travel, Income, Transfer]
+- category: One of [Food, Subscriptions, Transport, Entertainment, Shopping, Utilities, Health, Travel, Education, Business, Income]
 - amount: Numeric value
 - type: "credit" if money was received, earned, got, won, refunded, deposited, salary, income, or cashback; "debit" if spent or paid.
 - confidence: 0.0 to 1.0
 
 Return ONLY the JSON array of objects.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
-        })
-      });
+    const data = await callGemini({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.1, responseMimeType: "application/json" }
+    });
 
-      const data = await response.json();
-      const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
       if (rawText) {
         const cleanJson = rawText.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '').trim();
         const parsed = JSON.parse(cleanJson);
@@ -60,7 +53,6 @@ Return ONLY the JSON array of objects.`;
     } catch (e) {
       console.warn("AI Transaction Parse failed, falling back to local heuristics:", e);
     }
-  }
 
   // Local Heuristics Fallback for multiple items (Highly advanced tokenizer)
   const results: AIParseResult[] = [];

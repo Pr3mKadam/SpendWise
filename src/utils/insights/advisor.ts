@@ -1,3 +1,4 @@
+import { callGemini } from "../../services/gemini";
 import { Transaction } from "../../types";
 
 /**
@@ -20,11 +21,8 @@ export async function getFinancialAdvice(query: string, transactions: Transactio
   const sortedCategories = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
   const topCat = sortedCategories[0];
 
-  const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-  if (GEMINI_API_KEY) {
-    try {
-      const prompt = `You are a sophisticated financial advisor for SpendWise. 
+  try {
+    const prompt = `You are a sophisticated financial advisor for SpendWise. 
 The user is asking: "${query}"
 
 Here is their current financial summary:
@@ -44,30 +42,22 @@ If appropriate, you can include exactly one of the following action tags at the 
 
 If the query is not related to finance, politely redirect them to ask about their budget or spending.`;
 
-      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [{
-            parts: [{ text: prompt }]
-          }],
-          generationConfig: {
-            temperature: 0.7,
-            maxOutputTokens: 500,
-          }
-        })
-      });
-
-      const data = await response.json();
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) {
-        return text;
+    const data = await callGemini({
+      contents: [{
+        parts: [{ text: prompt }]
+      }],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 500,
       }
-    } catch (error) {
-      console.error("Gemini Advisor failed, falling back to local engine:", error);
+    });
+
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (text) {
+      return text;
     }
+  } catch (error) {
+    console.error("Gemini Advisor failed, falling back to local engine:", error);
   }
 
   // Local Fallback Engine

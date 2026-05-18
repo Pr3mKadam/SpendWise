@@ -164,10 +164,13 @@ export const useStore = create<SpendWiseStore>()(
       ...createSecuredSlice(set, get, api),
 
       privacyEnabled: false,
-      togglePrivacy: () => set((state) => ({ 
-        privacyEnabled: !state.privacyEnabled,
-        parentalState: { ...state.parentalState, hideBalances: !state.privacyEnabled }
-      })),
+      togglePrivacy: () => set((state) => {
+        const next = !state.privacyEnabled;
+        return {
+          privacyEnabled: next,
+          parentalState: { ...state.parentalState, hideBalances: next }
+        };
+      }),
 
       resetData: () => {
         set({ 

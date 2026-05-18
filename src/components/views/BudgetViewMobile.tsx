@@ -205,14 +205,14 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
                   className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-[var(--teal)] bg-white/5 rounded-xl border-none cursor-pointer"
                   aria-label={`Edit ${b.category} budget`}
                 >
-                  <Edit2 size={16} />
+                  <Edit2 size={18} />
                 </button>
                 <button 
                   onClick={() => { haptic.medium(); removeBudget(b.category); }}
                   className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-red-500 bg-white/5 rounded-xl border-none cursor-pointer"
                   aria-label={`Delete ${b.category} budget`}
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>

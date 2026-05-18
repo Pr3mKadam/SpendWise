@@ -602,23 +602,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
         </>
       )}
 
-      {/* Floating Action Button (Mobile Only - Android Style) */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => {
-          haptic.medium();
-          setShowQuickAdd(true);
-        }}
-        className="fixed right-6 z-[60] w-14 h-14 rounded-full bg-gradient-to-br from-[var(--teal)] to-[#0d9488] text-white shadow-lg shadow-teal-500/40 flex items-center justify-center md:hidden transition-all duration-300 ease-out"
-        style={{ bottom: `calc(5rem + ${keyboardOffset}px)` }}
-        aria-label="Add Transaction"
-      >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </motion.button>
+      {/* Floating Action Button handled by Sidebar */}
 
       </div>
 
@@ -648,8 +632,9 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
           isOpen={showFeedback}
           onClose={() => setShowFeedback(false)}
           onSubmit={(data) => {
-            console.log('Feedback submitted:', data);
-            // Here you would normally send to your backend
+            // TODO Phase 2.0: POST to Supabase Edge Function /feedback
+            // For now, feedback is collected locally only
+            if (import.meta.env.DEV) console.log('Feedback submitted:', data);
           }}
         />
       </Suspense>
