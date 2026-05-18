@@ -203,7 +203,7 @@ export default function Sidebar({
        * ════════════════════════════════════════════════════════════════
        */}
       <aside
-        className="hidden md:flex flex-col fixed left-0 top-0 h-full z-40 items-center py-4"
+        className="hidden md:flex flex-col fixed left-0 top-0 h-full z-40 items-center py-4 overflow-y-auto hide-scrollbar"
         style={{
           width: '56px',
           background: 'var(--sidebar-bg)',
