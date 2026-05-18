@@ -10,7 +10,7 @@ export async function recognizeReceipt(imageBase64: string): Promise<string> {
       {
         logger: m => {
           if (m.status === 'recognizing text') {
-            // Optional: You could emit progress to a global state or callback
+            // Optional progress logging
           }
         }
       }
@@ -27,57 +27,71 @@ export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { s
   let totalAmount = 0;
   const items: { label: string; amount: number; category: string }[] = [];
 
-  // Enhanced amount detection
-  const amountRegex = /(?:total|amount|sum|due|pay|grand total)?\s*[:$₹Rs]?\s*(\d+[.,]\d{2})/i;
-  
+  // 1. Find Total Amount (Prioritize "total" over "subtotal")
+  const amountRegex = /[\d]+[.,]\d{2}/g;
+  let maxTotal = 0;
+  let maxSubtotal = 0;
+
   for (const line of lines) {
-    // Look for individual line items
-    const match = line.match(/(\d+(?:[.,]\d{2}))(?:\s|$)/);
-    if (match) {
-      const amt = parseFloat(match[1].replace(',', '.'));
-      const desc = line.replace(match[0], '').trim().replace(/[^a-zA-Z0-9\s]/g, '');
-      if (amt > 0 && desc.length > 2) {
+    const lower = line.toLowerCase();
+    const matches = line.match(amountRegex);
+    if (matches) {
+      const val = parseFloat(matches[matches.length - 1].replace(',', '.'));
+      if (lower.includes('total') && !lower.includes('sub')) {
+        if (val > maxTotal) maxTotal = val;
+      } else if (lower.includes('subtotal') || lower.includes('sub total')) {
+        if (val > maxSubtotal) maxSubtotal = val;
+      }
+
+      // Check for line items
+      const desc = line.replace(matches[matches.length - 1], '').trim().replace(/[^a-zA-Z0-9\s]/g, '');
+      if (val > 0 && desc.length > 2 && !lower.includes('total') && !lower.includes('tax') && !lower.includes('change') && !lower.includes('cash')) {
         let cat = 'Other';
         const lowerDesc = desc.toLowerCase();
         for (const [merch, c] of Object.entries(MERCHANT_CATEGORY_MAP)) {
           if (lowerDesc.includes(merch)) { cat = c; break; }
         }
-        items.push({ label: desc, amount: amt, category: cat });
+        items.push({ label: desc, amount: val, category: cat });
       }
     }
   }
 
-  // Find Total Amount (Look for largest amount near "total" keywords)
-  const totalKeywords = ['total', 'amount', 'due', 'pay', 'sum', 'net', 'final', 'grand total'];
-  for (const line of lines) {
-    const lowerLine = line.toLowerCase();
-    if (totalKeywords.some(kw => lowerLine.includes(kw))) {
-      const match = line.match(amountRegex);
-      if (match) {
-        const parsed = parseFloat(match[1].replace(',', '.'));
-        if (parsed > totalAmount) totalAmount = parsed;
-      }
-    }
-  }
-
-  // Fallback: If no "total" keyword found, use the maximum amount found in the receipt
+  totalAmount = maxTotal > 0 ? maxTotal : maxSubtotal;
   if (totalAmount === 0) {
-    const allNums = items.map(i => i.amount);
+    const allNums: number[] = [];
+    for (const line of lines) {
+      const matches = line.match(amountRegex);
+      if (matches) {
+        matches.forEach(m => allNums.push(parseFloat(m.replace(',', '.'))));
+      }
+    }
     totalAmount = allNums.length > 0 ? Math.max(...allNums) : 0;
   }
 
-  // Merchant Detection (Premium: Check top 5 lines, exclude common receipt words)
+  // 2. Find Merchant (Skip address, phone, and store metadata lines)
   let merchant = 'Receipt';
-  const excludeWords = /total|tax|invoice|receipt|date|order|tel|phone|store|cashier|item|qty|price/i;
-  for (const line of lines.slice(0, 8)) {
-    if (line.length > 3 && !line.match(/\d{3,}/) && !excludeWords.test(line)) {
-      merchant = line.replace(/[^a-zA-Z\s]/g, '').trim();
-      if (merchant.length > 2) break;
+  const excludeWords = /street|st\b|avenue|ave\b|road|rd\b|boulevard|blvd|highway|hwy|city|town|zip|pincode|store|reg\b|trans|tel|phone|ph\b|fax|gst|tax|invoice|date|time|receipt|customer|copy|cashier/i;
+  for (const line of lines.slice(0, 12)) {
+    if (line.length > 3 && !line.match(/^\d+$/) && !excludeWords.test(line)) {
+      const clean = line.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+      if (clean.length > 2) {
+        merchant = clean;
+        break;
+      }
     }
   }
 
-  // Final mapping check
-  let category = 'Other';
+  // 3. Find Category
+  let category = 'Shopping';
+  const lowerText = rawText.toLowerCase();
+  if (/grocery|mart|supermarket|food|fruit|vegetable|milk|bread|strawberries|yogurt|avocados|sourdough|coffee|cafe|restaurant|eat|lunch|dinner|snack/.test(lowerText)) category = 'Food';
+  else if (/uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab/.test(lowerText)) category = 'Transport';
+  else if (/netflix|spotify|amazon|prime|youtube|hotstar|sub|subscription/.test(lowerText)) category = 'Subscriptions';
+  else if (/electricity|water|bill|recharge|mobile|broadband/.test(lowerText)) category = 'Utilities';
+  else if (/doctor|hospital|pharma|med|health/.test(lowerText)) category = 'Health';
+  else if (/movie|game|play|event|party/.test(lowerText)) category = 'Entertainment';
+
+  // Final check against merchant category map
   for (const [merch, cat] of Object.entries(MERCHANT_CATEGORY_MAP)) {
     if (rawText.toLowerCase().includes(merch)) {
       category = cat;
@@ -90,7 +104,7 @@ export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { s
 
   return {
     amount: totalAmount,
-    merchant: merchant || 'Unknown Merchant',
+    merchant: merchant.substring(0, 40),
     category,
     date: new Date().toISOString().split('T')[0],
     type: 'debit',

@@ -1,231 +1,393 @@
 import React, { useMemo, useState, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Plus, 
-  Search, 
-  TrendingUp, 
-  TrendingDown, 
-  Wallet, 
-  LayoutGrid, 
+import {
+  Plus,
+  TrendingUp,
+  TrendingDown,
   ChevronRight,
+  Target,
+  RefreshCw,
   Sparkles,
-  ArrowRight
 } from 'lucide-react';
 import { AppView, Transaction } from '../../types';
 import { FinanceState } from '../../types/state';
 import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 import { haptic } from '../../lib/haptic';
-import { useCategories } from '../../hooks/useCategories';
+import { useBudgets } from '../../hooks/useBudgets';
+import { useGoals } from '../../hooks/useGoals';
 
-// Lazy load non-critical widgets
-const QuickAddPanel = lazy(() => import('../features/dashboard/QuickAddPanel'));
-const LevelProgress = lazy(() => import('../features/gamification/LevelProgress'));
-import EmptyState from '../common/EmptyState';
+// Lazy-load heavy components so they don't block initial paint
+const QuickAddPanel  = lazy(() => import('../features/dashboard/QuickAddPanel'));
+const LevelProgress  = lazy(() => import('../features/gamification/LevelProgress'));
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface DashboardViewMobileProps {
-  financeState: FinanceState;
-  onAdd: (tx: any) => void;
-  currency: string;
-  onNavigate: (view: AppView) => void;
-  hideBalances?: boolean;
-  config: SpendWiseConfig | null;
+  financeState:     FinanceState;
+  onAdd:            (tx: any) => void;
+  currency:         string;
+  onNavigate:       (view: AppView) => void;
+  hideBalances?:    boolean;
+  config:           SpendWiseConfig | null;
 }
 
+// ─── Category emoji map (small, fast) ────────────────────────────────────────
+
+const CAT_EMOJI: Record<string, string> = {
+  Food: '🍔', Transport: '🚗', Shopping: '🛍️', Utilities: '⚡',
+  Health: '💊', Travel: '✈️', Education: '📚', Business: '💼',
+  Subscriptions: '📱', Entertainment: '🎬', Income: '💰',
+};
+
+// ─── Snap-row card ────────────────────────────────────────────────────────────
+
+interface SnapCardProps {
+  label:   string;
+  value:   string;
+  sub:     string;
+  accent:  string;
+  icon:    React.ReactNode;
+  onClick: () => void;
+}
+
+function SnapCard({ label, value, sub, accent, icon, onClick }: SnapCardProps) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex flex-col gap-1 min-w-[96px] p-3 rounded-2xl active:scale-[0.96] transition-transform outline-none"
+      style={{
+        background: 'var(--surface-card)',
+        border: `1px solid var(--border)`,
+        borderLeft: `3px solid ${accent}`,
+      }}
+    >
+      <div className="flex items-center gap-1.5 mb-0.5">
+        <span style={{ color: accent, lineHeight: 1 }}>{icon}</span>
+        <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>
+          {label}
+        </span>
+      </div>
+      <p style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)', lineHeight: 1 }}>
+        {value}
+      </p>
+      <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+        {sub}
+      </p>
+    </button>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function DashboardViewMobile({
-  financeState,
-  onAdd,
-  currency,
-  onNavigate,
-  hideBalances = false,
-  config
+  financeState, onAdd, currency, onNavigate, hideBalances = false, config,
 }: DashboardViewMobileProps) {
   const { transactions, currentBalance, monthlyStats } = financeState;
-  const { mergedIcons } = useCategories();
   const [isAddOpen, setIsAddOpen] = useState(false);
 
+  // Pull data for snap row
+  const { overallBudgetPercent, totalBudgeted } = useBudgets();
+  const { goals } = useGoals();
+
+  // Savings rate
+  const savingsRate = useMemo(() => {
+    if (monthlyStats.totalIncome <= 0) return 0;
+    return Math.max(0, Math.round(
+      ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100
+    ));
+  }, [monthlyStats]);
+
+  // Monthly subscription spend
+  const subSpend = useMemo(() => {
+    const now = new Date();
+    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    return transactions
+      .filter(t => t.type === 'debit' && t.category === 'Subscriptions' && t.date.startsWith(monthStr))
+      .reduce((sum, t) => sum + t.amount, 0);
+  }, [transactions]);
+
+  // Recent transactions — only last 5
   const recentTransactions = useMemo(() => transactions.slice(0, 5), [transactions]);
 
-  const handleQuickAction = (view: AppView) => {
-    haptic.light();
-    onNavigate(view);
-  };
+  // Balance trend direction
+  const trendUp = monthlyStats.totalIncome >= monthlyStats.totalExpenses;
+
+  // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="view-enter space-y-6 pb-24">
-      {/* 1. High-Impact Balance Hero */}
-      <section className="relative px-1 pt-2">
-        <div className="bg-gradient-to-br from-[var(--teal)] to-[#0d9488] rounded-[var(--radius-hero)] p-6 text-white shadow-lg overflow-hidden relative">
-          {/* Background Decorative Pattern */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-3xl" />
-          
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-70 tracking-widest mb-1">Total Balance</p>
-              <h2 className="text-4xl font-black tracking-tight">
-                {hideBalances ? '••••••' : `${currency}${currentBalance.toLocaleString()}`}
-              </h2>
-            </div>
-            <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center">
-              <Wallet size={20} />
-            </div>
-          </div>
+    <div className="view-enter pb-28" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-4 h-4 rounded-full bg-emerald-400/20 flex items-center justify-center">
-                  <TrendingUp size={10} className="text-emerald-400" />
-                </div>
-                <span className="text-[length:var(--fs-overline)] font-bold uppercase opacity-80">Income</span>
-              </div>
-              <p className="text-sm font-bold">
-                {hideBalances ? '•••' : `${currency}${monthlyStats.totalIncome.toLocaleString()}`}
-              </p>
-            </div>
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-3 border border-white/10">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="w-4 h-4 rounded-full bg-red-400/20 flex items-center justify-center">
-                  <TrendingDown size={10} className="text-red-400" />
-                </div>
-                <span className="text-[length:var(--fs-overline)] font-bold uppercase opacity-80">Spent</span>
-              </div>
-              <p className="text-sm font-bold">
-                {hideBalances ? '•••' : `${currency}${monthlyStats.totalExpenses.toLocaleString()}`}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 2. Quick Actions Row */}
-      <section className="px-1">
-        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-          {[
-            { id: 'budget', icon: <LayoutGrid size={18} />, label: 'Budgets', color: 'bg-indigo-500' },
-            { id: 'history', icon: <Search size={18} />, label: 'History', color: 'bg-orange-500' },
-            { id: 'analytics', icon: <TrendingUp size={18} />, label: 'Stats', color: 'bg-emerald-500' },
-            { id: 'goals', icon: <Sparkles size={18} />, label: 'Goals', color: 'bg-violet-500' },
-          ].map((action) => (
-            <button
-              key={action.id}
-              onClick={() => handleQuickAction(action.id as AppView)}
-              className="flex flex-col items-center gap-2 min-w-[72px]"
+      {/* ── 1. Balance hero card ───────────────────────────────────────── */}
+      <section style={{ padding: '0 4px' }}>
+        <div
+          className="rounded-[28px] p-5"
+          style={{
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-card)',
+          }}
+        >
+          {/* Top row: label + trend */}
+          <div className="flex items-center justify-between mb-2">
+            <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+              Total Balance
+            </p>
+            <div
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full"
+              style={{
+                background: trendUp ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)',
+                border: `1px solid ${trendUp ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
+              }}
             >
-              <div className={`w-14 h-14 ${action.color} rounded-2xl flex items-center justify-center text-white shadow-md active:scale-95 transition-transform`}>
-                {action.icon}
-              </div>
-              <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">{action.label}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+              {trendUp
+                ? <TrendingUp size={11} style={{ color: '#10b981' }} />
+                : <TrendingDown size={11} style={{ color: '#ef4444' }} />
+              }
+              <span style={{ fontSize: '10px', fontWeight: 700, color: trendUp ? '#10b981' : '#ef4444', fontFamily: 'var(--font-inter)' }}>
+                {trendUp ? 'On track' : 'Over spend'}
+              </span>
+            </div>
+          </div>
 
-      {/* 3. Recent Transactions */}
-      <section className="px-1">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-[var(--text-primary)]">Recent</h3>
-          <button 
-            onClick={() => onNavigate('history')}
-            className="text-[var(--teal)] text-xs font-bold uppercase tracking-widest flex items-center gap-1 p-2 -mr-2"
+          {/* Balance numeral */}
+          <h2
+            style={{
+              fontSize: '36px',
+              fontWeight: 800,
+              letterSpacing: '-1px',
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-manrope)',
+              lineHeight: 1.1,
+              marginBottom: '16px',
+            }}
           >
-            See All <ChevronRight size={16} />
-          </button>
-        </div>
+            {hideBalances
+              ? <span style={{ letterSpacing: '4px' }}>••••••</span>
+              : `${currency}${currentBalance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+            }
+          </h2>
 
-        <div className="space-y-3">
-          {recentTransactions.map((tx: Transaction) => (
-            <div 
-              key={tx.id}
-              className="bg-[var(--surface-card)] rounded-[var(--radius-card)] p-4 flex items-center gap-4 border border-[var(--border)] shadow-sm active:bg-[var(--surface-light)] transition-colors"
+          {/* Income / Spent chips */}
+          <div className="grid grid-cols-2 gap-3">
+            <div
+              className="rounded-2xl p-3"
+              style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}
             >
-              <div className="w-10 h-10 rounded-xl bg-[var(--surface-input)] flex items-center justify-center text-xl">
-                {mergedIcons[tx.category] || (tx.type === 'credit' ? '💰' : '💸')}
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingUp size={11} style={{ color: '#10b981' }} />
+                <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: 'var(--font-inter)' }}>Income</span>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-[var(--text-primary)] truncate">{tx.merchant}</p>
-                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">{tx.category}</p>
-              </div>
-              <div className="text-right">
-                <p className={`text-sm font-bold ${tx.type === 'debit' ? 'text-red-500' : 'text-emerald-500'}`}>
-                  {tx.type === 'debit' ? '-' : '+'}{currency}{tx.amount.toLocaleString()}
-                </p>
-                <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] uppercase font-bold">
-                  {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                </p>
-              </div>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: hideBalances ? 'var(--text-muted)' : '#10b981', fontFamily: 'var(--font-manrope)' }}>
+                {hideBalances ? '•••' : `${currency}${monthlyStats.totalIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+              </p>
             </div>
-          ))}
-          {recentTransactions.length === 0 && (
-            <EmptyState onAction={() => setIsAddOpen(true)} />
-          )}
+            <div
+              className="rounded-2xl p-3"
+              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}
+            >
+              <div className="flex items-center gap-1.5 mb-1">
+                <TrendingDown size={11} style={{ color: '#ef4444' }} />
+                <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: 'var(--font-inter)' }}>Spent</span>
+              </div>
+              <p style={{ fontSize: '15px', fontWeight: 700, color: hideBalances ? 'var(--text-muted)' : '#ef4444', fontFamily: 'var(--font-manrope)' }}>
+                {hideBalances ? '•••' : `${currency}${monthlyStats.totalExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 4. Gamification / Progress */}
-      <section className="px-1">
-        <Suspense fallback={<div className="h-24 bg-[var(--surface-input)] rounded-[var(--radius-card)] animate-pulse" />}>
+
+      {/* ── 2. Horizontal snap row ─────────────────────────────────────── */}
+      {/* 4 mini stat cards — each taps to the relevant view */}
+      <section style={{ padding: '0 4px' }}>
+        <div
+          className="no-scrollbar"
+          style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}
+        >
+          <SnapCard
+            label="Budget"
+            value={`${Math.round(overallBudgetPercent)}%`}
+            sub={totalBudgeted > 0 ? `of ${currency}${totalBudgeted.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : 'not set'}
+            accent="#f59e0b"
+            icon={<Target size={12} />}
+            onClick={() => { haptic.light(); onNavigate('budget'); }}
+          />
+          <SnapCard
+            label="Goals"
+            value={String(goals.length)}
+            sub={goals.length === 1 ? 'active goal' : 'active goals'}
+            accent="#8b5cf6"
+            icon={<Sparkles size={12} />}
+            onClick={() => { haptic.light(); onNavigate('goals'); }}
+          />
+          <SnapCard
+            label="Savings"
+            value={`${savingsRate}%`}
+            sub="rate this month"
+            accent={savingsRate >= 20 ? '#10b981' : savingsRate >= 10 ? '#f59e0b' : '#ef4444'}
+            icon={<TrendingUp size={12} />}
+            onClick={() => { haptic.light(); onNavigate('analytics'); }}
+          />
+          <SnapCard
+            label="Subs"
+            value={subSpend > 0 ? `${currency}${subSpend.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '—'}
+            sub="this month"
+            accent="#06b6d4"
+            icon={<RefreshCw size={12} />}
+            onClick={() => { haptic.light(); onNavigate('subscriptions'); }}
+          />
+        </div>
+      </section>
+
+
+      {/* ── 3. Recent Transactions ─────────────────────────────────────── */}
+      <section style={{ padding: '0 4px' }}>
+        <div
+          className="rounded-[24px]"
+          style={{
+            background: 'var(--surface-card)',
+            border: '1px solid var(--border)',
+            boxShadow: 'var(--shadow-card)',
+            overflow: 'hidden',
+          }}
+        >
+          {/* Section header */}
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)' }}>
+              Recent
+            </h3>
+            <button
+              onClick={() => { haptic.light(); onNavigate('history'); }}
+              className="flex items-center gap-0.5 active:opacity-70"
+              style={{ color: 'var(--teal)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-inter)' }}
+            >
+              See all <ChevronRight size={14} />
+            </button>
+          </div>
+
+          {/* Transaction rows */}
+          <div style={{ paddingBottom: '12px' }}>
+            {recentTransactions.length === 0 ? (
+              <div className="flex flex-col items-center py-10 px-6 text-center">
+                <div
+                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-3"
+                  style={{ background: 'var(--teal-dim)', border: '1px solid var(--teal-glow)' }}
+                >
+                  <Plus size={24} style={{ color: 'var(--teal)' }} />
+                </div>
+                <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px', fontFamily: 'var(--font-manrope)' }}>
+                  No transactions yet
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+                  Tap + to record your first one
+                </p>
+              </div>
+            ) : (
+              recentTransactions.map((tx: Transaction, idx: number) => (
+                <div
+                  key={tx.id}
+                  className="flex items-center gap-3 px-5 py-3 active:bg-[var(--surface-hover)] transition-colors"
+                  style={{ borderTop: idx === 0 ? 'none' : '1px solid var(--border)' }}
+                >
+                  {/* Category emoji badge */}
+                  <div
+                    className="w-10 h-10 rounded-2xl flex items-center justify-center text-lg shrink-0"
+                    style={{ background: 'var(--surface-input)' }}
+                  >
+                    {CAT_EMOJI[tx.category] ?? (tx.type === 'credit' ? '💰' : '💸')}
+                  </div>
+
+                  {/* Name + category */}
+                  <div className="flex-1 min-w-0">
+                    <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {tx.merchant}
+                    </p>
+                    <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+                      {tx.category} · {new Date(tx.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                    </p>
+                  </div>
+
+                  {/* Amount */}
+                  <p style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-manrope)',
+                    color: tx.type === 'debit' ? '#ef4444' : '#10b981',
+                    whiteSpace: 'nowrap',
+                  }}>
+                    {tx.type === 'debit' ? '-' : '+'}{currency}{tx.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ── 4. Gamification progress (lazy) ───────────────────────────── */}
+      <section style={{ padding: '0 4px' }}>
+        <Suspense fallback={
+          <div className="h-20 rounded-3xl animate-pulse" style={{ background: 'var(--surface-input)' }} />
+        }>
           <LevelProgress onNavigate={onNavigate} />
         </Suspense>
       </section>
 
-      {/* 5. Quick Add Panel Expansion */}
-      <section className="px-1">
-        <div className="bg-[var(--surface-card)] rounded-[var(--radius-hero)] p-6 border border-[var(--border)] shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-[var(--text-primary)] flex items-center gap-2">
-              <Plus size={18} className="text-[var(--teal)]" /> Quick Entry
-            </h3>
-          </div>
-          <p className="text-xs text-[var(--text-muted)] mb-4 leading-relaxed">
-            Scan a receipt or type a transaction to keep your balance updated.
-          </p>
-          <button 
-            onClick={() => setIsAddOpen(true)}
-            className="w-full py-4 bg-[var(--teal)] text-white rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-transform"
-          >
-            <Plus size={18} /> Add Transaction
-          </button>
-        </div>
-      </section>
 
-      {/* Add Transaction Bottom Sheet (Mock for this component) */}
+      {/* ── 5. Quick Add bottom sheet ──────────────────────────────────── */}
       <AnimatePresence>
         {isAddOpen && (
           <div className="fixed inset-0 z-[1000] flex flex-col justify-end">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsAddOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/60"
+              style={{ backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }}
             />
-            <motion.div 
+            <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="relative bg-[var(--surface-card)] rounded-t-[var(--radius-sheet)] p-8 max-h-[90vh] overflow-y-auto border-t border-[var(--border)] shadow-2xl"
+              className="relative rounded-t-[36px] p-6 overflow-y-auto"
+              style={{
+                background: 'var(--surface-card)',
+                borderTop: '1px solid var(--border)',
+                maxHeight: 'min(85vh, 85dvh)',
+                paddingBottom: 'calc(24px + env(safe-area-inset-bottom))',
+              }}
             >
-              <div className="w-12 h-1.5 bg-[var(--border)] rounded-full mx-auto mb-8" />
-              <Suspense fallback={<div className="h-64 animate-pulse bg-[var(--surface-input)] rounded-[var(--radius-card)]" />}>
-                <QuickAddPanel 
-                  onAdd={(tx) => { onAdd(tx); setIsAddOpen(false); haptic.success(); }} 
+              {/* Drag handle */}
+              <div className="w-10 h-1.5 rounded-full mx-auto mb-6" style={{ background: 'var(--border)' }} />
+
+              <Suspense fallback={
+                <div className="h-48 animate-pulse rounded-3xl" style={{ background: 'var(--surface-input)' }} />
+              }>
+                <QuickAddPanel
+                  onAdd={(tx) => { onAdd(tx); setIsAddOpen(false); haptic.success(); }}
                   transactions={transactions}
                   recentMerchants={[]}
                   dashboardInput=""
                   setDashboardInput={() => {}}
                 />
               </Suspense>
-              <button 
+
+              <button
                 onClick={() => setIsAddOpen(false)}
-                className="w-full mt-6 py-4 rounded-2xl border border-[var(--border)] font-bold text-[var(--text-muted)]"
+                className="w-full mt-5 py-4 rounded-2xl font-bold text-sm"
+                style={{ border: '1px solid var(--border)', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
               >
-                Close
+                Cancel
               </button>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
+
     </div>
   );
 }

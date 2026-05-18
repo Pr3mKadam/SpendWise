@@ -58,7 +58,6 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
       const text = data.candidates[0].content.parts[0].text;
       
       try {
-        // Gemini 1.5 Pro/Flash in JSON mode might still wrap in backticks sometimes if not careful
         const cleanJson = text.replace(/```json|```/g, '').trim();
         const result = JSON.parse(cleanJson);
         
@@ -71,7 +70,6 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
         };
       } catch (e) {
         console.warn('Failed to parse Gemini response as JSON, falling back to regex:', text);
-        // Simple regex fallback for common fields if JSON parsing fails
         const amountMatch = text.match(/(?:total|amount|sum|due)\s*[:$₹Rs]?\s*(\d+[.,]\d{2})/i);
         return {
           merchant: 'Receipt',
@@ -82,31 +80,87 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
       }
     } catch (geminiError) {
       console.warn('Gemini OCR failed, falling back to Tesseract:', geminiError);
-      // Fall through to Tesseract below
     }
   }
 
-  // Tesseract.js fallback (already installed: tesseract.js v7)
+  // Tesseract.js fallback (Highly advanced heuristic extraction)
   try {
     const { createWorker } = await import('tesseract.js');
     const worker = await createWorker('eng');
     const { data: { text } } = await worker.recognize(imageFile);
     await worker.terminate();
 
-    // Simple amount extraction from raw text
-    const amountMatches = text.match(/(?:total|amount|sum|sub.?total)[^\d]*(\d+[.,]\d{0,2})/i)
-                       || text.match(/(\d{2,6}[.,]\d{2})/g);
-    const amount = amountMatches
-      ? parseFloat(amountMatches[amountMatches.length - 1].replace(',', '.'))
-      : 0;
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2);
+    let amount = 0;
 
-    const dateMatch = text.match(/\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}/);
-    const merchantLine = text.split('\n').find(l => l.trim().length > 3) || 'Unknown';
+    // 1. Find Total Amount (Prioritize "total" over "subtotal")
+    const amountRegex = /[\d]+[.,]\d{2}/g;
+    let maxTotal = 0;
+    let maxSubtotal = 0;
+
+    for (const line of lines) {
+      const lower = line.toLowerCase();
+      const matches = line.match(amountRegex);
+      if (matches) {
+        const val = parseFloat(matches[matches.length - 1].replace(',', '.'));
+        if (lower.includes('total') && !lower.includes('sub')) {
+          if (val > maxTotal) maxTotal = val;
+        } else if (lower.includes('subtotal') || lower.includes('sub total')) {
+          if (val > maxSubtotal) maxSubtotal = val;
+        }
+      }
+    }
+
+    amount = maxTotal > 0 ? maxTotal : maxSubtotal;
+    if (amount === 0) {
+      const allNums: number[] = [];
+      for (const line of lines) {
+        const matches = line.match(amountRegex);
+        if (matches) {
+          matches.forEach(m => allNums.push(parseFloat(m.replace(',', '.'))));
+        }
+      }
+      amount = allNums.length > 0 ? Math.max(...allNums) : 0;
+    }
+
+    // 2. Find Merchant (Skip address, phone, and store metadata lines)
+    let merchant = 'Receipt';
+    const excludeWords = /street|st\b|avenue|ave\b|road|rd\b|boulevard|blvd|highway|hwy|city|town|zip|pincode|store|reg\b|trans|tel|phone|ph\b|fax|gst|tax|invoice|date|time|receipt|customer|copy|cashier/i;
+    for (const line of lines.slice(0, 12)) {
+      if (line.length > 3 && !line.match(/^\d+$/) && !excludeWords.test(line)) {
+        const clean = line.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+        if (clean.length > 2) {
+          merchant = clean;
+          break;
+        }
+      }
+    }
+
+    // 3. Find Date
+    const dateMatch = text.match(/\b(20\d{2}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/](?:20)?\d{2}|[A-Za-z]{3}\s+\d{1,2},?\s+20\d{2})\b/);
+    let dateStr = new Date().toISOString().split('T')[0];
+    if (dateMatch) {
+      try {
+        const d = new Date(dateMatch[0]);
+        if (!isNaN(d.getTime())) dateStr = d.toISOString().split('T')[0];
+      } catch(e){}
+    }
+
+    // 4. Find Category
+    let category = 'Shopping';
+    const lowerText = text.toLowerCase();
+    if (/grocery|mart|supermarket|food|fruit|vegetable|milk|bread|strawberries|yogurt|avocados|sourdough|coffee|cafe|restaurant|eat|lunch|dinner|snack/.test(lowerText)) category = 'Food';
+    else if (/uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab/.test(lowerText)) category = 'Transport';
+    else if (/netflix|spotify|amazon|prime|youtube|hotstar|sub|subscription/.test(lowerText)) category = 'Subscriptions';
+    else if (/electricity|water|bill|recharge|mobile|broadband/.test(lowerText)) category = 'Utilities';
+    else if (/doctor|hospital|pharma|med|health/.test(lowerText)) category = 'Health';
+    else if (/movie|game|play|event|party/.test(lowerText)) category = 'Entertainment';
 
     return {
-      merchant: merchantLine.trim().substring(0, 40),
+      merchant: merchant.substring(0, 40),
       amount,
-      date: dateMatch ? dateMatch[0] : new Date().toISOString().split('T')[0],
+      date: dateStr,
+      category,
       rawText: text,
     };
   } catch (tessErr) {

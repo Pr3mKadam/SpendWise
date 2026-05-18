@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut, PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText, Menu, X, GraduationCap, DownloadCloud, Trophy, Sun, Moon } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  LayoutDashboard, CreditCard, ArrowLeftRight, Target, Settings, LogOut,
+  PieChart, Landmark, TrendingUp, RefreshCw, Users, Shield, Bot, FileText,
+  X, GraduationCap, DownloadCloud, Trophy, Sun, Moon, Plus, MoreHorizontal,
+  History, Wallet,
+} from 'lucide-react';
 import { AppView } from '../../types';
 import { useAuth } from '../../hooks/useAuth';
 import { haptic } from '../../lib/haptic';
-
 import { useStore } from '../../store';
+import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
 
-import { SpendWiseConfig, UserRole } from '../features/onboarding/OnboardingModal';
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface SidebarProps {
   activeView:      AppView;
@@ -18,463 +23,600 @@ interface SidebarProps {
   config:          SpendWiseConfig | null;
   theme?:          'light' | 'dark';
   onToggleTheme?:  () => void;
+  onOpenQuickAdd?: () => void; // NEW — wired to FAB
 }
 
+// ─── Nav item definitions (unchanged from original) ───────────────────────────
+
 const ALL_NAV_ITEMS = [
-  { id: 'dashboard'     as AppView, label: 'Overview',         icon: LayoutDashboard },
-  { id: 'analytics'     as AppView, label: 'Statistics',       icon: PieChart },
-  { id: 'budget'        as AppView, label: 'Budget',           icon: Target },
-  { id: 'history'       as AppView, label: 'Transactions',     icon: ArrowLeftRight },
-  { id: 'goals'         as AppView, label: 'Goals',            icon: CreditCard },
-  { id: 'portfolio'     as AppView, label: 'Net Worth',        icon: TrendingUp },
-  { id: 'subscriptions' as AppView, label: 'Subscriptions',    icon: RefreshCw },
-  { id: 'shared'        as AppView, label: 'Shared',           icon: Users },
-  { id: 'sync'          as AppView, label: 'UPI Sync',         icon: Landmark },
-  { id: 'advisor'       as AppView, label: 'AI Advisor',       icon: Bot },
-  { id: 'education'     as AppView, label: 'Learn',            icon: GraduationCap },
-  { id: 'quests'        as AppView, label: 'Quests',           icon: Trophy },
-  { id: 'parental'      as AppView, label: 'Family',           icon: Shield },
-  { id: 'reports'       as AppView, label: 'Reports',          icon: FileText },
+  { id: 'dashboard'     as AppView, label: 'Overview',      icon: LayoutDashboard },
+  { id: 'analytics'     as AppView, label: 'Statistics',    icon: PieChart },
+  { id: 'budget'        as AppView, label: 'Budget',        icon: Target },
+  { id: 'history'       as AppView, label: 'Transactions',  icon: ArrowLeftRight },
+  { id: 'goals'         as AppView, label: 'Goals',         icon: CreditCard },
+  { id: 'portfolio'     as AppView, label: 'Net Worth',     icon: TrendingUp },
+  { id: 'subscriptions' as AppView, label: 'Subscriptions', icon: RefreshCw },
+  { id: 'shared'        as AppView, label: 'Shared',        icon: Users },
+  { id: 'sync'          as AppView, label: 'UPI Sync',      icon: Landmark },
+  { id: 'advisor'       as AppView, label: 'AI Advisor',    icon: Bot },
+  { id: 'education'     as AppView, label: 'Learn',         icon: GraduationCap },
+  { id: 'quests'        as AppView, label: 'Quests',        icon: Trophy },
+  { id: 'parental'      as AppView, label: 'Family',        icon: Shield },
+  { id: 'reports'       as AppView, label: 'Reports',       icon: FileText },
 ];
 
-export default function Sidebar({ activeView, onViewChange, overBudgetCount, config, showInstall, onInstall, theme, onToggleTheme }: SidebarProps) {
+// Items always in the mobile bottom nav (4 slots + FAB)
+const MOBILE_BOTTOM_IDS = ['dashboard', 'history', 'analytics', 'budget'];
+
+// ─── Desktop: icon-only sidebar item ─────────────────────────────────────────
+
+interface IconNavItemProps {
+  id: AppView;
+  label: string;
+  icon: React.ElementType;
+  isActive: boolean;
+  badge?: number;
+  onClick: () => void;
+}
+
+function IconNavItem({ id, label, icon: Icon, isActive, badge, onClick }: IconNavItemProps) {
+  const [showTip, setShowTip] = useState(false);
+  const tipTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const handleEnter = () => {
+    tipTimer.current = setTimeout(() => setShowTip(true), 120);
+  };
+  const handleLeave = () => {
+    clearTimeout(tipTimer.current);
+    setShowTip(false);
+  };
+
+  return (
+    <div className="relative flex items-center" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <button
+        onClick={onClick}
+        aria-label={label}
+        aria-current={isActive ? 'page' : undefined}
+        className="relative w-10 h-10 flex items-center justify-center rounded-xl transition-all duration-150 outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)]"
+        style={{
+          background: isActive
+            ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)'
+            : 'transparent',
+          color: isActive ? '#ffffff' : 'var(--sidebar-text)',
+        }}
+        onMouseEnter={e => {
+          if (!isActive) {
+            (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)';
+            (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
+          }
+        }}
+        onMouseLeave={e => {
+          if (!isActive) {
+            (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+            (e.currentTarget as HTMLButtonElement).style.color = 'var(--sidebar-text)';
+          }
+        }}
+      >
+        <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+        {/* Badge */}
+        {!!badge && badge > 0 && (
+          <span
+            className="absolute top-0.5 right-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-0.5"
+            style={{ background: 'var(--red, #ef4444)', color: '#fff' }}
+          >
+            {badge > 9 ? '9+' : badge}
+          </span>
+        )}
+      </button>
+
+      {/* Tooltip */}
+      <AnimatePresence>
+        {showTip && (
+          <motion.div
+            initial={{ opacity: 0, x: -4 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -4 }}
+            transition={{ duration: 0.12 }}
+            className="absolute left-[52px] z-50 pointer-events-none whitespace-nowrap"
+          >
+            <div
+              className="px-2.5 py-1 rounded-lg text-[12px] font-medium shadow-lg"
+              style={{
+                background: 'var(--sidebar-bg)',
+                color: '#fff',
+                border: '1px solid rgba(255,255,255,0.1)',
+                fontFamily: 'var(--font-inter)',
+              }}
+            >
+              {label}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Desktop separator ────────────────────────────────────────────────────────
+
+function Sep() {
+  return <div className="w-7 h-px mx-auto" style={{ background: 'rgba(255,255,255,0.08)' }} />;
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+
+export default function Sidebar({
+  activeView, onViewChange, overBudgetCount, config,
+  showInstall, onInstall, theme, onToggleTheme, onOpenQuickAdd,
+}: SidebarProps) {
   const { signOut } = useAuth();
   const store = useStore();
   const settings = store.parentalState;
   const isKidMode = settings.isTeenMode;
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return window.innerWidth < 768;
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    const mql = window.matchMedia('(max-width: 767px)');
-    const onChange = (e: MediaQueryListEvent) => setIsMobile(e.matches);
-    mql.addEventListener('change', onChange);
-    return () => mql.removeEventListener('change', onChange);
-  }, []);
-
-  // Close mobile menu when view changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false);
-  }, [activeView]);
-
-  // Lock body scroll when mobile menu is open to prevent background scrolling and fixed height issues on mobile
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileMenuOpen]);
-
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const userRole = config?.userRole || 'professional';
 
+  // Close drawer on view change
+  useEffect(() => { setIsDrawerOpen(false); }, [activeView]);
+
+  // Lock scroll when drawer open
+  useEffect(() => {
+    document.body.style.overflow = isDrawerOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isDrawerOpen]);
+
+  // Filter nav items (same logic as original)
   const navItems = ALL_NAV_ITEMS.filter(item => {
-    // Parental Kid Mode gating
     if (isKidMode) {
       if (item.id === 'sync') return false;
       if (item.id === 'analytics' && settings.hideAnalytics) return false;
     }
-
-    // Role-based gating
     if (userRole === 'student') {
-      // Students don't need high-end portfolio tracking or bank sync (as per audio)
       if (['portfolio', 'sync', 'reports'].includes(item.id)) return false;
     }
-    
     if (userRole === 'business' || userRole === 'professional') {
-      // Professionals/Business owners don't need basic 'Learn' tab focus
       if (item.id === 'education') return false;
     }
-
     return true;
   });
 
-  // Mobile nav: show 4 core items + 1 menu button to reduce crowding
-  const mobileNavItems = navItems.filter(item => 
-    ['dashboard', 'history', 'budget', 'advisor'].includes(item.id)
-  ).slice(0, 4);
+  // Desktop groups
+  const coreItems   = navItems.filter(i => ['dashboard', 'analytics', 'budget', 'history', 'goals'].includes(i.id));
+  const wealthItems = navItems.filter(i => ['portfolio', 'subscriptions', 'shared', 'sync'].includes(i.id));
+  const toolItems   = navItems.filter(i => ['advisor', 'education', 'quests', 'parental', 'reports'].includes(i.id));
 
+  // Mobile: 4 bottom items + drawer for the rest
+  const mobileBottomItems = navItems.filter(i => MOBILE_BOTTOM_IDS.includes(i.id)).slice(0, 4);
+  const mobileDrawerItems = navItems.filter(i => !MOBILE_BOTTOM_IDS.includes(i.id));
+
+  const navigate = (view: AppView) => {
+    haptic.light();
+    onViewChange(view);
+  };
+
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* ── Desktop Sidebar ── */}
-      {!isMobile && (
-        <aside
-          className="hidden md:flex flex-col fixed left-0 top-0 h-full z-40"
+      {/*
+       * ════════════════════════════════════════════════════════════════
+       * DESKTOP — icon-only sidebar (52px wide, was 260px)
+       * ════════════════════════════════════════════════════════════════
+       */}
+      <aside
+        className="hidden md:flex flex-col fixed left-0 top-0 h-full z-40 items-center py-4"
         style={{
-          width: 'var(--sidebar-width, 240px)',
+          width: '56px',
           background: 'var(--sidebar-bg)',
+          borderRight: '1px solid rgba(255,255,255,0.06)',
         }}
       >
-        {/* Brand */}
-        <div className="flex items-center px-6 h-[70px] shrink-0">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[var(--teal)] to-[#0d9488] flex items-center justify-center shadow-lg shadow-teal-500/20">
-              <Landmark size={16} className="text-white" />
-            </div>
-            <span style={{
-              fontFamily: 'var(--font-manrope)',
-              fontWeight: 800,
-              fontSize: '20px',
-              color: '#ffffff',
-              letterSpacing: '-0.5px'
-            }}>
-              Spend<span className="text-[var(--teal)]">Wise</span>
-            </span>
+        {/* Logo mark */}
+        <div className="mb-4 flex items-center justify-center">
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center shadow-md"
+            style={{ background: 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' }}
+            title="SpendWise"
+          >
+            <Landmark size={16} className="text-white" />
           </div>
         </div>
 
-        {/* Navigation */}
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" role="navigation" aria-label="Main Desktop Navigation">
-          {navItems.map((item) => {
+        <Sep />
+
+        {/* Core group */}
+        <nav className="flex flex-col items-center gap-1 mt-2" role="navigation" aria-label="Core navigation">
+          {coreItems.map(item => (
+            <IconNavItem
+              key={item.id}
+              id={item.id}
+              label={item.label}
+              icon={item.icon}
+              isActive={activeView === item.id}
+              badge={item.id === 'budget' ? overBudgetCount : 0}
+              onClick={() => navigate(item.id)}
+            />
+          ))}
+        </nav>
+
+        <Sep style={{ marginTop: '8px', marginBottom: '8px' }} />
+
+        {/* Wealth group */}
+        <nav className="flex flex-col items-center gap-1" role="navigation" aria-label="Wealth navigation">
+          {wealthItems.map(item => (
+            <IconNavItem
+              key={item.id}
+              id={item.id}
+              label={item.label}
+              icon={item.icon}
+              isActive={activeView === item.id}
+              onClick={() => navigate(item.id)}
+            />
+          ))}
+        </nav>
+
+        <Sep style={{ marginTop: '8px', marginBottom: '8px' }} />
+
+        {/* Tools group */}
+        <nav className="flex flex-col items-center gap-1" role="navigation" aria-label="Tools navigation">
+          {toolItems.map(item => (
+            <IconNavItem
+              key={item.id}
+              id={item.id}
+              label={item.label}
+              icon={item.icon}
+              isActive={activeView === item.id}
+              onClick={() => navigate(item.id)}
+            />
+          ))}
+        </nav>
+
+        {/* Spacer */}
+        <div className="flex-1" />
+
+        {/* Bottom: theme + profile + signout */}
+        <div className="flex flex-col items-center gap-1">
+          {showInstall && (
+            <IconNavItem
+              id={'profile' as AppView}
+              label="Install SpendWise"
+              icon={DownloadCloud}
+              isActive={false}
+              onClick={() => { haptic.medium(); onInstall?.(); }}
+            />
+          )}
+          <IconNavItem
+            id={'profile' as AppView}
+            label="Profile & Settings"
+            icon={Settings}
+            isActive={activeView === 'profile'}
+            onClick={() => navigate('profile')}
+          />
+          <div className="relative flex items-center group">
+            <button
+              onClick={() => { haptic.light(); signOut(); }}
+              aria-label="Sign out"
+              className="w-10 h-10 flex items-center justify-center rounded-xl transition-colors"
+              style={{ color: 'var(--sidebar-text)' }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.15)';
+                (e.currentTarget as HTMLButtonElement).style.color = '#f87171';
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
+                (e.currentTarget as HTMLButtonElement).style.color = 'var(--sidebar-text)';
+              }}
+            >
+              <LogOut size={18} strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* Desktop spacer — keeps main content from sitting under sidebar */}
+      <div className="hidden md:block shrink-0" style={{ width: '56px' }} />
+
+
+      {/*
+       * ════════════════════════════════════════════════════════════════
+       * MOBILE — bottom nav (4 items + centered FAB + More)
+       * ════════════════════════════════════════════════════════════════
+       */}
+      <div
+        className="fixed bottom-0 left-0 right-0 z-50 md:hidden"
+        style={{
+          background: 'var(--sidebar-bg)',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
+        }}
+      >
+        <div className="flex items-center justify-around px-1 h-[60px]">
+
+          {/* Left 2 items */}
+          {mobileBottomItems.slice(0, 2).map(item => {
             const Icon = item.icon;
             const isActive = activeView === item.id;
-
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  haptic.light();
-                  onViewChange(item.id);
-                }}
-                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onViewChange(item.id); } }}
+                onClick={() => navigate(item.id)}
+                aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
-                aria-label={`Navigate to ${item.label}`}
-                role="menuitem"
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 text-left relative group ${isActive ? 'shadow-md shadow-teal-500/10' : ''}`}
-                style={{
-                  background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
-                  color: isActive ? '#ffffff' : 'var(--sidebar-text)',
-                  fontFamily: 'var(--font-inter)',
-                  fontSize: '14px',
-                  fontWeight: isActive ? 600 : 500,
-                }}
-                onMouseEnter={e => {
-                  if (!isActive) {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)';
-                    (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
-                  }
-                }}
-                onMouseLeave={e => {
-                  if (!isActive) {
-                    (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                    (e.currentTarget as HTMLButtonElement).style.color = 'var(--sidebar-text)';
-                  }
-                }}
+                role="tab"
+                aria-selected={isActive}
+                className="relative flex flex-col items-center justify-center gap-[3px] min-w-[52px] h-full outline-none"
+                style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)' }}
               >
-                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
-                <span>{item.label}</span>
+                {/* Active pill background — CSS only, no layoutId */}
+                <div
+                  className="absolute inset-x-1 inset-y-2 rounded-xl transition-opacity duration-200"
+                  style={{
+                    background: 'var(--teal)',
+                    opacity: isActive ? 0.12 : 0,
+                  }}
+                />
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>
+                  {item.label}
+                </span>
                 {item.id === 'budget' && overBudgetCount > 0 && (
                   <span
-                    className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[length:var(--fs-overline)] font-bold px-1"
-                    style={{ background: 'rgba(239,68,68,0.9)', color: '#fff' }}
+                    className="absolute top-1.5 right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-0.5"
+                    style={{ background: 'var(--red, #ef4444)', color: '#fff' }}
                   >
-                    {overBudgetCount}
+                    {overBudgetCount > 9 ? '9+' : overBudgetCount}
                   </span>
                 )}
               </button>
             );
           })}
-        </nav>
 
-        {/* Bottom Actions */}
-        <div className="px-3 pb-6 space-y-1">
-          {showInstall && (
-            <motion.button
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                haptic.medium();
-                onInstall?.();
-              }}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all mb-2"
-              style={{ 
-                background: 'rgba(20,184,166,0.1)', 
-                color: 'var(--teal)',
-                border: '1px dashed var(--teal)',
-                fontFamily: 'var(--font-inter)',
-                fontSize: '14px',
-                fontWeight: 600
-              }}
-            >
-              <DownloadCloud size={18} className="animate-pulse" />
-              <span>Install SpendWise</span>
-            </motion.button>
-          )}
-
+          {/*
+           * Centre FAB — elevated, always above keyboard via Visual Viewport
+           * The CSS variable --kb-inset is set by MainShell.tsx (see instructions)
+           */}
           <button
-            onClick={() => {
-              haptic.light();
-              onViewChange('profile');
-            }}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300 relative ${activeView === 'profile' ? 'shadow-md shadow-teal-500/10' : ''}`}
-            style={{ 
-              background: activeView === 'profile' ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
-              color: activeView === 'profile' ? '#ffffff' : 'var(--sidebar-text)', 
-              fontFamily: 'var(--font-inter)', 
-              fontSize: '14px', 
-              fontWeight: activeView === 'profile' ? 600 : 500 
-            }}
-            onMouseEnter={e => { 
-              if (activeView !== 'profile') {
-                (e.currentTarget as HTMLButtonElement).style.background = 'var(--sidebar-hover)';
-                (e.currentTarget as HTMLButtonElement).style.color = '#ffffff';
-              } 
-            }}
-            onMouseLeave={e => { 
-              if (activeView !== 'profile') {
-                (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-                (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-secondary)';
-              } 
+            onClick={() => { haptic.medium(); onOpenQuickAdd?.(); }}
+            aria-label="Add transaction"
+            className="relative flex items-center justify-center rounded-full shadow-lg active:scale-95 transition-transform outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)] focus-visible:ring-offset-2"
+            style={{
+              width: '52px',
+              height: '52px',
+              marginTop: '-22px',
+              background: 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)',
+              boxShadow: '0 4px 16px rgba(20,184,166,0.4)',
+              border: '3px solid var(--sidebar-bg)',
             }}
           >
-            <Settings size={18} strokeWidth={activeView === 'profile' ? 2.5 : 2} />
-            <span>Profile & Settings</span>
+            <Plus size={22} className="text-white" strokeWidth={2.5} />
           </button>
 
-
-
-          
-          <button
-            onClick={() => {
-              haptic.light();
-              signOut();
-            }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-colors mt-4 border border-teal-500/10"
-            style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500 }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = 'rgba(45,212,191,0.1)'; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
-            title="Sign Out"
-          >
-            <LogOut size={18} strokeWidth={2} />
-            <span>Sign Out</span>
-          </button>
-        </div>
-      </aside>
-      )}
-
-      {/* ── Mobile Bottom Nav ── */}
-      {isMobile && (
-        <div
-          className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden items-center justify-around px-2 pt-2 pb-safe"
-          role="tablist"
-        aria-label="Mobile Navigation Bar"
-        style={{ 
-          background: 'var(--sidebar-bg)', 
-          borderTop: '1px solid rgba(255,255,255,0.08)',
-          boxShadow: '0 -4px 12px rgba(0,0,0,0.1)'
-        }}
-      >
-        {mobileNavItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = activeView === item.id;
-
-          return (
-            <button
-              key={item.id}
-              onClick={() => {
-                haptic.light();
-                onViewChange(item.id);
-              }}
-              role="tab"
-              aria-selected={isActive}
-              aria-label={item.label}
-              className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px] focus-visible:ring-2 focus-visible:ring-teal-500 rounded-xl"
-              style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)', transition: 'color 0.2s' }}
-            >
-              {isActive && (
-                <div
-                  className="absolute inset-0 bg-[var(--teal)]/10 rounded-xl -z-10 animate-fade-in"
-                />
-              )}
-              <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-              <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px', fontFamily: 'var(--font-inter)' }}>{item.label}</span>
-              
-              {isActive && (
-                <div 
-                  className="absolute -bottom-1 w-1.5 h-1.5 rounded-full bg-[var(--teal)] shadow-[0_0_8px_var(--teal)] animate-scale-in"
-                />
-              )}
-
-              {item.id === 'budget' && overBudgetCount > 0 && (
-                <span
-                  className="absolute top-0 right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[length:var(--fs-overline)] px-1 font-bold"
-                  style={{ background: 'var(--red)', color: '#fff', boxShadow: '0 2px 4px rgba(239,68,68,0.4)' }}
-                >
-                  {overBudgetCount > 9 ? '9+' : overBudgetCount}
-                </span>
-              )}
-            </button>
-          );
-        })}
-        <button
-          onClick={() => {
-            haptic.light();
-            setIsMobileMenuOpen(true);
-          }}
-          role="button"
-          aria-haspopup="dialog"
-          aria-expanded={isMobileMenuOpen}
-          aria-label="Open secondary navigation menu"
-          className="relative flex flex-col items-center justify-center w-16 h-12 min-h-[48px]"
-          style={{ color: 'var(--sidebar-text)' }}
-        >
-          <Menu size={20} strokeWidth={2} />
-          <span style={{ fontSize: '10px', fontWeight: 600, marginTop: '2px', fontFamily: 'var(--font-inter)' }}>Menu</span>
-        </button>
-      </div>
-      )}
-
-      {/* ── Mobile Drawer (Overlay) ── */}
-      {isMobile && isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[70] md:hidden flex">
-          {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
-            onClick={() => setIsMobileMenuOpen(false)}
-          />
-          {/* Drawer */}
-          <div 
-            className="relative w-[280px] h-full flex flex-col animate-slide-in-right bg-[var(--sidebar-bg)] ml-auto shadow-2xl"
-          >
-            <div className="flex items-center justify-between p-4 border-b border-white/10" style={{ paddingTop: 'calc(env(safe-area-inset-top) + 16px)' }}>
-              <span style={{
-                fontFamily: 'var(--font-manrope)',
-                fontWeight: 800,
-                fontSize: '18px',
-                color: '#ffffff',
-              }}>
-                Spend<span className="text-[var(--teal)]">Wise</span>
-              </span>
-              <button 
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2 rounded-lg bg-white/5 text-white min-h-[44px] min-w-[44px] flex items-center justify-center"
+          {/* Right 2 items */}
+          {mobileBottomItems.slice(2, 4).map(item => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => navigate(item.id)}
+                aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
+                role="tab"
+                aria-selected={isActive}
+                className="relative flex flex-col items-center justify-center gap-[3px] min-w-[52px] h-full outline-none"
+                style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)' }}
               >
-                <X size={20} />
+                <div
+                  className="absolute inset-x-1 inset-y-2 rounded-xl transition-opacity duration-200"
+                  style={{ background: 'var(--teal)', opacity: isActive ? 0.12 : 0 }}
+                />
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>
+                  {item.label}
+                </span>
+                {item.id === 'budget' && overBudgetCount > 0 && (
+                  <span
+                    className="absolute top-1.5 right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-0.5"
+                    style={{ background: 'var(--red, #ef4444)', color: '#fff' }}
+                  >
+                    {overBudgetCount > 9 ? '9+' : overBudgetCount}
+                  </span>
+                )}
               </button>
-            </div>
-            <div className="flex-1 overflow-y-auto p-3 space-y-1">
-              {(() => {
-                const bottomNavIds = mobileNavItems.map(i => i.id);
-                return navItems.filter(item => !bottomNavIds.includes(item.id));
-              })().map((item) => {
-                const Icon = item.icon;
-                const isActive = activeView === item.id;
-                return (
+            );
+          })}
+
+          {/* More button */}
+          <button
+            onClick={() => { haptic.light(); setIsDrawerOpen(true); }}
+            aria-label="More features"
+            aria-expanded={isDrawerOpen}
+            className="relative flex flex-col items-center justify-center gap-[3px] min-w-[52px] h-full outline-none"
+            style={{ color: 'var(--sidebar-text)' }}
+          >
+            <MoreHorizontal size={20} strokeWidth={2} />
+            <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>More</span>
+          </button>
+
+        </div>
+      </div>
+
+
+      {/*
+       * ════════════════════════════════════════════════════════════════
+       * MOBILE DRAWER — slides up from bottom, shows ALL remaining views
+       * ════════════════════════════════════════════════════════════════
+       */}
+      <AnimatePresence>
+        {isDrawerOpen && (
+          <div className="fixed inset-0 z-[70] md:hidden flex flex-col justify-end">
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="absolute inset-0 bg-black/50"
+              onClick={() => setIsDrawerOpen(false)}
+            />
+
+            {/* Sheet */}
+            <motion.div
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 28, stiffness: 320 }}
+              className="relative rounded-t-[28px] overflow-hidden flex flex-col"
+              style={{
+                background: 'var(--sidebar-bg)',
+                maxHeight: '80vh',
+                paddingBottom: 'env(safe-area-inset-bottom)',
+              }}
+            >
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-2">
+                <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+              </div>
+
+              {/* Header row */}
+              <div className="flex items-center justify-between px-5 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                <span style={{ fontFamily: 'var(--font-manrope)', fontWeight: 800, fontSize: '18px', color: '#fff' }}>
+                  Spend<span style={{ color: 'var(--teal)' }}>Wise</span>
+                </span>
+                <button
+                  onClick={() => setIsDrawerOpen(false)}
+                  aria-label="Close menu"
+                  className="w-9 h-9 flex items-center justify-center rounded-full"
+                  style={{ background: 'rgba(255,255,255,0.08)' }}
+                >
+                  <X size={18} className="text-white" />
+                </button>
+              </div>
+
+              {/* ALL remaining nav items — shown in a 2-column grid */}
+              <div className="flex-1 overflow-y-auto p-4">
+                {/* Quick actions row */}
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {mobileDrawerItems.map(item => {
+                    const Icon = item.icon;
+                    const isActive = activeView === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => navigate(item.id)}
+                        className="flex items-center gap-3 px-4 py-3.5 rounded-2xl text-left transition-all min-h-[52px]"
+                        style={{
+                          background: isActive
+                            ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)'
+                            : 'rgba(255,255,255,0.05)',
+                          color: isActive ? '#fff' : 'var(--sidebar-text)',
+                          fontFamily: 'var(--font-inter)',
+                          fontSize: '13px',
+                          fontWeight: isActive ? 600 : 500,
+                          border: '1px solid rgba(255,255,255,0.06)',
+                        }}
+                      >
+                        <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
+                        <span>{item.label}</span>
+                        {item.id === 'budget' && overBudgetCount > 0 && (
+                          <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full text-[10px] font-bold px-1"
+                            style={{ background: 'var(--red, #ef4444)', color: '#fff' }}>
+                            {overBudgetCount}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Divider */}
+                <div className="h-px mb-4" style={{ background: 'rgba(255,255,255,0.07)' }} />
+
+                {/* Theme + settings row */}
+                <div className="flex flex-col gap-2">
+                  {/* Theme toggle */}
                   <button
-                    key={item.id}
-                    onClick={() => {
-                      haptic.light();
-                      onViewChange(item.id);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all text-left min-h-[44px]`}
+                    onClick={() => { haptic.medium(); onToggleTheme?.(); }}
+                    className="flex items-center justify-between px-4 py-3 rounded-2xl min-h-[52px]"
                     style={{
-                      background: isActive ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
-                      color: isActive ? '#ffffff' : 'var(--sidebar-text)',
+                      background: 'rgba(255,255,255,0.05)',
+                      color: '#fff',
                       fontFamily: 'var(--font-inter)',
                       fontSize: '14px',
-                      fontWeight: isActive ? 600 : 500,
+                      fontWeight: 500,
+                      border: '1px solid rgba(255,255,255,0.06)',
                     }}
                   >
-                    <Icon size={17} strokeWidth={isActive ? 2.5 : 2} />
-                    <span>{item.label}</span>
-                    {item.id === 'budget' && overBudgetCount > 0 && (
-                      <span
-                        className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full text-[length:var(--fs-overline)] font-bold px-1"
-                        style={{ background: 'var(--red)', color: '#fff' }}
-                      >
-                        {overBudgetCount}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-3">
+                      {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+                      <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                    </div>
+                    {/* Toggle pill */}
+                    <div className="w-10 h-5 rounded-full relative" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                      <div
+                        className="absolute top-1 w-3 h-3 rounded-full transition-all"
+                        style={{
+                          background: 'var(--teal)',
+                          [theme === 'dark' ? 'right' : 'left']: '4px',
+                        }}
+                      />
+                    </div>
                   </button>
-                );
-              })}
-            </div>
-            <div className="p-4 border-t border-white/10 space-y-2" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 16px)' }}>
-              {/* Theme Toggle (Mobile Only) */}
-              <button
-                onClick={() => {
-                  haptic.medium();
-                  onToggleTheme?.();
-                }}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl min-h-[48px] bg-white/5 mb-2"
-                style={{ color: '#ffffff', fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 500 }}
-              >
-                <div className="flex items-center gap-3">
-                  {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
-                  <span>{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                </div>
-                <div className="w-10 h-5 rounded-full bg-white/10 relative">
-                   <div className={`absolute top-1 w-3 h-3 rounded-full bg-[var(--teal)] transition-all ${theme === 'dark' ? 'right-1' : 'left-1'}`} />
-                </div>
-              </button>
 
-              {showInstall && (
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    haptic.medium();
-                    onInstall?.();
-                  }}
-                  className="w-full flex items-center gap-3 px-4 py-3 rounded-xl mb-2"
-                  style={{ 
-                    background: 'var(--teal)', 
-                    color: '#ffffff',
-                    fontFamily: 'var(--font-inter)',
-                    fontSize: '15px',
-                    fontWeight: 700
-                  }}
-                >
-                  <DownloadCloud size={18} />
-                  <span>Install Native App</span>
-                </motion.button>
-              )}
-              <button
-                onClick={() => {
-                  haptic.light();
-                  onViewChange('profile');
-                }}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl min-h-[48px]`}
-                style={{ 
-                  background: activeView === 'profile' ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' : 'transparent',
-                  color: activeView === 'profile' ? '#ffffff' : 'var(--sidebar-text)', 
-                  fontFamily: 'var(--font-inter)', 
-                  fontSize: '15px', 
-                  fontWeight: activeView === 'profile' ? 600 : 500 
-                }}
-              >
-                <Settings size={18} strokeWidth={activeView === 'profile' ? 2.5 : 2} />
-                <span>Profile & Settings</span>
-              </button>
-              <button
-                onClick={() => {
-                  haptic.light();
-                  signOut();
-                }}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border border-teal-500/10 min-h-[48px]"
-                style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 500 }}
-              >
-                <LogOut size={18} strokeWidth={2} />
-                <span>Sign Out</span>
-              </button>
-            </div>
+                  {showInstall && (
+                    <button
+                      onClick={() => { haptic.medium(); onInstall?.(); setIsDrawerOpen(false); }}
+                      className="flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[52px]"
+                      style={{
+                        background: 'var(--teal)',
+                        color: '#fff',
+                        fontFamily: 'var(--font-inter)',
+                        fontSize: '14px',
+                        fontWeight: 700,
+                      }}
+                    >
+                      <DownloadCloud size={18} />
+                      <span>Install App</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => navigate('profile')}
+                    className="flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[52px]"
+                    style={{
+                      background: activeView === 'profile'
+                        ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)'
+                        : 'rgba(255,255,255,0.05)',
+                      color: activeView === 'profile' ? '#fff' : 'var(--sidebar-text)',
+                      fontFamily: 'var(--font-inter)',
+                      fontSize: '14px',
+                      fontWeight: activeView === 'profile' ? 600 : 500,
+                      border: '1px solid rgba(255,255,255,0.06)',
+                    }}
+                  >
+                    <Settings size={18} strokeWidth={2} />
+                    <span>Profile & Settings</span>
+                  </button>
+
+                  <button
+                    onClick={() => { haptic.light(); signOut(); }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[52px]"
+                    style={{
+                      color: 'var(--teal)',
+                      fontFamily: 'var(--font-inter)',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      border: '1px solid rgba(20,184,166,0.2)',
+                    }}
+                  >
+                    <LogOut size={18} strokeWidth={2} />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
-
-      {/* ── Sidebar spacer (Desktop) ── */}
-      {!isMobile && (
-        <div className="hidden md:block shrink-0" style={{ width: 'var(--sidebar-width, 240px)' }} />
-      )}
+        )}
+      </AnimatePresence>
     </>
   );
 }

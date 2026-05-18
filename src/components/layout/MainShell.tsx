@@ -80,7 +80,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
   const [showFeedback, setShowFeedback] = useState(false);
   const [isLocked, setIsLocked] = useState(() => {
     // Check if biometric lock is enabled in settings
-    return localStorage.getItem('spendwise_biometric_enabled') === 'true';
+    return useStore.getState().userPreferences?.biometricEnabled || false;
   });
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
@@ -99,19 +99,26 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
     const handleViewportResize = () => {
-      if (!window.visualViewport) return;
-      const heightDiff = window.innerHeight - window.visualViewport.height;
+      const vv = window.visualViewport;
+      if (!vv) return;
+      const heightDiff = window.innerHeight - vv.height - vv.offsetTop;
       // If height difference is significant, keyboard is likely open
       if (heightDiff > 100) {
         setKeyboardOffset(heightDiff);
       } else {
         setKeyboardOffset(0);
       }
+      const kbHeight = window.innerHeight - vv.height - vv.offsetTop;
+      document.documentElement.style.setProperty(
+        '--kb-inset',
+        `${Math.max(0, kbHeight)}px`
+      );
     };
     
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleViewportResize);
       window.visualViewport.addEventListener('scroll', handleViewportResize);
+      handleViewportResize();
     }
 
     return () => {
@@ -557,6 +564,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
             config={config}
             theme={theme}
             onToggleTheme={toggleTheme}
+            onOpenQuickAdd={() => setShowQuickAdd(true)}
           />
 
           <div className="flex-1 flex flex-col min-w-0">

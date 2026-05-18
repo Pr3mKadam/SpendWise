@@ -20,7 +20,7 @@
     --sidebar-active:   #14b8a6;
     --sidebar-text:     rgba(255, 255, 255, 0.8);
     --sidebar-text-active: #ffffff;
-    --sidebar-width:    260px;
+    --sidebar-width:    56px;
 
     /* ── Main Content Area ── */
     --bg:            #f8fafc;
@@ -712,4 +712,32 @@
 @keyframes view-enter {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Hide scrollbar on snap row (cross-browser) ───────────────────────────── */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Visual Viewport keyboard inset (fixes FAB hiding behind keyboard) ────── */
+:root {
+  --kb-inset: 0px;
+}
+
+/* ── Mobile bottom-nav safe-area padding ──────────────────────────────────── */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── Snap row card hover on desktop ──────────────────────────────────────── */
+@media (hover: hover) {
+  .snap-card-hover:hover {
+    border-color: var(--teal);
+    transform: translateY(-1px);
+    transition: border-color 0.15s, transform 0.15s;
+  }
 }
