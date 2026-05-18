@@ -75,10 +75,11 @@ export async function parseUPIPayment(
 
   // 2 — Attempt AI Analysis
   const aiResult = await processNaturalLanguageExpense(description || upiVPA);
-  if (aiResult) {
+  if (aiResult && aiResult.length > 0) {
+    const firstResult = aiResult[0];
     const out = {
-      merchant: aiResult.merchant || description || upiVPA || 'UPI Payment',
-      category: aiResult.category || 'Shopping',
+      merchant: firstResult.merchant || description || upiVPA || 'UPI Payment',
+      category: firstResult.category || 'Shopping',
       confidence: 0.95,
       aiParsed: true,
     };

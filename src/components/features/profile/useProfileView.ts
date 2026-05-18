@@ -48,7 +48,6 @@ export function useProfileView(
   const highContrast = prefs.highContrast;
   const hapticsEnabled = prefs.hapticsEnabled;
   const shakeEnabled = prefs.shakeEnabled;
-  const biometricEnabled = prefs.biometricEnabled;
 
   const [notifPermission, setNotifPermission] = useState<NotificationPermission>(
     typeof Notification !== 'undefined' ? Notification.permission : 'default'
@@ -86,10 +85,6 @@ export function useProfileView(
   };
   const toggleShake = (enabled: boolean) => {
     store.setUserPreferences({ ...prefs, shakeEnabled: enabled });
-    if (enabled) haptic.medium();
-  };
-  const toggleBiometric = (enabled: boolean) => {
-    store.setUserPreferences({ ...prefs, biometricEnabled: enabled });
     if (enabled) haptic.medium();
   };
   const requestNotifPermission = async () => {
@@ -191,7 +186,6 @@ export function useProfileView(
     highContrast, toggleHighContrast,
     hapticsEnabled, toggleHaptics,
     shakeEnabled, toggleShake,
-    biometricEnabled, toggleBiometric,
     notifPermission, requestNotifPermission, testNotification,
     // handlers
     handleSave, handleSecureExport, handleRestore,

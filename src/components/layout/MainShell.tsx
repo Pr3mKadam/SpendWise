@@ -28,7 +28,6 @@ const OnboardingModal = lazy(() => import('../features/onboarding/OnboardingModa
 const ParentalPinGate = lazy(() => import('../features/parental/ParentalControlGate').then(m => ({ default: m.ParentalPinGate })));
 const KidModeBanner = lazy(() => import('../features/parental/ParentalControlGate').then(m => ({ default: m.KidModeBanner })));
 const QuickAddModal = lazy(() => import('../common/QuickAddModal').then(m => ({ default: m.QuickAddModal })));
-const BiometricLock = lazy(() => import('../features/auth/BiometricLock').then(m => ({ default: m.BiometricLock })));
 const FeedbackModal = lazy(() => import('../common/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
 import { Shield, Sparkles } from 'lucide-react';
 
@@ -78,10 +77,6 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
   const [showNotifications, setShowNotifications] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [isLocked, setIsLocked] = useState(() => {
-    // Check if biometric lock is enabled in settings
-    return useStore.getState().userPreferences?.biometricEnabled || false;
-  });
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [keyboardOffset, setKeyboardOffset] = useState(0);
@@ -488,18 +483,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
         )}
       </AnimatePresence>
 
-      <AnimatePresence>
-        {isLocked && (
-          <Suspense fallback={null}>
-            <BiometricLock 
-              onUnlocked={() => {
-                setIsLocked(false);
-                haptic.success();
-              }} 
-            />
-          </Suspense>
-        )}
-      </AnimatePresence>
+
 
       <AnimatePresence>
         {isVerifying && (

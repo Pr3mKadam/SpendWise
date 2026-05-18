@@ -46,7 +46,6 @@ export default function ProfileView({
     fontSize, FONT_SIZES, FONT_LABELS, handleFontSize,
     darkMode, handleDarkMode, highContrast, toggleHighContrast,
     hapticsEnabled, toggleHaptics, shakeEnabled, toggleShake,
-    biometricEnabled, toggleBiometric,
     notifPermission, requestNotifPermission, testNotification,
     handleSave, handleSecureExport, handleRestore,
     handleRawDBExport, handleRawDBImport,
@@ -107,7 +106,6 @@ export default function ProfileView({
               highContrast={highContrast} onHighContrast={toggleHighContrast}
               hapticsEnabled={hapticsEnabled} onHaptics={toggleHaptics}
               shakeEnabled={shakeEnabled} onShake={toggleShake}
-              biometricEnabled={biometricEnabled} onBiometric={toggleBiometric}
               fontSize={fontSize} FONT_SIZES={FONT_SIZES} FONT_LABELS={FONT_LABELS} onFontSize={handleFontSize}
             />
           }
@@ -206,7 +204,6 @@ export default function ProfileView({
         highContrast={highContrast} onHighContrast={toggleHighContrast}
         hapticsEnabled={hapticsEnabled} onHaptics={toggleHaptics}
         shakeEnabled={shakeEnabled} onShake={toggleShake}
-        biometricEnabled={biometricEnabled} onBiometric={toggleBiometric}
         fontSize={fontSize} FONT_SIZES={FONT_SIZES} FONT_LABELS={FONT_LABELS} onFontSize={handleFontSize}
       />
 

@@ -61,7 +61,7 @@ interface IconNavItemProps {
 
 function IconNavItem({ id, label, icon: Icon, isActive, badge, onClick }: IconNavItemProps) {
   const [showTip, setShowTip] = useState(false);
-  const tipTimer = useRef<ReturnType<typeof setTimeout>>();
+  const tipTimer = useRef<any>(null);
 
   const handleEnter = () => {
     tipTimer.current = setTimeout(() => setShowTip(true), 120);
@@ -139,8 +139,8 @@ function IconNavItem({ id, label, icon: Icon, isActive, badge, onClick }: IconNa
 
 // ─── Desktop separator ────────────────────────────────────────────────────────
 
-function Sep() {
-  return <div className="w-7 h-px mx-auto" style={{ background: 'rgba(255,255,255,0.08)' }} />;
+function Sep({ style }: { style?: React.CSSProperties }) {
+  return <div className="w-7 h-px mx-auto" style={{ background: 'rgba(255,255,255,0.08)', ...style }} />;
 }
 
 // ─── Main component ───────────────────────────────────────────────────────────
