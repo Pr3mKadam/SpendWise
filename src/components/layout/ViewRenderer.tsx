@@ -297,7 +297,7 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
           </ViewWrapper>
         )}
 
-        {(activeView === 'quests' || activeView === 'badges' || activeView === 'inventory' || activeView === 'shop') && (
+        {(activeView === 'quests' || activeView === 'badges' || activeView === 'inventory' || activeView === 'shop' || activeView === 'gamification') && (
           <ViewWrapper id={activeView} activeView={activeView}>
             <GamificationView
               transactions={transactions}

@@ -29,6 +29,9 @@ dist-ssr
 *.sw?
 Thumbs.db
 
-
-
-
+# Playwright
+playwright-report/
+test-results/
+/qa_test.png
+/qa_test_error.png
+/qa_test.py

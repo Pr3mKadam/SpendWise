@@ -107,7 +107,7 @@ export default function App() {
     'dashboard', 'transactions', 'budget', 'analytics', 'history', 
     'settings', 'goals', 'quests', 'inventory', 'shop', 'badges', 
     'shared', 'sync', 'profile', 'parental', 'portfolio', 
-    'subscriptions', 'advisor', 'education', 'reports'
+    'subscriptions', 'advisor', 'education', 'reports', 'gamification'
   ];
   const currentPath = path.replace('/', '') as AppView;
   const initialView: AppView = validViews.includes(currentPath) ? currentPath : 'dashboard';
