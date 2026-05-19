@@ -319,168 +319,80 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
               </div>
             </div>
 
-            {/* ─── Premium Dashboard Hero (Custom tailored for Shared Group) ─── */}
+            {/* ─── Standardized Dashboard Hero ─── */}
             {sw.selectedGroupId && !sw.loading && (
-              <motion.div
-                initial={{ opacity: 0, y: -4 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative w-full overflow-hidden rounded-3xl shadow-lg border border-white/10 dark:border-white/5 mb-6"
-                style={{ minHeight: '190px' }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: `linear-gradient(135deg, #091a1d 0%, #0d2c31 35%, #05161a 70%, #030d0f 100%)`,
-                  }}
-                />
-                
-                {/* Glossy overlay */}
-                <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]" />
-
-                {/* Animated glow overlays */}
-                <div
-                  className="absolute inset-0 opacity-25"
-                  style={{
-                    backgroundImage: `radial-gradient(circle at 10% 40%, rgba(20,184,166,0.3) 0%, transparent 60%),
-                                      radial-gradient(circle at 80% 80%, rgba(139,92,246,0.15) 0%, transparent 50%)`,
-                  }}
-                />
-
-                {/* Subtle grid pattern */}
-                <div
-                  className="absolute inset-0 opacity-[0.03]"
-                  style={{
-                    backgroundImage: `linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                                      linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)`,
-                    backgroundSize: '32px 32px',
-                  }}
-                />
-
-                {/* Content */}
-                <div className="relative z-10 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  {/* Left Side: Group stats */}
-                  <div className="flex flex-col gap-1.5">
-                    {/* Greeting/Purpose Badge */}
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <div
-                        className="flex items-center gap-1.5 px-3 py-1 rounded-full border"
+              <div className="mb-6 space-y-4">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+                  <div>
+                    <h2 className="flex items-center gap-2 text-headline">
+                      <Users size={22} style={{ color: 'var(--teal)' }} />
+                      {groupName}
+                    </h2>
+                    <p className="text-caption mt-1 max-w-lg">
+                      Manage your group's shared finances, cohorts, and goals in real-time.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                     <div
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-bold text-xs"
                         style={{
                           background: purposeConfig.bg,
                           borderColor: purposeConfig.border,
+                          color: purposeConfig.text
                         }}
                       >
-                        <Sparkles size={11} style={{ color: '#14b8a6' }} />
-                        <span style={{ fontSize: '11px', fontWeight: 800, color: '#2dd4bf', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                          {sw.selectedGroup?.purpose || 'friends'} group {PURPOSE_EMOJI[sw.selectedGroup?.purpose || 'friends']}
-                        </span>
+                        <Sparkles size={14} />
+                        {sw.selectedGroup?.purpose || 'friends'} group {PURPOSE_EMOJI[sw.selectedGroup?.purpose || 'friends']}
                       </div>
-                    </div>
-
-                    {/* Group Name */}
-                    <h1 className="m-0 text-white font-extrabold text-2xl xl:text-3xl tracking-tight" style={{ fontFamily: 'var(--font-manrope)' }}>
-                      {groupName}
-                    </h1>
-
-                    <div className="mt-2" style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                      Group Pot Balance
-                    </div>
-
-                    <div
-                      className="tabular-nums"
-                      style={{ fontFamily: 'var(--font-manrope)', fontSize: '42px', fontWeight: 900, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.02em' }}
-                    >
-                      {currency}{sw.walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                    </div>
-                  </div>
-
-                  {/* Right Side: Cohort Info panel */}
-                  <div className="flex flex-col gap-3 md:items-end justify-center shrink-0">
-                    <div className="flex items-center gap-6 bg-white/5 backdrop-blur-md rounded-2xl p-4 border border-white/10">
-                      <div>
-                        <div style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Cohorts</div>
-                        <div style={{ fontSize: '18px', fontWeight: 800, color: '#38bdf8', fontFamily: 'var(--font-manrope)' }}>
-                          {sw.members.length} <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Active</span>
-                        </div>
-                      </div>
-                      <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)' }} />
-                      <div>
-                        <div style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Split Targets</div>
-                        <div style={{ fontSize: '18px', fontWeight: 800, color: '#fbbf24', fontFamily: 'var(--font-manrope)' }}>
-                          {sw.goals.length} <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Goals</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <div className="flex -space-x-2 overflow-hidden">
-                        {sw.members.slice(0, 3).map((m, idx) => (
-                          <div 
-                            key={m.id} 
-                            className="inline-block h-6 w-6 rounded-full ring-2 ring-[#05161a] bg-teal-800 text-white flex items-center justify-center font-bold text-[9px] uppercase"
-                            title={m.invited_email || m.display_name}
-                          >
-                            {m.display_name?.slice(0, 2) || 'M'}
-                          </div>
-                        ))}
-                        {sw.members.length > 3 && (
-                          <div className="inline-block h-6 w-6 rounded-full ring-2 ring-[#05161a] bg-slate-800 text-slate-300 flex items-center justify-center font-bold text-[9px]">
-                            +{sw.members.length - 3}
-                          </div>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-slate-400 font-semibold font-inter">Sync active with cohorts</span>
-                    </div>
                   </div>
                 </div>
-              </motion.div>
-            )}
 
-            {/* Premium Stat Cards Grid */}
-            {sw.selectedGroupId && (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <motion.div 
-                  whileHover={{ y: -3, scale: 1.01 }} 
-                  onClick={() => { haptic.light(); setTab('wallet'); }}
-                  className={`bg-[var(--surface-card)] border ${tab === 'wallet' ? 'border-[var(--teal)]' : 'border-[var(--border)]'} rounded-2xl p-5 shadow-sm relative overflow-hidden group cursor-pointer`}
-                >
-                  <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl transition-all group-hover:scale-125" />
-                  <span className="text-[10px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider block mb-1">Pot Balance Status</span>
-                  <div className="flex items-baseline gap-1 mt-1.5">
-                    <span className="text-2xl font-black text-emerald-500 tabular-nums">
-                      {currency}{sw.walletBalance.toLocaleString()}
-                    </span>
-                  </div>
-                </motion.div>
+                {/* Standard Stat Cards Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <motion.div 
+                    whileHover={{ y: -2 }} 
+                    onClick={() => { haptic.light(); setTab('wallet'); }}
+                    className={`card px-4 py-4 cursor-pointer transition-all ${tab === 'wallet' ? 'border-[var(--teal)] shadow-[0_0_0_1px_var(--teal)]' : ''}`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span style={{ color: 'var(--emerald)' }}><Wallet size={16} /></span>
+                      <span className="font-inter text-[length:var(--fs-overline)] uppercase tracking-wider font-semibold text-[var(--text-muted)]">Pot Balance</span>
+                    </div>
+                    <p className="font-manrope font-bold text-xl text-[var(--text-primary)]">
+                      {currency}{sw.walletBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </p>
+                  </motion.div>
 
-                <motion.div 
-                  whileHover={{ y: -3, scale: 1.01 }} 
-                  onClick={() => { haptic.light(); setTab('members'); }}
-                  className={`bg-[var(--surface-card)] border ${tab === 'members' ? 'border-[var(--teal)]' : 'border-[var(--border)]'} rounded-2xl p-5 shadow-sm relative overflow-hidden group cursor-pointer`}
-                >
-                  <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-20 h-20 bg-[var(--teal)]/10 rounded-full blur-2xl transition-all group-hover:scale-125" />
-                  <span className="text-[10px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider block mb-1">Connected Cohorts</span>
-                  <div className="flex items-baseline gap-1 mt-1.5">
-                    <span className="text-2xl font-black text-[var(--text-primary)] tabular-nums">
+                  <motion.div 
+                    whileHover={{ y: -2 }} 
+                    onClick={() => { haptic.light(); setTab('members'); }}
+                    className={`card px-4 py-4 cursor-pointer transition-all ${tab === 'members' ? 'border-[var(--teal)] shadow-[0_0_0_1px_var(--teal)]' : ''}`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span style={{ color: 'var(--teal)' }}><Users size={16} /></span>
+                      <span className="font-inter text-[length:var(--fs-overline)] uppercase tracking-wider font-semibold text-[var(--text-muted)]">Connected Cohorts</span>
+                    </div>
+                    <p className="font-manrope font-bold text-xl text-[var(--text-primary)] flex items-baseline gap-1.5">
                       {sw.members.length}
-                    </span>
-                    <span className="text-[10px] text-[var(--text-muted)] font-semibold ml-1.5">members online</span>
-                  </div>
-                </motion.div>
+                      <span className="text-[11px] text-[var(--text-muted)] font-medium">members</span>
+                    </p>
+                  </motion.div>
 
-                <motion.div 
-                  whileHover={{ y: -3, scale: 1.01 }} 
-                  onClick={() => { haptic.light(); setTab('goals'); }}
-                  className={`bg-[var(--surface-card)] border ${tab === 'goals' ? 'border-[var(--teal)]' : 'border-[var(--border)]'} rounded-2xl p-5 shadow-sm relative overflow-hidden group cursor-pointer`}
-                >
-                  <div className="absolute top-0 right-0 translate-x-4 -translate-y-4 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl transition-all group-hover:scale-125" />
-                  <span className="text-[10px] font-extrabold text-[var(--text-muted)] uppercase tracking-wider block mb-1">Active Targets</span>
-                  <div className="flex items-baseline gap-1 mt-1.5">
-                    <span className="text-2xl font-black text-amber-500 tabular-nums">
+                  <motion.div 
+                    whileHover={{ y: -2 }} 
+                    onClick={() => { haptic.light(); setTab('goals'); }}
+                    className={`card px-4 py-4 cursor-pointer transition-all ${tab === 'goals' ? 'border-[var(--teal)] shadow-[0_0_0_1px_var(--teal)]' : ''}`}
+                  >
+                    <div className="flex items-center gap-2 mb-2">
+                      <span style={{ color: 'var(--amber)' }}><Target size={16} /></span>
+                      <span className="font-inter text-[length:var(--fs-overline)] uppercase tracking-wider font-semibold text-[var(--text-muted)]">Active Targets</span>
+                    </div>
+                    <p className="font-manrope font-bold text-xl text-[var(--text-primary)] flex items-baseline gap-1.5">
                       {sw.goals.length}
-                    </span>
-                    <span className="text-[10px] text-[var(--text-muted)] font-semibold ml-1.5">shared goals</span>
-                  </div>
-                </motion.div>
+                      <span className="text-[11px] text-[var(--text-muted)] font-medium">shared goals</span>
+                    </p>
+                  </motion.div>
+                </div>
               </div>
             )}
 

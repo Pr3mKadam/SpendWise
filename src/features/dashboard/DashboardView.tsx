@@ -153,7 +153,7 @@ export function DashboardView({
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
-      <div className="min-h-screen pb-20 md:pb-6">
+      <div className="min-h-screen pb-6 md:pb-2">
         <div className="max-w-[1200px] mx-auto">
           
           {/* Header - Simplified on Mobile */}

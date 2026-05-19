@@ -170,7 +170,7 @@ export default function ProfileViewMobile({
 
       {/* 4. App Info & Install */}
       <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-5 text-center shadow-sm">
-        <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">SpendWise PWA v4.0</p>
+        <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">SpendWise PWA</p>
         <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] leading-relaxed mb-6">
           Your data is encrypted and stored locally on this device.<br/>We never upload your transactions to any server.
         </p>

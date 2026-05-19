@@ -245,7 +245,7 @@ export default function Sidebar({
             style={{ background: 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)' }}
             title="SpendWise"
           >
-            <Wallet size={16} className="text-white" />
+            <Coins size={16} className="text-white" />
           </div>
         </div>
 

@@ -115,7 +115,7 @@ export default function DashboardViewMobile({
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="view-enter pb-28" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+    <div className="view-enter pb-6" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
 
       {/* ── 1. Balance hero card ───────────────────────────────────────── */}
       <section style={{ padding: '0 4px' }}>

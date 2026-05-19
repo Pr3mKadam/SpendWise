@@ -247,7 +247,7 @@ export default function ProfileView({
         <div>
           <p className="font-inter font-semibold text-[13px]" style={{ color: 'var(--text-primary)' }}>SpendWise</p>
           <p className="font-inter text-[length:var(--fs-caption)]" style={{ color: 'var(--text-muted)' }}>
-            v4.0 (PWA) · {transactions.length} transactions · All data stored locally
+            SpendWise PWA · {transactions.length} transactions · All data stored locally
           </p>
         </div>
         <div className="flex items-center gap-4">
