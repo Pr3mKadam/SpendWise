@@ -95,7 +95,13 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
       {/* Calendar View */}
       {subscriptions.length > 0 && (
         <SubscriptionCalendar
-          subscriptions={subscriptions}
+          subscriptions={subscriptions.map((s, idx) => ({
+            id: `${s.merchant}-${s.frequency}-${idx}`,
+            name: s.merchant,
+            amount: s.avgAmount,
+            billingDay: new Date(s.nextExpected + 'T00:00:00').getDate(),
+            color: getServiceColor(s.merchant),
+          }))}
           currency={format(0).replace(/[0-9.,]/g, '').trim()}
         />
       )}

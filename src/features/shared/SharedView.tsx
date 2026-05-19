@@ -417,9 +417,9 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                           <div 
                             key={m.id} 
                             className="inline-block h-6 w-6 rounded-full ring-2 ring-[#05161a] bg-teal-800 text-white flex items-center justify-center font-bold text-[9px] uppercase"
-                            title={m.email}
+                            title={m.invited_email || m.display_name}
                           >
-                            {m.name?.slice(0, 2) || 'M'}
+                            {m.display_name?.slice(0, 2) || 'M'}
                           </div>
                         ))}
                         {sw.members.length > 3 && (
@@ -559,7 +559,7 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
                       background: tab === 'wallet' ? 'linear-gradient(90deg, transparent, #10b981, transparent)' : tab === 'expenses' ? 'linear-gradient(90deg, transparent, #2dd4bf, transparent)' : tab === 'goals' ? 'linear-gradient(90deg, transparent, #f59e0b, transparent)' : tab === 'members' ? 'linear-gradient(90deg, transparent, #8b5cf6, transparent)' : 'linear-gradient(90deg, transparent, var(--border), transparent)'
                     }}
                   />
-                  {tab === 'wallet'   && <WalletTab entries={sw.walletEntries} balance={sw.walletBalance} members={sw.members} onDelete={sw.deleteWalletEntry} currency={currency} />}
+                  {tab === 'wallet'   && <WalletTab entries={sw.walletEntries} members={sw.members} onDelete={sw.deleteWalletEntry} currency={currency} />}
                   {tab === 'expenses' && <ExpensesTab expenses={sw.expenses} members={sw.members} splitBalances={sw.splitBalances} onDelete={sw.deleteExpense} currency={currency} />}
                   {tab === 'goals'    && <GoalsTab goals={sw.goals} onDelete={sw.deleteGoal} onContrib={openContrib} currency={currency} />}
                   {tab === 'members'  && <MembersTab members={sw.members} uid={userId} isOwner={isOwner} onRemove={sw.removeMember} onInvite={() => setInvite(true)} />}
