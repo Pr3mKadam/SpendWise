@@ -18,7 +18,21 @@
     /* Path mapping */
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@/ui/*": ["src/ui/*"],
+      "@/shell/*": ["src/shell/*"],
+      "@/features/*": ["src/features/*"],
+      "@/app/*": ["src/app/*"],
+      "@/lib/*": ["src/lib/*"],
+      "@/insights/*": ["src/insights/*"],
+      "@/parsers/*": ["src/parsers/*"],
+      "@/store/*": ["src/store/*"],
+      "@/types/*": ["src/types/*"],
+      "@/hooks/*": ["src/hooks/*"],
+      "@/services/*": ["src/services/*"],
+      "@/db/*": ["src/db/*"],
+      "@/data/*": ["src/data/*"],
+      "@/constants/*": ["src/constants/*"]
     },
 
     /* Linting */

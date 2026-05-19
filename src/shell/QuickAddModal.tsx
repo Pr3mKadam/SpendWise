@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence, useDragControls } from 'framer-motion';
 import { X, Zap } from 'lucide-react';
-import MagicInput from '@/components/features/ai/MagicInput';
+import MagicInput from '@/features/ai/components/MagicInput';
 import { Transaction } from '@/types';
 import { haptic } from '@/lib/haptic';
 

@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from 'react';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useBudgets } from '@/hooks/useBudgets';
-import { useAlerts } from '@/hooks/useAlerts';
-import { useRecurring } from '@/hooks/useRecurring';
+import { useAlerts } from '@/features/budget/hooks/useAlerts';
+import { useRecurring } from '@/features/recurring/hooks/useRecurring';
 import { useNotifications } from '@/hooks/useNotifications';
-import { useGoals } from '@/hooks/useGoals';
+import { useGoals } from '@/features/goals/hooks/useGoals';
 import { useCategories } from '@/hooks/useCategories';
-import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { FINANCE_DEFAULTS } from '@/constants';
 import { Budget, BudgetPeriod } from '@/types';
 import { useStore } from '@/store';

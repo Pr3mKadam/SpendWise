@@ -10,7 +10,7 @@ import { AppView } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { haptic } from '@/lib/haptic';
 import { useStore } from '@/store';
-import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
