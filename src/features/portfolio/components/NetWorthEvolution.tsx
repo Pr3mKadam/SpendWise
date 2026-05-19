@@ -36,8 +36,13 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
 
   const currentNetWorth = chartData.length > 0 ? chartData[chartData.length - 1].balance : 0;
   const initialNetWorth = chartData.length > 0 ? chartData[0].balance : 0;
+  const peakWorth = chartData.length > 0 ? Math.max(...chartData.map(d => d.balance)) : 0;
   const netChange = currentNetWorth - initialNetWorth;
-  const percentChange = initialNetWorth !== 0 ? (netChange / Math.abs(initialNetWorth)) * 100 : 0;
+  // Only show percentage when initial is meaningful (abs > 10); cap at ±999%
+  const absInitial = Math.abs(initialNetWorth);
+  const percentChange = absInitial >= 10
+    ? Math.max(-999, Math.min(999, (netChange / absInitial) * 100))
+    : null; // null = not meaningful enough to show
 
   return (
     <div className="card p-6 space-y-6">
@@ -57,9 +62,21 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
               {currency}{currentNetWorth.toLocaleString()}
             </p>
           </div>
-          <div className={`px-3 py-1 rounded-full text-[length:var(--fs-overline)] font-bold flex items-center gap-1 ${netChange >= 0 ? 'bg-[var(--green-dim)] text-[var(--green)]' : 'bg-red-500/10 text-red-500'}`}>
-            {netChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
-            {netChange >= 0 ? '+' : ''}{percentChange.toFixed(1)}%
+          <div className={`px-3 py-1 rounded-full text-[length:var(--fs-overline)] font-bold flex items-center gap-1 ${
+            percentChange === null
+              ? 'bg-[var(--surface-input)] text-[var(--text-muted)]'
+              : netChange >= 0
+              ? 'bg-[var(--green-dim)] text-[var(--green)]'
+              : 'bg-red-500/10 text-red-500'
+          }`}>
+            {percentChange === null ? (
+              <span>— %</span>
+            ) : (
+              <>
+                {netChange >= 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                {netChange >= 0 ? '+' : ''}{percentChange.toFixed(1)}%
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -125,7 +142,7 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
         <div>
           <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Peak Worth</p>
           <p className="text-sm font-bold text-[var(--text-primary)]">
-            {currency}{Math.max(...chartData.map(d => d.balance), 0).toLocaleString()}
+            {currency}{peakWorth.toLocaleString()}
           </p>
         </div>
         <div>
