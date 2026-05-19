@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { CategorySpend } from '@/types';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 interface SpendingDonutProps {
   data: CategorySpend[];
@@ -11,13 +12,21 @@ interface SpendingDonutProps {
 const PALETTE = ['#14b8a6', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#10b981', '#ec4899', '#64748b'];
 
 export default function SpendingDonut({ data, totalSpent, currency = '$' }: SpendingDonutProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
   const chartData = useMemo(() => {
     return data.map((d, i) => ({ ...d, fill: d.color || PALETTE[i % PALETTE.length] })).filter(d => d.value > 0);
   }, [data]);
 
+  const screenReaderSummary = useMemo(() => {
+    return chartData.map(d => {
+      const pct = totalSpent > 0 ? ((d.value / totalSpent) * 100).toFixed(1) : '0';
+      return `${d.name}: ${currency}${d.value.toLocaleString()} (${pct}%)`;
+    }).join(', ');
+  }, [chartData, totalSpent, currency]);
+
   if (chartData.length === 0) {
     return (
-      <div className="card flex flex-col items-center justify-center h-[360px] text-center">
+      <div className="card flex flex-col items-center justify-center h-[360px] text-center" role="region" aria-label="Expenses Breakdown">
         <div className="text-3xl mb-3 opacity-40">🍩</div>
         <p className="text-title" style={{ color: 'var(--text-muted)' }}>No expenses yet</p>
         <p className="text-caption mt-1">Add transactions to see breakdown</p>
@@ -26,11 +35,28 @@ export default function SpendingDonut({ data, totalSpent, currency = '$' }: Spen
   }
 
   return (
-    <div className="card px-5 py-5 flex flex-col">
+    <div className="card px-5 py-5 flex flex-col" role="region" aria-label="Expenses Breakdown Chart Card">
       <h3 className="text-headline mb-1">Expenses Breakdown</h3>
       <p className="text-caption mb-5">*Compare to last month</p>
 
-      <div className="relative h-[240px] shrink-0 my-4">
+      {/* Visually hidden screen reader summary */}
+      <div 
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: '0',
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: '0'
+        }}
+      >
+        Expenses breakdown text summary: {screenReaderSummary || 'No data available'}
+      </div>
+
+      <div className="relative h-[240px] shrink-0 my-4" role="img" aria-label={`Spending breakdown pie chart. Total expenses: ${currency}${totalSpent.toLocaleString()}.`}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -43,6 +69,7 @@ export default function SpendingDonut({ data, totalSpent, currency = '$' }: Spen
               dataKey="value"
               stroke="none"
               cornerRadius={4}
+              isAnimationActive={!prefersReducedMotion}
             >
               {chartData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />
@@ -69,9 +96,9 @@ export default function SpendingDonut({ data, totalSpent, currency = '$' }: Spen
             />
           </PieChart>
         </ResponsiveContainer>
-
+ 
         {/* Center */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none" aria-hidden="true">
           <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '22px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1 }}>
             {currency}{totalSpent.toLocaleString('en-US', { maximumFractionDigits: 0 })}
           </p>
@@ -80,11 +107,16 @@ export default function SpendingDonut({ data, totalSpent, currency = '$' }: Spen
       </div>
 
       {/* Category list — Finebank style row list */}
-      <div className="mt-5 space-y-2">
+      <div className="mt-5 space-y-2" role="list" aria-label="Expense categories breakdown list">
         {chartData.slice(0, 4).map((d) => {
           const pct = totalSpent > 0 ? Math.round((d.value / totalSpent) * 100) : 0;
           return (
-            <div key={d.name} className="flex items-center gap-3 group cursor-pointer">
+            <div 
+              key={d.name} 
+              className="flex items-center gap-3 group cursor-pointer"
+              role="listitem"
+              aria-label={`${d.name}: ${currency}${d.value.toLocaleString()} representing ${pct}% of total spending`}
+            >
               <div
                 className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0"
                 style={{ background: `${d.fill}18` }}

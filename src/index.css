@@ -106,6 +106,20 @@
     --fs-body:     14px;
     --fs-title:    17px;
     --fs-hero:     32px;
+
+    /* ── Spacing Scale ── */
+    --space-xs:   4px;
+    --space-sm:   8px;
+    --space-md:  12px;
+    --space-lg:  16px;
+    --space-xl:  24px;
+    --space-2xl: 32px;
+    --space-3xl: 48px;
+
+    /* ── Icon Size Tokens ── */
+    --icon-sm: 14px;
+    --icon-md: 18px;
+    --icon-lg: 24px;
   }
 
   .dark {
@@ -626,6 +640,12 @@
 }
 .animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
 
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+.animate-blink { animation: blink 0.9s step-end infinite; }
+
 /* ═══════════════════════════════════════════════
    MOBILE NAV SPACER
 ═══════════════════════════════════════════════ */
@@ -740,4 +760,130 @@
     transform: translateY(-1px);
     transition: border-color 0.15s, transform 0.15s;
   }
+}
+
+/* ── Dark mode hero glow (§2 Dashboard) ──────────────────────────────────── */
+.dark .hero-glow-dark {
+  box-shadow: 0 0 40px rgba(20, 184, 166, 0.08), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* ── Skeleton shimmer for charts ─────────────────────────────────────────── */
+@keyframes skeleton-wave {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton-wave {
+  background: linear-gradient(
+    90deg,
+    var(--surface-input) 25%,
+    rgba(255,255,255,0.08) 50%,
+    var(--surface-input) 75%
+  );
+  background-size: 800px 100%;
+  animation: skeleton-wave 1.6s linear infinite;
+}
+.dark .skeleton-wave {
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 800px 100%;
+}
+
+/* ── Danger Zone (§15 Profile / Settings) ────────────────────────────────── */
+.danger-zone {
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-lg);
+  background: rgba(239, 68, 68, 0.03);
+}
+.dark .danger-zone {
+  border-color: rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.06);
+}
+
+/* ── Amount colour coding (§6 Transactions) ──────────────────────────────── */
+.amount-debit  { color: var(--red) !important; }
+.amount-credit { color: var(--teal) !important; }
+
+/* ── Daily subtotal date header ──────────────────────────────────────────── */
+.tx-date-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0 4px;
+  font-family: var(--font-inter);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 4px;
+}
+.tx-date-header .subtotal {
+  font-family: var(--font-manrope);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* ── Undo toast ──────────────────────────────────────────────────────────── */
+.undo-toast {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9998;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  border-radius: var(--radius-pill);
+  background: var(--text-primary);
+  color: var(--surface-card);
+  font-family: var(--font-inter);
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+  white-space: nowrap;
+  animation: fade-in-up 200ms ease-out forwards;
+}
+.undo-toast button {
+  color: var(--teal-light);
+  font-weight: 700;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-family: var(--font-inter);
+  padding: 0;
+}
+
+/* ── Goal Hall of Fame section ───────────────────────────────────────────── */
+.goals-hof-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, rgba(250,204,21,0.08), rgba(245,158,11,0.06));
+  border: 1px solid rgba(250,204,21,0.2);
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-inter);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber);
+}
+
+/* ── GoalCard gradient tint ──────────────────────────────────────────────── */
+.goal-card-tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  opacity: 0.04;
 }

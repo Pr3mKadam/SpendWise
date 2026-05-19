@@ -14,7 +14,31 @@ interface AdvisorViewMobileProps {
   monthlyStats: any;
   dynamicQuickActions: string[];
   hasGemini: boolean;
+  onNavigate?: (view: any) => void;
 }
+
+const parseMarkdown = (text: string) => {
+  const lines = text.split('\n');
+  return lines.map((line, lineIdx) => {
+    const isBullet = line.trimStart().startsWith('- ') || line.trimStart().startsWith('• ');
+    const content = isBullet ? line.replace(/^[\s\-•]+/, '') : line;
+    const parts = content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return <strong key={i}>{part.slice(2, -2)}</strong>;
+      }
+      return <span key={i}>{part}</span>;
+    });
+    if (isBullet) {
+      return (
+        <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
+          <span className="mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'var(--teal)' }} />
+          <span>{parts}</span>
+        </div>
+      );
+    }
+    return <span key={lineIdx}>{parts}{lineIdx < lines.length - 1 && <br />}</span>;
+  });
+};
 
 export default function AdvisorViewMobile({
   messages,
@@ -25,7 +49,8 @@ export default function AdvisorViewMobile({
   onClearChat,
   monthlyStats,
   dynamicQuickActions,
-  hasGemini
+  hasGemini,
+  onNavigate
 }: AdvisorViewMobileProps) {
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -113,7 +138,41 @@ export default function AdvisorViewMobile({
                   </p>
                 </div>
               ) : (
-                <p className="text-xs leading-relaxed whitespace-pre-wrap">{msg.text}</p>
+                <div className="flex flex-col gap-2">
+                  <div className="text-xs leading-relaxed">
+                    {msg.sender === 'ai' ? (
+                      <>
+                        {parseMarkdown(msg.text || '\u200b')}
+                        {msg.streaming && (
+                          <span
+                            className="inline-block w-[2px] h-[13px] ml-0.5 align-middle rounded-sm bg-[var(--teal)]"
+                            style={{ animation: 'blink 0.9s step-end infinite' }}
+                          />
+                        )}
+                      </>
+                    ) : msg.text}
+                  </div>
+                  
+                  {msg.type === 'action_card' && msg.data?.action && (
+                    <div className="flex gap-2 mt-1">
+                      {msg.data.action === 'CREATE_BUDGET' && (
+                        <button onClick={() => onNavigate && onNavigate('budget')} className="px-3 min-h-[38px] bg-[var(--teal)] text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
+                          Create a Budget
+                        </button>
+                      )}
+                      {msg.data.action === 'VIEW_ANALYTICS' && (
+                        <button onClick={() => onNavigate && onNavigate('analytics')} className="px-3 min-h-[38px] bg-[var(--purple)] text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
+                          View Analytics
+                        </button>
+                      )}
+                      {msg.data.action === 'SET_GOAL' && (
+                        <button onClick={() => onNavigate && onNavigate('goals')} className="px-3 min-h-[38px] bg-yellow-500 text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
+                          Set a Goal
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
               <p className={`text-[8px] mt-2 opacity-50 font-bold ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
                 {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

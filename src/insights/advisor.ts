@@ -1,4 +1,4 @@
-import { callGemini } from "@/services/gemini";
+import { callGemini, streamGemini } from "@/services/gemini";
 import { Transaction } from "@/types";
 
 /**
@@ -100,6 +100,60 @@ If the query is not related to finance, politely redirect them to ask about thei
 
   // General catch-all financial advice
   return `Based on your **${transactions.length} transactions**, you have a net balance of **${currency}${net.toLocaleString()}**. Your spending is most active in **${topCat ? topCat[0] : 'various categories'}**. Would you like to set a specific savings goal for next month?\n\n[ACTION:SET_GOAL]`;
+}
+
+/**
+ * Streaming variant of getFinancialAdvice.
+ * Yields text tokens progressively as Gemini generates them.
+ * Falls back to yielding the full local-engine response in one chunk if Gemini is unavailable.
+ */
+export async function* streamFinancialAdvice(
+  query: string,
+  transactions: Transaction[],
+  currency = '₹'
+): AsyncGenerator<string> {
+  const debits = transactions.filter(t => t.type === 'debit');
+  const credits = transactions.filter(t => t.type === 'credit');
+  const totalSpent = debits.reduce((a, t) => a + t.amount, 0);
+  const totalIncome = credits.reduce((a, t) => a + t.amount, 0);
+  const net = totalIncome - totalSpent;
+  const savingsRate = totalIncome > 0 ? Math.round((net / totalIncome) * 100) : 0;
+
+  const byCategory: Record<string, number> = {};
+  debits.forEach(t => { byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount; });
+  const topCat = Object.entries(byCategory).sort((a, b) => b[1] - a[1])[0];
+
+  const prompt = `You are a sophisticated financial advisor for SpendWise.
+The user is asking: "${query}"
+
+Here is their current financial summary:
+- Total Income: ${currency}${totalIncome.toLocaleString()}
+- Total Spent: ${currency}${totalSpent.toLocaleString()}
+- Net Savings: ${currency}${net.toLocaleString()}
+- Savings Rate: ${savingsRate}%
+- Top Spending Category: ${topCat ? `${topCat[0]} (${currency}${topCat[1].toLocaleString()})` : 'N/A'}
+
+Provide personalized, insightful, and actionable financial advice based on their query and data.
+Keep the response concise (2-3 paragraphs max), encouraging, and professional.
+Use markdown for formatting.
+If appropriate, include exactly one action tag at the end:
+[ACTION:CREATE_BUDGET] | [ACTION:VIEW_ANALYTICS] | [ACTION:SET_GOAL]
+
+If the query is not related to finance, politely redirect them.`;
+
+  try {
+    yield* streamGemini({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.7, maxOutputTokens: 500 },
+    });
+    return;
+  } catch (error) {
+    console.warn('Gemini streaming failed, using local engine:', error);
+  }
+
+  // Local fallback — yield the full response as a single chunk
+  const localResponse = await getFinancialAdvice(query, transactions, currency);
+  yield localResponse;
 }
 
 export interface GeneratedQuest {

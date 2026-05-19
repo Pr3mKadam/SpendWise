@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, ArrowDownLeft, Trash2 } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Trash2, X, Tag } from 'lucide-react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Transaction, Category } from '@/types';
 import { CategoryDropdown } from '@/ui/CategoryDropdown';
 import { haptic } from '@/lib/haptic';
+import { useCategories } from '@/hooks/useCategories';
 
 export interface TransactionRowProps {
   tx: Transaction;
@@ -26,6 +27,8 @@ export function TransactionRow({
   mergedColors,
   mergedIcons
 }: TransactionRowProps) {
+  const { allCategories } = useCategories();
+  const [showCategorySwapper, setShowCategorySwapper] = useState(false);
   const isCredit = tx.type === 'credit';
   const dateStr = new Date(tx.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
 
@@ -44,27 +47,88 @@ export function TransactionRow({
   };
 
   const x = useMotionValue(0);
-  const opacity = useTransform(x, [-80, -40, 0], [1, 0.5, 0]);
+  const opacityDelete = useTransform(x, [-80, -40, 0], [1, 0.5, 0]);
+  const opacityCategory = useTransform(x, [0, 40, 80], [0, 0.5, 1]);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  if (showCategorySwapper) {
+    return (
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -10 }}
+        className="flex items-center gap-2 px-3 sm:px-5 py-3 bg-[var(--surface-light)] w-full h-[60px] relative z-10 overflow-hidden"
+        style={{ borderBottom: '1px solid var(--border)' }}
+      >
+        <button 
+          onClick={() => setShowCategorySwapper(false)}
+          className="p-1.5 rounded-xl bg-[var(--surface-card)] border border-[var(--border)] text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
+        >
+          <X size={14} />
+        </button>
+        <span className="text-[10px] font-black tracking-widest text-[var(--text-muted)] uppercase mr-1 shrink-0 border-r border-[var(--border)] pr-2">
+          Category
+        </span>
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 flex-1">
+          {allCategories.map(cat => {
+            const isSelected = tx.category === cat;
+            return (
+              <button
+                key={cat}
+                onClick={() => {
+                  haptic.success();
+                  onCategoryChange?.(tx.id, cat);
+                  setShowCategorySwapper(false);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition-all hover:scale-105 active:scale-95 shrink-0 border"
+                style={{ 
+                  background: isSelected ? `${mergedColors[cat] || '#14b8a6'}20` : 'var(--surface-card)',
+                  color: mergedColors[cat] || '#14b8a6',
+                  borderColor: isSelected ? mergedColors[cat] || '#14b8a6' : 'var(--border)'
+                }}
+              >
+                <span>{mergedIcons[cat] || '📦'}</span>
+                <span>{cat}</span>
+              </button>
+            )
+          })}
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <div className="relative overflow-hidden bg-white" style={{ borderBottom: '1px solid #f7f8fa' }}>
-      {/* Background Action (Delete) */}
-      <div className="absolute inset-0 flex items-center justify-end px-6 bg-red-500 text-white">
-        <motion.div style={{ opacity }}>
-          <Trash2 size={20} />
-        </motion.div>
+      {/* Background Actions (Delete on Left drag, Category on Right drag) */}
+      <div className="absolute inset-0 flex items-center justify-between z-0">
+        {/* Swiping Right → Reveals Category trigger on the left */}
+        <div className="absolute inset-y-0 left-0 w-1/2 flex items-center justify-start px-6 bg-[var(--teal)] text-white">
+          <motion.div style={{ opacity: opacityCategory }} className="flex items-center gap-2">
+            <Tag size={18} />
+            <span className="text-[10px] font-black tracking-widest uppercase">Change Category</span>
+          </motion.div>
+        </div>
+
+        {/* Swiping Left → Reveals Delete trigger on the right */}
+        <div className="absolute inset-y-0 right-0 w-1/2 flex items-center justify-end px-6 bg-red-500 text-white">
+          <motion.div style={{ opacity: opacityDelete }}>
+            <Trash2 size={20} />
+          </motion.div>
+        </div>
       </div>
 
       <motion.div
         drag="x"
-        dragConstraints={{ left: -80, right: 0 }}
-        dragElastic={0.1}
+        dragConstraints={{ left: -80, right: 80 }}
+        dragElastic={0.15}
         onDragStart={() => haptic.light()}
         onDragEnd={(_, info) => {
           if (info.offset.x < -60) {
             haptic.heavy();
             if (onDelete) onDelete(tx.id);
+          } else if (info.offset.x > 60) {
+            haptic.medium();
+            setShowCategorySwapper(true);
           }
         }}
         style={{ x }}
@@ -110,7 +174,10 @@ export function TransactionRow({
         </div>
         <div className="flex items-center gap-1.5 shrink-0 ml-auto">
           <div className="text-right">
-            <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '13px', fontWeight: 700, color: isCredit ? 'var(--teal)' : 'var(--text-primary)' }} className="tabular-nums whitespace-nowrap">
+            <p
+              style={{ fontFamily: 'var(--font-manrope)', fontSize: '13px', fontWeight: 700, color: isCredit ? 'var(--teal)' : 'var(--red)' }}
+              className="tabular-nums whitespace-nowrap"
+            >
               {isCredit ? '+' : '-'}{currency}{tx.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </p>
           </div>

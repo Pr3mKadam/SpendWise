@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Target, Plus, Award } from 'lucide-react';
+import { Target, Plus, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { SavingsGoal, GoalStatus } from '@/types';
 import { GoalModal, GoalFormData } from '@/features/goals/components/GoalModal';
 import { GoalCard } from '@/features/goals/components/GoalCard';
@@ -34,8 +35,10 @@ interface GoalsViewProps {
 
 export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onContribute, currency = '$', transactions = [] }: GoalsViewProps) {
   const isMobile = useIsMobile();
+  const shouldReduceMotion = useReducedMotion();
   const [showAdd,  setShowAdd]  = useState(false);
   const [editGoal, setEditGoal] = useState<SavingsGoal | null>(null);
+  const [hofOpen,  setHofOpen]  = useState(false);
   const { streak, level } = useGamification(transactions);
 
   useEffect(() => {
@@ -72,15 +75,14 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
   };
 
   // Sort: active first (on-track, at-risk, paused), then achieved
-  const sorted = [...goals].sort((a, b) => {
-    const order: Record<GoalStatus, number> = { 'on-track': 0, 'at-risk': 1, 'paused': 2, 'achieved': 3 };
-    return (order[a.status] ?? 0) - (order[b.status] ?? 0);
-  });
+  const ORDER: Record<GoalStatus, number> = { 'on-track': 0, 'at-risk': 1, 'paused': 2, 'achieved': 3 };
+  const activeGoals   = goals.filter(g => g.status !== 'achieved').sort((a, b) => (ORDER[a.status] ?? 0) - (ORDER[b.status] ?? 0));
+  const achievedGoals = goals.filter(g => g.status === 'achieved');
 
   if (isMobile) {
     return (
       <>
-        <GoalsViewMobile 
+        <GoalsViewMobile
           goals={goals}
           stats={stats}
           onAdd={() => setShowAdd(true)}
@@ -143,7 +145,7 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
       {/* Summary stats */}
       {goals.length > 0 && <GoalsSummary stats={stats} currency={currency} />}
 
-      {/* Goals grid */}
+      {/* Active Goals grid */}
       {goals.length === 0 ? (
         <div className="card p-12 text-center">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl" style={{ background: '#f5f7fa' }}>
@@ -162,7 +164,7 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
         </div>
       ) : (
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {sorted.map(g => (
+          {activeGoals.map(g => (
             <GoalCard
               key={g.id}
               goal={g}
@@ -172,6 +174,49 @@ export default function GoalsView({ goals, stats, onAdd, onUpdate, onDelete, onC
               currency={currency}
             />
           ))}
+        </div>
+      )}
+
+      {/* ── Hall of Fame — Achieved Goals ── */}
+      {achievedGoals.length > 0 && (
+        <div className="mt-4 space-y-3">
+          <button
+            className="goals-hof-header w-full"
+            onClick={() => setHofOpen(o => !o)}
+            aria-expanded={hofOpen}
+          >
+            <Trophy size={16} />
+            <span>🏆 Hall of Fame — {achievedGoals.length} Goal{achievedGoals.length !== 1 ? 's' : ''} Achieved</span>
+            <span className="ml-auto">
+              {hofOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </span>
+          </button>
+
+          <AnimatePresence initial={false}>
+            {hofOpen && (
+              <motion.div
+                key="hof"
+                initial={shouldReduceMotion ? false : { height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={shouldReduceMotion ? undefined : { height: 0, opacity: 0 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3 pt-1">
+                  {achievedGoals.map(g => (
+                    <GoalCard
+                      key={g.id}
+                      goal={g}
+                      onContribute={amt => onContribute(g.id, amt)}
+                      onEdit={() => setEditGoal(g)}
+                      onDelete={() => onDelete(g.id)}
+                      currency={currency}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       )}
 

@@ -4,6 +4,7 @@ import {
 } from 'recharts';
 import { BalanceDataPoint } from '@/types';
 import { useStore } from '@/store';
+import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
 
 interface BalanceChartProps {
   data: BalanceDataPoint[];
@@ -11,6 +12,7 @@ interface BalanceChartProps {
 }
 
 export default function BalanceChart({ data, currency = '$' }: BalanceChartProps) {
+  const prefersReducedMotion = usePrefersReducedMotion();
   const splitIndex = useMemo(() => {
     const idx = data.findIndex(d => d.projected);
     return idx >= 0 ? idx : data.length;
@@ -34,21 +36,48 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
 
   const todayLabel = splitIndex > 0 && splitIndex < data.length ? data[splitIndex - 1]?.date : undefined;
 
-  if (data.length === 0) {
-    return (
-      <div className="card flex items-center justify-center h-[300px]">
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', fontSize: '14px' }}>No balance data yet</p>
-      </div>
-    );
-  }
-
   const store = useStore();
   const settings = store.parentalState;
   const isKidMode = settings.isTeenMode;
   const shouldHideBalances = isKidMode && settings.hideBalances;
 
+  const screenReaderSummary = useMemo(() => {
+    if (data.length === 0) return 'No data available';
+    if (shouldHideBalances) {
+      return 'Balance data is obscured under Parental Teen Mode privacy rules.';
+    }
+    const initialBalance = data[0]?.balance ?? 0;
+    const currentBalance = splitIndex > 0 ? (data[splitIndex - 1]?.balance ?? 0) : 0;
+    const finalProjected = data[data.length - 1]?.balance ?? 0;
+    return `Balance history and projection chart. Initial balance on ${data[0]?.date} is ${currency}${initialBalance.toLocaleString()}. Current actual balance as of today is ${currency}${currentBalance.toLocaleString()}. Projected final balance at end of projection cycle is ${currency}${finalProjected.toLocaleString()}.`;
+  }, [data, splitIndex, shouldHideBalances, currency]);
+
+  if (data.length === 0) {
+    return (
+      <div className="card flex items-center justify-center h-[300px]" role="region" aria-label="Weekly Comparison">
+        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', fontSize: '14px' }}>No balance data yet</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="card px-6 py-5">
+    <div className="card px-6 py-5" role="region" aria-label="Weekly Comparison Balance Chart Card">
+      {/* Visually hidden screen reader summary */}
+      <div 
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: '0',
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: '0'
+        }}
+      >
+        Balance summary: {screenReaderSummary}
+      </div>
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -68,12 +97,16 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
         </div>
       </div>
 
-      <div style={{
-        height: 260,
-        filter: shouldHideBalances ? 'blur(8px)' : 'none',
-        opacity: shouldHideBalances ? 0.7 : 1,
-        transition: 'filter 0.3s'
-      }}>
+      <div 
+        role="img" 
+        aria-label="Weekly balance comparison line chart showing actual and projected trends"
+        style={{
+          height: 260,
+          filter: shouldHideBalances ? 'blur(8px)' : 'none',
+          opacity: shouldHideBalances ? 0.7 : 1,
+          transition: 'filter 0.3s'
+        }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={chartData} margin={{ top: 10, right: 5, left: 0, bottom: 0 }}>
             <defs>
@@ -134,8 +167,8 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
               }}
             />
 
-            <Area type="monotone" dataKey="actualBalance" stroke="#14b8a6" strokeWidth={2.5} fillOpacity={1} fill="url(#gradActual)" connectNulls activeDot={{ r: 5, fill: '#14b8a6', stroke: '#fff', strokeWidth: 2 }} />
-            <Area type="monotone" dataKey="projectedBalance" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" fillOpacity={1} fill="url(#gradProjected)" connectNulls activeDot={{ r: 5, fill: '#94a3b8', stroke: '#fff', strokeWidth: 2 }} />
+            <Area type="monotone" dataKey="actualBalance" stroke="#14b8a6" strokeWidth={2.5} fillOpacity={1} fill="url(#gradActual)" connectNulls activeDot={{ r: 5, fill: '#14b8a6', stroke: '#fff', strokeWidth: 2 }} isAnimationActive={!prefersReducedMotion} />
+            <Area type="monotone" dataKey="projectedBalance" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" fillOpacity={1} fill="url(#gradProjected)" connectNulls activeDot={{ r: 5, fill: '#94a3b8', stroke: '#fff', strokeWidth: 2 }} isAnimationActive={!prefersReducedMotion} />
           </AreaChart>
         </ResponsiveContainer>
       </div>

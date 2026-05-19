@@ -14,6 +14,7 @@ import {
 import { useCategories } from '@/hooks/useCategories';
 import { haptic } from '@/lib/haptic';
 import EmptyState from '@/ui/EmptyState';
+import TransactionRow from './components/TransactionRow';
 
 interface HistoryViewMobileProps {
   transactions: Transaction[];
@@ -28,6 +29,7 @@ export default function HistoryViewMobile({
   currency = '₹',
   onCategoryChange
 }: HistoryViewMobileProps) {
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { allCategories, mergedIcons, mergedColors } = useCategories();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All');
@@ -42,7 +44,36 @@ export default function HistoryViewMobile({
     });
   }, [transactions, search, activeCategory]);
 
-  const total = filtered.reduce((acc, tx) => acc + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+  const total = useMemo(() => {
+    return filtered.reduce((sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+  }, [filtered]);
+
+  type DisplayRow =
+    | { type: 'header'; date: string; subtotal: number }
+    | { type: 'tx'; tx: Transaction };
+
+  const displayRows = useMemo(() => {
+    const groups: Record<string, Transaction[]> = {};
+    filtered.forEach(tx => {
+      const d = tx.date;
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(tx);
+    });
+
+    const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+    const rows: DisplayRow[] = [];
+
+    sortedDates.forEach(date => {
+      const list = groups[date];
+      const subtotal = list.reduce((sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+      rows.push({ type: 'header', date, subtotal });
+      list.forEach(tx => {
+        rows.push({ type: 'tx', tx });
+      });
+    });
+
+    return rows;
+  }, [filtered]);
 
   const handleRowClick = (tx: Transaction) => {
     haptic.light();
@@ -101,49 +132,47 @@ export default function HistoryViewMobile({
       {/* 3. Transaction List */}
       <div className="flex-1 min-h-0 bg-[var(--surface-card)] rounded-[var(--radius-sheet)] border border-[var(--border)] shadow-sm overflow-hidden">
         <Virtuoso
-          totalCount={filtered.length}
+          totalCount={displayRows.length}
           itemContent={(index) => {
-            const tx = filtered[index];
+            const row = displayRows[index];
+            if (row.type === 'header') {
+              const formattedDate = new Date(row.date + 'T00:00:00').toLocaleDateString('en-US', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'short',
+              });
+              const sign = row.subtotal >= 0 ? '+' : '';
+              const color = row.subtotal >= 0 ? 'var(--teal)' : 'var(--red)';
+              return (
+                <div className="tx-date-header px-4 bg-[var(--surface-card)]" style={{ borderBottom: '1px solid var(--border)', margin: '14px 0 4px 0' }}>
+                  <span>{formattedDate}</span>
+                  <span className="subtotal" style={{ color }}>
+                    {sign}{currency}{row.subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+              );
+            }
+
+            const tx = row.tx;
             return (
-              <button 
+              <TransactionRow
                 key={tx.id}
-                onClick={() => handleRowClick(tx)}
-                className="w-full text-left p-4 border-b border-[var(--border)] flex items-center gap-4 active:bg-[var(--surface-light)] transition-colors focus:outline-none focus:bg-[var(--surface-light)]"
-                aria-label={`${tx.merchant}, ${tx.type === 'debit' ? 'spent' : 'received'} ${currency}${tx.amount}, ${tx.category}, ${new Date(tx.date).toLocaleDateString()}`}
-              >
-                <div 
-                  className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shrink-0"
-                  style={{ background: `${mergedColors[tx.category] || 'var(--teal)'}15` }}
-                >
-                  {mergedIcons[tx.category] || '📦'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-start mb-0.5">
-                    <p className="text-sm font-bold text-[var(--text-primary)] truncate">{tx.merchant}</p>
-                    <p className={`text-sm font-bold ${tx.type === 'debit' ? 'text-red-500' : 'text-emerald-500'}`}>
-                      {tx.type === 'debit' ? '-' : '+'}{currency}{tx.amount.toLocaleString()}
-                    </p>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">{tx.category}</p>
-                    <p className="text-[length:var(--fs-overline)] text-[var(--text-dim)] font-medium">
-                      {new Date(tx.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: '2-digit' })}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 text-[var(--text-dim)] shrink-0">
-                  {onDelete && (
-                    <button
-                      onClick={(e) => { e.stopPropagation(); haptic.medium(); onDelete(tx.id); }}
-                      className="p-1.5 rounded-lg active:bg-red-500/10 active:text-red-500 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500"
-                      aria-label={`Delete ${tx.merchant} transaction`}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                  <ChevronRight size={16} aria-hidden="true" />
-                </div>
-              </button>
+                tx={tx}
+                selected={selectedIds.has(tx.id)}
+                onSelect={(id, isSel) => {
+                  setSelectedIds(prev => {
+                    const next = new Set(prev);
+                    if (isSel) next.add(id);
+                    else next.delete(id);
+                    return next;
+                  });
+                }}
+                onCategoryChange={onCategoryChange}
+                onDelete={onDelete}
+                currency={currency}
+                mergedColors={mergedColors}
+                mergedIcons={mergedIcons}
+              />
             );
           }}
           style={{ height: '100%' }}

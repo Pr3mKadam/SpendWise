@@ -67,13 +67,20 @@ export default function DashboardHeroDesktop({
       whileHover={{ y: -2 }}
       whileTap={{ scale: 0.99 }}
       onClick={() => haptic.light()}
-      className="relative w-full overflow-hidden rounded-3xl shadow-lg border border-white/10 dark:border-white/5 cursor-pointer"
+      className="relative w-full overflow-hidden rounded-3xl shadow-lg border border-white/10 dark:border-white/5 cursor-pointer hero-glow-dark"
       style={{ minHeight: '220px' }}
     >
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 transition-all duration-700 ease-in-out"
         style={{
-          background: 'linear-gradient(135deg, #0f172a 0%, #1e2d4a 40%, #0f2437 70%, #0a1628 100%)',
+          background:
+            healthScore >= 80
+              ? 'linear-gradient(135deg, #064e3b 0%, #022c22 40%, #0f172a 100%)' // Emerald glow
+              : healthScore >= 60
+              ? 'linear-gradient(135deg, #042f2e 0%, #0f172a 60%, #020617 100%)' // Teal/Slate glow
+              : healthScore >= 40
+              ? 'linear-gradient(135deg, #451a03 0%, #1e1b4b 65%, #0f172a 100%)' // Amber/Indigo glow
+              : 'linear-gradient(135deg, #450a0a 0%, #0f172a 70%, #020617 100%)', // Burgundy glow
         }}
       />
       

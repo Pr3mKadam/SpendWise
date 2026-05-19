@@ -58,9 +58,16 @@ export default function DashboardHeroMobile({
       transition={{ duration: 0.2, ease: 'easeOut' }}
       whileTap={{ scale: 0.98 }}
       onClick={() => haptic.light()}
-      className="relative w-full rounded-2xl shadow-lg border border-white/5 cursor-pointer overflow-hidden"
+      className="relative w-full rounded-2xl shadow-lg border border-white/5 cursor-pointer overflow-hidden hero-glow-dark"
       style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e2d4a 100%)',
+        background:
+          healthScore >= 80
+            ? 'linear-gradient(135deg, #064e3b 0%, #022c22 45%, #0f172a 100%)' // Emerald
+            : healthScore >= 60
+            ? 'linear-gradient(135deg, #042f2e 0%, #0f172a 70%, #020617 100%)' // Teal/Slate
+            : healthScore >= 40
+            ? 'linear-gradient(135deg, #451a03 0%, #1e1b4b 65%, #0f172a 100%)' // Amber/Indigo
+            : 'linear-gradient(135deg, #450a0a 0%, #0f172a 75%, #020617 100%)', // Burgundy
       }}
     >
       {/* Simplified Mobile Content */}

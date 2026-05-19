@@ -90,7 +90,16 @@ export function GoalCard({
 
   return (
     <>
-      <div className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-200 card card-hover ${isAchieved ? 'opacity-80' : ''}`}>
+      <div
+        className={`group relative overflow-hidden rounded-2xl p-5 transition-all duration-200 card card-hover ${isAchieved ? 'opacity-80' : ''}`}
+      >
+        {/* Colour tint background (§5 GoalCard gradient tint) */}
+        <div
+          className="goal-card-tint"
+          style={{ background: goal.color }}
+          aria-hidden="true"
+        />
+
         <div className="absolute inset-x-0 top-0 h-1 rounded-t-2xl opacity-70"
           style={{ background: `linear-gradient(90deg, ${goal.color}, transparent)` }}
         />

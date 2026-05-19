@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
 import { useTransactions } from '@/hooks/useTransactions';
 import { SpendingPersonality } from '@/types';
-import { getFinancialAdvice } from '@/insights/advisor';
+import { streamFinancialAdvice } from '@/insights/advisor';
 import { getSpendingPersonality } from '@/insights/reporting';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import EducationCards from '@/features/education/components/EducationCards';
@@ -30,6 +30,7 @@ interface Message {
   timestamp: string;
   type?: 'text' | 'action_card' | 'briefing';
   data?: MessageData;
+  streaming?: boolean;
 }
 
 const parseMarkdown = (text: string) => {
@@ -79,6 +80,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     return [INITIAL_MESSAGE];
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [personality, setPersonality] = useState<SpendingPersonality | null>(null);
   const [isAnalyzingPersonality, setIsAnalyzingPersonality] = useState(false);
   const [isListening, setIsListening] = useState(false);
@@ -95,7 +97,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
 
   const handleSend = useCallback(async (overrideInput?: string) => {
     const text = (overrideInput ?? input).trim();
-    if (!text || isLoading) return;
+    if (!text || isLoading || isStreaming) return;
 
     const userMsg: Message = {
       id: Date.now().toString(),
@@ -104,46 +106,71 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
       timestamp: new Date().toISOString()
     };
 
-    setMessages(prev => [...prev, userMsg]);
+    const streamingMsgId = (Date.now() + 1).toString();
+    const streamingMsg: Message = {
+      id: streamingMsgId,
+      text: '',
+      sender: 'ai',
+      timestamp: new Date().toISOString(),
+      streaming: true,
+    };
+
+    setMessages(prev => [...prev, userMsg, streamingMsg]);
     setInput('');
-    setIsLoading(true);
+    setIsLoading(true); // show typing dots before first token
 
     try {
-      let response = await getFinancialAdvice(text, transactions, activeCurrency);
-      
-      let actionTag = null;
-      const actionMatch = response.match(/\[ACTION:([A-Z_]+)\]/);
-      if (actionMatch) {
-        actionTag = actionMatch[1];
-        response = response.replace(actionMatch[0], '').trim();
+      let accumulated = '';
+      const gen = streamFinancialAdvice(text, transactions, activeCurrency);
+
+      for await (const chunk of gen) {
+        accumulated += chunk;
+        // Hide typing dots once first token arrives
+        setIsLoading(false);
+        setIsStreaming(true);
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === streamingMsgId ? { ...m, text: accumulated, streaming: true } : m
+          )
+        );
       }
 
-      const aiMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        text: response,
-        sender: 'ai',
-        timestamp: new Date().toISOString(),
-        type: actionTag ? 'action_card' : 'text',
-        data: actionTag ? { action: actionTag as MessageData['action'] } : undefined
-      };
-      setMessages(prev => [...prev, aiMsg]);
+      // Finalise: extract [ACTION:...] tag and set proper type
+      let actionTag: string | null = null;
+      const actionMatch = accumulated.match(/\[ACTION:([A-Z_]+)\]/);
+      if (actionMatch) {
+        actionTag = actionMatch[1];
+        accumulated = accumulated.replace(actionMatch[0], '').trim();
+      }
+
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === streamingMsgId
+            ? {
+                ...m,
+                text: accumulated,
+                streaming: false,
+                type: actionTag ? 'action_card' : 'text',
+                data: actionTag ? { action: actionTag as MessageData['action'] } : undefined,
+              }
+            : m
+        )
+      );
     } catch (error) {
-      console.error('Advisor error:', error);
-      // Attempt a safe local fallback rather than showing a blank error
+      console.error('Advisor streaming error:', error);
       const fallbackText = transactions.length > 0
-        ? `I had trouble processing your question. Based on your **${transactions.length} transactions**, your top focus area right now is tracking your spending. Try asking "How can I save more?" or "Where do I spend the most?"`
+        ? `I had trouble processing your question. Based on your **${transactions.length} transactions**, your top focus area right now is tracking your spending.`
         : "I had trouble processing that. Once you add some transactions, I can give you personalised advice!";
-      const errorMsg: Message = {
-        id: (Date.now() + 1).toString(),
-        text: fallbackText,
-        sender: 'ai',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prev => [...prev, errorMsg]);
+      setMessages(prev =>
+        prev.map(m =>
+          m.id === streamingMsgId ? { ...m, text: fallbackText, streaming: false } : m
+        )
+      );
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
     }
-  }, [input, isLoading, transactions]);
+  }, [input, isLoading, isStreaming, transactions, activeCurrency]);
 
 
 
@@ -253,6 +280,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         monthlyStats={monthlyStats}
         dynamicQuickActions={dynamicQuickActions}
         hasGemini={hasGemini}
+        onNavigate={onNavigate}
       />
     );
   }
@@ -442,7 +470,17 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                           ? 'bg-[var(--teal)] text-white' 
                           : 'bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)]'
                       }`}>
-                        {msg.sender === 'ai' ? parseMarkdown(msg.text) : msg.text}
+                        {msg.sender === 'ai' ? (
+                          <>
+                            {parseMarkdown(msg.text || '\u200b')}
+                            {msg.streaming && (
+                              <span
+                                className="inline-block w-[2px] h-[13px] ml-0.5 align-middle rounded-sm bg-[var(--teal)]"
+                                style={{ animation: 'blink 0.9s step-end infinite' }}
+                              />
+                            )}
+                          </>
+                        ) : msg.text}
                       </div>
                       
                       {msg.type === 'action_card' && msg.data?.action && (
@@ -475,15 +513,15 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
             </div>
           ))}
           {isLoading && (
-            <div className="flex justify-start">
+            <div className="flex justify-start animate-fade-in-up">
               <div className="flex gap-3 max-w-[85%]">
-                <div className="w-8 h-8 rounded-lg bg-[var(--surface-input)] text-[var(--teal)] flex items-center justify-center">
+                <div className="w-8 h-8 rounded-lg bg-[var(--surface-input)] text-[var(--teal)] flex items-center justify-center border border-[var(--border)]">
                   <Bot size={16} />
                 </div>
-                <div className="p-4 rounded-2xl bg-[var(--surface-input)] flex gap-1 items-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="p-4 rounded-2xl bg-[var(--surface-input)] border border-[var(--border)] flex gap-1.5 items-center">
+                  <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '160ms' }} />
+                  <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '320ms' }} />
                 </div>
               </div>
             </div>

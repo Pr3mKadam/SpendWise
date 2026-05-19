@@ -1,3 +1,4 @@
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Transaction, Category } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { Virtuoso } from 'react-virtuoso';
@@ -53,18 +54,99 @@ export default function HistoryView({
     handleRefresh, clearFilters, virtuosoRef,
   } = useHistoryView(transactions, initialSearchQuery);
 
-  const total = filtered.reduce((a, tx) => a + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
+  const [lastDeletedTx, setLastDeletedTx] = useState<Transaction | null>(null);
+  const undoTimerRef = useRef<any>(null);
+
+  // Auto-commit on unmount
+  useEffect(() => {
+    return () => {
+      if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+      if (lastDeletedTx && onDelete) {
+        onDelete(lastDeletedTx.id);
+      }
+    };
+  }, [lastDeletedTx, onDelete]);
+
+  const handleInterceptDelete = (id: string) => {
+    if (lastDeletedTx && onDelete) {
+      onDelete(lastDeletedTx.id);
+    }
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+
+    const tx = transactions.find(t => t.id === id);
+    if (!tx) return;
+
+    setLastDeletedTx(tx);
+    const newPending = new Set<string>();
+    newPending.add(id);
+    setPendingDeleteIds(newPending);
+
+    haptic.medium();
+
+    undoTimerRef.current = setTimeout(() => {
+      if (onDelete) onDelete(id);
+      setLastDeletedTx(null);
+      setPendingDeleteIds(new Set());
+    }, 5000);
+  };
+
+  const handleUndoDelete = () => {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current);
+    setLastDeletedTx(null);
+    setPendingDeleteIds(new Set());
+    haptic.success();
+  };
+
+  const visibleFiltered = useMemo(() => {
+    return filtered.filter(tx => !pendingDeleteIds.has(tx.id));
+  }, [filtered, pendingDeleteIds]);
+
+  const visibleTransactions = useMemo(() => {
+    return transactions.filter(tx => !pendingDeleteIds.has(tx.id));
+  }, [transactions, pendingDeleteIds]);
+
+  const total = useMemo(() => {
+    return visibleFiltered.reduce((a, tx) => a + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+  }, [visibleFiltered]);
 
   if (isMobile) {
     return (
       <HistoryViewMobile 
-        transactions={transactions}
+        transactions={visibleTransactions}
         currency={currency}
-        onDelete={onDelete}
+        onDelete={handleInterceptDelete}
         onCategoryChange={onCategoryChange}
       />
     );
   }
+
+  type DisplayRow =
+    | { type: 'header'; date: string; subtotal: number }
+    | { type: 'tx'; tx: Transaction };
+
+  const displayRows = useMemo(() => {
+    const groups: Record<string, Transaction[]> = {};
+    visibleFiltered.forEach(tx => {
+      const d = tx.date;
+      if (!groups[d]) groups[d] = [];
+      groups[d].push(tx);
+    });
+
+    const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
+    const rows: DisplayRow[] = [];
+
+    sortedDates.forEach(date => {
+      const list = groups[date];
+      const subtotal = list.reduce((sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+      rows.push({ type: 'header', date, subtotal });
+      list.forEach(tx => {
+        rows.push({ type: 'tx', tx });
+      });
+    });
+
+    return rows;
+  }, [visibleFiltered]);
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -159,9 +241,28 @@ export default function HistoryView({
             ) : (
               <Virtuoso
                 ref={virtuosoRef}
-                totalCount={filtered.length}
+                totalCount={displayRows.length}
                 itemContent={(index) => {
-                  const tx = filtered[index];
+                  const row = displayRows[index];
+                  if (row.type === 'header') {
+                    const formattedDate = new Date(row.date + 'T00:00:00').toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'short',
+                    });
+                    const sign = row.subtotal >= 0 ? '+' : '';
+                    const color = row.subtotal >= 0 ? 'var(--teal)' : 'var(--red)';
+                    return (
+                      <div className="tx-date-header px-5 bg-[var(--surface-card)]">
+                        <span>{formattedDate}</span>
+                        <span className="subtotal" style={{ color }}>
+                          {sign}{currency}{row.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  const tx = row.tx;
                   return (
                     <TransactionRow
                       tx={tx}
@@ -176,7 +277,7 @@ export default function HistoryView({
                         const newSet = new Set(selectedIds);
                         newSet.delete(id);
                         setSelectedIds(newSet);
-                        if (onDelete) onDelete(id);
+                        handleInterceptDelete(id);
                       }}
                       currency={currency}
                       mergedColors={mergedColors}
@@ -190,6 +291,21 @@ export default function HistoryView({
             )}
           </div>
         </div>
+
+        {/* Floating Undo Delete Toast Overlay */}
+        {lastDeletedTx && (
+          <div className="undo-toast show animate-slide-up">
+            <div className="flex items-center justify-between w-full">
+              <span className="text-[var(--text-primary)] font-medium">Transaction deleted</span>
+              <button 
+                onClick={handleUndoDelete}
+                className="ml-4 px-3 py-1.5 rounded-xl bg-[var(--teal)] text-white text-[11px] font-black tracking-widest uppercase hover:brightness-110 active:scale-95 transition-all shadow-md"
+              >
+                Undo
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Import Toast */}
         {importToast && (
@@ -208,7 +324,7 @@ export default function HistoryView({
             const newSet = new Set(selectedIds);
             newSet.delete(id);
             setSelectedIds(newSet);
-            if (onDelete) onDelete(id);
+            handleInterceptDelete(id);
             setDeleteConfirmId(null);
           }}
         />
