@@ -1,19 +1,19 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Wand2, Sparkles, Loader2, Check, X, Mic, Camera, Paperclip } from 'lucide-react';
-import { processNaturalLanguageExpense } from '../../../utils/parsers/nlp';
+import { processNaturalLanguageExpense } from '@/parsers/nlp';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Transaction } from '../../../types';
-import { AIInputTools } from './AIInputTools';
-import { compressImage } from '../../../utils/imageUtils';
-import { recognizeReceipt, parseOfflineReceipt } from '../../../utils/parsers/ocr';
-import { parseVoiceLocally } from '../../../utils/parsers/voice';
-import { parseVoiceWithGemini } from '../../../services/VoiceService';
-import { useCurrency } from '../../../contexts/CurrencyContext';
-import ReceiptScanner from './ReceiptScanner';
-import { haptic } from '../../../lib/haptic';
-import { predictCategory } from '../../../utils/merchantMapper';
-import { useCategories } from '../../../hooks/useCategories';
-import { useStore } from '../../../store';
+import { Transaction } from '@/types';
+import { AIInputTools } from '@/components/features/ai/AIInputTools';
+import { compressImage } from '@/utils/imageUtils';
+import { recognizeReceipt, parseOfflineReceipt } from '@/parsers/ocr';
+import { parseVoiceLocally } from '@/parsers/voice';
+import { parseVoiceWithGemini } from '@/services/VoiceService';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import ReceiptScanner from '@/components/features/ai/ReceiptScanner';
+import { haptic } from '@/lib/haptic';
+import { predictCategory } from '@/utils/merchantMapper';
+import { useCategories } from '@/hooks/useCategories';
+import { useStore } from '@/store';
 
 interface MagicInputProps {
   onAdd: (transaction: Transaction) => void;
@@ -38,7 +38,24 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
   const [showScanner, setShowScanner] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (prediction && prediction.length > 0) {
+      setTimeout(() => {
+        const modalContainer = document.querySelector('[role="dialog"]');
+        if (modalContainer) {
+          modalContainer.scrollTo({
+            top: modalContainer.scrollHeight,
+            behavior: 'smooth'
+          });
+        }
+      }, 100);
+    }
+  }, [prediction]);
+
   const handleProcess = async () => {
+    // Dismiss soft keyboard on mobile devices immediately
+    document.getElementById('magic-input-field')?.blur();
+
     if (!input.trim()) {
       setScanStatus('⚠️ Please enter an expense description');
       setTimeout(() => setScanStatus(undefined), 2000);
@@ -183,10 +200,10 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
 
   return (
     <div className="relative w-full max-w-2xl mx-auto space-y-4">
-      <div className="relative group">
+      <div className="relative group w-full">
         <div className="absolute -inset-1 bg-gradient-to-r from-[var(--teal)] to-blue-500 rounded-[32px] blur opacity-20 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
-        <div className="relative bg-[var(--surface-card)] border border-[var(--border)] rounded-[30px] p-2 flex items-center gap-2 shadow-xl">
-          <div className="pl-4 text-[var(--teal)]">
+        <div className="relative w-full bg-[var(--surface-card)] border border-[var(--border)] rounded-[30px] p-1.5 flex items-center justify-between gap-2 shadow-xl overflow-hidden">
+          <div className="pl-3.5 text-[var(--teal)] flex-shrink-0 flex items-center">
             <Wand2 size={20} />
           </div>
           <input 
@@ -196,14 +213,15 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleProcess()}
             onFocus={onFocus}
-            placeholder="500 on food and 700 on travel..."
+            placeholder="Try '200 on food'..."
             autoFocus={autoFocus}
-            className="flex-1 bg-transparent border-none py-4 px-2 text-[var(--text-primary)] font-medium outline-none placeholder:text-[var(--text-muted)] placeholder:opacity-50"
+            className="flex-1 bg-transparent border-none py-3 px-1 text-base text-[var(--text-primary)] font-medium outline-none placeholder:text-[var(--text-muted)] placeholder:opacity-50"
+            style={{ minWidth: 0, width: '100%', outline: 'none' }}
           />
           <button 
             onClick={handleProcess}
             disabled={isProcessing || !input.trim()}
-            className="p-3 bg-[var(--teal)] text-white border-none rounded-2xl cursor-pointer shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center min-w-[48px]"
+            className="p-3 bg-[var(--teal)] text-white border-none rounded-2xl cursor-pointer shadow-lg shadow-teal-500/20 hover:scale-105 active:scale-95 transition-all disabled:opacity-30 flex items-center justify-center min-w-[48px] flex-shrink-0"
           >
             {isProcessing ? <Loader2 size={20} className="animate-spin" /> : <Sparkles size={20} />}
           </button>
@@ -284,7 +302,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="absolute top-full left-0 right-0 mt-4 z-50 bg-[var(--surface-card)] border border-[var(--teal)]/30 rounded-3xl p-6 shadow-2xl overflow-hidden"
+            className="relative mt-4 z-10 bg-[var(--surface-card)] border border-[var(--teal)]/30 rounded-3xl p-6 shadow-2xl overflow-hidden w-full"
           >
             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[var(--teal)] to-blue-500" />
             
@@ -297,7 +315,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
               </button>
             </div>
 
-            <div className="space-y-3 max-h-60 overflow-y-auto pr-1 mb-6">
+            <div className="space-y-3 pr-1 mb-6">
               {prediction.map((item, idx) => (
                 <div key={idx} className="flex items-center gap-6 p-3 bg-[var(--surface-bg)] rounded-2xl border border-[var(--border)]">
                   <div className="flex-1 min-w-0">

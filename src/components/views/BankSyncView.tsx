@@ -2,20 +2,18 @@ import { useState, useEffect } from 'react';
 import {
   Brain, CheckCircle2, Sparkles, Loader2, AlertCircle
 } from 'lucide-react';
-import { Transaction, LinkedAccount, FinanceProvider, Category, SyncView, WizardStep } from '../../types';
-import { UPI_PROVIDERS, generateMockUPITransactions } from '../../utils/parsers/upi';
-import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant, parseUPIDescription, loadMerchantMemory } from '../../utils/razorpaySync';
-import { predictCategory } from '../../utils/merchantMapper';
-import { useStore } from '../../store';
-import { Category as CategoryType } from '../../types';
+import { Transaction, LinkedAccount, FinanceProvider, Category, SyncView, WizardStep } from '@/types';
+import { UPI_PROVIDERS, generateMockUPITransactions } from '@/parsers/upi';
+import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant, parseUPIDescription, loadMerchantMemory } from '@/utils/razorpaySync';
+import { predictCategory } from '@/utils/merchantMapper';
+import { useStore } from '@/store';
+import { Category as CategoryType } from '@/types';
 
-import SyncDashboard from '../features/sync/SyncDashboard';
-import SelectSource from '../features/sync/SelectSource';
-import UPILink from '../features/sync/UPILink';
-import RazorpayLink from '../features/sync/RazorpayLink';
-import PlaidLink from '../features/sync/PlaidLink';
-import PayForm from '../features/sync/PayForm';
-import Web3Link from '../features/sync/Web3Link';
+import SyncDashboard from '@/components/features/sync/SyncDashboard';
+import SelectSource from '@/components/features/sync/SelectSource';
+import UPILink from '@/components/features/sync/UPILink';
+import RazorpayLink from '@/components/features/sync/RazorpayLink';
+import PayForm from '@/components/features/sync/PayForm';
 
 interface BankSyncViewProps {
   onAutoAddTransactions: (txs: Transaction[]) => void;
@@ -82,33 +80,7 @@ export default function BankSyncView({
     setView('dashboard');
   };
 
-  const handlePlaidLinkSuccess = (bankName: string, id: string) => {
-    const newAccount: LinkedAccount = {
-      id: `acc-${Date.now()}`,
-      provider: 'plaid',
-      upiId: bankName,
-      linkedAt: new Date().toISOString(),
-      lastSynced: new Date().toISOString(),
-      status: 'active',
-    };
-    setAccounts(prev => [newAccount, ...prev]);
-    handleMockSync(newAccount);
-    setView('dashboard');
-  };
 
-  const handleWeb3LinkSuccess = (walletName: string, id: string) => {
-    const newAccount: LinkedAccount = {
-      id: `acc-${Date.now()}`,
-      provider: 'web3',
-      upiId: walletName,
-      linkedAt: new Date().toISOString(),
-      lastSynced: new Date().toISOString(),
-      status: 'active',
-    };
-    setAccounts(prev => [newAccount, ...prev]);
-    handleMockSync(newAccount);
-    setView('dashboard');
-  };
 
 
 
@@ -264,8 +236,6 @@ export default function BankSyncView({
       )}
       {view === 'select-source' && <SelectSource onSetView={setView} />}
       {view === 'upi-link' && <UPILink onSetView={setView} onUPILinkSuccess={handleUPILinkSuccess} />}
-      {view === 'plaid-link' && <PlaidLink onSetView={setView} onPlaidLinkSuccess={handlePlaidLinkSuccess} />}
-      {view === 'web3-link' && <Web3Link onSetView={setView} onWeb3LinkSuccess={handleWeb3LinkSuccess} />}
       {view === 'rzp-link' && <RazorpayLink onSetView={setView} onConnect={handleRazorpayConnect} />}
       {view === 'pay-form' && <PayForm onSetView={setView} onPay={handlePay} currency={currency} />}
       

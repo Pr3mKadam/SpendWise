@@ -1,6 +1,6 @@
 import React from 'react';
 import { Lock } from 'lucide-react';
-import { PinInput } from '../../../common/ui/PinInput';
+import { PinInput } from '@/ui/PinInput';
 
 interface ParentalLockScreenProps {
   unlockPin: string;

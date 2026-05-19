@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Modal } from '../../common/ui/Modal';
-import { Btn } from '../../common/ui/Button';
-import { Field, Inp } from '../../common/ui/Input';
-import { Sel } from '../../common/ui/Select';
-import { Err, Ok } from '../../common/ui/Alert';
-import { EmojiBtn } from '../../common/ui/Avatar';
-import { Ico } from '../../common/ui/Icons';
-import { SharedGoal, SharedGroupMember } from '../../../hooks/useSharedWallets';
+import { Modal } from '@/ui/Modal';
+import { Btn } from '@/ui/Button';
+import { Field, Inp } from '@/ui/Input';
+import { Sel } from '@/ui/Select';
+import { Err, Ok } from '@/ui/Alert';
+import { EmojiBtn } from '@/ui/Avatar';
+import { Ico } from '@/ui/Icons';
+import { SharedGoal, SharedGroupMember } from '@/hooks/useSharedWallets';
 
 // Constants
 export const MEMBER_EMOJIS = ['👩','👨','👱‍♀️','🧔','👨‍🦱','👩‍🦰','😎','🤓','😊','🤠','👑','👻','👽','🤖'];
@@ -472,6 +472,67 @@ export function ContribModal({ show, onClose, goal, members, onSubmit, currency 
         <Field label="Note (optional)"><Inp placeholder="e.g. Monthly top-up" value={note} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNote(e.target.value)} /></Field>
         <Btn full v="primary" type="submit" disabled={busy || !amount || !mid}>
           {busy ? <><Ico.Spin /> Saving…</> : '💰 Add Contribution'}
+        </Btn>
+      </form>
+    </Modal>
+  );
+}
+
+export function ConnectCohortModal({ show, onClose, localPeerId, onSubmit }: {
+  show: boolean; onClose: () => void; localPeerId: string;
+  onSubmit: (remoteId: string) => void;
+}) {
+  const [remoteId, setRemoteId] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  function reset() {
+    setRemoteId('');
+    setCopied(false);
+  }
+
+  function handleCopy() {
+    navigator.clipboard.writeText(localPeerId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!remoteId.trim()) return;
+    onSubmit(remoteId.trim());
+    reset();
+    onClose();
+  }
+
+  return (
+    <Modal show={show} onClose={() => { reset(); onClose(); }} title="🔗 Connect Cohort">
+      <form onSubmit={submit}>
+        <div className="bg-[var(--surface-input)] border border-[var(--border)] rounded-2xl p-4 mb-5">
+          <span className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider mb-2">Your Peer ID</span>
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-xs text-[var(--text-primary)] select-all truncate flex-1">{localPeerId || 'Loading...'}</span>
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="px-3 h-8 bg-[var(--teal)]/10 text-[var(--teal)] rounded-xl border-none font-bold text-xs cursor-pointer hover:bg-[var(--teal)]/20 transition-colors"
+            >
+              {copied ? 'Copied!' : 'Copy'}
+            </button>
+          </div>
+          <span className="block text-[9px] text-[var(--text-muted)] mt-2 font-medium">Share your Peer ID with your cohort so they can link directly to you.</span>
+        </div>
+
+        <Field label="Remote Peer ID">
+          <Inp 
+            placeholder="Paste your cohort's Peer ID (e.g. sw-xxxxx)" 
+            value={remoteId} 
+            onChange={e => setRemoteId(e.target.value)} 
+            autoFocus 
+          />
+        </Field>
+
+        <Btn full v="primary" type="submit" disabled={!remoteId.trim()}>
+          ⚡ Link Cohort Connection
         </Btn>
       </form>
     </Modal>

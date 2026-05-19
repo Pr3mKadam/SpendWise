@@ -1,4 +1,4 @@
-import { Transaction, MonthlyStats, Budget, SavingsGoal } from '../types';
+import { Transaction, MonthlyStats, Budget, SavingsGoal } from '@/types';
 
 interface PDFReportData {
   transactions: Transaction[];

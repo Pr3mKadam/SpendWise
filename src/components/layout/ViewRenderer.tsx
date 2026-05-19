@@ -1,31 +1,31 @@
 import React, { Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AppView, Transaction, Category } from '../../types';
-import { SkeletonLoader } from '../common/SkeletonLoader';
-import { ErrorBoundary } from '../common/ErrorBoundary';
-import AlertBanner from '../common/AlertBanner';
+import { AppView, Transaction, Category } from '@/types';
+import { SkeletonLoader } from '@/ui/SkeletonLoader';
+import { ErrorBoundary } from '@/ui/ErrorBoundary';
+import AlertBanner from '@/shell/AlertBanner';
 
 // Lazy loaded views
-const AnalyticsView = lazy(() => import('../views/AnalyticsView'));
-const HistoryView = lazy(() => import('../views/HistoryView'));
-const RecurringView = lazy(() => import('../views/RecurringView'));
-const GoalsView = lazy(() => import('../views/GoalsView'));
-const SharedView = lazy(() => import('../views/SharedView'));
-const BankSyncView = lazy(() => import('../views/BankSyncView'));
-const ProfileView = lazy(() => import('../views/ProfileView'));
-const PortfolioView = lazy(() => import('../views/PortfolioView'));
-const AdvisorView = lazy(() => import('../views/AdvisorView'));
-const ReportsView = lazy(() => import('../views/ReportsView'));
-const ParentalView = lazy(() => import('../views/ParentalView'));
-const BudgetManager = lazy(() => import('../features/budgets/BudgetManager'));
-const SubscriptionManager = lazy(() => import('../features/subscriptions/SubscriptionManager'));
-const EducationView = lazy(() => import('../views/EducationView'));
-const GamificationView = lazy(() => import('../views/GamificationView'));
-const DashboardView = lazy(() => import('../views/DashboardView').then(m => ({ default: m.DashboardView })));
+const AnalyticsView = lazy(() => import('@/components/views/AnalyticsView'));
+const HistoryView = lazy(() => import('@/components/views/HistoryView'));
+const RecurringView = lazy(() => import('@/components/views/RecurringView'));
+const GoalsView = lazy(() => import('@/components/views/GoalsView'));
+const SharedView = lazy(() => import('@/components/views/SharedView'));
+const BankSyncView = lazy(() => import('@/components/views/BankSyncView'));
+const ProfileView = lazy(() => import('@/components/views/ProfileView'));
+const PortfolioView = lazy(() => import('@/components/views/PortfolioView'));
+const AdvisorView = lazy(() => import('@/components/views/AdvisorView'));
+const ReportsView = lazy(() => import('@/components/views/ReportsView'));
+const ParentalView = lazy(() => import('@/components/views/ParentalView'));
+const BudgetManager = lazy(() => import('@/components/features/budgets/BudgetManager'));
+const SubscriptionManager = lazy(() => import('@/components/features/subscriptions/SubscriptionManager'));
+const EducationView = lazy(() => import('@/components/views/EducationView'));
+const GamificationView = lazy(() => import('@/components/views/GamificationView'));
+const DashboardView = lazy(() => import('@/components/views/DashboardView').then(m => ({ default: m.DashboardView })));
 
-import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
-import { SpendWiseStore, ParentalControlState } from '../../store';
-import { AppState } from '../../types/state';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { SpendWiseStore, ParentalControlState } from '@/store';
+import { AppState } from '@/types/state';
 
 interface ViewRendererProps {
   activeView: AppView;

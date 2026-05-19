@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useStore } from '../store';
-import { RecurringTransaction, Transaction } from '../types';
+import { useStore } from '@/store';
+import { RecurringTransaction, Transaction } from '@/types';
 
 function getNextDate(dateStr: string, frequency: RecurringTransaction['frequency']): string {
   const d = new Date(dateStr + 'T00:00:00');

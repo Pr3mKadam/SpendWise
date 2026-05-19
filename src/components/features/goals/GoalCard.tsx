@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Calendar, DollarSign, Plus, Edit3, Trash2, Coins, Clock, Target } from 'lucide-react';
-import { SavingsGoal } from '../../../types';
-import { ProgressRing } from './ProgressRing';
-import { STATUS_CONFIG } from './constants';
-import { daysUntil, formatDate } from './utils';
-import { ContributeModal } from './ContributeModal';
+import { SavingsGoal } from '@/types';
+import { ProgressRing } from '@/components/features/goals/ProgressRing';
+import { STATUS_CONFIG } from '@/components/features/goals/constants';
+import { daysUntil, formatDate } from '@/components/features/goals/utils';
+import { ContributeModal } from '@/components/features/goals/ContributeModal';
 import confetti from 'canvas-confetti';
 
 const ROUNDUP_KEY = (id: string) => `spendwise_roundup_${id}`;

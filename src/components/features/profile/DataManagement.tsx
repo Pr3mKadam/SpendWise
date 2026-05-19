@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { Download, Trash2, Lock, DownloadCloud } from 'lucide-react';
-import { Transaction } from '../../../types';
+import { Transaction } from '@/types';
 
 interface DataManagementProps {
   transactions: Transaction[];
@@ -139,38 +139,40 @@ export function DataManagement({
           </div>
         </div>
 
-        {/* Raw DB Backup */}
-        <div
-          className="flex flex-col p-5 rounded-xl md:col-span-2 mt-0"
-          style={{ border: '1.5px solid var(--border)', background: 'var(--surface-input)' }}
-        >
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.1)' }}>
-              <DownloadCloud size={16} style={{ color: '#6366f1' }} />
+        {/* Raw DB Backup - Dev Only */}
+        {import.meta.env.DEV && (
+          <div
+            className="flex flex-col p-5 rounded-xl md:col-span-2 mt-0"
+            style={{ border: '1.5px solid var(--border)', background: 'var(--surface-input)' }}
+          >
+            <div className="flex items-center gap-3 mb-2">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.1)' }}>
+                <DownloadCloud size={16} style={{ color: '#6366f1' }} />
+              </div>
+              <h4 className="font-inter font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>Raw Database Export/Import (.json) <span className="text-[10px] bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded font-mono ml-2">DEV ONLY</span></h4>
             </div>
-            <h4 className="font-inter font-bold text-[15px]" style={{ color: 'var(--text-primary)' }}>Raw Database Export/Import (.json)</h4>
+            <p className="font-inter text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
+              Export or import the raw IndexedDB database (unencrypted) for testing or moving to another device manually.
+            </p>
+            <div className="flex gap-3 items-center">
+              <button
+                onClick={onRawDBExport}
+                className="px-4 py-2 rounded-lg font-inter font-semibold text-xs transition-colors"
+                style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)', cursor: 'pointer' }}
+              >
+                Download Raw JSON
+              </button>
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="px-4 py-2 rounded-lg font-inter font-semibold text-xs transition-colors"
+                style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)', cursor: 'pointer' }}
+              >
+                Import Raw JSON
+              </button>
+              <input type="file" accept=".json" onChange={onRawDBImport} ref={fileInputRef} className="hidden" />
+            </div>
           </div>
-          <p className="font-inter text-xs mb-4" style={{ color: 'var(--text-muted)' }}>
-            Export or import the raw IndexedDB database (unencrypted) for testing or moving to another device manually.
-          </p>
-          <div className="flex gap-3 items-center">
-            <button
-              onClick={onRawDBExport}
-              className="px-4 py-2 rounded-lg font-inter font-semibold text-xs transition-colors"
-              style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)', cursor: 'pointer' }}
-            >
-              Download Raw JSON
-            </button>
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 rounded-lg font-inter font-semibold text-xs transition-colors"
-              style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)', cursor: 'pointer' }}
-            >
-              Import Raw JSON
-            </button>
-            <input type="file" accept=".json" onChange={onRawDBImport} ref={fileInputRef} className="hidden" />
-          </div>
-        </div>
+        )}
 
         {/* Transaction-only Import */}
         <div

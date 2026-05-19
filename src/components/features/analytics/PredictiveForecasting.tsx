@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid } from 'recharts';
 import { TrendingUp, TrendingDown, Brain, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { Transaction } from '../../../types';
+import { Transaction } from '@/types';
 
 interface PredictiveForecastingProps {
   transactions: Transaction[];

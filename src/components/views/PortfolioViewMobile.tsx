@@ -4,13 +4,13 @@ import {
   Sparkles, BrainCircuit, Zap, ChevronRight, PieChart,
   ArrowUpRight, ArrowDownRight, Wallet
 } from 'lucide-react';
-import { AssetType, LiabilityType, SavingsGoal } from '../../types';
-import NetWorthEvolution from '../features/wealth/NetWorthEvolution';
-import FutureWealthSimulator from '../features/wealth/FutureWealthSimulator';
-import DebtPlanner from '../features/wealth/DebtPlanner';
-import EntryCard from '../features/wealth/EntryCard';
-import AllocationDonut from '../features/wealth/AllocationDonut';
-import { haptic } from '../../lib/haptic';
+import { AssetType, LiabilityType, SavingsGoal } from '@/types';
+import NetWorthEvolution from '@/components/features/wealth/NetWorthEvolution';
+import FutureWealthSimulator from '@/components/features/wealth/FutureWealthSimulator';
+import DebtPlanner from '@/components/features/wealth/DebtPlanner';
+import EntryCard from '@/components/features/wealth/EntryCard';
+import AllocationDonut from '@/components/features/wealth/AllocationDonut';
+import { haptic } from '@/lib/haptic';
 
 interface PortfolioViewMobileProps {
   netWorth: number;

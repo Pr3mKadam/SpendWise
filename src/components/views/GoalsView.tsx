@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Target, Plus, Award } from 'lucide-react';
-import { SavingsGoal, GoalStatus } from '../../types';
-import { GoalModal, GoalFormData } from '../features/goals/GoalModal';
-import { GoalCard } from '../features/goals/GoalCard';
-import { GoalsSummary } from '../features/goals/GoalsSummary';
-import { BadgeGallery } from '../features/gamification/BadgeGallery';
-import { useGamification } from '../../hooks/useGamification';
+import { SavingsGoal, GoalStatus } from '@/types';
+import { GoalModal, GoalFormData } from '@/components/features/goals/GoalModal';
+import { GoalCard } from '@/components/features/goals/GoalCard';
+import { GoalsSummary } from '@/components/features/goals/GoalsSummary';
+import { BadgeGallery } from '@/components/features/gamification/BadgeGallery';
+import { useGamification } from '@/hooks/useGamification';
 
-import { useIsMobile } from '../../hooks/useMediaQuery';
-import GoalsViewMobile from './GoalsViewMobile';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import GoalsViewMobile from '@/components/views/GoalsViewMobile';
 
 interface GoalStats {
   activeCount:      number;

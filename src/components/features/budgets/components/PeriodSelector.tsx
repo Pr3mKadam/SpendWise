@@ -1,4 +1,4 @@
-import { BudgetPeriod } from '../../../../types';
+import { BudgetPeriod } from '@/types';
 
 const PERIOD_OPTIONS: { value: BudgetPeriod; label: string; short: string }[] = [
   { value: 'weekly',   label: 'Weekly',    short: '7d'  },

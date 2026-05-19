@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CategorySpend } from '../../../types';
+import { CategorySpend } from '@/types';
 
 interface SpendingHeatmapProps {
   transactions: { date: string; amount: number; type: string }[];

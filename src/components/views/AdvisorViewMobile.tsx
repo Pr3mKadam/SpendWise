@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Bot, Send, User, Mic, MicOff, Trash2, Zap, Sparkles, AlertTriangle } from 'lucide-react';
-import { useTransactions } from '../../hooks/useTransactions';
-import { useCurrency } from '../../contexts/CurrencyContext';
-import { haptic } from '../../lib/haptic';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { haptic } from '@/lib/haptic';
 
 interface AdvisorViewMobileProps {
   messages: any[];

@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import {
-  Mail, Lock, Wallet, ArrowRight, Loader2, User, Phone,
+  Mail, Lock, Wallet, Coins, ArrowRight, Loader2, User, Phone,
   Eye, EyeOff, CheckCircle2, TrendingUp, ShieldCheck, Zap, Star,
   ChevronRight,
 } from 'lucide-react';
-import { ChildQRScanner } from '../features/parental/components/ChildQRScanner';
-import { useAuth } from '../../hooks/useAuth';
+import { ChildQRScanner } from '@/components/features/parental/components/ChildQRScanner';
+import { useAuth } from '@/hooks/useAuth';
 
 // ── Feature list shown on left panel ────────────────────────────
 const features = [

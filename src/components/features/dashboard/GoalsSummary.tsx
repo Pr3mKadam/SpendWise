@@ -1,6 +1,6 @@
 import { Plus, Target } from 'lucide-react';
-import Card from '../../common/Card';
-import { AppView } from '../../../types';
+import Card from '@/ui/Card';
+import { AppView } from '@/types';
 
 const TEXT_PRIMARY = '#0f1117';
 const TEXT_MUTED = '#9197a6';

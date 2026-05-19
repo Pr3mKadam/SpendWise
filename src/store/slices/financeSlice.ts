@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { Transaction, Category, RecurringPattern, RecurringTransaction } from '../../types';
-import { SpendWiseStore } from '../index';
+import { Transaction, Category, RecurringPattern, RecurringTransaction } from '@/types';
+import { SpendWiseStore } from '@/store/index';
 
 export interface BudgetSettings {
   period: 'weekly' | 'biweekly' | 'monthly';

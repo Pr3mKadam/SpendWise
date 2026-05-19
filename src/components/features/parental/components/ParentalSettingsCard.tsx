@@ -1,7 +1,7 @@
 import React from 'react';
 import { Shield, Lock, Bell, AlertTriangle, Trash2 } from 'lucide-react';
 
-import { ParentalControlState } from '../../../../store';
+import { ParentalControlState } from '@/store';
 
 interface ParentalSettingsCardProps {
   settings: ParentalControlState;

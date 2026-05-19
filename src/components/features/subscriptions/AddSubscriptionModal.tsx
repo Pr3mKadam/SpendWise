@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { X, Plus } from 'lucide-react';
-import { useStore } from '../../../store';
-import { useCategories } from '../../../hooks/useCategories';
-import { RecurringFrequency, Category } from '../../../types';
+import { useStore } from '@/store';
+import { useCategories } from '@/hooks/useCategories';
+import { RecurringFrequency, Category } from '@/types';
 
 interface AddSubscriptionModalProps {
   isOpen: boolean;

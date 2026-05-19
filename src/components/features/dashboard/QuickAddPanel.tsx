@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Zap } from 'lucide-react';
-import MagicInput from '../ai/MagicInput';
-import { Transaction } from '../../../types';
+import MagicInput from '@/components/features/ai/MagicInput';
+import { Transaction } from '@/types';
 
 interface QuickAddPanelProps {
   onAdd: (transaction: Transaction) => void;

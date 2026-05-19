@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { STORAGE_KEYS } from '../constants';
+import { STORAGE_KEYS } from '@/constants';
 
 export type CurrencyCode = '$' | '€' | '£' | '₹' | '¥' | 'A$' | 'C$' | 'AED';
 

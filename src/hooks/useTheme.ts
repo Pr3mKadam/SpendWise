@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { ThemeMode } from '../types';
+import { ThemeMode } from '@/types';
 
 const STORAGE_KEY = 'spendwise_theme_v1';
 

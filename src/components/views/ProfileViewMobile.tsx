@@ -4,8 +4,8 @@ import {
   ChevronRight, Globe, Bell, Smartphone, Database, Lock, 
   Smartphone as PhoneIcon, MapPin, Briefcase, CreditCard
 } from 'lucide-react';
-import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
-import { haptic } from '../../lib/haptic';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { haptic } from '@/lib/haptic';
 
 interface ProfileViewMobileProps {
   name: string;

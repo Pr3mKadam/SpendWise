@@ -1,13 +1,13 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App";
-import { AuthProvider } from "./hooks/useAuth";
-import { CategoryProvider } from "./hooks/useCategories";
-import { CurrencyProvider } from "./contexts/CurrencyContext";
+import App from "@/App";
+import { AuthProvider } from "@/hooks/useAuth";
+import { CategoryProvider } from "@/hooks/useCategories";
+import { CurrencyProvider } from "@/contexts/CurrencyContext";
 
 import { registerSW } from 'virtual:pwa-register';
-import { runDexieMigration } from './db/migration';
+import { runDexieMigration } from '@/db/migration';
 
 // Register service worker for PWA (immediate: ensures update on next visit)
 registerSW({ immediate: true });

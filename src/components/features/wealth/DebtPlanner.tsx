@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ShieldAlert, Zap, TrendingDown, Calendar, ArrowRight, BrainCircuit, Info } from 'lucide-react';
-import { LiabilityEntry } from '../../../types';
+import { LiabilityEntry } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface DebtPlannerProps {

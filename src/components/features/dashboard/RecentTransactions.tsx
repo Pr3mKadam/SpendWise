@@ -1,7 +1,7 @@
-import { Transaction, AppView } from '../../../types';
-import Card from '../../common/Card';
+import { Transaction, AppView } from '@/types';
+import Card from '@/ui/Card';
 import { WalletCards } from 'lucide-react';
-import { initials, avatarColor } from '../../../utils/avatar';
+import { initials, avatarColor } from '@/utils/avatar';
 
 const TEXT_PRIMARY = '#0f1117';
 const TEXT_MUTED = '#9197a6';

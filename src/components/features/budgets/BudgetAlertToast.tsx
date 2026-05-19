@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useBudgets } from '../../../hooks/useBudgets';
+import { useBudgets } from '@/hooks/useBudgets';
 
 interface BudgetAlertToastProps {
   currency?: string;
@@ -49,7 +49,15 @@ function showToast(message: string, color: string, icon: string) {
     gap: 10px;
     line-height: 1.4;
   `;
-  toast.innerHTML = `<span style="font-size:18px;flex-shrink:0">${icon}</span><span>${message}</span>`;
+  const iconSpan = document.createElement('span');
+  iconSpan.style.cssText = 'font-size:18px;flex-shrink:0;';
+  iconSpan.textContent = icon;
+
+  const msgSpan = document.createElement('span');
+  msgSpan.textContent = message;
+
+  toast.appendChild(iconSpan);
+  toast.appendChild(msgSpan);
   container.appendChild(toast);
   setTimeout(() => {
     toast.style.transition = 'opacity 0.4s';
@@ -66,6 +74,14 @@ if (!document.getElementById('budget-toast-keyframe')) {
   document.head.appendChild(style);
 }
 
+function escapeHtml(str: string): string {
+  return str.replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+}
+
 export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
   const { budgetStats } = useBudgets();
   const firedRef = useRef<Set<string>>(new Set());
@@ -75,6 +91,12 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
       const key80  = ALERT_KEY(stat.category, '80');
       const key100 = ALERT_KEY(stat.category, '100');
 
+      const safeCategory = escapeHtml(stat.category);
+      const safeSpent = stat.spent.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+      const safeLimit = stat.limit.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+      const safePercent = stat.percent.toFixed(0);
+      const safeRemaining = stat.remaining.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+
       if (stat.percent >= 100 && !firedRef.current.has(key100)) {
         try {
           if (sessionStorage.getItem(key100)) return;
@@ -82,7 +104,7 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
         } catch { /* ignore */ }
         firedRef.current.add(key100);
         showToast(
-          `🚨 <strong>${stat.category}</strong> budget exceeded! You've spent ${currency}${stat.spent.toLocaleString('en-IN', { maximumFractionDigits: 0 })} of ${currency}${stat.limit.toLocaleString('en-IN', { maximumFractionDigits: 0 })}.`,
+          `🚨 <strong>${safeCategory}</strong> budget exceeded! You've spent ${currency}${safeSpent} of ${currency}${safeLimit}.`,
           '#ef4444',
           '🚨'
         );
@@ -93,7 +115,7 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
         } catch { /* ignore */ }
         firedRef.current.add(key80);
         showToast(
-          `⚠️ <strong>${stat.category}</strong> at ${stat.percent}% of budget — ${currency}${stat.remaining.toLocaleString('en-IN', { maximumFractionDigits: 0 })} remaining.`,
+          `⚠️ <strong>${safeCategory}</strong> at ${safePercent}% of budget — ${currency}${safeRemaining} remaining.`,
           '#f59e0b',
           '⚠️'
         );

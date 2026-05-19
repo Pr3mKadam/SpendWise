@@ -1,7 +1,7 @@
-import { useIsMobile } from '../../../hooks/useMediaQuery';
-import MetricCardsDesktop from './MetricCardsDesktop';
-import MetricCardsMobile from './MetricCardsMobile';
-import { MonthlyStats } from '../../../types';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import MetricCardsDesktop from '@/components/features/dashboard/MetricCardsDesktop';
+import MetricCardsMobile from '@/components/features/dashboard/MetricCardsMobile';
+import { MonthlyStats } from '@/types';
 
 interface MetricCardsProps {
   currentBalance: number;

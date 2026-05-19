@@ -1,8 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Home, Building2, Landmark, TreePine, Construction, Sparkles } from 'lucide-react';
-import { useStore } from '../../../store';
-import { haptic } from '../../../lib/haptic';
+import { useStore } from '@/store';
+import { haptic } from '@/lib/haptic';
 import { useEffect, useRef } from 'react';
 
 export default function WealthCity() {

@@ -1,6 +1,6 @@
 import { Globe } from 'lucide-react';
-import { useCurrency, CurrencyCode } from '../../../contexts/CurrencyContext';
-import { COMMON_CURRENCIES } from '../../../data/currencies';
+import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
+import { COMMON_CURRENCIES } from '@/data/currencies';
 
 interface CurrencySelectorProps {
   activeCurrency: string;

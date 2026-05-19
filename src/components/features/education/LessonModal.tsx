@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Star, X, Check, Trophy } from 'lucide-react';
-import { Lesson } from '../../../data/lessons';
-import { CATEGORY_CONFIG } from './categoryConfig';
+import { Lesson } from '@/data/lessons';
+import { CATEGORY_CONFIG } from '@/components/features/education/categoryConfig';
 
 export interface LessonModalProps {
   lesson: Lesson;

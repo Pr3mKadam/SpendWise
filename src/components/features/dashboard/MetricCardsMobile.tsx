@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft, Sparkles } from 'lucide-react';
-import { MonthlyStats } from '../../../types';
-import { useStore } from '../../../store';
+import { MonthlyStats } from '@/types';
+import { useStore } from '@/store';
 
 interface MetricCardsProps {
   currentBalance: number;

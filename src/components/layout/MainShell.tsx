@@ -1,18 +1,19 @@
 import { useState, useCallback, useEffect, lazy, Suspense, type Dispatch, type SetStateAction } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AppView, Transaction, Category } from '../../types';
-import { useAuth } from '../../hooks/useAuth';
+import { AppView, Transaction, Category } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
 
-import Sidebar from '../common/Sidebar';
-import Header from '../common/Header';
-import type { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
-import { ViewRenderer } from './ViewRenderer';
-import { useAppState } from '../../hooks/useAppState';
-import { useAutomations } from '../../hooks/useAutomations';
-import { useStore } from '../../store';
-import { STORAGE_KEYS } from '../../constants';
-import ServiceWorkerToast from '../common/ServiceWorkerToast';
-import { haptic } from '../../lib/haptic';
+import Sidebar from '@/shell/Sidebar';
+import Header from '@/shell/Header';
+import type { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { ViewRenderer } from '@/components/layout/ViewRenderer';
+import { useAppState } from '@/hooks/useAppState';
+import { useAutomations } from '@/hooks/useAutomations';
+import { useStore } from '@/store';
+import { STORAGE_KEYS } from '@/constants';
+import ServiceWorkerToast from '@/shell/ServiceWorkerToast';
+import { haptic } from '@/lib/haptic';
+import { useUPIReturn } from '@/hooks/useUPIReturn';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -23,12 +24,12 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
-const AppModals = lazy(() => import('./AppModals').then(m => ({ default: m.AppModals })));
-const OnboardingModal = lazy(() => import('../features/onboarding/OnboardingModal'));
-const ParentalPinGate = lazy(() => import('../features/parental/ParentalControlGate').then(m => ({ default: m.ParentalPinGate })));
-const KidModeBanner = lazy(() => import('../features/parental/ParentalControlGate').then(m => ({ default: m.KidModeBanner })));
-const QuickAddModal = lazy(() => import('../common/QuickAddModal').then(m => ({ default: m.QuickAddModal })));
-const FeedbackModal = lazy(() => import('../common/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
+const AppModals = lazy(() => import('@/components/layout/AppModals').then(m => ({ default: m.AppModals })));
+const OnboardingModal = lazy(() => import('@/components/features/onboarding/OnboardingModal'));
+const ParentalPinGate = lazy(() => import('@/components/features/parental/ParentalControlGate').then(m => ({ default: m.ParentalPinGate })));
+const KidModeBanner = lazy(() => import('@/components/features/parental/ParentalControlGate').then(m => ({ default: m.KidModeBanner })));
+const QuickAddModal = lazy(() => import('@/shell/QuickAddModal').then(m => ({ default: m.QuickAddModal })));
+const FeedbackModal = lazy(() => import('@/shell/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
 import { Shield, Sparkles } from 'lucide-react';
 
 interface MainShellProps {
@@ -41,6 +42,12 @@ interface MainShellProps {
 export function MainShell({ config, setConfig, userId, initialView = 'dashboard' }: MainShellProps) {
   useAutomations();
   const { user } = useAuth();
+  const addTransactions = useStore(s => s.addTransactions);
+
+  // ── Global UPI Return Detection ─────────────────────────────────────────
+  // Detects when user returns from any UPI payment app and auto-adds the
+  // transaction to SpendWise (via URL params, visibilitychange, pageshow).
+  useUPIReturn({ onTransactionAdded: addTransactions });
 
 
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -280,7 +287,9 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
       isSubscribed = false;
       window.removeEventListener('devicemotion', handleMotion);
     };
-  }, [notifState, store.userPreferences?.shakeEnabled]);
+  // Note: notifState intentionally excluded — it's used inside handleMotion closure but
+  // is a new object ref on every render. Only shakeEnabled should control listener lifecycle.
+  }, [store.userPreferences?.shakeEnabled]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const onAdd = useCallback((tx: Transaction) => {
     // Safety check: ensure tx is a valid transaction object, not a browser event
@@ -299,7 +308,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
   );
 
   const handlePDFReport = useCallback(async () => {
-    const { generatePDFReport } = await import('../../lib/exportPDF');
+    const { generatePDFReport } = await import('@/lib/exportPDF');
     const now = new Date();
     const month = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     generatePDFReport({
@@ -413,6 +422,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
     inventory:     '#ffffff',
     shop:          '#ffffff',
     badges:        '#ffffff',
+    gamification:  '#ffffff',
   };
 
   useEffect(() => {

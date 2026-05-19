@@ -1,30 +1,30 @@
 import { useMemo } from 'react';
-import { FINANCE_DEFAULTS } from '../../constants';
+import { FINANCE_DEFAULTS } from '@/constants';
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
   LineChart, Line, ReferenceLine, CartesianGrid,
 } from 'recharts';
 import { TrendingUp, Wallet, PiggyBank, ArrowUpRight, Receipt } from 'lucide-react';
-import { MonthlyHistoryPoint, MonthlyStats, CategorySpend, Transaction, AppView } from '../../types';
-import { useCategories } from '../../hooks/useCategories';
-import { useTransactions } from '../../hooks/useTransactions';
-import { TaxPredictor } from '../features/analytics/TaxPredictor';
-import { AnomalyDetector } from '../features/analytics/AnomalyDetector';
-import { SpendingForecast } from '../features/analytics/SpendingForecast';
-import { calculateHealthScore } from '../../utils/insights/healthScore';
-import { PeerComparison } from '../features/analytics/PeerComparison';
-import { CashFlowWaterfall } from '../features/analytics/CashFlowWaterfall';
-import { HealthScoreChart } from '../features/analytics/HealthScoreChart';
-import SpendingDonut from '../features/analytics/SpendingDonut';
-import BalanceChart from '../features/analytics/BalanceChart';
-import SpendingHeatmap from '../features/analytics/SpendingHeatmap';
-import { haptic } from '../../lib/haptic';
-import { CategoryAnalyzer } from '../features/analytics/CategoryAnalyzer';
-import { ChartTooltip, SavingsTooltip, StatCard } from '../features/analytics/AnalyticsPrimitives';
-import { TopMerchants } from '../features/analytics/TopMerchants';
-import { HealthIndexCard } from '../features/analytics/HealthIndexCard';
-import { useIsMobile } from '../../hooks/useMediaQuery';
-import AnalyticsViewMobile from './AnalyticsViewMobile';
+import { MonthlyHistoryPoint, MonthlyStats, CategorySpend, Transaction, AppView } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
+import { useTransactions } from '@/hooks/useTransactions';
+import { TaxPredictor } from '@/components/features/analytics/TaxPredictor';
+import { AnomalyDetector } from '@/components/features/analytics/AnomalyDetector';
+import { SpendingForecast } from '@/components/features/analytics/SpendingForecast';
+import { calculateHealthScore } from '@/insights/healthScore';
+import { PeerComparison } from '@/components/features/analytics/PeerComparison';
+import { CashFlowWaterfall } from '@/components/features/analytics/CashFlowWaterfall';
+import { HealthScoreChart } from '@/components/features/analytics/HealthScoreChart';
+import SpendingDonut from '@/components/features/analytics/SpendingDonut';
+import BalanceChart from '@/components/features/analytics/BalanceChart';
+import SpendingHeatmap from '@/components/features/analytics/SpendingHeatmap';
+import { haptic } from '@/lib/haptic';
+import { CategoryAnalyzer } from '@/components/features/analytics/CategoryAnalyzer';
+import { ChartTooltip, SavingsTooltip, StatCard } from '@/components/features/analytics/AnalyticsPrimitives';
+import { TopMerchants } from '@/components/features/analytics/TopMerchants';
+import { HealthIndexCard } from '@/components/features/analytics/HealthIndexCard';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import AnalyticsViewMobile from '@/components/views/AnalyticsViewMobile';
 
 interface AnalyticsViewProps {
   monthlyHistory:   MonthlyHistoryPoint[];

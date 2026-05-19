@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { AlertTriangle, CheckCircle2, Edit3, RefreshCw, Link } from 'lucide-react';
-import { Budget } from '../../../../types';
-import { useCategories } from '../../../../hooks/useCategories';
+import { Budget } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
 
 type BudgetStatus = 'safe' | 'warning' | 'danger';
 

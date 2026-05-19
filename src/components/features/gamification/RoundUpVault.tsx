@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PiggyBank, Sparkles, X, ChevronRight } from 'lucide-react';
-import { Transaction } from '../../../types';
-import { useStore } from '../../../store';
+import { Transaction } from '@/types';
+import { useStore } from '@/store';
 
 interface RoundUpVaultProps {
   transactions: Transaction[];

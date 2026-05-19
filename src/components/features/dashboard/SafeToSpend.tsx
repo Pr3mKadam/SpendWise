@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, TrendingDown, AlertCircle, CheckCircle } from 'lucide-react';
-import { Transaction } from '../../../types';
+import { Transaction } from '@/types';
 
 interface SafeToSpendProps {
   transactions: Transaction[];

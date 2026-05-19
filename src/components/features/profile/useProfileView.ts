@@ -1,13 +1,13 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { SpendWiseConfig } from '../../features/onboarding/OnboardingModal';
-import { exportCSV } from '../../../utils/export';
-import { parseTransactionsJSON } from '../../../utils/import';
-import { Transaction } from '../../../types';
-import { encryptData, decryptData } from '../../../lib/encryption';
-import { useStore } from '../../../store';
-import { downloadDatabaseBackup, importDatabase } from '../../../db/backup';
-import { useCurrency, CurrencyCode } from '../../../contexts/CurrencyContext';
-import { haptic } from '../../../lib/haptic';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { exportCSV } from '@/utils/export';
+import { parseTransactionsJSON } from '@/utils/import';
+import { Transaction } from '@/types';
+import { encryptData, decryptData } from '@/lib/encryption';
+import { useStore } from '@/store';
+import { downloadDatabaseBackup, importDatabase } from '@/db/backup';
+import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
+import { haptic } from '@/lib/haptic';
 
 const FONT_SIZES = ['text-sm', 'text-base', 'text-lg', 'text-xl'] as const;
 export type FontSizeKey = typeof FONT_SIZES[number];

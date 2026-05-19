@@ -5,7 +5,7 @@
  * On the next day, all completions reset.
  */
 import { useState, useCallback, useEffect, useMemo } from 'react';
-import { useStore } from '../store';
+import { useStore } from '@/store';
 
 interface QuestProgress {
   date: string;                   // YYYY-MM-DD — the day this applies to

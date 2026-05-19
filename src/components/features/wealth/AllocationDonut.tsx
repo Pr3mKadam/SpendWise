@@ -1,6 +1,6 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
-import { ASSET_TYPES } from '../../../data/portfolioConfig';
+import { ASSET_TYPES } from '@/data/portfolioConfig';
 
 export interface AllocationDonutProps {
   allocationByType: any[];

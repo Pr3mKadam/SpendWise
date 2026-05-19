@@ -1,20 +1,20 @@
 import { User, ShieldCheck, DownloadCloud, CheckCircle2, Camera } from 'lucide-react';
-import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
-import { exportCSV } from '../../utils/export';
-import { Transaction } from '../../types';
-import { usePWAInstall } from '../../hooks/usePWAInstall';
-import { useCurrency, CurrencyCode } from '../../contexts/CurrencyContext';
-import IOSInstallModal from '../common/IOSInstallModal';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { exportCSV } from '@/utils/export';
+import { Transaction } from '@/types';
+import { usePWAInstall } from '@/hooks/usePWAInstall';
+import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
+import IOSInstallModal from '@/shell/IOSInstallModal';
 
-import ProfileForm from '../features/profile/ProfileForm';
-import { CurrencySelector } from '../features/profile/CurrencySelector';
-import { DataManagement } from '../features/profile/DataManagement';
-import SecureExportModal from '../features/profile/SecureExportModal';
-import RestoreModal from '../features/profile/RestoreModal';
-import ResetConfirmModal from '../features/profile/ResetConfirmModal';
-import { AccessibilitySection } from '../features/profile/AccessibilitySection';
-import { NotificationsSection } from '../features/profile/NotificationsSection';
-import { useProfileView } from '../features/profile/useProfileView';
+import ProfileForm from '@/components/features/profile/ProfileForm';
+import { CurrencySelector } from '@/components/features/profile/CurrencySelector';
+import { DataManagement } from '@/components/features/profile/DataManagement';
+import SecureExportModal from '@/components/features/profile/SecureExportModal';
+import RestoreModal from '@/components/features/profile/RestoreModal';
+import ResetConfirmModal from '@/components/features/profile/ResetConfirmModal';
+import { AccessibilitySection } from '@/components/features/profile/AccessibilitySection';
+import { NotificationsSection } from '@/components/features/profile/NotificationsSection';
+import { useProfileView } from '@/components/features/profile/useProfileView';
 
 interface ProfileViewProps {
   config:         SpendWiseConfig | null;
@@ -25,8 +25,8 @@ interface ProfileViewProps {
   addNotification?: (notif: any) => void;
 }
 
-import { useIsMobile } from '../../hooks/useMediaQuery';
-import ProfileViewMobile from './ProfileViewMobile';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import ProfileViewMobile from '@/components/views/ProfileViewMobile';
 
 export default function ProfileView({
   config, onUpdateConfig, onResetData, transactions, onNavigate, addNotification,

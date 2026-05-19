@@ -2,9 +2,9 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight, Shield } from 'lucide-react';
-import { useCountUp } from '../../../hooks/useCountUp';
-import { MonthlyStats, BalanceDataPoint } from '../../../types';
-import { haptic } from '../../../lib/haptic';
+import { useCountUp } from '@/hooks/useCountUp';
+import { MonthlyStats, BalanceDataPoint } from '@/types';
+import { haptic } from '@/lib/haptic';
 
 interface DashboardHeroProps {
   currentBalance: number;
@@ -126,9 +126,9 @@ export default function DashboardHeroDesktop({
             {/* Big animated number */}
             <div
               className={`tabular-nums transition-all duration-500 ${hideBalances ? 'blur-lg select-none' : ''}`}
-              style={{ fontFamily: 'var(--font-manrope)', fontSize: '48px', fontWeight: 900, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.02em' }}
+              style={{ fontFamily: 'var(--font-manrope)', fontSize: '48px', fontWeight: 900, color: '#ffffff', lineHeight: 1.1, letterSpacing: hideBalances ? '4px' : '-0.02em' }}
             >
-              {currency}{displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              {hideBalances ? '••••••' : `${currency}${displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
             </div>
 
             {/* Trend indicator */}
@@ -217,7 +217,7 @@ export default function DashboardHeroDesktop({
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Income</div>
                 <div className={`tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '14px', fontWeight: 800, color: '#10b981', fontFamily: 'var(--font-manrope)' }}>
-                  +{currency}{displayIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  {hideBalances ? '•••' : `+${currency}${displayIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
                 </div>
               </div>
             </div>
@@ -233,7 +233,7 @@ export default function DashboardHeroDesktop({
               <div>
                 <div style={{ fontSize: '10px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Expenses</div>
                 <div className={`tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '14px', fontWeight: 800, color: '#ef4444', fontFamily: 'var(--font-manrope)' }}>
-                  -{currency}{displayExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  {hideBalances ? '•••' : `-${currency}${displayExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
                 </div>
               </div>
             </div>
@@ -249,7 +249,7 @@ export default function DashboardHeroDesktop({
               <div>
                 <div style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.4)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Net</div>
                 <div className={`tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '13px', fontWeight: 800, color: isPositive ? '#14b8a6' : '#f59e0b', fontFamily: 'var(--font-manrope)' }}>
-                  {isPositive ? '+' : '-'}{currency}{displayNet.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  {hideBalances ? '•••' : `${isPositive ? '+' : '-'}${currency}${displayNet.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
                 </div>
               </div>
             </div>

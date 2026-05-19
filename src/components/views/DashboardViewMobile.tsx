@@ -9,16 +9,16 @@ import {
   RefreshCw,
   Sparkles,
 } from 'lucide-react';
-import { AppView, Transaction } from '../../types';
-import { FinanceState } from '../../types/state';
-import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
-import { haptic } from '../../lib/haptic';
-import { useBudgets } from '../../hooks/useBudgets';
-import { useGoals } from '../../hooks/useGoals';
+import { AppView, Transaction } from '@/types';
+import { FinanceState } from '@/types/state';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { haptic } from '@/lib/haptic';
+import { useBudgets } from '@/hooks/useBudgets';
+import { useGoals } from '@/hooks/useGoals';
 
 // Lazy-load heavy components so they don't block initial paint
-const QuickAddPanel  = lazy(() => import('../features/dashboard/QuickAddPanel'));
-const LevelProgress  = lazy(() => import('../features/gamification/LevelProgress'));
+const QuickAddPanel  = lazy(() => import('@/components/features/dashboard/QuickAddPanel'));
+const LevelProgress  = lazy(() => import('@/components/features/gamification/LevelProgress'));
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

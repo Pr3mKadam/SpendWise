@@ -5,8 +5,8 @@
  * This file provides the fallback local parser and validation logic.
  */
 
-import { VoiceCommand, VoiceIntent, VoiceEntities, AppView } from './types';
-import { FALLBACK_PATTERNS } from './fallbackPatterns';
+import { VoiceCommand, VoiceIntent, VoiceEntities, AppView } from '@/lib/voiceCommands/types';
+import { FALLBACK_PATTERNS } from '@/lib/voiceCommands/fallbackPatterns';
 
 // ─── Indian Number Parser ─────────────────────────────────────────────────────
 

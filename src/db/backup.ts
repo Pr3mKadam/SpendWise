@@ -1,6 +1,6 @@
 import { exportDB, importDB } from 'dexie-export-import';
-import { db } from './db';
-import { useStore } from '../store';
+import { db } from '@/db/db';
+import { useStore } from '@/store';
 
 /**
  * Exports the entire Dexie database to a JSON Blob.

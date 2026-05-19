@@ -1,9 +1,9 @@
 import React from 'react';
 import { TrendingUp, Wallet, ArrowUpRight, ArrowDownLeft, Zap, Target, PieChart, Calendar } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { MonthlyStats, CategorySpend, Transaction } from '../../types';
-import { useCategories } from '../../hooks/useCategories';
-import { haptic } from '../../lib/haptic';
+import { MonthlyStats, CategorySpend, Transaction } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
+import { haptic } from '@/lib/haptic';
 
 interface AnalyticsViewMobileProps {
   monthlyStats:     MonthlyStats;

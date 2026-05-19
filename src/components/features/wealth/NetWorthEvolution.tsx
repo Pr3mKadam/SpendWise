@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
-import { Transaction } from '../../../types';
+import { Transaction } from '@/types';
 import { Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface NetWorthEvolutionProps {

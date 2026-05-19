@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { RefreshCw, Calendar, TrendingUp, Clock, Zap, LayoutGrid } from 'lucide-react';
-import { RecurringPattern, Transaction } from '../../types';
-import { useCategories } from '../../hooks/useCategories';
-import { SubscriptionCalendar } from '../features/subscriptions/SubscriptionCalendar';
-import { PriceHikeDetector } from '../features/subscriptions/PriceHikeDetector';
+import { RecurringPattern, Transaction } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
+import { SubscriptionCalendar } from '@/components/features/subscriptions/SubscriptionCalendar';
+import { PriceHikeDetector } from '@/components/features/subscriptions/PriceHikeDetector';
 
 interface RecurringViewProps {
   patterns: RecurringPattern[];

@@ -1,6 +1,6 @@
-import { Transaction, Category } from '../types';
-import { processNaturalLanguageExpense } from './parsers/nlp';
-import { useStore } from '../store';
+import { Transaction, Category } from '@/types';
+import { processNaturalLanguageExpense } from '@/parsers/nlp';
+import { useStore } from '@/store';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
 export type MerchantMemory = Record<string, { merchant: string; category: string }>;

@@ -1,9 +1,9 @@
 import { useMemo, useCallback } from 'react';
-import { CategorySpend, MonthlyStats, BalanceDataPoint, Transaction, Category, MonthlyHistoryPoint } from '../types';
-import { useCategories } from './useCategories';
-import { useStore } from '../store';
+import { CategorySpend, MonthlyStats, BalanceDataPoint, Transaction, Category, MonthlyHistoryPoint } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
+import { useStore } from '@/store';
 
-import { FINANCE_DEFAULTS } from '../constants';
+import { FINANCE_DEFAULTS } from '@/constants';
 const DEFAULT_BALANCE = FINANCE_DEFAULTS.INITIAL_BALANCE;
 
 export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {

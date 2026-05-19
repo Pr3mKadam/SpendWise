@@ -1,5 +1,5 @@
-import { AssetType } from '../types';
-import { useStore } from '../store';
+import { AssetType } from '@/types';
+import { useStore } from '@/store';
 
 export function usePortfolio() {
   const assets = useStore(state => state.assets);

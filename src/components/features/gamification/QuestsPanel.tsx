@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
 import { Award, Zap, CheckCircle, RefreshCw, Sparkles, Coffee, BookOpen, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { haptic } from '../../../lib/haptic';
-import { generateQuests } from '../../../utils/insights/advisor';
-import { Transaction } from '../../../types';
-import { useQuestReset } from '../../../hooks/useQuestReset';
+import { haptic } from '@/lib/haptic';
+import { generateQuests } from '@/insights/advisor';
+import { Transaction } from '@/types';
+import { useQuestReset } from '@/hooks/useQuestReset';
 
 interface QuestsPanelProps {
   transactions: Transaction[];

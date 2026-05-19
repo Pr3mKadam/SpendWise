@@ -1,4 +1,4 @@
-import Card from '../../common/Card';
+import Card from '@/ui/Card';
 
 const TEXT_PRIMARY = '#0f1117';
 const TEXT_MUTED = '#9197a6';

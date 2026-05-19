@@ -1,17 +1,17 @@
 import { useState } from 'react';
 import { TrendingUp, Plus, Landmark, BarChart2, ShieldAlert, Sparkles, BrainCircuit, Zap } from 'lucide-react';
-import { AssetType, LiabilityType } from '../../types';
-import { usePortfolio } from '../../hooks/usePortfolio';
-import NetWorthEvolution from '../features/wealth/NetWorthEvolution';
-import FutureWealthSimulator from '../features/wealth/FutureWealthSimulator';
-import { WealthTree } from '../features/wealth/WealthTree';
-import DebtPlanner from '../features/wealth/DebtPlanner';
+import { AssetType, LiabilityType } from '@/types';
+import { usePortfolio } from '@/hooks/usePortfolio';
+import NetWorthEvolution from '@/components/features/wealth/NetWorthEvolution';
+import FutureWealthSimulator from '@/components/features/wealth/FutureWealthSimulator';
+import { WealthTree } from '@/components/features/wealth/WealthTree';
+import DebtPlanner from '@/components/features/wealth/DebtPlanner';
 
-import { ASSET_TYPES, LIABILITY_TYPES, getAssetCfg, getLiabilityCfg } from '../../data/portfolioConfig';
-import AddModal from '../features/wealth/AddModal';
-import EntryCard from '../features/wealth/EntryCard';
-import AllocationDonut from '../features/wealth/AllocationDonut';
-import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
+import { ASSET_TYPES, LIABILITY_TYPES, getAssetCfg, getLiabilityCfg } from '@/data/portfolioConfig';
+import AddModal from '@/components/features/wealth/AddModal';
+import EntryCard from '@/components/features/wealth/EntryCard';
+import AllocationDonut from '@/components/features/wealth/AllocationDonut';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
 
 
 
@@ -29,8 +29,8 @@ interface PortfolioViewProps {
   config: SpendWiseConfig | null;
 }
 
-import { useIsMobile } from '../../hooks/useMediaQuery';
-import PortfolioViewMobile from './PortfolioViewMobile';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import PortfolioViewMobile from '@/components/views/PortfolioViewMobile';
 
 export default function PortfolioView({ currency = '₹', financeState, config }: PortfolioViewProps) {
   const isMobile = useIsMobile();

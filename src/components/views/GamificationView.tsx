@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trophy, Sparkles, Target, Award, Flame, Star, ChevronRight } from 'lucide-react';
-import { useStore } from '../../store';
-import { AppView, Transaction } from '../../types';
-import LevelProgress from '../features/gamification/LevelProgress';
-import { QuestsPanel } from '../features/gamification/QuestsPanel';
-import { BadgeGallery } from '../features/gamification/BadgeGallery';
-import { SavingsChallenges } from '../features/gamification/SavingsChallenges';
-import { useQuestReset } from '../../hooks/useQuestReset';
+import { useStore } from '@/store';
+import { AppView, Transaction } from '@/types';
+import LevelProgress from '@/components/features/gamification/LevelProgress';
+import { QuestsPanel } from '@/components/features/gamification/QuestsPanel';
+import { BadgeGallery } from '@/components/features/gamification/BadgeGallery';
+import { SavingsChallenges } from '@/components/features/gamification/SavingsChallenges';
+import { useQuestReset } from '@/hooks/useQuestReset';
 
 type Tab = 'overview' | 'quests' | 'badges' | 'challenges';
 

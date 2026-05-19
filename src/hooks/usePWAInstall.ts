@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BeforeInstallPromptEvent } from '../types/dom';
+import { BeforeInstallPromptEvent } from '@/types/dom';
 
 export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);

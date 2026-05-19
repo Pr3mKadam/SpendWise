@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Lock, Check, Clock, Star, ChevronRight } from 'lucide-react';
-import { Lesson } from '../../../data/lessons';
-import { CATEGORY_CONFIG } from './categoryConfig';
+import { Lesson } from '@/data/lessons';
+import { CATEGORY_CONFIG } from '@/components/features/education/categoryConfig';
 
 export interface LessonCardProps {
   lesson: Lesson;

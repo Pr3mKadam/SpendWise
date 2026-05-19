@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Lightbulb, X, Check, TrendingDown } from 'lucide-react';
-import { Transaction, Category } from '../../../types';
+import { Transaction, Category } from '@/types';
 
 interface SmartBudgetSuggestionsProps {
   transactions: Transaction[];

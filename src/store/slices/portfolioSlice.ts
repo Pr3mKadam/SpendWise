@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { AssetEntry, LiabilityEntry } from '../../types';
-import { SpendWiseStore } from '../index';
+import { AssetEntry, LiabilityEntry } from '@/types';
+import { SpendWiseStore } from '@/store/index';
 
 export interface PortfolioSlice {
   assets: AssetEntry[];

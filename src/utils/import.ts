@@ -1,4 +1,4 @@
-import { Transaction } from '../types';
+import { Transaction } from '@/types';
 
 /**
  * Validates and parses a JSON file containing an array of transactions.

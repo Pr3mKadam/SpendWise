@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { AlertTriangle, TrendingUp, Mail, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Transaction } from '../../../types';
+import { Transaction } from '@/types';
 
 interface PriceHikeDetectorProps {
   transactions: Transaction[];

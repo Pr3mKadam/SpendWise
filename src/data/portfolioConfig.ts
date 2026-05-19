@@ -1,4 +1,4 @@
-import { AssetType, LiabilityType } from '../types';
+import { AssetType, LiabilityType } from '@/types';
 
 export const ASSET_TYPES: { value: AssetType; label: string; icon: string; color: string }[] = [
   { value: 'bank',       label: 'Bank Account',  icon: '🏦', color: '#14b8a6' },

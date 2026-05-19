@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Transaction } from '../types';
-import { useStore } from '../store';
-import { useCategories } from './useCategories';
+import { Transaction } from '@/types';
+import { useStore } from '@/store';
+import { useCategories } from '@/hooks/useCategories';
 
 export function useGamification(transactions: Transaction[]) {
   const store = useStore();

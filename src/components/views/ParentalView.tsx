@@ -1,8 +1,8 @@
 import React from 'react';
-import { useParentalManager } from '../features/parental/hooks/useParentalManager';
-import { ParentalLockScreen } from '../features/parental/components/ParentalLockScreen';
-import { ParentalSetupFlow } from '../features/parental/components/ParentalSetupFlow';
-import { ParentalDashboard } from '../features/parental/components/ParentalDashboard';
+import { useParentalManager } from '@/components/features/parental/hooks/useParentalManager';
+import { ParentalLockScreen } from '@/components/features/parental/components/ParentalLockScreen';
+import { ParentalSetupFlow } from '@/components/features/parental/components/ParentalSetupFlow';
+import { ParentalDashboard } from '@/components/features/parental/components/ParentalDashboard';
 import { Shield } from 'lucide-react';
 
 export const ParentalView: React.FC = () => {

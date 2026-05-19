@@ -3,9 +3,9 @@ import {
   SharedGroup, SharedGroupMember, SharedWalletEntry, 
   SharedExpense, SharedExpenseSplit, SharedGoal, 
   SharedGoalContribution, SharedStorage, mergeSharedStorage 
-} from '../lib/crdt';
-import { syncEngine, SyncState } from '../lib/syncEngine';
-import { useStore } from '../store';
+} from '@/lib/crdt';
+import { syncEngine, SyncState } from '@/lib/syncEngine';
+import { useStore } from '@/store';
 
 export type { SharedGroup, SharedGroupMember, SharedWalletEntry, SharedExpense, SharedExpenseSplit, SharedGoal, SharedGoalContribution };
 

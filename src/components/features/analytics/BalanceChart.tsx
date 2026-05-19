@@ -2,8 +2,8 @@ import { useMemo } from 'react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid,
 } from 'recharts';
-import { BalanceDataPoint } from '../../../types';
-import { useStore } from '../../../store';
+import { BalanceDataPoint } from '@/types';
+import { useStore } from '@/store';
 
 interface BalanceChartProps {
   data: BalanceDataPoint[];

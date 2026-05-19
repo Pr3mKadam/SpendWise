@@ -1,4 +1,4 @@
-import { Category } from "./finance";
+import { Category } from "@/types/finance";
 
 export type AppView =
   | 'dashboard'
@@ -20,7 +20,8 @@ export type AppView =
   | 'subscriptions'
   | 'advisor'
   | 'education'
-  | 'reports';
+  | 'reports'
+  | 'gamification';
 
 export type AlertSeverity = 'info' | 'warning' | 'danger';
 

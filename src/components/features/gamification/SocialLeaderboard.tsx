@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Star, Zap, TrendingUp } from 'lucide-react';
-import { useStore } from '../../../store';
+import { useStore } from '@/store';
 
 // Mock leaderboard data (in a real app this would come from a backend)
 const MOCK_FRIENDS = [

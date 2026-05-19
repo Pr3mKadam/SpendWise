@@ -1,7 +1,7 @@
 import React from 'react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import { Users } from 'lucide-react';
-import { CategorySpend } from '../../../types';
+import { CategorySpend } from '@/types';
 
 export function PeerComparison({ categorySpending, currency = '$' }: { categorySpending: CategorySpend[], currency?: string }) {
   // Generate mock peer data based on user spending

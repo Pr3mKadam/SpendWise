@@ -1,8 +1,8 @@
 import { useMemo } from 'react';
-import { useStore } from '../store';
-import { useTransactions } from './useTransactions';
-import { useCategories } from './useCategories';
-import { Category } from '../types';
+import { useStore } from '@/store';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useCategories } from '@/hooks/useCategories';
+import { Category } from '@/types';
 
 export function useBudgets() {
   const budgets = useStore(state => state.budgets);

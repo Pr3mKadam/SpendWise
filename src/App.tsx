@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { SpendWiseConfig } from './components/features/onboarding/OnboardingModal';
-import { useAuth } from './hooks/useAuth';
-import AuthView from './components/views/AuthView';
-import { MainShell } from './components/layout/MainShell';
-import { AppView } from './types';
-import { STORAGE_KEYS, FINANCE_DEFAULTS } from './constants';
-import { useStore } from './store';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { useAuth } from '@/hooks/useAuth';
+import AuthView from '@/components/views/AuthView';
+import { MainShell } from '@/components/layout/MainShell';
+import { AppView } from '@/types';
+import { STORAGE_KEYS, FINANCE_DEFAULTS } from '@/constants';
+import { useStore } from '@/store';
 
 function LoadingScreen() {
   return (

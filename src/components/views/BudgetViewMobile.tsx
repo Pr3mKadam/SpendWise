@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { Target, Plus, Trash2, Edit2, Check, X, ArrowLeft, MoreVertical, TrendingUp, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useBudgets } from '../../hooks/useBudgets';
-import { useCategories } from '../../hooks/useCategories';
-import { Category } from '../../types';
-import { haptic } from '../../lib/haptic';
+import { useBudgets } from '@/hooks/useBudgets';
+import { useCategories } from '@/hooks/useCategories';
+import { Category } from '@/types';
+import { haptic } from '@/lib/haptic';
 
 interface BudgetViewMobileProps {
   currency: string;

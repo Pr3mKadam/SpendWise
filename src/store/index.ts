@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
-import { Transaction, Category } from '../types';
-import { db } from '../db/db';
-import { createFinanceSlice, FinanceSlice } from './slices/financeSlice';
-import { createPortfolioSlice, PortfolioSlice } from './slices/portfolioSlice';
-import { createGamificationSlice, GamificationSlice } from './slices/gamificationSlice';
-import { createParentalSlice, ParentalSlice } from './slices/parentalSlice';
-import { createSecuredSlice, SecuredSlice } from './slices/securedSlice';
+import { Transaction, Category } from '@/types';
+import { db } from '@/db/db';
+import { createFinanceSlice, FinanceSlice } from '@/store/slices/financeSlice';
+import { createPortfolioSlice, PortfolioSlice } from '@/store/slices/portfolioSlice';
+import { createGamificationSlice, GamificationSlice } from '@/store/slices/gamificationSlice';
+import { createParentalSlice, ParentalSlice } from '@/store/slices/parentalSlice';
+import { createSecuredSlice, SecuredSlice } from '@/store/slices/securedSlice';
 
 // Helper functions for base64 conversion
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -81,16 +81,18 @@ async function decryptString(encryptedJson: string, password: string): Promise<s
 // ─────────────────────────────────────────────────────────────────────────────
 // Encryption key management — security-hardened
 // Strategy:
-//   • A random device UUID (the "seed") is generated once and stored in
-//     sessionStorage (evicted when the tab closes — never persisted to disk
-//     by the browser in plaintext).
-//   • A stable salt is stored in IndexedDB so that the same seed always
-//     produces the same derived key across page reloads within a session.
-//   • Nothing sensitive is stored in localStorage.
+//   • A stable device-specific random UUID (the "seed") is stored in localStorage.
+//   • This key protects local database records from being readable off-device,
+//     acting as a hardware-bound boundary.
+//   • Note: Because it is persisted on disk, it does not fully defend against
+//     XSS attacks or malicious browser extensions on this specific device.
 // ─────────────────────────────────────────────────────────────────────────────
 const SESSION_SEED_KEY = 'sw_session_seed';
 
 function getOrCreateSessionSeed(): string {
+  // NOTE: This seed lives in localStorage (device-persistent).
+  // It protects data from being readable without this device's seed,
+  // but does NOT protect against XSS or malicious extensions on this device.
   let seed = localStorage.getItem(SESSION_SEED_KEY);
   if (!seed) {
     seed = crypto.randomUUID();

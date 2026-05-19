@@ -1,4 +1,4 @@
-import { callGemini } from './gemini';
+import { callGemini } from '@/services/gemini';
 
 export interface OCRResult {
   merchant?: string;

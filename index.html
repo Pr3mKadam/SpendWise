@@ -1,15 +1,36 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
+    <!-- Inline theme script: apply saved theme before React mounts to prevent FOUC (NEW-v3-04) -->
+    <script>
+      try {
+        var prefs = JSON.parse(localStorage.getItem('spendwise_config_v1') || '{}');
+        if (prefs.theme !== 'light') document.documentElement.classList.add('dark');
+      } catch (e) {
+        document.documentElement.classList.add('dark'); // safe dark default
+      }
+    </script>
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://*.vercel.app https://cdnjs.cloudflare.com;
+      style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+      font-src 'self' https://fonts.gstatic.com;
+      img-src 'self' data: https:;
+      connect-src 'self' https://*.supabase.co https://*.vercel.app https://api.supabase.co wss://*.supabase.co;
+      media-src 'self';
+      manifest-src 'self';
+      object-src 'none';
+    " />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover, interactive-widget=resizes-content" />
     <meta name="color-scheme" content="dark light" />
     <meta name="format-detection" content="telephone=no" />
-    <meta name="theme-color" content="#6366f1" />
+    <meta name="theme-color" content="#14b8a6" />
     <meta name="description" content="SpendWise — The premium, privacy-first predictive finance suite for modern wealth management. Track expenses, manage portfolios, and unlock AI-driven insights." />
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="SpendWise" />
     <title>SpendWise — Premium Finance Suite</title>
     
     <!-- Resource Hints -->

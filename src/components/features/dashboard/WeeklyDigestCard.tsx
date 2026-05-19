@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { TrendingDown, TrendingUp, Minus, Calendar } from 'lucide-react';
-import { Transaction } from '../../../types';
+import { Transaction } from '@/types';
 
 interface WeeklyDigestCardProps {
   transactions: Transaction[];

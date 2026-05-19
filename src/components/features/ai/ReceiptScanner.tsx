@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { processReceipt } from '../../../services/OCRService';
+import { processReceipt } from '@/services/OCRService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Upload, X, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 

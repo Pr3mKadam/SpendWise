@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { STORAGE_KEYS } from '../constants';
-import { useStore } from '../store';
-import { isSupabaseConfigured, signInWithEmail, signUpWithEmail } from '../services/supabase';
+import { STORAGE_KEYS } from '@/constants';
+import { useStore } from '@/store';
+import { isSupabaseConfigured, signInWithEmail, signUpWithEmail } from '@/services/supabase';
 
 export interface User {
   id: string;
@@ -59,10 +59,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signOut = useCallback(async () => {
     localStorage.removeItem('spendwise_user');
-    localStorage.removeItem('spendwise_supabase_token');
+    sessionStorage.removeItem('spendwise_supabase_token');
     // Do NOT remove spendwise_device_id — keeps data stable
     // Do NOT remove transactions — they're in IDB and tied to device
-    localStorage.removeItem(STORAGE_KEYS.CONFIG);
+    // Do NOT remove CONFIG (spendwise_config_v1) — user prefs/name/currency must survive sign-out
     window.location.reload();
   }, []);
 
@@ -88,7 +88,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem('spendwise_user', JSON.stringify(userObj));
       setUser(userObj);
       
-      const { db } = await import('../db/db');
+      const { db } = await import('@/db/db');
       const { toast } = await import('react-hot-toast');
       const existingTx = await db.transactions.count();
       if (existingTx === 0) {
@@ -103,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user_metadata: {}
     };
     localStorage.setItem('spendwise_user', JSON.stringify(userObj));
-    localStorage.setItem('spendwise_supabase_token', res.access_token);
+    sessionStorage.setItem('spendwise_supabase_token', res.access_token);
     setUser(userObj);
   }, []);
 
@@ -127,7 +127,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       user_metadata: metadata || {}
     };
     localStorage.setItem('spendwise_user', JSON.stringify(userObj));
-    localStorage.setItem('spendwise_supabase_token', res.access_token);
+    sessionStorage.setItem('spendwise_supabase_token', res.access_token);
     setUser(userObj);
   }, []);
 

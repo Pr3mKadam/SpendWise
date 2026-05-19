@@ -1,9 +1,9 @@
 import { useState, useMemo } from 'react';
 import { Bot, Receipt, ArrowUpDown, Filter, Trash2, ChevronRight } from 'lucide-react';
-import { Transaction } from '../../../types';
-import { useCategories } from '../../../hooks/useCategories';
-import { useStore } from '../../../store';
-import { CategoryDropdown } from '../../common/CategoryDropdown';
+import { Transaction } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
+import { useStore } from '@/store';
+import { CategoryDropdown } from '@/ui/CategoryDropdown';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface TransactionListProps {

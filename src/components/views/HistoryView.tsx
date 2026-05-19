@@ -1,21 +1,21 @@
-import { Transaction, Category } from '../../types';
-import { useCategories } from '../../hooks/useCategories';
+import { Transaction, Category } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
 import { Virtuoso } from 'react-virtuoso';
 import { AlertCircle } from 'lucide-react';
-import PullToRefresh from '../common/PullToRefresh';
+import PullToRefresh from '@/shell/PullToRefresh';
 
-import { FilterBar } from '../features/history/FilterBar';
-import TransactionRow from '../features/history/TransactionRow';
-import BulkActionHeader from '../features/history/BulkActionHeader';
-import { SortBtn } from '../features/history/SortBtn';
-import { HistoryToolbar } from '../features/history/HistoryToolbar';
-import { DeleteConfirmModal } from '../features/history/DeleteConfirmModal';
-import { useHistoryView } from '../features/history/useHistoryView';
-import { useIsMobile } from '../../hooks/useMediaQuery';
-import HistoryViewMobile from './HistoryViewMobile';
+import { FilterBar } from '@/components/features/history/FilterBar';
+import TransactionRow from '@/components/features/history/TransactionRow';
+import BulkActionHeader from '@/components/features/history/BulkActionHeader';
+import { SortBtn } from '@/components/features/history/SortBtn';
+import { HistoryToolbar } from '@/components/features/history/HistoryToolbar';
+import { DeleteConfirmModal } from '@/components/features/history/DeleteConfirmModal';
+import { useHistoryView } from '@/components/features/history/useHistoryView';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import HistoryViewMobile from '@/components/views/HistoryViewMobile';
 
 // Re-export types for consumers that still import from this file
-export type { SortKey, SortDir, TypeFilter } from '../features/history/historyTypes';
+export type { SortKey, SortDir, TypeFilter } from '@/components/features/history/historyTypes';
 
 interface HistoryViewProps {
   transactions:          Transaction[];

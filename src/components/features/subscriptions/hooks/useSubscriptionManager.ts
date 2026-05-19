@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
-import { RecurringPattern } from '../../../../types';
-import { useStore } from '../../../../store';
+import { RecurringPattern } from '@/types';
+import { useStore } from '@/store';
 
 function daysUntil(dateStr: string): number {
   const target = new Date(dateStr + 'T00:00:00');

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
-import { CustomCategoryDef } from '../types';
-import { CATEGORY_COLORS, CATEGORY_ICONS } from '../data/mockData';
-import { useStore } from '../store';
+import { CustomCategoryDef } from '@/types';
+import { CATEGORY_COLORS, CATEGORY_ICONS } from '@/data/mockData';
+import { useStore } from '@/store';
 
 const STORAGE_KEY = 'spendwise_custom_categories_v1';
 

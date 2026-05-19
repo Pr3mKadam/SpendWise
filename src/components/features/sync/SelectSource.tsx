@@ -1,6 +1,6 @@
 import React from 'react';
 import { ArrowLeft, Landmark, Zap, UploadCloud, ChevronRight } from 'lucide-react';
-import { SyncView } from '../../../types';
+import { SyncView } from '@/types';
 
 export interface SelectSourceProps {
   onSetView: (view: SyncView) => void;
@@ -18,9 +18,7 @@ export function SelectSource({ onSetView }: SelectSourceProps) {
       <div className="grid gap-4">
         {[
           { id: 'upi-link', icon: <Landmark size={24} />, label: 'Link UPI App', sub: 'GPay, PhonePe, Paytm, etc.', color: 'var(--teal)', bg: 'var(--teal-dim)' },
-          { id: 'plaid-link', icon: <Landmark size={24} />, label: 'Link Bank Account (Plaid)', sub: 'HDFC, ICICI, Chase, BoA, etc.', color: '#000000', bg: 'rgba(0,0,0,0.1)' },
           { id: 'rzp-link', icon: <Zap size={24} />, label: 'Connect Razorpay', sub: 'Sync your Razorpay developer keys', color: '#3395FF', bg: 'rgba(51,149,255,0.1)' },
-          { id: 'web3-link', icon: <Zap size={24} />, label: 'Connect Web3 Wallet', sub: 'MetaMask, Phantom, WalletConnect', color: '#F6851B', bg: 'rgba(246,133,27,0.1)' },
           { id: 'csv', label: 'CSV Import', sub: 'Already integrated in sidebar', color: '#a78bfa', bg: 'rgba(167,139,250,0.1)', disabled: true }
         ].map(opt => (
           <button 

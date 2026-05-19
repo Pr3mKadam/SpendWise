@@ -1,4 +1,4 @@
-import { Transaction } from '../types';
+import { Transaction } from '@/types';
 
 export function exportCSV(transactions: Transaction[]) {
   const headers = ['Date', 'Merchant', 'Category', 'Type', 'Amount', 'Description'];

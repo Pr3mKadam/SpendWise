@@ -1,4 +1,4 @@
-import { Transaction } from '../types';
+import { Transaction } from '@/types';
 
 export const shareTransactions = async (transactions: Transaction[], currency: string = '$') => {
   if (!navigator.share) {

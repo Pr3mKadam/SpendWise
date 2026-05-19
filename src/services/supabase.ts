@@ -40,7 +40,7 @@
  *   using (auth.uid() = user_id);
  */
 
-import { Transaction } from '../types';
+import { Transaction } from '@/types';
 
 // ─── Config ──────────────────────────────────────────────────────────────────
 const SUPABASE_URL   = import.meta.env.VITE_SUPABASE_URL   as string | undefined;

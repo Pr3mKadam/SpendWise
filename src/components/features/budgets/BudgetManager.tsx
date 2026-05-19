@@ -3,12 +3,12 @@ import {
   X, Tag as TagIcon, Calendar, Plus, Check,
   Sparkles, ChevronDown, ChevronUp,
 } from 'lucide-react';
-import { Budget, BudgetPeriod, Category, Transaction, BudgetSuggestion } from '../../../types';
-import { useBudgetManager } from './hooks/useBudgetManager';
-import { PeriodSelector } from './components/PeriodSelector';
-import { RolloverToggle } from './components/RolloverToggle';
-import { BudgetSummaryBar } from './components/BudgetSummaryBar';
-import { BudgetRow } from './components/BudgetRow';
+import { Budget, BudgetPeriod, Category, Transaction, BudgetSuggestion } from '@/types';
+import { useBudgetManager } from '@/components/features/budgets/hooks/useBudgetManager';
+import { PeriodSelector } from '@/components/features/budgets/components/PeriodSelector';
+import { RolloverToggle } from '@/components/features/budgets/components/RolloverToggle';
+import { BudgetSummaryBar } from '@/components/features/budgets/components/BudgetSummaryBar';
+import { BudgetRow } from '@/components/features/budgets/components/BudgetRow';
 
 interface BudgetManagerProps {
   budgets:                 Budget[];

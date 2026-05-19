@@ -1,7 +1,7 @@
-import { Transaction, Category, MonthlyStats, MonthlyHistoryPoint, CategorySpend, BalanceDataPoint, RecurringPattern, SavingsGoal, Budget, BudgetPeriod } from './finance';
-import { SpendingAlert, AppNotification, AppView } from './ui';
-import { SpendWiseStore, ParentalControlState } from '../store';
-import { CustomCategoryDef } from './index';
+import { Transaction, Category, MonthlyStats, MonthlyHistoryPoint, CategorySpend, BalanceDataPoint, RecurringPattern, SavingsGoal, Budget, BudgetPeriod } from '@/types/finance';
+import { SpendingAlert, AppNotification, AppView } from '@/types/ui';
+import { SpendWiseStore, ParentalControlState } from '@/store';
+import { CustomCategoryDef } from '@/types/index';
 
 export interface FinanceState {
   transactions: Transaction[];

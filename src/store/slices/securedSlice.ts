@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand';
-import { SavingsGoal } from '../../types';
-import { SharedStorage } from '../../lib/crdt';
-import { SpendWiseStore } from '../index';
+import { SavingsGoal } from '@/types';
+import { SharedStorage } from '@/lib/crdt';
+import { SpendWiseStore } from '@/store/index';
 
 export interface VaultData {
   total: number;

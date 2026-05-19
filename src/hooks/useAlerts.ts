@@ -1,5 +1,5 @@
 import { useMemo, useCallback, useState } from 'react';
-import { Transaction, SpendingAlert, AlertSeverity, Budget, Category } from '../types';
+import { Transaction, SpendingAlert, AlertSeverity, Budget, Category } from '@/types';
 
 const STORAGE_KEY = 'spendwise_dismissed_alerts_v1';
 

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Transaction, RecurringPattern } from '../types';
+import { Transaction, RecurringPattern } from '@/types';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 

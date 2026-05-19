@@ -1,8 +1,8 @@
 import React from 'react';
-import { useIsMobile } from '../../../hooks/useMediaQuery';
-import DashboardHeroDesktop from './DashboardHeroDesktop';
-import DashboardHeroMobile from './DashboardHeroMobile';
-import { MonthlyStats, BalanceDataPoint } from '../../../types';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import DashboardHeroDesktop from '@/components/features/dashboard/DashboardHeroDesktop';
+import DashboardHeroMobile from '@/components/features/dashboard/DashboardHeroMobile';
+import { MonthlyStats, BalanceDataPoint } from '@/types';
 
 interface DashboardHeroProps {
   currentBalance: number;

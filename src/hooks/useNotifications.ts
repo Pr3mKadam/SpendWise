@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
-import { AppNotification, SpendingAlert, RecurringPattern, SavingsGoal, AlertSeverity } from '../types';
-import { sendBrowserNotification } from '../utils/pushNotification';
-import { useStore } from '../store';
+import { AppNotification, SpendingAlert, RecurringPattern, SavingsGoal, AlertSeverity } from '@/types';
+import { sendBrowserNotification } from '@/utils/pushNotification';
+import { useStore } from '@/store';
 
 // ─── Icon mapping ──────────────────────────────────────────────────────────────
 

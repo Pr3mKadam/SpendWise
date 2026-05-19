@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { TrendingUp, TrendingDown, Minus, Zap, AlertCircle, CheckCircle, Clock } from 'lucide-react';
-import { Transaction } from '../../../types';
-import { forecastNextMonth } from '../../../utils/insights/forecast';
+import { Transaction } from '@/types';
+import { forecastNextMonth } from '@/insights/forecast';
 
 interface SpendingForecastProps {
   transactions: Transaction[];

@@ -1,12 +1,12 @@
 import React from 'react';
-import { PendingApprovals } from './PendingApprovals';
-import { ChoreVerification, DeviceLinkingCard } from './ParentalActivity';
-import { ParentalSettingsCard } from './ParentalSettingsCard';
-import { Transaction } from '../../../../types';
-import { LinkingQRModal } from './LinkingQRModal';
+import { PendingApprovals } from '@/components/features/parental/components/PendingApprovals';
+import { ChoreVerification, DeviceLinkingCard } from '@/components/features/parental/components/ParentalActivity';
+import { ParentalSettingsCard } from '@/components/features/parental/components/ParentalSettingsCard';
+import { Transaction } from '@/types';
+import { LinkingQRModal } from '@/components/features/parental/components/LinkingQRModal';
 import { Shield } from 'lucide-react';
 
-import { ParentalControlState } from '../../../../store';
+import { ParentalControlState } from '@/store';
 
 interface ParentalDashboardProps {
   pendingTransactions: Transaction[];

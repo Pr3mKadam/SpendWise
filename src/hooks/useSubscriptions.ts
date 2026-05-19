@@ -1,6 +1,6 @@
 import { useMemo, useEffect } from 'react';
-import { useStore } from '../store';
-import { Transaction, RecurringPattern } from '../types';
+import { useStore } from '@/store';
+import { Transaction, RecurringPattern } from '@/types';
 
 export function useSubscriptions() {
   const transactions = useStore(state => state.transactions);

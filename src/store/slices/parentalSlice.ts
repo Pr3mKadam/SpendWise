@@ -1,7 +1,7 @@
 import { StateCreator } from 'zustand';
-import { Transaction, Category } from '../../types';
-import { SpendWiseStore, ParentalControlState } from '../index';
-import { hashPin, verifyPinHash } from '../../utils/security';
+import { Transaction, Category } from '@/types';
+import { SpendWiseStore, ParentalControlState } from '@/store/index';
+import { hashPin, verifyPinHash } from '@/lib/security';
 
 
 export interface ParentalSlice {

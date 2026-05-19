@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, Star, TrendingUp, Zap, ArrowRight } from 'lucide-react';
-import { useStore } from '../../../store';
-import { useQuestReset } from '../../../hooks/useQuestReset';
-import { AppView } from '../../../types/ui';
+import { useStore } from '@/store';
+import { useQuestReset } from '@/hooks/useQuestReset';
+import { AppView } from '@/types/ui';
 
 export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppView) => void }) {
   const level = useStore(state => state.level);

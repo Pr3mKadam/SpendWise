@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { RefreshCw, TrendingUp, AlertTriangle, DollarSign, Calendar, Plus, Zap, Clock } from 'lucide-react';
-import { RecurringPattern } from '../../../types';
-import { useCategories } from '../../../hooks/useCategories';
-import AddSubscriptionModal from './AddSubscriptionModal';
-import { useCurrency } from '../../../contexts/CurrencyContext';
-import { SubscriptionCalendar } from './components/SubscriptionCalendar';
-import { useSubscriptionManager } from './hooks/useSubscriptionManager';
+import { RecurringPattern } from '@/types';
+import { useCategories } from '@/hooks/useCategories';
+import AddSubscriptionModal from '@/components/features/subscriptions/AddSubscriptionModal';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import { SubscriptionCalendar } from '@/components/features/subscriptions/SubscriptionCalendar';
+import { useSubscriptionManager } from '@/components/features/subscriptions/hooks/useSubscriptionManager';
 
 interface SubscriptionManagerProps {
   patterns:  RecurringPattern[];

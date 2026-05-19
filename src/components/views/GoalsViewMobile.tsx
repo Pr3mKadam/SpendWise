@@ -1,9 +1,9 @@
 import React from 'react';
 import { Target, Plus, Award, ChevronRight, TrendingUp, CheckCircle2 } from 'lucide-react';
-import { SavingsGoal } from '../../types';
-import { GoalCard } from '../features/goals/GoalCard';
-import { BadgeGallery } from '../features/gamification/BadgeGallery';
-import { haptic } from '../../lib/haptic';
+import { SavingsGoal } from '@/types';
+import { GoalCard } from '@/components/features/goals/GoalCard';
+import { BadgeGallery } from '@/components/features/gamification/BadgeGallery';
+import { haptic } from '@/lib/haptic';
 
 interface GoalsViewMobileProps {
   goals: SavingsGoal[];

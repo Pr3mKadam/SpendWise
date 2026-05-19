@@ -1,10 +1,10 @@
 import React, { useRef, useState } from 'react';
 import { FileText, Sparkles, Download, Share2, Calendar, Loader2, Printer } from 'lucide-react';
-import { generateMonthlyReport } from '../../utils/insights/reporting';
+import { generateMonthlyReport } from '@/insights/reporting';
 
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';
-import { Transaction, MonthlyStats } from '../../types';
+import { Transaction, MonthlyStats } from '@/types';
 
 interface ReportsViewProps {
   transactions: Transaction[];
@@ -47,6 +47,15 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
     if (!report || !printRef.current) return;
     const printWindow = window.open('', '_blank', 'width=900,height=700');
     if (!printWindow) return;
+
+    // Simple sanitization to prevent XSS via print window (SEC-10)
+    const sanitizeHtml = (html: string): string => {
+      return html
+        .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+        .replace(/\son\w+\s*=\s*(['"])(.*?)\1/gi, '')
+        .replace(/javascript:/gi, '');
+    };
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
@@ -75,7 +84,7 @@ export default function ReportsView({ transactions, currency, monthlyStats }: Re
           </div>
           <span class="badge">${currentMonth}</span>
         </div>
-        ${printRef.current.innerHTML}
+        ${sanitizeHtml(printRef.current.innerHTML)}
       </body>
       </html>
     `);

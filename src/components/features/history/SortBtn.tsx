@@ -1,6 +1,6 @@
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { haptic } from '../../../lib/haptic';
-import type { SortKey, SortDir } from './historyTypes';
+import { haptic } from '@/lib/haptic';
+import type { SortKey, SortDir } from '@/components/features/history/historyTypes';
 
 interface SortBtnProps {
   label:   string;

@@ -5,7 +5,7 @@
 import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 import { ShieldCheck } from 'lucide-react';
-import { useHealthHistory } from '../../../hooks/useHealthHistory';
+import { useHealthHistory } from '@/hooks/useHealthHistory';
 
 interface Props {
   currentScore: number;

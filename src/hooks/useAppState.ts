@@ -1,15 +1,15 @@
 import { useCallback, useMemo } from 'react';
-import { useTransactions } from './useTransactions';
-import { useBudgets } from './useBudgets';
-import { useAlerts } from './useAlerts';
-import { useRecurring } from './useRecurring';
-import { useNotifications } from './useNotifications';
-import { useGoals } from './useGoals';
-import { useCategories } from './useCategories';
-import { SpendWiseConfig } from '../components/features/onboarding/OnboardingModal';
-import { FINANCE_DEFAULTS } from '../constants';
-import { Budget, BudgetPeriod } from '../types';
-import { useStore } from '../store';
+import { useTransactions } from '@/hooks/useTransactions';
+import { useBudgets } from '@/hooks/useBudgets';
+import { useAlerts } from '@/hooks/useAlerts';
+import { useRecurring } from '@/hooks/useRecurring';
+import { useNotifications } from '@/hooks/useNotifications';
+import { useGoals } from '@/hooks/useGoals';
+import { useCategories } from '@/hooks/useCategories';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
+import { FINANCE_DEFAULTS } from '@/constants';
+import { Budget, BudgetPeriod } from '@/types';
+import { useStore } from '@/store';
 
 export function useAppState(config: SpendWiseConfig | null) {
   const currency = config?.currency ?? '$';

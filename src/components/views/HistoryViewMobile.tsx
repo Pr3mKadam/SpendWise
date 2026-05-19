@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Transaction, Category } from '../../types';
+import { Transaction, Category } from '@/types';
 import { Virtuoso } from 'react-virtuoso';
 import { 
   Search, 
@@ -11,9 +11,9 @@ import {
   Trash2,
   X
 } from 'lucide-react';
-import { useCategories } from '../../hooks/useCategories';
-import { haptic } from '../../lib/haptic';
-import EmptyState from '../common/EmptyState';
+import { useCategories } from '@/hooks/useCategories';
+import { haptic } from '@/lib/haptic';
+import EmptyState from '@/ui/EmptyState';
 
 interface HistoryViewMobileProps {
   transactions: Transaction[];

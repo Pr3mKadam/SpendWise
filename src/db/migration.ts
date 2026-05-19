@@ -1,5 +1,5 @@
-import { db } from './db';
-import { useStore } from '../store';
+import { db } from '@/db/db';
+import { useStore } from '@/store';
 
 export const runDexieMigration = async () => {
   try {

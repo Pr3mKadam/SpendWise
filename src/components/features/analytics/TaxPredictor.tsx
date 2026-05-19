@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { CategorySpend } from '../../../types';
+import { CategorySpend } from '@/types';
 
 interface TaxPredictorProps {
   income: number;

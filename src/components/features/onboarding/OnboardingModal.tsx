@@ -21,7 +21,7 @@ export interface SpendWiseConfig {
 
 type CurrencySymbol = '$' | '£' | '€' | '₹';
 
-import { STORAGE_KEYS } from '../../../constants';
+import { STORAGE_KEYS } from '@/constants';
 const CURRENCIES: { sym: CurrencySymbol; label: string }[] = [
   { sym: '$', label: 'USD' },
   { sym: '£', label: 'GBP' },

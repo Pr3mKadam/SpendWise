@@ -1,6 +1,6 @@
 import { StateCreator } from 'zustand';
-import { Quest } from '../../types';
-import { SpendWiseStore } from '../index';
+import { Quest } from '@/types';
+import { SpendWiseStore } from '@/store/index';
 
 export interface GamificationSlice {
   quests: Quest[];

@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { Lightbulb, TrendingUp, TrendingDown, AlertCircle, Sparkles } from 'lucide-react';
-import { CategorySpend, Transaction } from '../../../types';
-import { haptic } from '../../../lib/haptic';
-import { useCategories } from '../../../hooks/useCategories';
+import { CategorySpend, Transaction } from '@/types';
+import { haptic } from '@/lib/haptic';
+import { useCategories } from '@/hooks/useCategories';
 
 interface CategoryAnalyzerProps {
   categorySpending: CategorySpend[];

@@ -78,6 +78,20 @@ export default defineConfig(({ mode }) => ({
             type: 'image/png',
             purpose: 'monochrome'
           }
+        ],
+        screenshots: [
+          {
+            src: 'screenshots/desktop.png',
+            sizes: '1280x720',
+            type: 'image/png',
+            form_factor: 'wide'
+          },
+          {
+            src: 'screenshots/mobile.png',
+            sizes: '720x1280',
+            type: 'image/png',
+            form_factor: 'narrow'
+          }
         ]
       },
       workbox: {
@@ -118,6 +132,19 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
+      "@/ui": path.resolve(__dirname, "src/ui"),
+      "@/shell": path.resolve(__dirname, "src/shell"),
+      "@/features": path.resolve(__dirname, "src/features"),
+      "@/lib": path.resolve(__dirname, "src/lib"),
+      "@/insights": path.resolve(__dirname, "src/insights"),
+      "@/parsers": path.resolve(__dirname, "src/parsers"),
+      "@/store": path.resolve(__dirname, "src/store"),
+      "@/types": path.resolve(__dirname, "src/types"),
+      "@/hooks": path.resolve(__dirname, "src/hooks"),
+      "@/services": path.resolve(__dirname, "src/services"),
+      "@/db": path.resolve(__dirname, "src/db"),
+      "@/data": path.resolve(__dirname, "src/data"),
+      "@/constants": path.resolve(__dirname, "src/constants"),
     },
   },
   build: {

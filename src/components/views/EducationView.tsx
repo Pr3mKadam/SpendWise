@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, Clock, Star, Trophy, Sparkles, Check } from 'lucide-react';
-import { useStore } from '../../store';
-import { Transaction } from '../../types';
-import { SpendWiseConfig } from '../features/onboarding/OnboardingModal';
+import { useStore } from '@/store';
+import { Transaction } from '@/types';
+import { SpendWiseConfig } from '@/components/features/onboarding/OnboardingModal';
 
-import { LESSONS, Lesson } from '../../data/lessons';
-import { CATEGORY_CONFIG } from '../features/education/categoryConfig';
-import LessonModal from '../features/education/LessonModal';
-import LessonCard from '../features/education/LessonCard';
+import { LESSONS, Lesson } from '@/data/lessons';
+import { CATEGORY_CONFIG } from '@/components/features/education/categoryConfig';
+import LessonModal from '@/components/features/education/LessonModal';
+import LessonCard from '@/components/features/education/LessonCard';
 
 
 // ─── Lesson Data ─────────────────────────────────────────────────────────────

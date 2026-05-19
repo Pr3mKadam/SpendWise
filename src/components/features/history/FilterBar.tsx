@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Filter, X, Calendar, IndianRupee } from 'lucide-react';
-import { Category } from '../../../types';
-import { haptic } from '../../../lib/haptic';
+import { Category } from '@/types';
+import { haptic } from '@/lib/haptic';
 
 export type TypeFilter = 'all' | 'credit' | 'debit';
 

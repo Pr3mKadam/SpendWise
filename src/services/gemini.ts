@@ -1,4 +1,4 @@
-import { isSupabaseConfigured } from './supabase';
+import { isSupabaseConfigured } from '@/services/supabase';
 
 interface GeminiCallParams {
   contents: any[];
@@ -17,7 +17,7 @@ export async function callGemini(params: GeminiCallParams): Promise<any> {
   if (isSupabaseConfigured) {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    const sessionToken = localStorage.getItem('spendwise_supabase_token') || supabaseAnonKey;
+    const sessionToken = sessionStorage.getItem('spendwise_supabase_token') || supabaseAnonKey;
 
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/gemini-proxy`, {

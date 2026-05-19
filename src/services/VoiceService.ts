@@ -1,6 +1,6 @@
-import { callGemini } from './gemini';
-import type { Category } from '../types';
-import type { VoiceCommand } from '../lib/voiceCommands/types';
+import { callGemini } from '@/services/gemini';
+import type { Category } from '@/types';
+import type { VoiceCommand } from '@/lib/voiceCommands/types';
 
 export interface VoiceParsedTransaction {
   amount: number;

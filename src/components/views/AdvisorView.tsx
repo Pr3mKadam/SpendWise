@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
-import { useTransactions } from '../../hooks/useTransactions';
-import { SpendingPersonality } from '../../types';
-import { getFinancialAdvice } from '../../utils/insights/advisor';
-import { getSpendingPersonality } from '../../utils/insights/reporting';
-import { useCurrency } from '../../contexts/CurrencyContext';
-import EducationCards from '../features/advisor/EducationCards';
-import { SpeechRecognition, SpeechRecognitionEvent } from '../../types/dom';
-import { useIsMobile } from '../../hooks/useMediaQuery';
-import AdvisorViewMobile from './AdvisorViewMobile';
-import { isSupabaseConfigured } from '../../services/supabase';
+import { useTransactions } from '@/hooks/useTransactions';
+import { SpendingPersonality } from '@/types';
+import { getFinancialAdvice } from '@/insights/advisor';
+import { getSpendingPersonality } from '@/insights/reporting';
+import { useCurrency } from '@/contexts/CurrencyContext';
+import EducationCards from '@/components/features/education/EducationCards';
+import { SpeechRecognition, SpeechRecognitionEvent } from '@/types/dom';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import AdvisorViewMobile from '@/components/views/AdvisorViewMobile';
+import { isSupabaseConfigured } from '@/services/supabase';
 
 
 const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';

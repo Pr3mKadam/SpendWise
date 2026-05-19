@@ -1,9 +1,9 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Transaction, Category } from '../../../types';
-import { useStore } from '../../../store';
-import { haptic } from '../../../lib/haptic';
+import { Transaction, Category } from '@/types';
+import { useStore } from '@/store';
+import { haptic } from '@/lib/haptic';
 import { Virtuoso } from 'react-virtuoso';
-import type { SortKey, SortDir, TypeFilter } from './historyTypes';
+import type { SortKey, SortDir, TypeFilter } from '@/components/features/history/historyTypes';
 
 export function useHistoryView(transactions: Transaction[], initialSearchQuery: string) {
   const addTransactions   = useStore(s => s.addTransactions);

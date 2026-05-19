@@ -1,5 +1,5 @@
 import { Shield, RefreshCw, AlertTriangle, Flame, Star, Award } from 'lucide-react';
-import { Budget } from '../../../../types';
+import { Budget } from '@/types';
 
 export function BudgetSummaryBar({
   totalBudgeted, totalSpent, overBudgetCount, currency, periodLabel, rolloverEnabled, budgets,

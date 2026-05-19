@@ -75,18 +75,17 @@ test.describe('Step 16-22: Gamification, Profile, Privacy & Settings', () => {
   test('20.1 to 20.6 - Privacy Mode', async ({ page }) => {
     await page.goto('/');
     
-    // Find privacy toggle (eye icon) in header
-    // Using a more generic selector for the privacy button
-    const privacyBtn = page.locator('header button').filter({ hasText: '' }).last();
+    // Find privacy toggle (eye icon) in header by its aria-label
+    const privacyBtn = page.getByLabel(/privacy mode/i).first();
     if (await privacyBtn.isVisible()) {
       await privacyBtn.click();
       
       // Balance should be blurred (••••••)
       await expect(page.getByText('••••••').first()).toBeVisible();
       
-      // Toggle back
+      // Toggle back - Note: Disabling privacy has a 1200ms simulated biometric delay
       await privacyBtn.click();
-      await expect(page.getByText('••••••').first()).toBeHidden();
+      await expect(page.getByText('••••••').first()).toBeHidden({ timeout: 5000 });
     }
   });
 
@@ -94,7 +93,7 @@ test.describe('Step 16-22: Gamification, Profile, Privacy & Settings', () => {
     await page.goto('/');
     
     // Notification bell check
-    const bellBtn = page.locator('header button').filter({ hasText: '' }).first();
+    const bellBtn = page.getByLabel(/View notifications/i).first();
     if (await bellBtn.isVisible()) {
       await bellBtn.click();
       await expect(page.getByText(/Notifications/i).filter({ visible: true }).first()).toBeVisible();

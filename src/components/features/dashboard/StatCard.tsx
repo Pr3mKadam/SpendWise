@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import Card from '../../common/Card';
-import { haptic } from '../../../lib/haptic';
+import Card from '@/ui/Card';
+import { haptic } from '@/lib/haptic';
 
 export interface StatCardProps {
   label: string;
@@ -35,8 +35,8 @@ export const StatCard = memo(function StatCard({ label, value, icon: Icon, iconC
           </div>
         </div>
         <div className="min-w-0 overflow-hidden">
-          <p className={`stat-value-text text-[15px] sm:text-[18px] md:text-xl font-bold truncate tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ color: 'var(--text-primary)', letterSpacing: '-0.03em', fontFamily: 'var(--font-manrope)' }}>
-            {value}
+          <p className={`stat-value-text text-[15px] sm:text-[18px] md:text-xl font-bold truncate tabular-nums transition-all ${hideBalances ? 'blur-md select-none' : ''}`} style={{ color: 'var(--text-primary)', letterSpacing: hideBalances ? '4px' : '-0.03em', fontFamily: 'var(--font-manrope)' }}>
+            {hideBalances ? (label === 'Balance' || label === 'Net Worth' ? '••••••' : '•••') : value}
           </p>
           <p className="text-[length:var(--fs-overline)] sm:text-[length:var(--fs-overline)] font-bold truncate uppercase tracking-widest text-[var(--text-muted)] mt-0.5">{label}</p>
         </div>

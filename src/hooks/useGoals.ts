@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react';
-import { SavingsGoal, GoalStatus } from '../types';
-import { useAuth } from './useAuth';
-import { useStore } from '../store';
+import { SavingsGoal, GoalStatus } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
+import { useStore } from '@/store';
 
 function computeStatus(goal: SavingsGoal): GoalStatus {
   if (goal.savedAmount >= goal.targetAmount) return 'achieved';

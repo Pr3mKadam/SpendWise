@@ -13,9 +13,9 @@ import {
   syncAll,
   pushGamification,
   SupabaseUser,
-} from '../../../services/supabase';
-import { useStore } from '../../../store';
-import { Transaction } from '../../../types';
+} from '@/services/supabase';
+import { useStore } from '@/store';
+import { Transaction } from '@/types';
 
 const SESSION_KEY = 'spendwise_supabase_session_v1';
 const LAST_SYNC_KEY = 'spendwise_last_sync_v1';

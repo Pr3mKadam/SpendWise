@@ -4,7 +4,7 @@
  * Contains regex patterns for local command parsing when Gemini is unavailable.
  */
 
-import { VoiceCommand, VoiceIntent, VoiceEntities, AppView } from './types';
+import { VoiceCommand, VoiceIntent, VoiceEntities, AppView } from '@/lib/voiceCommands/types';
 
 // Utility for Indian Number Parsing and Category normalization is still in main commandParser.ts
 // We import them from there in the actual implementation, but here we define the patterns.

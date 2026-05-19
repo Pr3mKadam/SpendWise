@@ -9,7 +9,7 @@ import {
   HouseholdSettings,
   AssetEntry,
   LiabilityEntry
-} from '../types';
+} from '@/types';
 
 export interface AppConfig {
   id: string; // usually 'app-config'

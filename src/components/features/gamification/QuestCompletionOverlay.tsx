@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Trophy, Star, Sparkles, X, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useStore } from '../../../store';
+import { useStore } from '@/store';
 import confetti from 'canvas-confetti';
 
 export default function QuestCompletionOverlay() {

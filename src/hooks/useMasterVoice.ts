@@ -11,11 +11,11 @@
  */
 
 import { useState, useRef, useCallback } from 'react';
-import { parseVoiceCommand, getMissingEntityPrompt, requiresConfirmation } from '../lib/voiceCommands/commandParser';
-import { executeCommand } from '../lib/voiceCommands/commandRouter';
-import { VoiceCommand, CommandResult } from '../lib/voiceCommands/types';
-import { speak } from '../lib/voiceCommands/tts';
-import { haptic } from '../lib/haptic';
+import { parseVoiceCommand, getMissingEntityPrompt, requiresConfirmation } from '@/lib/voiceCommands/commandParser';
+import { executeCommand } from '@/lib/voiceCommands/commandRouter';
+import { VoiceCommand, CommandResult } from '@/lib/voiceCommands/types';
+import { speak } from '@/lib/voiceCommands/tts';
+import { haptic } from '@/lib/haptic';
  
 interface SpeechRecognitionEvent extends Event {
   readonly results: SpeechRecognitionResultList;
@@ -51,7 +51,7 @@ export interface HistoryEntry {
   timestamp: number;
 }
 
-import { AppView } from '../types';
+import { AppView } from '@/types';
 
 interface UseMasterVoiceOptions {
   navigate: (view: AppView) => void;
@@ -299,7 +299,7 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
       setState('processing');
       let parsed;
       try {
-        const { parseMasterVoiceWithGemini } = await import('../services/VoiceService');
+        const { parseMasterVoiceWithGemini } = await import('@/services/VoiceService');
         const todayStr = new Date().toISOString().split('T')[0];
         parsed = await parseMasterVoiceWithGemini(finalTranscript, todayStr);
       } catch (err) {

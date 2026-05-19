@@ -1,12 +1,12 @@
 import React from 'react';
-import NotificationCenter from '../common/NotificationCenter';
-import CustomCategoriesModal from '../common/CustomCategoriesModal';
-import CommandPalette from '../common/CommandPalette';
-import LevelUpModal from '../features/gamification/LevelUpModal';
-import PrivacyShield from '../common/PrivacyShield';
-import { OfflineIndicator } from '../common/OfflineIndicator';
-import { BudgetAlertToast } from '../features/budgets/BudgetAlertToast';
-import { AppView, Transaction, Category } from '../../types';
+import NotificationCenter from '@/shell/NotificationCenter';
+import CustomCategoriesModal from '@/shell/CustomCategoriesModal';
+import CommandPalette from '@/shell/CommandPalette';
+import LevelUpModal from '@/components/features/gamification/LevelUpModal';
+import PrivacyShield from '@/shell/PrivacyShield';
+import { OfflineIndicator } from '@/shell/OfflineIndicator';
+import { BudgetAlertToast } from '@/components/features/budgets/BudgetAlertToast';
+import { AppView, Transaction, Category } from '@/types';
 
 interface AppModalsProps {
   store: any;

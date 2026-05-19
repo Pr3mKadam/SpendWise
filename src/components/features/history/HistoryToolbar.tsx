@@ -1,8 +1,8 @@
 import { useRef } from 'react';
 import { Download, Upload, FileText } from 'lucide-react';
-import { Transaction } from '../../../types';
-import { haptic } from '../../../lib/haptic';
-import { exportCSV, exportJSON } from '../../../utils/export';
+import { Transaction } from '@/types';
+import { haptic } from '@/lib/haptic';
+import { exportCSV, exportJSON } from '@/utils/export';
 
 interface HistoryToolbarProps {
   filtered:      Transaction[];
@@ -56,7 +56,7 @@ export function HistoryToolbar({
         <button
           onClick={async () => {
             haptic.medium();
-            const { shareTransactions } = await import('../../../utils/share');
+            const { shareTransactions } = await import('@/utils/share');
             shareTransactions(filtered, currency);
           }}
           disabled={disabled}

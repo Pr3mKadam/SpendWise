@@ -1,11 +1,11 @@
 import { Loader2, Camera, Mic } from 'lucide-react';
 import { RefObject } from 'react';
-import { parseUPISMS } from '../../../utils/parsers/upi';
-import { useCategories } from '../../../hooks/useCategories';
-import { useStore } from '../../../store';
-import { parseVoiceLocally } from '../../../utils/parsers/voice';
-import { compressImage } from '../../../utils/imageUtils';
-import { recognizeReceipt, parseOfflineReceipt } from '../../../utils/parsers/ocr';
+import { parseUPISMS } from '@/parsers/upi';
+import { useCategories } from '@/hooks/useCategories';
+import { useStore } from '@/store';
+import { parseVoiceLocally } from '@/parsers/voice';
+import { compressImage } from '@/utils/imageUtils';
+import { recognizeReceipt, parseOfflineReceipt } from '@/parsers/ocr';
 
 const PulsingWave = () => (
   <div className="flex items-center gap-[3px] h-4">

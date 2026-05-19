@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Target, TrendingUp, AlertCircle, Plus, Trash2, Edit2, Check, X } from 'lucide-react';
-import { useBudgets } from '../../hooks/useBudgets';
-import { useCategories } from '../../hooks/useCategories';
-import { useTransactions } from '../../hooks/useTransactions';
+import { useBudgets } from '@/hooks/useBudgets';
+import { useCategories } from '@/hooks/useCategories';
+import { useTransactions } from '@/hooks/useTransactions';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Category } from '../../types';
-import { SmartBudgetSuggestions } from '../features/budgets/SmartBudgetSuggestions';
-import { useIsMobile } from '../../hooks/useMediaQuery';
-import BudgetViewMobile from './BudgetViewMobile';
+import { Category } from '@/types';
+import { SmartBudgetSuggestions } from '@/components/features/budgets/SmartBudgetSuggestions';
+import { useIsMobile } from '@/hooks/useMediaQuery';
+import BudgetViewMobile from '@/components/views/BudgetViewMobile';
 
 export default function BudgetView({ currency = '₹' }: { currency?: string }) {
   const isMobile = useIsMobile();

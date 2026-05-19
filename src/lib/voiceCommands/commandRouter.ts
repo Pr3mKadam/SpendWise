@@ -6,10 +6,10 @@
  * goals, subscriptions, navigation, and PDF report export.
  */
 
-import { VoiceCommand, CommandResult } from './types';
-import { useStore } from '../../store';
-import { Transaction, Category, AppView } from '../../types';
-import { STORAGE_KEYS } from '../../constants';
+import { VoiceCommand, CommandResult } from '@/lib/voiceCommands/types';
+import { useStore } from '@/store';
+import { Transaction, Category, AppView } from '@/types';
+import { STORAGE_KEYS } from '@/constants';
 
 // Utility: format currency dynamically based on config
 function formatCurrency(amount: number): string {

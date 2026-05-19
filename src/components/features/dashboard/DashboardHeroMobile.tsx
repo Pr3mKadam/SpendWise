@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight, Shield } from 'lucide-react';
-import { useCountUp } from '../../../hooks/useCountUp';
-import { MonthlyStats, BalanceDataPoint } from '../../../types';
-import { haptic } from '../../../lib/haptic';
+import { useCountUp } from '@/hooks/useCountUp';
+import { MonthlyStats, BalanceDataPoint } from '@/types';
+import { haptic } from '@/lib/haptic';
 
 interface DashboardHeroProps {
   currentBalance: number;
@@ -74,9 +74,9 @@ export default function DashboardHeroMobile({
             
             <div
               className={`tabular-nums transition-all duration-300 ${hideBalances ? 'blur-lg select-none' : ''}`}
-              style={{ fontFamily: 'var(--font-manrope)', fontSize: '32px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: '-0.02em' }}
+              style={{ fontFamily: 'var(--font-manrope)', fontSize: '32px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: hideBalances ? '4px' : '-0.02em' }}
             >
-              {currency}{displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+              {hideBalances ? '••••••' : `${currency}${displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
             </div>
             
             <div className="flex items-center gap-1.5 mt-1">
@@ -118,7 +118,7 @@ export default function DashboardHeroMobile({
             <div className="flex flex-col">
               <span style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>In</span>
               <span className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '13px', fontWeight: 700, color: '#10b981' }}>
-                {currency}{displayIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                {hideBalances ? '•••' : `${currency}${displayIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
               </span>
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function DashboardHeroMobile({
             <div className="flex flex-col">
               <span style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Out</span>
               <span className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>
-                {currency}{displayExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                {hideBalances ? '•••' : `${currency}${displayExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
               </span>
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function DashboardHeroMobile({
             <div className="flex flex-col">
               <span style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Net</span>
               <span className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '13px', fontWeight: 700, color: isPositive ? '#14b8a6' : '#f59e0b' }}>
-                {isPositive ? '+' : '-'}{currency}{displayNet.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                {hideBalances ? '•••' : `${isPositive ? '+' : '-'}${currency}${displayNet.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
               </span>
             </div>
           </div>

@@ -3,10 +3,10 @@ import {
   Landmark, Zap, MoreVertical, TrendingDown, Hash, Sparkles, Brain,
   SmartphoneNfc, Link2, History, CreditCard, Clock, RefreshCw, Activity
 } from 'lucide-react';
-import { Transaction, LinkedAccount, SyncView } from '../../../types';
-import { UPI_PROVIDERS } from '../../../utils/parsers/upi';
-import CSVImporter from '../../features/sync/CSVImporter';
-import { CloudSync } from '../../features/sync/CloudSync';
+import { Transaction, LinkedAccount, SyncView } from '@/types';
+import { UPI_PROVIDERS } from '@/parsers/upi';
+import CSVImporter from '@/components/features/sync/CSVImporter';
+import { CloudSync } from '@/components/features/sync/CloudSync';
 
 export interface SyncDashboardProps {
   totalUPISpend: number;

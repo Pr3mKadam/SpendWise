@@ -6,7 +6,7 @@
 import { useRef, useState } from 'react';
 import { Share2, Camera, Flame, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { haptic } from '../../../lib/haptic';
+import { haptic } from '@/lib/haptic';
 
 interface Props {
   streak: number;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { AlertCircle, Check, X, Clock } from 'lucide-react';
-import { Transaction } from '../../../../types';
+import { Transaction } from '@/types';
 
 interface PendingApprovalsProps {
   pendingTransactions: Transaction[];

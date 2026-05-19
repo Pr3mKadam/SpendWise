@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
-import { useStore } from '../../../../store';
-import { Transaction } from '../../../../types';
+import { useStore } from '@/store';
+import { Transaction } from '@/types';
 
 export function useParentalManager() {
   const store = useStore();

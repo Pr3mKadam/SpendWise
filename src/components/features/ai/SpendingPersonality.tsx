@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, Brain, Zap, Target, Quote } from 'lucide-react';
-import { getSpendingPersonality } from '../../../utils/insights/reporting';
-import { Transaction } from '../../../types';
+import { getSpendingPersonality } from '@/insights/reporting';
+import { Transaction } from '@/types';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SpendingPersonalityProps {
