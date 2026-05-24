@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { useAuth } from '@/hooks/useAuth';
+import { formatLocalISO } from '@/utils/date';
 import AuthView from '@/features/auth/AuthView';
 import { MainShell } from '@/app/MainShell';
 import { AppView } from '@/types';
@@ -42,7 +43,7 @@ function parseConfig(raw: string | null): SpendWiseConfig {
     balanceAnchorNet: 0,
     currency: '₹',
     onboardingComplete: false,
-    createdAt: new Date().toISOString(),
+    createdAt: formatLocalISO(),
     userRole: 'professional',
   };
 

@@ -4,6 +4,7 @@ import { OnboardingSidebar } from '@/features/onboarding/components/OnboardingSi
 import { OnboardingStep1, CurrencySymbol } from '@/features/onboarding/components/OnboardingStep1';
 import { OnboardingStep2, UserRole } from '@/features/onboarding/components/OnboardingStep2';
 import { OnboardingStep3 } from '@/features/onboarding/components/OnboardingStep3';
+import { formatLocalISO } from '@/utils/date';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -89,7 +90,7 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
       location: location.trim(),
       monthlyGoal: parseFloat(monthlyGoal),
       onboardingComplete: true,
-      createdAt: new Date().toISOString(),
+      createdAt: formatLocalISO(),
     };
     saveConfig(config);
     onComplete(config);

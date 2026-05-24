@@ -98,7 +98,7 @@ export function TransactionRow({
   }
 
   return (
-    <div className="relative overflow-hidden bg-[var(--surface-card)]" style={{ borderBottom: '1px solid var(--border)' }}>
+    <div className="relative overflow-hidden bg-[var(--surface-card)] animate-fade-in-up" style={{ borderBottom: '1px solid var(--border)' }}>
       {/* Background Actions (Delete on Left drag, Category on Right drag) */}
       <div className="absolute inset-0 flex items-center justify-between z-0">
         {/* Swiping Right → Reveals Category trigger on the left */}

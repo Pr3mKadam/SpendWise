@@ -6,7 +6,7 @@ export const runDexieMigration = async () => {
     // Check if Dexie has any transactions
     const count = await db.transactions.count();
     if (count > 0) {
-      console.log('Dexie DB already populated. Skipping migration.');
+      console.info('[Migration] Dexie DB already populated. Skipping migration.');
       return;
     }
 
@@ -15,7 +15,7 @@ export const runDexieMigration = async () => {
     const rawData = localStorage.getItem(storageKey);
     
     if (!rawData) {
-      console.log('No local storage data found for migration.');
+      console.info('[Migration] No local storage data found for migration.');
       return;
     }
 
@@ -27,7 +27,7 @@ export const runDexieMigration = async () => {
 
     const { state } = parsed;
 
-    console.log('Migrating data from localStorage to Dexie...');
+    console.info('[Migration] Migrating data from localStorage to Dexie...');
 
     // We can use a transaction to ensure all or nothing
     await db.transaction('rw', [db.transactions, db.config, db.goals, db.customCategories], async () => {
@@ -48,7 +48,7 @@ export const runDexieMigration = async () => {
       }
     });
 
-    console.log('Migration complete!');
+    console.info('[Migration] Migration complete!');
   } catch (error) {
     console.error('Error migrating data to Dexie:', error);
   }

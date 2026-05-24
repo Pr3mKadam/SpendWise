@@ -22,6 +22,7 @@ import {
 import { syncEngine, SyncState } from '@/lib/syncEngine';
 import { useStore } from '@/store';
 import { isSupabaseConfigured } from '@/services/supabase';
+import { formatLocalISO } from '@/utils/date';
 
 export type {
   SharedGroup, SharedGroupMember, SharedWalletEntry,
@@ -198,20 +199,25 @@ export function useSharedWallets(
     name: string, purpose: string, creatorName: string, creatorEmoji = '👑'
   ) => {
     if (!userId) return;
-    const groupId  = uid();
-    const memberId = uid();
-    mutate(prev => ({
-      ...prev,
-      groups:  [...prev.groups, { id: groupId, name, purpose, created_by: userId }],
-      members: [...prev.members, {
-        id: memberId, group_id: groupId, user_id: userId,
-        display_name: creatorName, emoji: creatorEmoji,
-        role: 'admin', status: 'accepted',
-        invited_at: new Date().toISOString(),
-        joined_at:  new Date().toISOString(),
-      }],
-    }));
-    setSelectedGroupIdRaw(groupId);
+    try {
+      const groupId  = uid();
+      const memberId = uid();
+      mutate(prev => ({
+        ...prev,
+        groups:  [...prev.groups, { id: groupId, name, purpose, created_by: userId }],
+        members: [...prev.members, {
+          id: memberId, group_id: groupId, user_id: userId,
+          display_name: creatorName, emoji: creatorEmoji,
+          role: 'admin', status: 'accepted',
+          invited_at: formatLocalISO(),
+          joined_at:  formatLocalISO(),
+        }],
+      }));
+      setSelectedGroupIdRaw(groupId);
+    } catch (err) {
+      console.error('[SharedWallets] Failed to create group:', err);
+      setError('Failed to create group. Please try again.');
+    }
   }, [userId, mutate]);
 
   const deleteGroup = useCallback(async (groupId: string) => {
@@ -223,32 +229,44 @@ export function useSharedWallets(
     email: string, displayName: string, emoji = '👤'
   ) => {
     if (!selectedGroupId) return;
-    const memberId = uid();
-    mutate(prev => ({
-      ...prev,
-      members: [...prev.members, {
-        id: memberId, group_id: selectedGroupId,
-        invited_email: email, display_name: displayName, emoji,
-        role: 'member', status: 'pending',
-        invited_at: new Date().toISOString(),
-      }],
-    }));
+    try {
+      const memberId = uid();
+      mutate(prev => ({
+        ...prev,
+        members: [...prev.members, {
+          id: memberId, group_id: selectedGroupId,
+          invited_email: email, display_name: displayName, emoji,
+          role: 'member', status: 'pending',
+          invited_at: formatLocalISO(),
+        }],
+      }));
 
-    // Fire real email (non-blocking)
-    const groupName = data.groups.find(g => g.id === selectedGroupId)?.name ?? 'Shared Wallet';
-    sendInviteEmail({ to: email, toName: displayName, groupName, groupId: selectedGroupId, fromName: userName })
-      .catch(() => { /* InviteModal mailto: fallback still shown */ });
+      // Fire real email (non-blocking)
+      const groupName = data.groups.find(g => g.id === selectedGroupId)?.name ?? 'Shared Wallet';
+      sendInviteEmail({ to: email, toName: displayName, groupName, groupId: selectedGroupId, fromName: userName })
+        .catch(err => {
+          console.warn('[SharedWallets] Failed to send invite email:', err);
+        });
+    } catch (err) {
+      console.error('[SharedWallets] Failed to invite member:', err);
+      setError('Failed to send invite. Please try again.');
+    }
   }, [selectedGroupId, data.groups, userName, mutate]);
 
   const acceptInvite = useCallback(async (memberId: string) => {
-    mutate(prev => ({
-      ...prev,
-      members: prev.members.map(m =>
-        m.id === memberId
-          ? { ...m, status: 'accepted', joined_at: new Date().toISOString() }
-          : m
-      ),
-    }));
+    try {
+      mutate(prev => ({
+        ...prev,
+        members: prev.members.map(m =>
+          m.id === memberId
+            ? { ...m, status: 'accepted', joined_at: formatLocalISO() }
+            : m
+        ),
+      }));
+    } catch (err) {
+      console.error('[SharedWallets] Failed to accept invite:', err);
+      setError('Failed to accept invite. Please try again.');
+    }
   }, [mutate]);
 
   const declineInvite = useCallback(async (memberId: string) => {
@@ -264,14 +282,19 @@ export function useSharedWallets(
     amount: number; label: string; date: string;
   }) => {
     if (!selectedGroupId) return;
-    mutate(prev => ({
-      ...prev,
-      walletEntries: [...prev.walletEntries, {
-        id: uid(), group_id: selectedGroupId,
-        member_id: payload.memberId, kind: payload.kind,
-        amount: payload.amount, label: payload.label, date: payload.date,
-      }],
-    }));
+    try {
+      mutate(prev => ({
+        ...prev,
+        walletEntries: [...prev.walletEntries, {
+          id: uid(), group_id: selectedGroupId,
+          member_id: payload.memberId, kind: payload.kind,
+          amount: payload.amount, label: payload.label, date: payload.date,
+        }],
+      }));
+    } catch (err) {
+      console.error('[SharedWallets] Failed to add wallet entry:', err);
+      setError('Failed to add entry. Please try again.');
+    }
   }, [selectedGroupId, mutate]);
 
   const deleteWalletEntry = useCallback(async (id: string) => {
@@ -284,20 +307,25 @@ export function useSharedWallets(
     splits: { memberId: string; sharePercent: number }[];
   }) => {
     if (!selectedGroupId) return;
-    const expenseId = uid();
-    mutate(prev => ({
-      ...prev,
-      expenses: [...prev.expenses, {
-        id: expenseId, group_id: selectedGroupId,
-        paid_by_member_id: payload.paidByMemberId,
-        label: payload.label, category: payload.category,
-        amount: payload.amount, date: payload.date,
-        splits: payload.splits.map(s => ({
-          id: uid(), expense_id: expenseId,
-          member_id: s.memberId, share_percent: s.sharePercent,
-        })),
-      }],
-    }));
+    try {
+      const expenseId = uid();
+      mutate(prev => ({
+        ...prev,
+        expenses: [...prev.expenses, {
+          id: expenseId, group_id: selectedGroupId,
+          paid_by_member_id: payload.paidByMemberId,
+          label: payload.label, category: payload.category,
+          amount: payload.amount, date: payload.date,
+          splits: payload.splits.map(s => ({
+            id: uid(), expense_id: expenseId,
+            member_id: s.memberId, share_percent: s.sharePercent,
+          })),
+        }],
+      }));
+    } catch (err) {
+      console.error('[SharedWallets] Failed to add expense:', err);
+      setError('Failed to add expense. Please try again.');
+    }
   }, [selectedGroupId, mutate]);
 
   const deleteExpense = useCallback(async (id: string) => {
@@ -308,16 +336,21 @@ export function useSharedWallets(
     name: string; emoji: string; targetAmount: number; targetDate: string; color: string;
   }) => {
     if (!selectedGroupId) return;
-    mutate(prev => ({
-      ...prev,
-      goals: [...prev.goals, {
-        id: uid(), group_id: selectedGroupId,
-        name: payload.name, emoji: payload.emoji,
-        target_amount: payload.targetAmount,
-        target_date: payload.targetDate,
-        color: payload.color, contributions: [],
-      }],
-    }));
+    try {
+      mutate(prev => ({
+        ...prev,
+        goals: [...prev.goals, {
+          id: uid(), group_id: selectedGroupId,
+          name: payload.name, emoji: payload.emoji,
+          target_amount: payload.targetAmount,
+          target_date: payload.targetDate,
+          color: payload.color, contributions: [],
+        }],
+      }));
+    } catch (err) {
+      console.error('[SharedWallets] Failed to add goal:', err);
+      setError('Failed to create goal. Please try again.');
+    }
   }, [selectedGroupId, mutate]);
 
   const contributeToGoal = useCallback(async (
@@ -349,7 +382,7 @@ export function useSharedWallets(
       expenses:     data.expenses.filter(e => e.group_id === groupId),
       goals:        data.goals.filter(goal => goal.group_id === groupId),
       channelHint:  `shared-wallet:${groupId}`, // tell joiner which RT channel to use
-      exportedAt:   new Date().toISOString(),
+      exportedAt:   formatLocalISO(),
     };
     try {
       return btoa(encodeURIComponent(JSON.stringify(exportData)));

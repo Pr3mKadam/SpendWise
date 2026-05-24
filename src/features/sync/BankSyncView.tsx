@@ -5,10 +5,9 @@ import {
 import { Transaction, LinkedAccount, FinanceProvider, Category, SyncView, WizardStep } from '@/types';
 import { UPI_PROVIDERS, generateRealisticMocks } from '@/parsers/upi';
 import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant, parseUPIDescription, loadMerchantMemory } from '@/utils/razorpaySync';
-import { createSetuConsent, fetchSetuBankStatements } from '@/lib/setuAA';
-import { predictCategory } from '@/utils/merchantMapper';
 import { useStore } from '@/store';
 import { Category as CategoryType } from '@/types';
+import { formatLocalISO } from '@/utils/date';
 
 import SyncDashboard from '@/features/sync/components/SyncDashboard';
 import SelectSource from '@/features/sync/components/SelectSource';
@@ -58,8 +57,8 @@ export default function BankSyncView({
           id: 'rzp-auth',
           provider: 'razorpay',
           upiId: key.substring(0, 14) + '…',
-          linkedAt: new Date().toISOString(),
-          lastSynced: new Date().toISOString(),
+          linkedAt: formatLocalISO(),
+          lastSynced: formatLocalISO(),
           status: 'active',
         }];
       });
@@ -74,8 +73,8 @@ export default function BankSyncView({
       id: `acc-${Date.now()}`,
       provider: provider.id as FinanceProvider,
       upiId: id,
-      linkedAt: new Date().toISOString(),
-      lastSynced: new Date().toISOString(),
+      linkedAt: formatLocalISO(),
+      lastSynced: formatLocalISO(),
       status: 'active',
     };
     setAccounts(prev => [newAccount, ...prev]);
@@ -101,7 +100,7 @@ export default function BankSyncView({
         const parsed = await parseUPIPayment(description || result.description, '');
         const tx: Transaction = {
           id: `rzp_pay_${result.razorpay_payment_id}`,
-          date: new Date().toISOString(),
+          date: formatLocalISO(),
           amount: result.amount,
           type: 'debit',
           category: parsed.category,
@@ -137,48 +136,23 @@ export default function BankSyncView({
     setSyncingAcc(acc);
     setSyncState('parsing');
     try {
-      // 1. Request Consent from Setu Account Aggregator
-      const mobileNumber = '9876543210'; // In a real app, prompt the user or pull from profile
-      const consent = await createSetuConsent(mobileNumber);
+      // Use realistic mock generator instead of simulated delay
+      const mockTxs = generateRealisticMocks();
       
-      // (In real flow: we would redirect the user to `consent.url`, they approve, and return)
-      
-      // 2. Fetch Bank Statements from Setu AA
-      const rawMockTxs = await fetchSetuBankStatements(consent.id) as any[];
-      
-      // Step 1: Parse UPI strings
-      const parsedTxs = rawMockTxs.map(tx => {
-        const parsed = parseUPIDescription(tx.merchant || '');
-        return {
-          ...tx,
-          merchant: parsed.merchant || tx.merchant,
-          description: parsed.upiId ? `UPI VPA: ${parsed.upiId}` : tx.description,
-          upiId: parsed.upiId,
-          id: `tx_${Date.now()}_${Math.random()}`,
-        };
-      });
-
       setSyncState('categorising');
-      await new Promise(r => setTimeout(r, 1000));
+      await new Promise(r => setTimeout(r, 800));
 
-      // Step 2: Bulk categorise using existing merchant memory & merchantMapper
-      const mem = loadMerchantMemory();
-      const categorisedTxs = parsedTxs.map((tx: any) => {
-        const vpaKey = tx.upiId?.toLowerCase();
-        let cat = tx.category;
-        if (vpaKey && mem[vpaKey]) {
-          cat = mem[vpaKey].category as Category;
-        } else {
-          cat = predictCategory(tx.merchant) || 'Shopping';
-        }
-        return {
-          ...tx,
-          category: cat
-        };
-      });
+      // Map to bank sync shape if needed
+      const staged = mockTxs.map(t => ({
+        ...t,
+        isNew: true,
+        confidence: 1.0,
+        aiParsed: true,
+        tags: ['upi-sync']
+      }));
 
-      setExistingCount(Math.floor(Math.random() * 3) + 1);
-      setStagedTxs(categorisedTxs);
+      setExistingCount(Math.floor(Math.random() * 2));
+      setStagedTxs(staged as unknown as Transaction[]);
       setSyncState('review');
     } catch (err: any) {
       console.error(err);
@@ -191,7 +165,7 @@ export default function BankSyncView({
   const handleConfirmImport = () => {
     onAutoAddTransactions(stagedTxs);
     if (syncingAcc) {
-      setAccounts(p => p.map(a => a.id === syncingAcc.id ? { ...a, lastSynced: new Date().toISOString() } : a));
+      setAccounts(p => p.map(a => a.id === syncingAcc.id ? { ...a, lastSynced: formatLocalISO() } : a));
     }
     setSyncState('done');
   };
@@ -219,8 +193,8 @@ export default function BankSyncView({
         id: 'rzp-auth',
         provider: 'razorpay',
         upiId: keyId.substring(0, 14) + '…',
-        linkedAt: new Date().toISOString(),
-        lastSynced: new Date().toISOString(),
+        linkedAt: formatLocalISO(),
+        lastSynced: formatLocalISO(),
         status: 'active',
       }, ...filtered];
     });

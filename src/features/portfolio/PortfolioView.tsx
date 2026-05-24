@@ -11,6 +11,7 @@ import { PortfolioHeader } from '@/features/portfolio/components/PortfolioHeader
 import { PortfolioSummaryBanner } from '@/features/portfolio/components/PortfolioSummaryBanner';
 import { PortfolioInsights } from '@/features/portfolio/components/PortfolioInsights';
 import { PortfolioLists } from '@/features/portfolio/components/PortfolioLists';
+import EmptyState from '@/ui/EmptyState';
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -132,15 +133,25 @@ export default function PortfolioView({ currency = '₹', financeState, config }
               netWorth={netWorth}
             />
 
-            <PortfolioLists
-              assets={assets}
-              liabilities={liabilities}
-              totalLiabilities={totalLiabilities}
-              currency={currency}
-              deleteAsset={deleteAsset}
-              deleteLiability={deleteLiability}
-              setModal={setModal}
-            />
+            {assets.length === 0 && liabilities.length === 0 ? (
+              <EmptyState
+                icon={<BarChart2 size={32} />}
+                title="Your Portfolio is Empty"
+                subtitle="Add your first asset or liability to begin tracking your net worth and wealth efficiency."
+                action={{ label: 'Add Asset', onClick: () => setModal('asset') }}
+                secondaryAction={{ label: 'Add Liability', onClick: () => setModal('liability') }}
+              />
+            ) : (
+              <PortfolioLists
+                assets={assets}
+                liabilities={liabilities}
+                totalLiabilities={totalLiabilities}
+                currency={currency}
+                deleteAsset={deleteAsset}
+                deleteLiability={deleteLiability}
+                setModal={setModal}
+              />
+            )}
           </>
         ) : activeTab === 'simulation' ? (
           <div className="animate-fade-in">

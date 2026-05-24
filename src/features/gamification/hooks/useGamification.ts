@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { Transaction } from '@/types';
 import { useStore } from '@/store';
 import { useCategories } from '@/hooks/useCategories';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function useGamification(transactions: Transaction[]) {
   const store = useStore();
@@ -62,7 +63,7 @@ export function useGamification(transactions: Transaction[]) {
     const healthXP = healthScore * 10;
     
     // Budget Adherence Bonus
-    const currentMonthStr = new Date().toISOString().substring(0, 7);
+    const currentMonthStr = formatLocalYYYYMMDD().substring(0, 7);
     const monthlyExpenses = transactions
       .filter(t => t.type === 'debit' && t.date.startsWith(currentMonthStr));
     

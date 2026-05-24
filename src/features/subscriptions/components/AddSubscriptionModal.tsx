@@ -3,6 +3,7 @@ import { X, Plus } from 'lucide-react';
 import { useStore } from '@/store';
 import { useCategories } from '@/hooks/useCategories';
 import { RecurringFrequency, Category } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface AddSubscriptionModalProps {
   isOpen: boolean;
@@ -18,10 +19,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>('Subscriptions');
   const [frequency, setFrequency] = useState<RecurringFrequency>('monthly');
-  const [nextOccurrence, setNextOccurrence] = useState(() => {
-    const d = new Date();
-    return d.toISOString().split('T')[0];
-  });
+  const [nextOccurrence, setNextOccurrence] = useState(() => formatLocalYYYYMMDD());
 
   const [isTrial, setIsTrial] = useState(false);
   const [trialEndsAt, setTrialEndsAt] = useState('');

@@ -14,6 +14,7 @@
 
 import { Transaction, Category } from '@/types';
 import { parseUPIPayment } from '@/utils/razorpaySync';
+import { formatLocalISO } from '@/utils/date';
 
 export interface UPIPaymentParams {
   /** Payee VPA — the merchant's UPI ID e.g. merchant@upi */
@@ -147,7 +148,7 @@ export async function upiResultToTransaction(result: UPIPaymentResult): Promise<
 
   return {
     id: `upi_${result.transactionId || result.transactionRef || Date.now()}`,
-    date: new Date().toISOString(),
+    date: formatLocalISO(),
     amount: result.amount,
     type: 'debit',
     category: parsed.category,

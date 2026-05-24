@@ -21,6 +21,7 @@ interface UseVoiceMicOptions {
 
 export function useVoiceMic(options: UseVoiceMicOptions) {
   const voice = useMasterVoice(options);
+  const { state, start, stop, isSupported } = voice;
 
   const [showHistory, setShowHistory] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(() => {
@@ -30,17 +31,17 @@ export function useVoiceMic(options: UseVoiceMicOptions) {
   // ── Space-bar shortcut ───────────────────────────────────────────────────
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && e.target === document.body && voice.state === 'idle') {
+      if (e.code === 'Space' && e.target === document.body && state === 'idle') {
         e.preventDefault();
         if (showOnboarding) {
           setShowOnboarding(false);
           localStorage.setItem('spendwise_voice_onboarded', 'true');
         }
-        voice.start();
+        start();
       }
     };
     const onUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && voice.state === 'listening') voice.stop();
+      if (e.code === 'Space' && state === 'listening') stop();
     };
     window.addEventListener('keydown', onDown);
     window.addEventListener('keyup', onUp);
@@ -48,7 +49,7 @@ export function useVoiceMic(options: UseVoiceMicOptions) {
       window.removeEventListener('keydown', onDown);
       window.removeEventListener('keyup', onUp);
     };
-  }, [voice.state, voice.start, voice.stop, showOnboarding]);
+  }, [state, start, stop, showOnboarding]);
 
   // ── Close history on outside click ───────────────────────────────────────
   useEffect(() => {
@@ -62,14 +63,14 @@ export function useVoiceMic(options: UseVoiceMicOptions) {
   const handleFabClick = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (!voice.isSupported) return;
-      if (voice.state === 'idle' || voice.state === 'error' || voice.state === 'success') {
-        voice.start();
-      } else if (voice.state === 'listening') {
-        voice.stop();
+      if (!isSupported) return;
+      if (state === 'idle' || state === 'error' || state === 'success') {
+        start();
+      } else if (state === 'listening') {
+        stop();
       }
     },
-    [voice.isSupported, voice.state, voice.start, voice.stop],
+    [isSupported, state, start, stop],
   );
 
   // ── Onboarding dismiss ──────────────────────────────────────────────────

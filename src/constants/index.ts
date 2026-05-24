@@ -47,6 +47,18 @@ export const FEATURES = {
   VOICE_INPUT: _hasSpeechRecognition,
 } as const;
 
+// ─── Shared Wallets & Goals ──────────────────────────────────────────────────
+export const MEMBER_EMOJIS = ['👩','👨','👱‍♀️','🧔','👨‍🦱','👩‍🦰','😎','🤓','😊','🤠','👑','👻','👽','🤖'];
+export const GOAL_EMOJIS   = ['✈️','🚗','🏡','💻','📱','🎁','🎓','💍','🎉','🎸','🎮','🚲'];
+export const GOAL_COLORS   = ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#ec4899','#14b8a6'];
+
+export const GROUP_PURPOSES = [
+  { id: 'friends',  label: 'Friends',     icon: '🎉' },
+  { id: 'roommates',label: 'Roommates',   icon: '🏠' },
+  { id: 'family',   label: 'Family',      icon: '👨‍👩‍👧' },
+  { id: 'other',    label: 'Other',       icon: '🤝' },
+] as const;
+
 // ─── App Metadata ─────────────────────────────────────────────────────────────
 export const APP = {
   NAME:    'SpendWise',

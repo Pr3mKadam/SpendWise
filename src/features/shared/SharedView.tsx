@@ -7,7 +7,7 @@ import { Ico } from '@/ui/Icons';
 import { Btn } from '@/ui/Button';
 import { Err } from '@/ui/Alert';
 import { CreateGroupModal, InviteModal, WalletModal, ExpenseModal, GoalModal, ContribModal, GroupQRModal } from '@/features/shared/components/SharedModals';
-import { WalletTab, ExpensesTab, GoalsTab, MembersTab, ActivityTab } from '@/features/shared/components/SharedTabs';
+import { WalletTab, ExpensesTab, GoalsTab, MembersTab, ActivityTab } from '@/features/shared/components/tabs';
 import { SharedOverview } from '@/features/shared/components/SharedOverview';
 import { InviteBanner, EmptyState, GroupSelector } from '@/features/shared/components/SharedGroups';
 import { Activity, Share2, Scan, Plus, Users, Target, Wallet } from 'lucide-react';

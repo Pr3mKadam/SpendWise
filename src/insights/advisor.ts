@@ -18,6 +18,7 @@
 
 import { callGemini } from "../services/gemini";
 import { Transaction } from "../types";
+import { formatLocalYYYYMMDD } from "../utils/date";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ export function buildBriefing(
     .reduce((s, t) => s + t.amount, 0);
 
   // Daily average (last 30 days)
-  const thirtyAgo = new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0];
+  const thirtyAgo = formatLocalYYYYMMDD(new Date(Date.now() - 30 * 86400000));
   const last30     = debits.filter(t => t.date >= thirtyAgo);
   const avgDailySpend = last30.length > 0
     ? Math.round(last30.reduce((s, t) => s + t.amount, 0) / 30)
@@ -415,7 +416,7 @@ export function getProactiveNudge(
 
   // 4. Streak at risk (no transaction logged today)
   if (streak > 2) {
-    const today = new Date().toISOString().split("T")[0];
+    const today = formatLocalYYYYMMDD();
     const loggedToday = transactions.some(t => t.date === today);
     if (!loggedToday) {
       return {

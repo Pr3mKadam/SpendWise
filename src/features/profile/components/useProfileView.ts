@@ -6,6 +6,7 @@ import { Transaction } from '@/types';
 import { encryptData, decryptData } from '@/lib/encryption';
 import { useStore } from '@/store';
 import { downloadDatabaseBackup, importDatabase } from '@/db/backup';
+import { formatLocalISO, formatLocalYYYYMMDD } from '@/utils/date';
 import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
 import { haptic } from '@/lib/haptic';
 
@@ -122,12 +123,12 @@ export function useProfileView(
   const handleSecureExport = async (password: string) => {
     setIsExporting(true);
     try {
-      const dataToExport = { transactions: store.transactions, budgets: store.budgets, quests: store.quests, parentalState: store.parentalState, assets: store.assets, liabilities: store.liabilities, subscriptions: store.subscriptions, exportDate: new Date().toISOString() };
+      const dataToExport = { transactions: store.transactions, budgets: store.budgets, quests: store.quests, parentalState: store.parentalState, assets: store.assets, liabilities: store.liabilities, subscriptions: store.subscriptions, exportDate: formatLocalISO() };
       const encrypted = await encryptData(JSON.stringify(dataToExport), password);
       const blob = new Blob([encrypted], { type: 'text/plain' });
       const url  = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url; link.download = `spendwise_secure_backup_${new Date().toISOString().split('T')[0]}.swb`; link.click();
+      link.href = url; link.download = `spendwise_secure_backup_${formatLocalYYYYMMDD()}.swb`; link.click();
       URL.revokeObjectURL(url);
       setShowSecureExportModal(false);
     } catch { alert('Export failed.'); } finally { setIsExporting(false); }
@@ -157,7 +158,7 @@ export function useProfileView(
       if (errors.length > 0 && importedTxs.length === 0) { alert(`Failed to import: ${errors[0]}`); return; }
       if (importedTxs.length > 0 && window.confirm(`Found ${importedTxs.length} transactions. Import them?`)) {
         store.addTransactions(importedTxs);
-        addNotification?.({ id: Date.now().toString(), type: 'system', title: 'Transactions Imported', message: `${importedTxs.length} transactions successfully added.`, timestamp: new Date().toISOString(), read: false });
+        addNotification?.({ id: Date.now().toString(), type: 'system', title: 'Transactions Imported', message: `${importedTxs.length} transactions successfully added.`, timestamp: formatLocalISO(), read: false });
       }
     } catch { alert('Failed to read file.'); }
   };

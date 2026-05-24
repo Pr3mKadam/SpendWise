@@ -4,6 +4,7 @@ import { Lightbulb, TrendingUp, TrendingDown, AlertCircle, Sparkles } from 'luci
 import { CategorySpend, Transaction } from '@/types';
 import { haptic } from '@/lib/haptic';
 import { useCategories } from '@/hooks/useCategories';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface CategoryAnalyzerProps {
   categorySpending: CategorySpend[];
@@ -119,7 +120,7 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
     // 5. Category Limits
     Object.entries(categoryLimits).forEach(([cat, limit]) => {
       const spent = transactions
-        .filter(t => t.category === cat && t.type === 'debit' && t.date.startsWith(new Date().toISOString().substring(0, 7)))
+        .filter(t => t.category === cat && t.type === 'debit' && t.date.startsWith(formatLocalYYYYMMDD().substring(0, 7)))
         .reduce((sum, t) => sum + t.amount, 0);
       
       const percent = (spent / limit) * 100;

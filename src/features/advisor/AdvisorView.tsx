@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
 import { useTransactions } from '@/hooks/useTransactions';
 import { SpendingPersonality } from '@/types';
+import { formatLocalISO } from '@/utils/date';
 import { getFinancialAdvice, getSpendingPersonality, ConversationMessage } from '@/insights/advisor';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import EducationCards from '@/features/education/components/EducationCards';
@@ -27,7 +28,7 @@ const INITIAL_MESSAGE: Message = {
   id: '1',
   text: "Hello! I'm your SpendWise Advisor. How can I help you with your finances today?",
   sender: 'ai',
-  timestamp: new Date().toISOString()
+  timestamp: formatLocalISO()
 };
 
 export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
@@ -70,7 +71,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
       id: Date.now().toString(),
       text,
       sender: 'user',
-      timestamp: new Date().toISOString()
+      timestamp: formatLocalISO()
     };
 
     const streamingMsgId = (Date.now() + 1).toString();
@@ -78,7 +79,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
       id: streamingMsgId,
       text: '',
       sender: 'ai',
-      timestamp: new Date().toISOString(),
+      timestamp: formatLocalISO(),
       streaming: true,
     };
 
@@ -147,7 +148,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         id: 'briefing',
         text: "Your Daily Financial Briefing is ready.",
         sender: 'ai',
-        timestamp: new Date().toISOString(),
+        timestamp: formatLocalISO(),
         type: 'briefing',
         data: {
           balance: monthlyStats.totalIncome - monthlyStats.totalExpenses,
@@ -233,7 +234,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         id: Date.now().toString(),
         text: "Hello! I'm your SpendWise Advisor. I've cleared our chat history. How can I help you today?",
         sender: 'ai',
-        timestamp: new Date().toISOString()
+        timestamp: formatLocalISO()
       }
     ]);
   };

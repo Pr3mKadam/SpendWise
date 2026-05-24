@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { RecurringPattern } from '@/types';
 import { useStore } from '@/store';
+import { formatLocalISO } from '@/utils/date';
 
 function daysUntil(dateStr: string): number {
   const target = new Date(dateStr + 'T00:00:00');
@@ -24,7 +25,7 @@ export function useSubscriptionManager(patterns: RecurringPattern[]) {
       category:     rt.category,
       avgAmount:    rt.amount,
       frequency:    rt.frequency as RecurringPattern['frequency'],
-      lastSeen:     rt.lastProcessed || new Date().toISOString(),
+      lastSeen:     rt.lastProcessed || formatLocalISO(),
       nextExpected: rt.nextOccurrence,
       occurrences:  0,
       totalSpent:   0,
