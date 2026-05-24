@@ -6,6 +6,8 @@ import { useTransactions } from '@/hooks/useTransactions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Category } from '@/types';
 import { SmartBudgetSuggestions } from '@/features/budget/components/SmartBudgetSuggestions';
+import { BudgetSummary } from '@/features/budget/components/BudgetSummary';
+import { BudgetCategoryCard } from '@/features/budget/components/BudgetCategoryCard';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import BudgetViewMobile from '@/features/budget/BudgetViewMobile';
 
@@ -41,31 +43,13 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
         onAccept={(cat, amount) => setBudget(cat, amount)}
         currency={currency}
       />
+      
       {/* Header Summary */}
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <div className="bg-[var(--surface-card)] rounded-3xl p-6 border border-[var(--border)] shadow-sm">
-          <p className="text-[length:var(--fs-overline)] font-bold uppercase text-[var(--text-muted)] tracking-widest mb-1">Total Monthly Budget</p>
-          <h2 className="text-3xl font-black text-[var(--text-primary)]">{currency}{totalBudgeted.toLocaleString()}</h2>
-          <div className="mt-4 flex items-center gap-2">
-            <div className="flex-1 h-2 bg-[var(--surface-input)] rounded-full overflow-hidden">
-              <motion.div 
-                initial={{ width: 0 }}
-                animate={{ width: `${Math.min(overallBudgetPercent, 100)}%` }}
-                className={`h-full rounded-full ${overallBudgetPercent > 100 ? 'bg-red-500' : 'bg-[var(--teal)]'}`}
-              />
-            </div>
-            <span className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)]">{Math.round(overallBudgetPercent)}%</span>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-[var(--teal)] to-[#0d9488] rounded-3xl p-6 text-white shadow-lg flex flex-col justify-between">
-          <div>
-            <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-80 tracking-widest mb-1">Budgeting Strategy</p>
-            <h3 className="text-xl font-bold">70/20/10 Rule</h3>
-          </div>
-          <p className="text-[length:var(--fs-caption)] opacity-90 mt-2 font-medium">You are currently budgeting {Math.round(overallBudgetPercent)}% of your typical monthly spend.</p>
-        </div>
-      </div>
+      <BudgetSummary 
+        currency={currency}
+        totalBudgeted={totalBudgeted}
+        overallBudgetPercent={overallBudgetPercent}
+      />
 
       {/* Budget List */}
       <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] overflow-hidden">
@@ -132,60 +116,17 @@ export default function BudgetView({ currency = '₹' }: { currency?: string }) 
 
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             {budgetStats.map((b) => (
-              <div key={b.category} className="group p-4 bg-[var(--surface-input)] rounded-2xl border border-[var(--border)] hover:border-[var(--teal)]/30 transition-all">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-lg bg-[var(--surface-card)] flex items-center justify-center shadow-sm">
-                      <Target size={16} className={b.status === 'danger' ? 'text-red-500' : 'text-[var(--teal)]'} />
-                    </div>
-                    <h4 className="font-bold text-[var(--text-primary)] text-sm">{b.category}</h4>
-                  </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button 
-                      onClick={() => { setSelectedCategory(b.category); setLimitAmount(b.limit.toString()); setIsAdding(true); }}
-                      className="p-1.5 text-[var(--text-muted)] hover:text-[var(--teal)] bg-transparent border-none cursor-pointer"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button 
-                      onClick={() => removeBudget(b.category)}
-                      className="p-1.5 text-[var(--text-muted)] hover:text-red-500 bg-transparent border-none cursor-pointer"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex items-end justify-between mb-2">
-                  <div>
-                    <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Spent</p>
-                    <p className="text-sm font-bold text-[var(--text-primary)]">
-                      {currency}{b.spent.toLocaleString()} <span className="text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">/ {currency}{b.limit.toLocaleString()}</span>
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Remaining</p>
-                    <p className={`text-sm font-bold ${b.remaining < 0 ? 'text-red-500' : 'text-[var(--teal)]'}`}>
-                      {currency}{b.remaining.toLocaleString()}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="h-1.5 w-full bg-[var(--surface-card)] rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: `${Math.min(b.percent, 100)}%` }}
-                    className={`h-full rounded-full ${b.status === 'danger' ? 'bg-red-500' : b.status === 'warning' ? 'bg-amber-500' : 'bg-[var(--teal)]'}`}
-                  />
-                </div>
-                
-                {b.percent > 100 && (
-                  <div className="mt-2 flex items-center gap-1 text-[length:var(--fs-overline)] font-bold text-red-500">
-                    <AlertCircle size={10} />
-                    OVER BUDGET BY {currency}{Math.abs(b.remaining).toLocaleString()}
-                  </div>
-                )}
-              </div>
+              <BudgetCategoryCard 
+                key={b.category}
+                b={b as any}
+                currency={currency}
+                onEdit={(cat, limit) => {
+                  setSelectedCategory(cat);
+                  setLimitAmount(limit);
+                  setIsAdding(true);
+                }}
+                onRemove={removeBudget}
+              />
             ))}
           </div>
         </div>

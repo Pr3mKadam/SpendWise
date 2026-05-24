@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Copy, Share2, Check, Info, Users } from 'lucide-react';
 import { Modal } from '@/ui/Modal';
 import { Btn } from '@/ui/Button';
 import { Field, Inp } from '@/ui/Input';
@@ -7,6 +8,7 @@ import { Err, Ok } from '@/ui/Alert';
 import { EmojiBtn } from '@/ui/Avatar';
 import { Ico } from '@/ui/Icons';
 import { SharedGoal, SharedGroupMember } from '@/features/shared/hooks/useSharedWallets';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 // Constants
 export const MEMBER_EMOJIS = ['👩','👨','👱‍♀️','🧔','👨‍🦱','👩‍🦰','😎','🤓','😊','🤠','👑','👻','👽','🤖'];
@@ -181,7 +183,7 @@ export function WalletModal({ show, onClose, members, onSubmit, currency }: {
   const [mid, setMid]       = useState('');
   const [amount, setAmount] = useState('');
   const [label, setLabel]   = useState('');
-  const [date, setDate]     = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate]     = useState(formatLocalYYYYMMDD(new Date()));
   const [busy, setBusy]     = useState(false);
   const [err, setErr]       = useState('');
 
@@ -249,7 +251,7 @@ export function ExpenseModal({ show, onClose, members, onSubmit, currency }: {
   const [paidBy, setPaidBy] = useState('');
   const [cat, setCat]       = useState('General');
   const [amount, setAmount] = useState('');
-  const [date, setDate]     = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate]     = useState(formatLocalYYYYMMDD(new Date()));
   
   const [splitMode, setSplitMode] = useState<'equal' | 'custom'>('equal');
   const [customSplits, setCustomSplits] = useState<Record<string, number>>({});
@@ -424,7 +426,7 @@ export function ContribModal({ show, onClose, goal, members, onSubmit, currency 
   const active = members.filter(m => m.status === 'active');
   const [mid, setMid]   = useState('');
   const [amount, setAmt] = useState('');
-  const [date, setDate]  = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate]  = useState(formatLocalYYYYMMDD(new Date()));
   const [note, setNote]  = useState('');
   const [busy, setBusy]  = useState(false);
   const [err, setErr]    = useState('');
@@ -478,63 +480,4 @@ export function ContribModal({ show, onClose, goal, members, onSubmit, currency 
   );
 }
 
-export function ConnectCohortModal({ show, onClose, localPeerId, onSubmit }: {
-  show: boolean; onClose: () => void; localPeerId: string;
-  onSubmit: (remoteId: string) => void;
-}) {
-  const [remoteId, setRemoteId] = useState('');
-  const [copied, setCopied] = useState(false);
 
-  function reset() {
-    setRemoteId('');
-    setCopied(false);
-  }
-
-  function handleCopy() {
-    navigator.clipboard.writeText(localPeerId);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  }
-
-  function submit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!remoteId.trim()) return;
-    onSubmit(remoteId.trim());
-    reset();
-    onClose();
-  }
-
-  return (
-    <Modal show={show} onClose={() => { reset(); onClose(); }} title="🔗 Connect Cohort">
-      <form onSubmit={submit}>
-        <div className="bg-[var(--surface-input)] border border-[var(--border)] rounded-2xl p-4 mb-5">
-          <span className="block text-[10px] font-black text-[var(--text-muted)] uppercase tracking-wider mb-2">Your Peer ID</span>
-          <div className="flex items-center gap-2">
-            <span className="font-mono text-xs text-[var(--text-primary)] select-all truncate flex-1">{localPeerId || 'Loading...'}</span>
-            <button
-              type="button"
-              onClick={handleCopy}
-              className="px-3 h-8 bg-[var(--teal)]/10 text-[var(--teal)] rounded-xl border-none font-bold text-xs cursor-pointer hover:bg-[var(--teal)]/20 transition-colors"
-            >
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-          <span className="block text-[9px] text-[var(--text-muted)] mt-2 font-medium">Share your Peer ID with your cohort so they can link directly to you.</span>
-        </div>
-
-        <Field label="Remote Peer ID">
-          <Inp 
-            placeholder="Paste your cohort's Peer ID (e.g. sw-xxxxx)" 
-            value={remoteId} 
-            onChange={e => setRemoteId(e.target.value)} 
-            autoFocus 
-          />
-        </Field>
-
-        <Btn full v="primary" type="submit" disabled={!remoteId.trim()}>
-          ⚡ Link Cohort Connection
-        </Btn>
-      </form>
-    </Modal>
-  );
-}

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '@/store';
 import { RecurringTransaction, Transaction } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 function getNextDate(dateStr: string, frequency: RecurringTransaction['frequency']): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -10,7 +11,7 @@ function getNextDate(dateStr: string, frequency: RecurringTransaction['frequency
     case 'monthly': d.setMonth(d.getMonth() + 1); break;
     case 'annual':  d.setFullYear(d.getFullYear() + 1); break;
   }
-  return d.toISOString().split('T')[0];
+  return formatLocalYYYYMMDD(d);
 }
 
 export function useAutomations() {
@@ -27,7 +28,7 @@ export function useAutomations() {
 
     if (!recurringTransactions || recurringTransactions.length === 0) return;
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = formatLocalYYYYMMDD(new Date());
     const newTransactions: Transaction[] = [];
 
     recurringTransactions.forEach(rt => {

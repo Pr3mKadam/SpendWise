@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { processReceipt } from '@/services/OCRService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Upload, X, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface ReceiptScannerProps {
   isOpen: boolean;
@@ -200,7 +201,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
       onExtracted({
         merchant: result.merchant || 'Unknown Merchant',
         amount: result.amount || 0,
-        date: result.date || new Date().toISOString().split('T')[0]
+        date: result.date || formatLocalYYYYMMDD(new Date())
       });
       
       setTimeout(() => {

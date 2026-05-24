@@ -7,6 +7,7 @@ export interface VaultData {
   total: number;
   count: number;
   history: { date: string; amount: number; merchant: string }[];
+  sweptIds?: string[];
 }
 
 export interface UserPreferences {
@@ -105,7 +106,7 @@ export const createSecuredSlice: StateCreator<
     })),
 
   // BUG-02 fix: vault migrated from localStorage to encrypted IDB
-  roundUpVault: { total: 0, count: 0, history: [] },
+  roundUpVault: { total: 0, count: 0, history: [], sweptIds: [] },
   setRoundUpVault: (vaultOrUpdater) =>
     set((state) => ({
       roundUpVault:

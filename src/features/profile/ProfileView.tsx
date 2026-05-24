@@ -1,4 +1,4 @@
-import { User, ShieldCheck, DownloadCloud, CheckCircle2, Camera } from 'lucide-react';
+import { User, DownloadCloud, CheckCircle2 } from 'lucide-react';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { exportCSV } from '@/utils/export';
 import { Transaction } from '@/types';
@@ -15,6 +15,8 @@ import ResetConfirmModal from '@/features/profile/components/ResetConfirmModal';
 import { AccessibilitySection } from '@/features/profile/components/AccessibilitySection';
 import { NotificationsSection } from '@/features/profile/components/NotificationsSection';
 import { useProfileView } from '@/features/profile/components/useProfileView';
+import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
+import { FamilySafetySection } from '@/features/profile/components/FamilySafetySection';
 
 interface ProfileViewProps {
   config:         SpendWiseConfig | null;
@@ -139,40 +141,15 @@ export default function ProfileView({
       </div>
 
       {/* Avatar Upload */}
-      <div className="card px-6 py-5 flex items-center gap-5">
-        <div className="relative shrink-0">
-          <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center"
-            style={{ background: 'var(--teal-dim)', border: '3px solid var(--teal)' }}>
-            {avatar
-              ? <img src={avatar} alt="avatar" className="w-full h-full object-cover" />
-              : <User size={36} style={{ color: 'var(--teal)' }} />}
-          </div>
-          <button onClick={() => avatarInputRef.current?.click()}
-            className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full flex items-center justify-center shadow-md border-2 border-white cursor-pointer"
-            style={{ background: 'var(--teal)', color: '#fff' }} title="Change photo">
-            <Camera size={13} />
-          </button>
-          <input ref={avatarInputRef} type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <p className="font-bold text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px' }}>
-            {name || 'Your Name'}
-          </p>
-          <p className="text-sm text-[var(--text-muted)] mt-0.5" style={{ fontFamily: 'var(--font-inter)' }}>
-            {occupation || 'SpendWise Member'}{location ? ` · ${location}` : ''}
-          </p>
-          <div className="mt-2 flex items-center gap-2">
-            <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-500 text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">
-              {config?.userRole || 'User'} Persona
-            </span>
-          </div>
-          <button onClick={() => avatarInputRef.current?.click()}
-            className="mt-2 text-xs font-semibold cursor-pointer border-none bg-transparent"
-            style={{ color: 'var(--teal)', fontFamily: 'var(--font-inter)' }}>
-            Change photo →
-          </button>
-        </div>
-      </div>
+      <ProfileHeader
+        avatar={avatar}
+        name={name}
+        occupation={occupation}
+        location={location}
+        config={config}
+        avatarInputRef={avatarInputRef}
+        onAvatarChange={handleAvatarChange}
+      />
 
       {/* Profile Form */}
       <ProfileForm fields={profileFields} currency={currency} onSave={handleSave} showSavedMsg={showSavedMsg} />
@@ -208,32 +185,7 @@ export default function ProfileView({
       />
 
       {/* Family & Safety */}
-      <div className="card border border-[var(--teal)]/20 shadow-sm shadow-[var(--teal)]/5">
-        <div className="px-6 py-5 border-b border-[var(--border)] flex items-center justify-between">
-          <div>
-            <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">Family &amp; Safety (Optional)</h3>
-            <p className="text-xs text-[var(--text-muted)] mt-0.5">Manage controls or link family accounts.</p>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-[var(--teal-dim)] flex items-center justify-center text-[var(--teal)]">
-            <ShieldCheck size={20} />
-          </div>
-        </div>
-        <div className="p-6 grid grid-cols-1 xl:grid-cols-2 gap-4">
-          {[
-            { title: 'Parental Controls', desc: 'Lock device with a PIN and set limits for shared devices.', icon: '🛡️' },
-            { title: 'Review & Approvals', desc: 'Monitor and manage pending transactions and limits.', icon: '👤' },
-          ].map(item => (
-            <button key={item.title} onClick={() => onNavigate?.('parental')}
-              className="flex items-center gap-3 p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)] hover:bg-[var(--surface-card)] transition-colors text-left">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center shrink-0 text-xl">{item.icon}</div>
-              <div>
-                <h4 className="font-inter font-bold text-sm text-[var(--text-primary)]">{item.title}</h4>
-                <p className="text-xs text-[var(--text-muted)] mt-0.5 max-w-[200px]">{item.desc}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
+      <FamilySafetySection onNavigate={onNavigate} />
 
       {/* Notifications */}
       <NotificationsSection

@@ -1,6 +1,7 @@
 import { exportDB, importDB } from 'dexie-export-import';
 import { db } from '@/db/db';
 import { useStore } from '@/store';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 /**
  * Exports the entire Dexie database to a JSON Blob.
@@ -24,7 +25,7 @@ export const downloadDatabaseBackup = async () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `spendwise_backup_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `spendwise_backup_${formatLocalYYYYMMDD(new Date())}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

@@ -17,15 +17,16 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
   const addXP = useStore(s => s.addXP);
 
   const roundUps = useMemo(() => {
+    const sweptSet = new Set(vault.sweptIds || []);
     return transactions
-      .filter(t => t.type === 'debit' && t.amount > 0)
+      .filter(t => t.type === 'debit' && t.amount > 0 && !sweptSet.has(t.id))
       .map(t => {
         const rounded = Math.ceil(t.amount / 10) * 10;
         const spare = rounded - t.amount;
         return { ...t, spare: Math.round(spare * 100) / 100, rounded };
       })
       .filter(t => t.spare > 0 && t.spare < 10);
-  }, [transactions]);
+  }, [transactions, vault.sweptIds]);
 
   const pendingTotal = useMemo(() =>
     roundUps.reduce((a, t) => a + t.spare, 0), [roundUps]);
@@ -41,6 +42,7 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
       total: Math.round((vault.total + pendingTotal) * 100) / 100,
       count: vault.count + roundUps.length,
       history: [...newHistory, ...vault.history].slice(0, 20),
+      sweptIds: [...(vault.sweptIds || []), ...roundUps.map(r => r.id)],
     };
     setVault(updated);
     setLastAdded(pendingTotal);
@@ -49,7 +51,7 @@ export function RoundUpVault({ transactions, currency }: RoundUpVaultProps) {
   };
 
   const handleReset = () => {
-    const empty = { total: 0, count: 0, history: [] };
+    const empty = { total: 0, count: 0, history: [], sweptIds: [] };
     setVault(empty);
   };
 

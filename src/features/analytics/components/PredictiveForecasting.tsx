@@ -3,6 +3,7 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceL
 import { TrendingUp, TrendingDown, Brain, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Transaction } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface PredictiveForecastingProps {
   transactions: Transaction[];
@@ -32,7 +33,7 @@ export function PredictiveForecasting({ transactions, currency, currentBalance }
     const dayOfMonth = now.getDate();
 
     // Calculate daily spend rate from last 30 days
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString().split('T')[0];
+    const thirtyDaysAgo = formatLocalYYYYMMDD(new Date(Date.now() - 30 * 86400000));
     const recentDebits = transactions.filter(t => t.type === 'debit' && t.date >= thirtyDaysAgo);
     const recentCredits = transactions.filter(t => t.type === 'credit' && t.date >= thirtyDaysAgo);
     const totalSpent30 = recentDebits.reduce((a, t) => a + t.amount, 0);
@@ -70,7 +71,7 @@ export function PredictiveForecasting({ transactions, currency, currentBalance }
     const optimistic = Math.round(projectedEOM + dailySpendRate * 5);
     const pessimistic = Math.round(projectedEOM - dailySpendRate * 5);
 
-    return { points, projectedEOM, projectedChange, trend, dailySpendRate, dailyNetRate, optimistic, pessimistic, daysLeft: daysInMonth - dayOfMonth };
+    return { points, projectedEOM, projectedChange, trend, dailySpendRate, dailyNetRate, optimistic, pessimistic, daysLeft: daysInMonth - dayOfMonth, hasRateData: dailySpendRate > 0 };
   }, [transactions, currentBalance]);
 
   const isPositive = data.projectedChange >= 0;
@@ -150,7 +151,8 @@ export function PredictiveForecasting({ transactions, currency, currentBalance }
       </div>
 
 
-      {/* Scenarios */}
+      {/* Scenarios — only shown when there is actual spend data */}
+      {data.hasRateData && (
       <div className="mt-4 grid grid-cols-2 gap-3">
         {[
           { label: '🌟 Optimistic (spend 20% less)', value: data.optimistic, color: '#10b981' },
@@ -164,6 +166,7 @@ export function PredictiveForecasting({ transactions, currency, currentBalance }
           </div>
         ))}
       </div>
+      )}
 
       {!isPositive && (
         <motion.div

@@ -254,3 +254,30 @@ export const UPI_APP_INTENTS = [
     urlScheme: 'upi://pay',
   },
 ] as const;
+
+/**
+ * P2P Verification Strategy (No Backend Required)
+ * 
+ * Since UPI intents (`upi://pay`) do not securely report back success to a web app,
+ * and we don't have a merchant backend to receive Razorpay/Cashfree webhooks,
+ * the only secure way to verify a P2P payment occurred on the device is by 
+ * reading the bank's SMS confirmation ("Debited Rs. 500").
+ * 
+ * Future Implementation: WebOTP API or a React Native / Capacitor plugin.
+ */
+export async function verifyPaymentViaSMS(expectedAmount: number, expectedRef: string): Promise<boolean> {
+  // Check if WebOTP API is available
+  if ('OTPCredential' in window) {
+    try {
+      console.info('[UPI] Waiting for Bank SMS via WebOTP API...');
+      // Note: WebOTP requires the SMS to end with `@ourdomain.com #12345` 
+      // which banks do not send. So WebOTP only works if the app has native SMS read permissions.
+      // In a PWA, this is highly restricted. In an Android wrapper (TWA/Capacitor), it's possible.
+      return false; // Stub
+    } catch (e) {
+      console.warn('[UPI] SMS verification failed:', e);
+      return false;
+    }
+  }
+  return false;
+}

@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts';
 import { ShieldCheck } from 'lucide-react';
 import { useHealthHistory } from '@/features/analytics/hooks/useHealthHistory';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface Props {
   currentScore: number;
@@ -29,7 +30,7 @@ export function HealthScoreChart({ currentScore }: Props) {
 
   const data = useMemo(() => {
     // Always include today
-    const today = new Date().toISOString().split('T')[0];
+    const today = formatLocalYYYYMMDD(new Date());
     const hasToday = rawHistory.some(p => p.date === today);
     const history = hasToday
       ? rawHistory

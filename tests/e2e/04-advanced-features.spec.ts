@@ -19,6 +19,58 @@ test.describe('Step 9, 11-15: Advanced Features', () => {
       }));
     });
     
+    // Mock Gemini API and Supabase Edge Function responses
+    await page.route(/(?:functions\/v1\/gemini-proxy|generativelanguage\.googleapis\.com)/, async route => {
+      const request = route.request();
+      const postData = request.postDataJSON();
+      const prompt = postData?.contents?.[0]?.parts?.[0]?.text || '';
+      
+      let mockResponse = {};
+      if (prompt.toLowerCase().includes('json array') || prompt.toLowerCase().includes('analyze this transaction')) {
+        mockResponse = {
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: JSON.stringify([
+                      {
+                        merchant: 'transport',
+                        category: 'Transport',
+                        amount: 500,
+                        type: 'debit',
+                        confidence: 0.95
+                      }
+                    ])
+                  }
+                ]
+              }
+            }
+          ]
+        };
+      } else {
+        mockResponse = {
+          candidates: [
+            {
+              content: {
+                parts: [
+                  {
+                    text: 'Your budget looks healthy! Keep tracking your expenses under Transport and Food.'
+                  }
+                ]
+              }
+            }
+          ]
+        };
+      }
+
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockResponse)
+      });
+    });
+
     await page.goto('/');
   });
 

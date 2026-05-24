@@ -1,7 +1,6 @@
-import { useMemo, useState, lazy, Suspense } from 'react';
-import { AppView, Category } from '@/types';
+import { useState, lazy, Suspense, useMemo } from 'react';
+import { AppView } from '@/types';
 import { FinanceState } from '@/types/state';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useGamification } from '@/features/gamification/hooks/useGamification';
 import { useGoals } from '@/features/goals/hooks/useGoals';
@@ -12,9 +11,8 @@ import MagicInput from '@/features/ai/components/MagicInput';
 import PullToRefresh from '@/shell/PullToRefresh';
 import { haptic } from '@/lib/haptic';
 import StatCard from '@/features/dashboard/components/StatCard';
-import { Sparkles, TrendingUp, TrendingDown, Wallet, BrainCircuit, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { Sparkles, TrendingUp, TrendingDown, Wallet, Target, ChevronDown, ChevronUp } from 'lucide-react';
 
-import FinanceChart from '@/features/dashboard/components/FinanceChart';
 import RecentTransactions from '@/features/dashboard/components/RecentTransactions';
 import GoalsSummary from '@/features/dashboard/components/GoalsSummary';
 import DailyStats from '@/features/dashboard/components/DailyStats';
@@ -22,6 +20,11 @@ import { SafeToSpend } from '@/features/dashboard/components/SafeToSpend';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import DashboardViewMobile from '@/features/dashboard/DashboardViewMobile';
+import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
+import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
+import { AIInsights } from '@/features/dashboard/components/AIInsights';
+import { useBudgets } from '@/hooks/useBudgets';
+import { getProactiveNudge } from '@/insights/advisor';
 
 // Lazy load non-critical/heavy components
 const FinanceChartLazy = lazy(() => import('@/features/dashboard/components/FinanceChart'));
@@ -65,78 +68,38 @@ export function DashboardView({
   const isMobile = useIsMobile();
   
   const { transactions, currentBalance, monthlyStats, monthlyHistory, dailySpendRate, balanceTrend, predictedEndOfMonth } = financeState;
-  const { streak, healthScore, level, levelName, savingsRate } = useGamification(transactions);
+  const { streak, healthScore, level, levelName, savingsRate: gamificationSavingsRate } = useGamification(transactions);
   const { goals } = useGoals();
   const { netWorth } = usePortfolio();
+  const { budgetStats } = useBudgets();
   const [dashboardInput, setDashboardInput] = useState('');
+
+  const budgetMap = useMemo(() => {
+    const map: Record<string, { limit: number; spent: number }> = {};
+    budgetStats.forEach(b => {
+      map[b.category] = { limit: b.limit, spent: b.spent };
+    });
+    return map;
+  }, [budgetStats]);
+
+  const nudge = useMemo(() =>
+    getProactiveNudge(transactions, budgetMap, goals, streak, currency),
+    [transactions, budgetMap, goals, streak, currency]
+  );
+
+  const {
+    chartData,
+    recentMerchants,
+    recentTx,
+    trendPct,
+    insights,
+  } = useDashboardData(transactions, monthlyStats, monthlyHistory, balanceTrend);
 
   const handleRefresh = async () => {
     haptic.medium();
     await new Promise(resolve => setTimeout(resolve, 1500));
     haptic.success();
   };
-
-  const chartData = useMemo(() => {
-    return monthlyHistory.slice(-6).map(m => ({
-      month: m.month.length === 7
-        ? new Date(m.month + '-01').toLocaleDateString('en-IN', { month: 'short' })
-        : m.month,
-      Income: Math.round(m.income),
-      Expenses: Math.round(m.expenses),
-    }));
-  }, [monthlyHistory]);
-
-  const recentMerchants = useMemo(() => {
-    const seen = new Set<string>();
-    const result: string[] = [];
-    for (const tx of transactions) {
-      if (!seen.has(tx.merchant)) { seen.add(tx.merchant); result.push(tx.merchant); }
-      if (result.length >= 4) break;
-    }
-    return result;
-  }, [transactions]);
-
-  const recentTx = useMemo(() => transactions.slice(0, 6), [transactions]);
-
-  const trendPct = useMemo(() => {
-    if (!balanceTrend || balanceTrend.length < 2) return 0;
-    const first = balanceTrend[0].balance;
-    const last = balanceTrend[balanceTrend.length - 1].balance;
-    if (first === 0) return 0;
-    return ((last - first) / Math.abs(first)) * 100;
-  }, [balanceTrend]);
-
-  const insights = useMemo(() => {
-    const now = new Date();
-    const thisMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const prevMonthStr = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
-
-    const thisMonthTx = transactions.filter(t => t.date.startsWith(thisMonthStr) && t.type === 'debit');
-    const prevMonthTx = transactions.filter(t => t.date.startsWith(prevMonthStr) && t.type === 'debit');
-
-    const catSpend: Record<string, number> = {};
-    thisMonthTx.forEach(t => { catSpend[t.category] = (catSpend[t.category] || 0) + t.amount; });
-    const topCat = Object.entries(catSpend).sort((a, b) => b[1] - a[1])[0];
-
-    const prevCatSpend: Record<string, number> = {};
-    prevMonthTx.forEach(t => { prevCatSpend[t.category] = (prevCatSpend[t.category] || 0) + t.amount; });
-
-    const topCatChange = topCat && prevCatSpend[topCat[0]]
-      ? ((topCat[1] - prevCatSpend[topCat[0]]) / prevCatSpend[topCat[0]]) * 100
-      : null;
-
-    const savingsRateValue = monthlyStats.totalIncome > 0
-      ? Math.round(((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100)
-      : 0;
-
-    const prevMonthTotalExpenses = prevMonthTx.reduce((sum, t) => sum + t.amount, 0);
-    const thisMonthTotalExpenses = thisMonthTx.reduce((sum, t) => sum + t.amount, 0);
-    const totalExpensesChange = prevMonthTotalExpenses > 0 
-      ? ((thisMonthTotalExpenses - prevMonthTotalExpenses) / prevMonthTotalExpenses) * 100
-      : null;
-
-    return { topCat, topCatChange, savingsRate: savingsRateValue, totalExpensesChange };
-  }, [transactions, monthlyStats]);
 
   if (isMobile) {
     return (
@@ -156,77 +119,31 @@ export function DashboardView({
       <div className="min-h-screen pb-6 md:pb-2">
         <div className="max-w-[1200px] mx-auto">
           
-          {/* Header - Simplified on Mobile */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-black text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)', letterSpacing: '-0.04em' }}>
-                Hey, {config?.name || 'there'}!
-              </h1>
-              {!isMobile && (
-                <p className="text-xs text-[var(--text-muted)] font-medium mt-0.5">
-                  {config?.userRole === 'student' && "Keep building those healthy spending habits! 🎓"}
-                  {config?.userRole === 'business' && "Optimize your cash flow today. 🏢"}
-                  {config?.userRole === 'professional' && "Your financial control center is ready. 💼"}
-                  {!config?.userRole && "Welcome back to your financial control center."}
-                </p>
-              )}
-            </div>
-            
-            {streak > 0 && (
-              <div className="inline-flex items-center self-start sm:self-auto gap-2 px-3 py-1.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-full">
-                <span className="text-[length:var(--fs-overline)] font-bold text-orange-500 uppercase tracking-widest">🔥 {streak} DAY STREAK</span>
-              </div>
-            )}
-          </div>
+          {/* Header */}
+          <DashboardHeader config={config} isMobile={isMobile} streak={streak} />
 
           {/* AI Insights - Hidden on mobile unless expanded to save space */}
           {(!isMobile || showAllWidgets) && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-              <div className="bg-gradient-to-r from-blue-500/10 to-indigo-500/10 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3">
-                <div className="p-2 bg-blue-500/20 rounded-xl text-blue-500 mt-0.5">
-                  <BrainCircuit size={18} />
-                </div>
-                <div>
-                  <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">AI Smart Insight</h4>
-                  <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
-                    {transactions.length === 0
-                      ? 'Add transactions to unlock personalized AI insights.'
-                      : insights.savingsRate > 0
-                        ? `You're saving ${insights.savingsRate}% of income this month. ${
-                            insights.savingsRate >= 20
-                              ? 'Great discipline — consider moving savings to a Goal!'
-                              : 'Try to hit the 20% savings target for financial health.'
-                          }`
-                        : `Your expenses exceed income this month. Review your ${insights.topCat?.[0] ?? 'top'} spending to find savings.`
-                    }
-                  </p>
-                </div>
-              </div>
+            <AIInsights insights={insights} transactionsCount={transactions.length} currency={currency} />
+          )}
 
-              <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 rounded-2xl p-4 flex items-start gap-3">
-                <div className="p-2 bg-emerald-500/20 rounded-xl text-emerald-500 mt-0.5">
-                  {!insights.topCat ? <Sparkles size={18} /> : 
-                   insights.topCatChange !== null && insights.topCatChange < 0
-                    ? <TrendingDown size={18} />
-                    : <TrendingUp size={18} />
-                  }
-                </div>
-                <div>
-                  <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] m-0 mb-1">Spending Pulse</h4>
-                  <p className="text-[0.75rem] text-[var(--text-muted)] m-0 leading-snug">
-                    {insights.topCat
-                      ? insights.topCatChange !== null
-                        ? `${insights.topCat[0]} is your top expense (${currency}${Math.round(insights.topCat[1]).toLocaleString()}). ${
-                            insights.topCatChange < 0
-                              ? `Down ${Math.abs(Math.round(insights.topCatChange))}% vs last month — great progress!`
-                              : `Up ${Math.round(insights.topCatChange)}% from last month.`
-                          } ${insights.totalExpensesChange !== null ? `Overall spending is ${insights.totalExpensesChange > 0 ? 'up' : 'down'} ${Math.abs(Math.round(insights.totalExpensesChange))}%.` : ''}`
-                        : `${insights.topCat[0]} is your biggest spend this month at ${currency}${Math.round(insights.topCat[1]).toLocaleString()}. ${insights.totalExpensesChange !== null ? `Overall spending is ${insights.totalExpensesChange > 0 ? 'up' : 'down'} ${Math.abs(Math.round(insights.totalExpensesChange))}%.` : ''}`
-                      : 'Add transactions to unlock spending insights.'
-                    }
-                  </p>
-                </div>
+          {/* Proactive Nudge Alert Strip */}
+          {nudge && (
+            <div className={`mb-4 rounded-2xl p-4 flex items-start gap-3 border ${
+              nudge.urgency === 'high'   ? 'bg-red-500/10 border-red-500/30 text-red-500 dark:text-red-400' :
+              nudge.urgency === 'medium' ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400' :
+              'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400'
+            }`}>
+              <span className="text-xl mt-0.5">
+                {nudge.urgency === 'high' ? '⚠️' : nudge.urgency === 'medium' ? '💡' : '🔥'}
+              </span>
+              <div className="flex-1">
+                <p className="text-sm font-medium">{nudge.message}</p>
               </div>
+              <button onClick={() => onNavigate(nudge.action.toLowerCase().replace('create_', '').replace('view_', '') as any)}
+                className="text-xs font-bold shrink-0 hover:underline">
+                Fix →
+              </button>
             </div>
           )}
 
@@ -422,7 +339,7 @@ export function DashboardView({
                       streak={streak}
                       level={level}
                       levelName={levelName}
-                      savingsRate={savingsRate ?? 0}
+                      savingsRate={gamificationSavingsRate ?? 0}
                       currency={currency}
                     />
                   </Suspense>

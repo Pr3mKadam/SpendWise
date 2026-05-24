@@ -3,6 +3,7 @@ import { isSupabaseConfigured } from '@/services/supabase';
 interface GeminiCallParams {
   contents: any[];
   generationConfig?: any;
+  system_instruction?: any;
 }
 
 /**
@@ -19,6 +20,9 @@ export async function callGemini(params: GeminiCallParams): Promise<any> {
     const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
     const sessionToken = sessionStorage.getItem('spendwise_supabase_token') || supabaseAnonKey;
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
     try {
       const response = await fetch(`${supabaseUrl}/functions/v1/gemini-proxy`, {
         method: 'POST',
@@ -27,7 +31,10 @@ export async function callGemini(params: GeminiCallParams): Promise<any> {
           'Authorization': `Bearer ${sessionToken}`,
         },
         body: JSON.stringify(params),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
         const errorMsg = await response.text();
@@ -36,6 +43,7 @@ export async function callGemini(params: GeminiCallParams): Promise<any> {
 
       return await response.json();
     } catch (e) {
+      clearTimeout(timeoutId);
       console.warn("Supabase Edge Function proxy failed, attempting local fallback if key exists:", e);
       if (!localApiKey) throw e;
     }
@@ -43,21 +51,32 @@ export async function callGemini(params: GeminiCallParams): Promise<any> {
 
   if (localApiKey) {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${localApiKey}`;
-    const response = await fetch(url, {
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(params),
-    });
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(params),
+        signal: controller.signal,
+      });
 
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.error?.message ?? `Gemini Direct API Error: ${response.statusText}`);
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error?.message ?? `Gemini Direct API Error: ${response.statusText}`);
+      }
+
+      return await response.json();
+    } catch (e) {
+      clearTimeout(timeoutId);
+      throw e;
     }
-
-    return await response.json();
   }
 
   throw new Error('Gemini API is not configured. Setup Supabase Edge Function or add VITE_GEMINI_API_KEY to .env');

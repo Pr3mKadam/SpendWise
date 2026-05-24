@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { AssetEntry, LiabilityEntry } from '@/types';
 import { SpendWiseStore } from '@/store/index';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export interface PortfolioSlice {
   assets: AssetEntry[];
@@ -17,19 +18,19 @@ export const createPortfolioSlice: StateCreator<SpendWiseStore, [["zustand/persi
   assets: [],
   liabilities: [],
   addAsset: (asset) => set((state) => ({ 
-    assets: [...state.assets, { ...asset, id: `a-${Date.now()}`, lastUpdated: new Date().toISOString().split('T')[0] }] 
+    assets: [...state.assets, { ...asset, id: `a-${Date.now()}`, lastUpdated: formatLocalYYYYMMDD(new Date()) }] 
   })),
   updateAsset: (id, data) => set((state) => ({ 
-    assets: state.assets.map(a => a.id === id ? { ...a, ...data, lastUpdated: new Date().toISOString().split('T')[0] } : a) 
+    assets: state.assets.map(a => a.id === id ? { ...a, ...data, lastUpdated: formatLocalYYYYMMDD(new Date()) } : a) 
   })),
   deleteAsset: (id) => set((state) => ({ 
     assets: state.assets.filter(a => a.id !== id) 
   })),
   addLiability: (liability) => set((state) => ({ 
-    liabilities: [...state.liabilities, { ...liability, id: `l-${Date.now()}`, lastUpdated: new Date().toISOString().split('T')[0] }] 
+    liabilities: [...state.liabilities, { ...liability, id: `l-${Date.now()}`, lastUpdated: formatLocalYYYYMMDD(new Date()) }] 
   })),
   updateLiability: (id, data) => set((state) => ({ 
-    liabilities: state.liabilities.map(l => l.id === id ? { ...l, ...data, lastUpdated: new Date().toISOString().split('T')[0] } : l) 
+    liabilities: state.liabilities.map(l => l.id === id ? { ...l, ...data, lastUpdated: formatLocalYYYYMMDD(new Date()) } : l) 
   })),
   deleteLiability: (id) => set((state) => ({ 
     liabilities: state.liabilities.filter(l => l.id !== id) 

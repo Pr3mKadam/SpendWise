@@ -2,6 +2,7 @@ import { useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import { AppNotification, SpendingAlert, RecurringPattern, SavingsGoal, AlertSeverity } from '@/types';
 import { sendBrowserNotification } from '@/utils/pushNotification';
 import { useStore } from '@/store';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 // ─── Icon mapping ──────────────────────────────────────────────────────────────
 
@@ -67,8 +68,8 @@ export function useNotifications(
     });
 
     // 2. Upcoming recurring charges (due in next 7 days)
-    const today = new Date().toISOString().split('T')[0];
-    const in7   = new Date(Date.now() + 7 * 86_400_000).toISOString().split('T')[0];
+    const today = formatLocalYYYYMMDD(new Date());
+    const in7   = formatLocalYYYYMMDD(new Date(Date.now() + 7 * 86_400_000));
 
     recurring.forEach(r => {
       if (r.nextExpected >= today && r.nextExpected <= in7) {

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useCategories } from '@/hooks/useCategories';
 import { ChevronDown } from 'lucide-react';
+import { createPortal } from 'react-dom';
 import { Category } from '@/types';
 
 interface CategoryDropdownProps {
@@ -14,16 +15,48 @@ export function CategoryDropdown({ value, onChange, className = '', placeholder 
   const { allCategories, mergedIcons } = useCategories();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [dropdownStyle, setDropdownStyle] = useState({});
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (ref.current && !ref.current.contains(event.target as Node)) {
+        // Also check if the click is outside the portal dropdown
+        if (dropdownRef.current && dropdownRef.current.contains(event.target as Node)) {
+          return;
+        }
         setOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    function handleScroll() {
+      setOpen(false);
+    }
+    if (open) {
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [open]);
+
+  useEffect(() => {
+    if (open && ref.current) {
+      const rect = ref.current.getBoundingClientRect();
+      let left = rect.left;
+      if (left + 192 > window.innerWidth) {
+        left = window.innerWidth - 192 - 8;
+      }
+      setDropdownStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        left: Math.max(8, left),
+        width: 192, // w-48 = 12rem = 192px
+      });
+    }
+  }, [open]);
 
   // Use absolute positioning with dynamic top or bottom relying on space
   return (
@@ -55,9 +88,9 @@ export function CategoryDropdown({ value, onChange, className = '', placeholder 
         <ChevronDown size={14} className={`transition-transform shrink-0 ml-1 ${open ? 'rotate-180' : ''}`} style={{ color: 'var(--text-muted)' }} />
       </button>
 
-      {open && (
-        <div className="absolute z-50 right-0 top-full mt-1 w-48 rounded-xl shadow-lg border overflow-hidden" 
-             style={{ background: 'var(--surface-card)', borderColor: 'var(--surface-input)', boxShadow: 'var(--shadow-modal)' }}>
+      {open && typeof document !== 'undefined' && createPortal(
+        <div ref={dropdownRef} className="z-[9999] rounded-xl shadow-lg border overflow-hidden" 
+             style={{ ...dropdownStyle, background: 'var(--surface-card)', borderColor: 'var(--surface-input)', boxShadow: 'var(--shadow-modal)' }}>
           <div className="py-1 max-h-56 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'var(--text-muted) transparent' }}>
             {allCategories.map((cat) => (
               <button
@@ -86,7 +119,8 @@ export function CategoryDropdown({ value, onChange, className = '', placeholder 
               </button>
             ))}
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

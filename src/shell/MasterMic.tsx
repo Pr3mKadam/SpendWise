@@ -12,12 +12,20 @@
  *  - Space-bar shortcut
  */
 
-import { useEffect, useState } from 'react';
 import {
   Mic, Loader2, CheckCircle2, XCircle, Sparkles,
-  AlertTriangle, History, ChevronRight, RotateCcw,
+  AlertTriangle, History, ChevronRight,
 } from 'lucide-react';
-import { useMasterVoice, MicState, HistoryEntry } from '@/hooks/useMasterVoice';
+import { MicState } from '@/hooks/useMasterVoice';
+import { useVoiceMic } from '@/app/hooks/useVoiceMic';
+
+import { WaveformVisualizer } from './components/WaveformVisualizer';
+import { MicTranscript } from './components/MicTranscript';
+import { ConfirmDialog } from './components/ConfirmDialog';
+import { ResultMessage } from './components/ResultMessage';
+import { MissingEntityPrompt } from './components/MissingEntityPrompt';
+import { HistoryPanel } from './components/HistoryPanel';
+import { OnboardingTooltip } from './components/OnboardingTooltip';
 
 import { AppView } from '@/types';
 
@@ -92,94 +100,27 @@ const INTENT_LABELS: Record<string, string> = {
   REPORT_EXPORT: '📄 Export', NAVIGATE: '🧭 Navigate', UNKNOWN: '❓ Unknown',
 };
 
-// ── History Row ──────────────────────────────────────────────────────────────
-
-function HistoryRow({ entry }: { entry: HistoryEntry }) {
-  const age = Math.round((Date.now() - entry.timestamp) / 60000);
-  return (
-    <div style={{
-      display: 'flex', alignItems: 'center', gap: '8px',
-      padding: '6px 0', borderBottom: '1px solid var(--border)',
-    }}>
-      <span style={{ fontSize: '12px', color: 'var(--text-muted)', minWidth: 28 }}>
-        {INTENT_LABELS[entry.command.intent] ?? '•'}
-      </span>
-      <span style={{
-        flex: 1, fontFamily: 'var(--font-inter)', fontSize: '12px',
-        color: 'var(--text-primary)', lineHeight: 1.4,
-      }}>
-        {entry.command.summary}
-      </span>
-      <span style={{ fontFamily: 'var(--font-inter)', fontSize: '10px', color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>
-        {age < 1 ? 'now' : `${age}m ago`}
-      </span>
-      {entry.result.success
-        ? <CheckCircle2 size={12} style={{ color: '#22c55e', flexShrink: 0 }} />
-        : <XCircle size={12} style={{ color: '#ef4444', flexShrink: 0 }} />}
-    </div>
-  );
-}
-
 // ── Main Component ───────────────────────────────────────────────────────────
 
-export const MasterMic: React.FC<MasterMicProps> = ({ 
-  navigate, 
-  onExport, 
-  toggleTheme, 
-  setSearchQuery, 
-  variant = 'fab' 
+export const MasterMic: React.FC<MasterMicProps> = ({
+  navigate,
+  onExport,
+  toggleTheme,
+  setSearchQuery,
+  variant = 'fab'
 }) => {
   const {
     state, transcript, command, result, missingPrompt,
     pendingConfirm, history, isSupported,
-    start, stop, confirm, cancelConfirm,
-  } = useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery });
-
-  const [showHistory, setShowHistory] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    return localStorage.getItem('spendwise_voice_onboarded') !== 'true';
-  });
+    start, confirm, cancelConfirm,
+    showHistory, showOnboarding,
+    handleFabClick, dismissOnboarding, toggleHistory,
+  } = useVoiceMic({ navigate, onExport, toggleTheme, setSearchQuery });
 
   const isHeader = variant === 'header';
-
-  // Space-bar shortcut
-  useEffect(() => {
-    const onDown = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && e.target === document.body && state === 'idle') {
-        e.preventDefault(); 
-        if (showOnboarding) {
-          setShowOnboarding(false);
-          localStorage.setItem('spendwise_voice_onboarded', 'true');
-        }
-        start();
-      }
-    };
-    const onUp = (e: KeyboardEvent) => {
-      if (e.code === 'Space' && state === 'listening') stop();
-    };
-    window.addEventListener('keydown', onDown);
-    window.addEventListener('keyup', onUp);
-    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp); };
-  }, [state, start, stop]);
-
-  // Close history on outside click
-  useEffect(() => {
-    if (!showHistory) return;
-    const fn = () => setShowHistory(false);
-    setTimeout(() => document.addEventListener('click', fn), 100);
-    return () => document.removeEventListener('click', fn);
-  }, [showHistory]);
-
   const cfg = STATE_CONFIG[state];
   const { Icon } = cfg;
   const showPanel = state !== 'idle';
-
-  const handleFabClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!isSupported) return;
-    if (state === 'idle' || state === 'error' || state === 'success') start();
-    else if (state === 'listening') stop();
-  };
 
   return (
     <>
@@ -197,7 +138,7 @@ export const MasterMic: React.FC<MasterMicProps> = ({
       {showPanel && (
         <div
           style={{
-            position: 'fixed', 
+            position: 'fixed',
             bottom: isHeader ? 'auto' : '138px',
             top: isHeader ? '80px' : 'auto',
             left: '50%',
@@ -233,26 +174,11 @@ export const MasterMic: React.FC<MasterMicProps> = ({
 
           {/* Live transcript */}
           {(state === 'listening' || state === 'processing') && transcript && (
-            <p style={{
-              fontFamily: 'var(--font-inter)', fontSize: '15px', fontWeight: 500,
-              color: 'var(--text-primary)', lineHeight: 1.5, marginBottom: '10px',
-            }}>
-              "{transcript}"
-            </p>
+            <MicTranscript transcript={transcript} />
           )}
 
           {/* Waveform bars */}
-          {state === 'listening' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', height: '30px', margin: '8px 0' }}>
-              {Array.from({ length: 22 }).map((_, i) => (
-                <div key={i} style={{
-                  flex: 1, borderRadius: '3px', background: 'var(--teal)', opacity: 0.75,
-                  animation: `voiceBar ${0.38 + (i % 5) * 0.11}s ease-in-out infinite alternate`,
-                  animationDelay: `${i * 0.035}s`,
-                }} />
-              ))}
-            </div>
-          )}
+          {state === 'listening' && <WaveformVisualizer />}
 
           {/* Processing */}
           {state === 'processing' && (
@@ -263,115 +189,28 @@ export const MasterMic: React.FC<MasterMicProps> = ({
 
           {/* Missing entity prompt */}
           {state === 'awaiting' && missingPrompt && (
-            <div style={{
-              padding: '12px 14px', borderRadius: '12px',
-              background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)',
-              marginTop: '6px',
-            }}>
-              <p style={{
-                fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600,
-                color: '#818cf8', lineHeight: 1.5,
-              }}>
-                🎙 {missingPrompt}
-              </p>
-              <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-dim)', marginTop: '4px' }}>
-                Tap the mic and say the missing information.
-              </p>
-            </div>
+            <MissingEntityPrompt prompt={missingPrompt} />
           )}
 
           {/* Confirmation dialog */}
           {state === 'confirm' && pendingConfirm && (
-            <div style={{
-              padding: '14px', borderRadius: '14px',
-              background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)',
-              marginTop: '6px',
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                <AlertTriangle size={15} style={{ color: '#f59e0b' }} />
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 700, color: '#f59e0b' }}>
-                  High-value action — please confirm
-                </span>
-              </div>
-              <p style={{
-                fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 600,
-                color: 'var(--text-primary)', marginBottom: '14px', lineHeight: 1.4,
-              }}>
-                {pendingConfirm.summary}
-              </p>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  onClick={confirm}
-                  style={{
-                    flex: 1, padding: '9px 0', borderRadius: '10px', border: 'none',
-                    cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: '13px',
-                    fontWeight: 700, background: '#22c55e', color: '#fff',
-                  }}
-                >
-                  ✓ Confirm
-                </button>
-                <button
-                  onClick={cancelConfirm}
-                  style={{
-                    flex: 1, padding: '9px 0', borderRadius: '10px', border: 'none',
-                    cursor: 'pointer', fontFamily: 'var(--font-inter)', fontSize: '13px',
-                    fontWeight: 700, background: 'var(--surface-input)', color: 'var(--text-secondary)',
-                  }}
-                >
-                  ✕ Cancel
-                </button>
-              </div>
-            </div>
+            <ConfirmDialog
+              summary={pendingConfirm.summary}
+              onConfirm={confirm}
+              onCancel={cancelConfirm}
+            />
           )}
 
           {/* Result message */}
           {result && (state === 'success' || state === 'error') && (
-            <div style={{
-              marginTop: '8px', padding: '12px 14px', borderRadius: '12px',
-              background: result.success ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-              border: `1px solid ${result.success ? 'rgba(34,197,94,0.25)' : 'rgba(239,68,68,0.25)'}`,
-            }}>
-              <p style={{
-                fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600,
-                color: result.success ? '#22c55e' : '#ef4444', lineHeight: 1.5,
-              }}>
-                {result.message}
-              </p>
-            </div>
+            <ResultMessage result={result} />
           )}
         </div>
       )}
 
       {/* ── History panel ────────────────────────────────────────────── */}
       {showHistory && history.length > 0 && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            position: 'fixed', 
-            bottom: isHeader ? 'auto' : '138px',
-            top: isHeader ? '80px' : 'auto',
-            left: '50%',
-            transform: 'translateX(-50%)', zIndex: 9997,
-            width: 'min(440px, calc(100vw - 2rem))',
-            background: 'var(--surface-card)',
-            border: '1px solid var(--border)',
-            borderRadius: '20px',
-            boxShadow: 'var(--shadow-lg)',
-            padding: '16px 18px',
-            maxHeight: '280px',
-            overflowY: 'auto',
-            animation: isHeader ? 'micFadeDown 0.2s ease' : 'micFadeUp 0.2s ease',
-          }}
-        >
-          <p style={{
-            fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 700,
-            textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)',
-            marginBottom: '8px',
-          }}>
-            Recent Commands
-          </p>
-          {history.map((entry, i) => <HistoryRow key={i} entry={entry} />)}
-        </div>
+        <HistoryPanel history={history} isHeader={isHeader} />
       )}
 
       {/* ── Trigger button ────────────────────────────────────────────── */}
@@ -390,7 +229,7 @@ export const MasterMic: React.FC<MasterMicProps> = ({
           borderRadius: '50%', border: 'none', cursor: isSupported ? 'pointer' : 'not-allowed',
           background: isSupported ? cfg.gradient : 'var(--surface-input)',
           opacity: isSupported ? 1 : 0.6,
-          boxShadow: isSupported 
+          boxShadow: isSupported
             ? `0 0 0 ${cfg.pulse ? '10px' : '6px'} ${cfg.ringColor}, 0 8px 28px rgba(0,0,0,0.22)`
             : '0 8px 20px rgba(0,0,0,0.1)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -404,8 +243,8 @@ export const MasterMic: React.FC<MasterMicProps> = ({
         {isHeader ? (
           <>
             {/* Header Mobile Glass Style */}
-            <span 
-              className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" 
+            <span
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl"
               style={{
                 background: state === 'idle' ? 'rgba(255,255,255,0.15)' : cfg.gradient,
                 backdropFilter: 'blur(12px)',
@@ -419,9 +258,9 @@ export const MasterMic: React.FC<MasterMicProps> = ({
               <Icon size={17} color={state === 'idle' ? "rgba(255,255,255,0.9)" : "#fff"} style={{ animation: cfg.spin ? 'spin 0.8s linear infinite' : 'none' }} />
             </span>
             {/* Header Desktop Surface Style */}
-            <span 
-              className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" 
-              style={{ 
+            <span
+              className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl"
+              style={{
                 background: state === 'idle' ? 'var(--surface-input)' : cfg.gradient,
                 boxShadow: state !== 'idle' ? `0 0 10px ${cfg.ringColor}` : 'none',
                 animation: cfg.pulse ? 'micPulseSmall 1.4s ease-in-out infinite' : 'none',
@@ -430,10 +269,10 @@ export const MasterMic: React.FC<MasterMicProps> = ({
             >
               <Icon size={17} color={state === 'idle' ? "var(--teal)" : "#fff"} style={{ animation: cfg.spin ? 'spin 0.8s linear infinite' : 'none' }} />
             </span>
-            
+
             {/* Success/Error Dot */}
             {(state === 'success' || state === 'error') && (
-              <span 
+              <span
                 className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-[var(--bg)]"
                 style={{ background: state === 'success' ? '#22c55e' : '#ef4444' }}
               />
@@ -455,7 +294,7 @@ export const MasterMic: React.FC<MasterMicProps> = ({
           {/* History toggle */}
           {isSupported && history.length > 0 && (
             <button
-              onClick={e => { e.stopPropagation(); setShowHistory(v => !v); }}
+              onClick={toggleHistory}
               title="Command history"
               style={{
                 background: 'var(--surface-card)', border: '1px solid var(--border)',
@@ -509,7 +348,7 @@ export const MasterMic: React.FC<MasterMicProps> = ({
           {/* Help toggle (idle state only) */}
           {state === 'idle' && isSupported && (
             <button
-              onClick={() => start()} // Start and say help
+              onClick={() => start()}
               style={{
                 background: 'var(--surface-card)', border: '1px solid var(--border)',
                 borderRadius: '10px', padding: '3px 8px',
@@ -531,41 +370,7 @@ export const MasterMic: React.FC<MasterMicProps> = ({
 
       {/* ── Onboarding Tooltip (FAB only) ────────────────────────────────────────── */}
       {showOnboarding && isSupported && state === 'idle' && !isHeader && (
-        <div style={{
-          position: 'fixed', bottom: '158px', left: '50%',
-          transform: 'translateX(-50%)', zIndex: 9999,
-          width: 'min(300px, 80vw)', background: 'var(--teal)',
-          color: '#fff', borderRadius: '16px', padding: '14px',
-          boxShadow: '0 10px 25px rgba(20, 184, 166, 0.4)',
-          animation: 'micFadeUp 0.3s ease', textAlign: 'center',
-        }}>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 700, marginBottom: '6px' }}>
-            New: Master Voice Engine 🎙
-          </p>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', lineHeight: 1.5, opacity: 0.9 }}>
-            Hold Space or tap the mic to track expenses, set budgets, or get reports entirely hands-free.
-          </p>
-          <button 
-            onClick={() => {
-              setShowOnboarding(false);
-              localStorage.setItem('spendwise_voice_onboarded', 'true');
-            }}
-            style={{
-              marginTop: '10px', background: 'rgba(255,255,255,0.2)', border: 'none',
-              borderRadius: '8px', padding: '4px 12px', color: '#fff',
-              fontFamily: 'var(--font-inter)', fontSize: '10px', fontWeight: 700,
-              cursor: 'pointer',
-            }}
-          >
-            Got it!
-          </button>
-          {/* Arrow */}
-          <div style={{
-            position: 'absolute', bottom: '-8px', left: '50%', transform: 'translateX(-50%)',
-            width: 0, height: 0, borderLeft: '8px solid transparent',
-            borderRight: '8px solid transparent', borderTop: '8px solid var(--teal)',
-          }} />
-        </div>
+        <OnboardingTooltip onDismiss={dismissOnboarding} />
       )}
 
       {/* ── Animations ───────────────────────────────────────────────── */}
@@ -597,4 +402,4 @@ export const MasterMic: React.FC<MasterMicProps> = ({
       `}</style>
     </>
   );
-}
+};

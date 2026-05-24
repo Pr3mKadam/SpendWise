@@ -14,6 +14,7 @@ import { haptic } from '@/lib/haptic';
 import { predictCategory } from '@/utils/merchantMapper';
 import { useCategories } from '@/hooks/useCategories';
 import { useStore } from '@/store';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface MagicInputProps {
   onAdd: (transaction: Transaction) => void;
@@ -113,7 +114,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
         onAdd({
           ...p as Transaction,
           id: `magic-${Date.now()}-${index}`,
-          date: p.date || new Date().toISOString().split('T')[0],
+          date: p.date || formatLocalYYYYMMDD(new Date()),
           type: p.type || 'debit'
         });
       });
@@ -172,7 +173,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
     recognition.onresult = async (event: any) => {
       const transcript = event.results[0][0].transcript;
       setScanStatus(`✅ Heard: "${transcript}"`);
-      const today = new Date().toISOString().split('T')[0];
+      const today = formatLocalYYYYMMDD(new Date());
       
       try {
         const res = await parseVoiceWithGemini(transcript, today);

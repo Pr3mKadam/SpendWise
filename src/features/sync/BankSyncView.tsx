@@ -3,8 +3,9 @@ import {
   Brain, CheckCircle2, Sparkles, Loader2, AlertCircle
 } from 'lucide-react';
 import { Transaction, LinkedAccount, FinanceProvider, Category, SyncView, WizardStep } from '@/types';
-import { UPI_PROVIDERS, generateMockUPITransactions } from '@/parsers/upi';
+import { UPI_PROVIDERS, generateRealisticMocks } from '@/parsers/upi';
 import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant, parseUPIDescription, loadMerchantMemory } from '@/utils/razorpaySync';
+import { createSetuConsent, fetchSetuBankStatements } from '@/lib/setuAA';
 import { predictCategory } from '@/utils/merchantMapper';
 import { useStore } from '@/store';
 import { Category as CategoryType } from '@/types';
@@ -19,6 +20,7 @@ interface BankSyncViewProps {
   onAutoAddTransactions: (txs: Transaction[]) => void;
   recentTransactions?: Transaction[];
   currency?: string;
+  onNavigate?: (view: any) => void;
 }
 
 const CATEGORIES: Category[] = [
@@ -30,6 +32,7 @@ export default function BankSyncView({
   onAutoAddTransactions,
   recentTransactions = [],
   currency = '₹',
+  onNavigate,
 }: BankSyncViewProps) {
   const { razorpayKeys, setRazorpayKeys, updateTransactionCategory } = useStore();
   const [view, setView] = useState<SyncView>('dashboard');
@@ -134,18 +137,24 @@ export default function BankSyncView({
     setSyncingAcc(acc);
     setSyncState('parsing');
     try {
-      await new Promise(r => setTimeout(r, 1000));
-      const providerName = (acc.provider as string) === 'plaid' ? acc.upiId : (UPI_PROVIDERS.find((p) => p.id === acc.provider)?.name || 'Bank');
-      const rawMockTxs = generateMockUPITransactions(providerName, 10);
+      // 1. Request Consent from Setu Account Aggregator
+      const mobileNumber = '9876543210'; // In a real app, prompt the user or pull from profile
+      const consent = await createSetuConsent(mobileNumber);
+      
+      // (In real flow: we would redirect the user to `consent.url`, they approve, and return)
+      
+      // 2. Fetch Bank Statements from Setu AA
+      const rawMockTxs = await fetchSetuBankStatements(consent.id) as any[];
       
       // Step 1: Parse UPI strings
       const parsedTxs = rawMockTxs.map(tx => {
-        const parsed = parseUPIDescription(tx.merchant);
+        const parsed = parseUPIDescription(tx.merchant || '');
         return {
           ...tx,
-          merchant: parsed.merchant,
+          merchant: parsed.merchant || tx.merchant,
           description: parsed.upiId ? `UPI VPA: ${parsed.upiId}` : tx.description,
-          upiId: parsed.upiId
+          upiId: parsed.upiId,
+          id: `tx_${Date.now()}_${Math.random()}`,
         };
       });
 
@@ -232,6 +241,7 @@ export default function BankSyncView({
           onSetView={setView}
           currency={currency}
           onAutoAddTransactions={onAutoAddTransactions}
+          onNavigate={onNavigate}
         />
       )}
       {view === 'select-source' && <SelectSource onSetView={setView} />}

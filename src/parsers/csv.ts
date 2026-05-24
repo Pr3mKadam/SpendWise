@@ -1,5 +1,6 @@
 import { Transaction, Category } from "@/types";
 import { VALID_CATEGORIES, inferCategory, inferType, toTitleCase } from "@/parsers/common";
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function parseCSVLocally(csvContent: string): Transaction[] {
   const lines = csvContent.split(/\r?\n/).filter(l => l.trim());
@@ -48,13 +49,13 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
     const rawType = colIdx.type >= 0 ? row[colIdx.type] ?? '' : '';
     const rawCategory = colIdx.category >= 0 ? row[colIdx.category] ?? '' : '';
 
-    let date = new Date().toISOString().split('T')[0];
+    let date = formatLocalYYYYMMDD(new Date());
     const cleaned = rawDate.replace(/['"]/g, '').trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) date = cleaned;
     else {
       const m = cleaned.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
       if (m) date = `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
-      else { const d = new Date(cleaned); if (!isNaN(d.getTime())) date = d.toISOString().split('T')[0]; }
+      else { const d = new Date(cleaned); if (!isNaN(d.getTime())) date = formatLocalYYYYMMDD(d); }
     }
 
     const amount = Math.abs(parseFloat(rawAmount.replace(/[^0-9.\-]/g, '')) || 0);
@@ -90,7 +91,7 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
       transactions.forEach(t => {
         const d = new Date(t.date);
         d.setTime(d.getTime() + shiftMs);
-        t.date = d.toISOString().split('T')[0];
+        t.date = formatLocalYYYYMMDD(d);
       });
     }
   }

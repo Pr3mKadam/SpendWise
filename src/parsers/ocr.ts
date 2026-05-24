@@ -1,6 +1,7 @@
 import Tesseract from 'tesseract.js';
 import { Transaction } from "@/types";
 import { MERCHANT_CATEGORY_MAP } from "@/parsers/common";
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export async function recognizeReceipt(imageBase64: string): Promise<string> {
   try {
@@ -106,7 +107,7 @@ export function parseOfflineReceipt(rawText: string): Partial<Transaction> & { s
     amount: totalAmount,
     merchant: merchant.substring(0, 40),
     category,
-    date: new Date().toISOString().split('T')[0],
+    date: formatLocalYYYYMMDD(new Date()),
     type: 'debit',
     description: 'Scanned via SpendWise Vision',
     splits: items.length > 1 ? items.filter(i => i.amount < totalAmount * 0.9) : undefined

@@ -1,6 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { useStore } from '@/store';
 import { Transaction, RecurringPattern } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function useSubscriptions() {
   const transactions = useStore(state => state.transactions);
@@ -59,7 +60,7 @@ export function useSubscriptions() {
             avgAmount,
             frequency,
             lastSeen: lastTx.date,
-            nextExpected: nextDate.toISOString().split('T')[0],
+            nextExpected: formatLocalYYYYMMDD(nextDate),
             occurrences: txs.length,
             totalSpent: txs.reduce((a, b) => a + b.amount, 0),
             priceCreep: lastTx.amount > avgAmount + 10 // small buffer
@@ -78,7 +79,7 @@ export function useSubscriptions() {
   return {
     subscriptions,
     upcoming: useMemo(() => {
-      const today = new Date().toISOString().split('T')[0];
+      const today = formatLocalYYYYMMDD(new Date());
       return subscriptions
         .filter(s => s.nextExpected >= today)
         .sort((a, b) => a.nextExpected.localeCompare(b.nextExpected));

@@ -2,16 +2,16 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { Transaction, Category } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { Virtuoso } from 'react-virtuoso';
-import { AlertCircle } from 'lucide-react';
 import PullToRefresh from '@/shell/PullToRefresh';
+import { haptic } from '@/lib/haptic';
+import { useStore } from '@/store';
 
-import { FilterBar } from '@/features/transactions/components/FilterBar';
-import TransactionRow from '@/features/transactions/components/TransactionRow';
+import { TransactionFilters } from '@/features/transactions/components/TransactionFilters';
+import { TransactionList } from '@/features/transactions/components/TransactionList';
 import BulkActionHeader from '@/features/transactions/components/BulkActionHeader';
-import { SortBtn } from '@/features/transactions/components/SortBtn';
 import { HistoryToolbar } from '@/features/transactions/components/HistoryToolbar';
 import { DeleteConfirmModal } from '@/features/transactions/components/DeleteConfirmModal';
-import { useHistoryView } from '@/features/transactions/components/useHistoryView';
+import { useTransactionHistory } from '@/features/transactions/hooks/useTransactionHistory';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import HistoryViewMobile from '@/features/transactions/HistoryViewMobile';
 
@@ -40,6 +40,14 @@ export default function HistoryView({
 }: HistoryViewProps) {
   const isMobile = useIsMobile();
   const { allCategories, mergedIcons, mergedColors } = useCategories();
+  const addTransactions = useStore(s => s.addTransactions);
+
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
+  
+  // Create a visible subset of transactions that excludes pending deletes
+  const visibleTransactions = useMemo(() => {
+    return transactions.filter(tx => !pendingDeleteIds.has(tx.id));
+  }, [transactions, pendingDeleteIds]);
 
   const {
     search, setSearch, categoryFilter, setCategoryFilter,
@@ -48,13 +56,15 @@ export default function HistoryView({
     showDateFilter, setShowDateFilter,
     amountMin, setAmountMin, amountMax, setAmountMax,
     showAmountFilter, setShowAmountFilter,
-    selectedIds, setSelectedIds,
-    importToast, deleteConfirmId, setDeleteConfirmId,
-    filtered, hasFilters, handleSort, handleImportJSON,
-    handleRefresh, clearFilters, virtuosoRef,
-  } = useHistoryView(transactions, initialSearchQuery);
+    filtered, displayRows, hasFilters, clearFilters, handleSort
+  } = useTransactionHistory(visibleTransactions, initialSearchQuery);
 
-  const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [importToast, setImportToast] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const virtuosoRef = useRef<React.ElementRef<typeof Virtuoso>>(null);
+
   const [lastDeletedTx, setLastDeletedTx] = useState<Transaction | null>(null);
   const undoTimerRef = useRef<any>(null);
 
@@ -98,17 +108,44 @@ export default function HistoryView({
     haptic.success();
   };
 
-  const visibleFiltered = useMemo(() => {
-    return filtered.filter(tx => !pendingDeleteIds.has(tx.id));
-  }, [filtered, pendingDeleteIds]);
-
-  const visibleTransactions = useMemo(() => {
-    return transactions.filter(tx => !pendingDeleteIds.has(tx.id));
-  }, [transactions, pendingDeleteIds]);
-
   const total = useMemo(() => {
-    return visibleFiltered.reduce((a, tx) => a + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
-  }, [visibleFiltered]);
+    return filtered.reduce((a, tx) => a + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+  }, [filtered]);
+
+  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const raw  = JSON.parse(event.target?.result as string);
+        const data: Transaction[] = Array.isArray(raw) ? raw : (raw.transactions ?? []);
+        if (data.length === 0) {
+          setImportToast('No transactions found in file.');
+          setTimeout(() => setImportToast(null), 3000);
+          return;
+        }
+        const imported = data.map(tx => ({
+          ...tx,
+          id: `imp_${Date.now()}_${Math.random().toString(36).slice(2)}`,
+        }));
+        addTransactions(imported);
+        setImportToast(`✅ Imported ${imported.length} transactions successfully!`);
+        setTimeout(() => setImportToast(null), 4000);
+      } catch {
+        setImportToast('❌ Invalid JSON file. Please try again.');
+        setTimeout(() => setImportToast(null), 3000);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const handleRefresh = async () => {
+    haptic.medium();
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    haptic.success();
+  };
 
   if (isMobile) {
     return (
@@ -120,33 +157,6 @@ export default function HistoryView({
       />
     );
   }
-
-  type DisplayRow =
-    | { type: 'header'; date: string; subtotal: number }
-    | { type: 'tx'; tx: Transaction };
-
-  const displayRows = useMemo(() => {
-    const groups: Record<string, Transaction[]> = {};
-    visibleFiltered.forEach(tx => {
-      const d = tx.date;
-      if (!groups[d]) groups[d] = [];
-      groups[d].push(tx);
-    });
-
-    const sortedDates = Object.keys(groups).sort((a, b) => b.localeCompare(a));
-    const rows: DisplayRow[] = [];
-
-    sortedDates.forEach(date => {
-      const list = groups[date];
-      const subtotal = list.reduce((sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
-      rows.push({ type: 'header', date, subtotal });
-      list.forEach(tx => {
-        rows.push({ type: 'tx', tx });
-      });
-    });
-
-    return rows;
-  }, [visibleFiltered]);
 
   return (
     <PullToRefresh onRefresh={handleRefresh}>
@@ -170,7 +180,7 @@ export default function HistoryView({
           />
         </div>
 
-        <FilterBar
+        <TransactionFilters
           search={search} setSearch={setSearch}
           showDateFilter={showDateFilter} setShowDateFilter={setShowDateFilter}
           dateFrom={dateFrom} setDateFrom={setDateFrom}
@@ -207,89 +217,29 @@ export default function HistoryView({
             />
           )}
 
-          {/* Table header */}
-          <div className="hidden sm:flex items-center gap-4 px-5 py-3 shrink-0" style={{ borderBottom: '1.5px solid #f0f2f5' }}>
-            <div className="w-6 flex items-center justify-center">
-              <input
-                type="checkbox"
-                checked={filtered.length > 0 && selectedIds.size === filtered.length}
-                onChange={() => {
-                  if (selectedIds.size === filtered.length) setSelectedIds(new Set());
-                  else setSelectedIds(new Set(filtered.map(t => t.id)));
-                }}
-                className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-600 cursor-pointer"
-              />
-            </div>
-            <div className="w-10" />
-            <div className="w-24"><SortBtn label="Date"     field="date"     sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
-            <div className="flex-1"><SortBtn label="Merchant" field="merchant" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
-            <div className="hidden md:block w-32"><SortBtn label="Category" field="category" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
-            <div className="w-28 text-right"><SortBtn label="Amount" field="amount" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} /></div>
-            {onCategoryChange && <div className="w-32" />}
-          </div>
-
-          {/* Rows */}
-          <div className="flex-1 min-h-0">
-            {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3" style={{ background: '#f5f7fa' }}>
-                  <AlertCircle size={22} style={{ color: 'var(--text-dim)' }} />
-                </div>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: '14px', fontWeight: 500, color: 'var(--text-muted)' }}>No transactions found</p>
-                <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-dim)', marginTop: '4px' }}>Try adjusting your filters</p>
-              </div>
-            ) : (
-              <Virtuoso
-                ref={virtuosoRef}
-                totalCount={displayRows.length}
-                itemContent={(index) => {
-                  const row = displayRows[index];
-                  if (row.type === 'header') {
-                    const formattedDate = new Date(row.date + 'T00:00:00').toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'short',
-                    });
-                    const sign = row.subtotal >= 0 ? '+' : '';
-                    const color = row.subtotal >= 0 ? 'var(--teal)' : 'var(--red)';
-                    return (
-                      <div className="tx-date-header px-5 bg-[var(--surface-card)]">
-                        <span>{formattedDate}</span>
-                        <span className="subtotal" style={{ color }}>
-                          {sign}{currency}{row.subtotal.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                    );
-                  }
-
-                  const tx = row.tx;
-                  return (
-                    <TransactionRow
-                      tx={tx}
-                      selected={selectedIds.has(tx.id)}
-                      onSelect={(id, selected) => {
-                        const newSet = new Set(selectedIds);
-                        if (selected) newSet.add(id); else newSet.delete(id);
-                        setSelectedIds(newSet);
-                      }}
-                      onCategoryChange={onCategoryChange}
-                      onDelete={(id) => {
-                        const newSet = new Set(selectedIds);
-                        newSet.delete(id);
-                        setSelectedIds(newSet);
-                        handleInterceptDelete(id);
-                      }}
-                      currency={currency}
-                      mergedColors={mergedColors}
-                      mergedIcons={mergedIcons}
-                    />
-                  );
-                }}
-                style={{ height: '100%' }}
-                increaseViewportBy={200}
-              />
-            )}
-          </div>
+          <TransactionList
+            filtered={filtered}
+            displayRows={displayRows}
+            selectedIds={selectedIds}
+            setSelectedIds={setSelectedIds}
+            onCategoryChange={onCategoryChange}
+            onDelete={(id) => {
+              const newSet = new Set(selectedIds);
+              newSet.delete(id);
+              setSelectedIds(newSet);
+              handleInterceptDelete(id);
+            }}
+            currency={currency}
+            mergedColors={mergedColors}
+            mergedIcons={mergedIcons}
+            sortKey={sortKey}
+            sortDir={sortDir}
+            handleSort={(key) => {
+              handleSort(key);
+              virtuosoRef.current?.scrollToIndex({ index: 0 });
+            }}
+            virtuosoRef={virtuosoRef}
+          />
         </div>
 
         {/* Floating Undo Delete Toast Overlay */}

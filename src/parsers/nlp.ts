@@ -68,7 +68,7 @@ Return ONLY the JSON array of objects.`;
     // Check explicit debit categories first
     let category: Category | null = null;
     if (/zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|snack|starbucks|coffee|burger|pizza|bakery/.test(lowerDesc)) category = 'Food';
-    else if (/uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab|ticket|auto/.test(lowerDesc)) category = 'Transport';
+    else if (/transport|uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab|ticket|auto/.test(lowerDesc)) category = 'Transport';
     else if (/netflix|spotify|amazon|prime|youtube|hotstar|sub|susbcription|subscription|apple music/.test(lowerDesc)) category = 'Subscriptions';
     else if (/electricity|water|bill|recharge|mobile|broadband|wifi|gas|rent|maintenance/.test(lowerDesc)) category = 'Utilities';
     else if (/doctor|hospital|pharma|med|health|clinic|gym|therapy|medicine/.test(lowerDesc)) category = 'Health';

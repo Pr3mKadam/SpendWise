@@ -2,6 +2,7 @@ import { useMemo, useCallback } from 'react';
 import { CategorySpend, MonthlyStats, BalanceDataPoint, Transaction, Category, MonthlyHistoryPoint } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { useStore } from '@/store';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 import { FINANCE_DEFAULTS } from '@/constants';
 const DEFAULT_BALANCE = FINANCE_DEFAULTS.INITIAL_BALANCE;
@@ -58,7 +59,7 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
   const dailySpendRate = useMemo(() => {
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
-    const cutoffStr = cutoff.toISOString().split('T')[0];
+    const cutoffStr = formatLocalYYYYMMDD(cutoff);
     const recent = transactions.filter(tx => tx.type === 'debit' && tx.date >= cutoffStr);
     const total  = recent.reduce((acc, tx) => acc + tx.amount, 0);
     return Math.round((total / 30) * 100) / 100;
@@ -153,7 +154,7 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
     for (let i = 0; i < 14; i++) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = formatLocalYYYYMMDD(d);
 
       // While the transaction date is after the current day, subtract/add it back from running balance
       // BUG-05 fix: was inverted — credits appeared as increases when unwinding (they should decrease the earlier balance)
@@ -179,7 +180,7 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
     
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 30);
-    const cutoffStr = cutoff.toISOString().split('T')[0];
+    const cutoffStr = formatLocalYYYYMMDD(cutoff);
     const debitCount = transactions.filter(tx => tx.type === 'debit' && tx.date >= cutoffStr).length;
 
     let quality: 'low' | 'medium' | 'high' = 'low';

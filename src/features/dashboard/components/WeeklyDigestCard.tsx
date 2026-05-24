@@ -12,6 +12,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Transaction } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface WeeklyDigestCardProps {
   transactions: Transaction[];
@@ -40,9 +41,8 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const twoWeeksAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
 
-    const fmt = (d: Date) => d.toISOString().split('T')[0];
-    const tWeekStr = fmt(oneWeekAgo);
-    const prevWeekStr = fmt(twoWeeksAgo);
+    const tWeekStr = formatLocalYYYYMMDD(oneWeekAgo);
+    const prevWeekStr = formatLocalYYYYMMDD(twoWeeksAgo);
 
     // ─── 1. Category surges & totals ──────────────────────────────────────────
     let thisWeekSpent = 0;
@@ -134,7 +134,7 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
     const last14Days = Array.from({ length: 14 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      return fmt(d);
+      return formatLocalYYYYMMDD(d);
     }).reverse();
 
     const spendPerDay = new Map<string, number>();

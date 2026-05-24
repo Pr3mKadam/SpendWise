@@ -16,6 +16,7 @@ import { executeCommand } from '@/lib/voiceCommands/commandRouter';
 import { VoiceCommand, CommandResult } from '@/lib/voiceCommands/types';
 import { speak } from '@/lib/voiceCommands/tts';
 import { haptic } from '@/lib/haptic';
+import { formatLocalYYYYMMDD } from '@/utils/date';
  
 interface SpeechRecognitionEvent extends Event {
   readonly results: SpeechRecognitionResultList;
@@ -300,7 +301,7 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
       let parsed;
       try {
         const { parseMasterVoiceWithGemini } = await import('@/services/VoiceService');
-        const todayStr = new Date().toISOString().split('T')[0];
+        const todayStr = formatLocalYYYYMMDD(new Date());
         parsed = await parseMasterVoiceWithGemini(finalTranscript, todayStr);
       } catch (err) {
         console.warn('Gemini NLP parsing failed, falling back to local regex parser:', err);

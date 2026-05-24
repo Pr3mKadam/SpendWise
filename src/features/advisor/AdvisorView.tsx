@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
 import { useTransactions } from '@/hooks/useTransactions';
 import { SpendingPersonality } from '@/types';
-import { streamFinancialAdvice } from '@/insights/advisor';
-import { getSpendingPersonality } from '@/insights/reporting';
+import { getFinancialAdvice, getSpendingPersonality, ConversationMessage } from '@/insights/advisor';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import EducationCards from '@/features/education/components/EducationCards';
 import { SpeechRecognition, SpeechRecognitionEvent } from '@/types/dom';
@@ -15,42 +14,10 @@ import { isSupabaseConfigured } from '@/services/supabase';
 const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';
 const MAX_HISTORY = 20;
 
-interface MessageData {
-  action?: 'CREATE_BUDGET' | 'VIEW_ANALYTICS' | 'SET_GOAL';
-  balance?: number;
-  expenses?: number;
-  topCategory?: string;
-  savingsRate?: string;
-}
+import ChatMessageList from './components/ChatMessageList';
+import ChatInput from './components/ChatInput';
+import { Message, MessageData } from './types';
 
-interface Message {
-  id: string;
-  text: string;
-  sender: 'ai' | 'user';
-  timestamp: string;
-  type?: 'text' | 'action_card' | 'briefing';
-  data?: MessageData;
-  streaming?: boolean;
-}
-
-const parseMarkdown = (text: string) => {
-  // Split by lines first for list rendering
-  const lines = text.split('\n');
-  return lines.map((line, lineIdx) => {
-    const isBullet = line.trimStart().startsWith('- ') || line.trimStart().startsWith('• ');
-    const content = isBullet ? line.replace(/^[\s\-•]+/, '') : line;
-    const parts = content.split(/(\*\*.*?\*\*)/g).map((part, i) => {
-      if (part.startsWith('**') && part.endsWith('**')) {
-        return <strong key={i}>{part.slice(2, -2)}</strong>;
-      }
-      return <span key={i}>{part}</span>;
-    });
-    if (isBullet) {
-      return <div key={lineIdx} className="flex items-start gap-1.5 my-0.5"><span className="mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'var(--teal)' }} /><span>{parts}</span></div>;
-    }
-    return <span key={lineIdx}>{parts}{lineIdx < lines.length - 1 && <br />}</span>;
-  });
-};
 
 interface AdvisorViewProps {
   onNavigate?: (view: any) => void;
@@ -120,20 +87,18 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     setIsLoading(true); // show typing dots before first token
 
     try {
-      let accumulated = '';
-      const gen = streamFinancialAdvice(text, transactions, activeCurrency);
+      // Map messages to ConversationMessage format
+      const history: ConversationMessage[] = messages
+        .filter(m => !m.streaming && m.type !== 'action_card' && m.type !== 'briefing')
+        .map(m => ({
+          role: m.sender === 'user' ? 'user' : 'model',
+          content: m.text
+        }));
 
-      for await (const chunk of gen) {
-        accumulated += chunk;
-        // Hide typing dots once first token arrives
-        setIsLoading(false);
-        setIsStreaming(true);
-        setMessages(prev =>
-          prev.map(m =>
-            m.id === streamingMsgId ? { ...m, text: accumulated, streaming: true } : m
-          )
-        );
-      }
+      let accumulated = await getFinancialAdvice(text, transactions, history, activeCurrency);
+      
+      setIsLoading(false);
+      setIsStreaming(true);
 
       // Finalise: extract [ACTION:...] tag and set proper type
       let actionTag: string | null = null;
@@ -249,7 +214,12 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     setIsAnalyzingPersonality(true);
     try {
       const result = await getSpendingPersonality(transactions);
-      setPersonality(result);
+      setPersonality({
+        archetype: result.archetype,
+        description: result.description,
+        traits: [result.challenge, result.tip],
+        advice: result.tip
+      });
     } catch (error) {
       console.error(error);
     } finally {
@@ -423,110 +393,13 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         )}
 
         {/* Messages */}
-        <div 
-          ref={scrollRef}
-          className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
-        >
-          {messages.map((msg: Message) => (
-            <div 
-              key={msg.id} 
-              className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
-            >
-              <div className={`flex gap-3 max-w-[90%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center shadow-sm ${
-                  msg.sender === 'user' ? 'bg-[var(--teal)] text-white' : 'bg-[var(--surface-input)] text-[var(--teal)] border border-[var(--border)]'
-                }`}>
-                  {msg.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                  {msg.type === 'briefing' ? (
-                    <div className="glass-card p-5 border-l-4 border-l-[var(--teal)] shadow-lg max-w-sm animate-float">
-                      <div className="flex items-center gap-2 mb-3">
-                        <Zap size={16} className="text-yellow-500" />
-                        <h4 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Daily Briefing</h4>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">Net Balance</p>
-                          <p className="text-sm font-bold text-[var(--teal)]">{format(msg.data?.balance ?? 0)}</p>
-                        </div>
-                        <div>
-                          <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">Savings Rate</p>
-                          <p className="text-sm font-bold text-purple-500">{msg.data?.savingsRate ?? '0'}%</p>
-                        </div>
-                      </div>
-                      <div className="mt-3 pt-3 border-t border-[var(--border)]">
-                        <p className="text-[length:var(--fs-caption)] text-[var(--text-secondary)]">
-                          You've spent <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> this month. 
-                          Your top category is <span className="font-bold text-[var(--teal)]">{msg.data?.topCategory ?? 'Unknown'}</span>.
-                        </p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <div className={`p-4 rounded-2xl text-xs leading-relaxed shadow-sm ${
-                        msg.sender === 'user' 
-                          ? 'bg-[var(--teal)] text-white' 
-                          : 'bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)]'
-                      }`}>
-                        {msg.sender === 'ai' ? (
-                          <>
-                            {parseMarkdown(msg.text || '\u200b')}
-                            {msg.streaming && (
-                              <span
-                                className="inline-block w-[2px] h-[13px] ml-0.5 align-middle rounded-sm bg-[var(--teal)]"
-                                style={{ animation: 'blink 0.9s step-end infinite' }}
-                              />
-                            )}
-                          </>
-                        ) : msg.text}
-                      </div>
-                      
-                      {msg.type === 'action_card' && msg.data?.action && (
-                        <div className="flex gap-2">
-                          {msg.data.action === 'CREATE_BUDGET' && (
-                            <button onClick={() => onNavigate && onNavigate('budget')} className="px-4 min-h-[48px] bg-[var(--teal)] text-white rounded-xl text-[var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
-                              Create a Budget
-                            </button>
-                          )}
-                          {msg.data.action === 'VIEW_ANALYTICS' && (
-                            <button onClick={() => onNavigate && onNavigate('analytics')} className="px-4 min-h-[48px] bg-[var(--purple)] text-white rounded-xl text-[var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
-                              View Analytics
-                            </button>
-                          )}
-                          {msg.data.action === 'SET_GOAL' && (
-                            <button onClick={() => onNavigate && onNavigate('goals')} className="px-4 min-h-[48px] bg-yellow-500 text-white rounded-xl text-[var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
-                              Set a Goal
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  
-                  <span className={`text-[length:var(--fs-overline)] text-[var(--text-dim)] ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                    {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start animate-fade-in-up">
-              <div className="flex gap-3 max-w-[85%]">
-                <div className="w-8 h-8 rounded-lg bg-[var(--surface-input)] text-[var(--teal)] flex items-center justify-center border border-[var(--border)]">
-                  <Bot size={16} />
-                </div>
-                <div className="p-4 rounded-2xl bg-[var(--surface-input)] border border-[var(--border)] flex gap-1.5 items-center">
-                  <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '160ms' }} />
-                  <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '320ms' }} />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+        <ChatMessageList
+          messages={messages}
+          isLoading={isLoading}
+          format={format}
+          onNavigate={onNavigate}
+          scrollRef={scrollRef}
+        />
 
         {/* Insights Bar */}
         {transactions.length > 0 && (
@@ -551,70 +424,15 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         )}
 
         {/* Quick Actions & Input */}
-        <div className="p-6 pt-0">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-3 mb-1">
-            {dynamicQuickActions.map((action, idx) => (
-              <button
-                key={idx}
-                onClick={() => {
-                  setInput(action);
-                }}
-                className="flex-shrink-0 px-3 py-1.5 rounded-full bg-[var(--surface-input)] border border-[var(--border)] text-[length:var(--fs-overline)] font-medium text-[var(--text-primary)] hover:bg-[var(--teal)] hover:text-white hover:border-[var(--teal)] transition-all cursor-pointer"
-              >
-                {action}
-              </button>
-            ))}
-          </div>
-
-          {/* Voice Listening Overlay */}
-          {isListening && (
-            <div className="absolute inset-x-0 bottom-0 top-0 bg-black/60 backdrop-blur-md z-40 rounded-3xl flex flex-col items-center justify-center animate-fade-in">
-              <div className="relative w-32 h-32 flex items-center justify-center mb-8">
-                <div className="absolute inset-0 bg-[var(--teal)] rounded-full opacity-20 animate-ping" style={{ animationDuration: '2s' }} />
-                <div className="absolute inset-4 bg-[var(--teal)] rounded-full opacity-40 animate-ping" style={{ animationDuration: '1.5s', animationDelay: '0.2s' }} />
-                <div className="relative w-16 h-16 bg-gradient-to-tr from-[var(--teal)] to-[var(--teal-dim)] rounded-full shadow-[0_0_40px_var(--teal)] flex items-center justify-center">
-                  <Mic size={32} className="text-white" />
-                </div>
-              </div>
-              <h3 className="text-white font-manrope font-bold text-xl mb-2">Listening...</h3>
-              <p className="text-white/70 text-sm">Speak your transaction or ask a question</p>
-              <button 
-                onClick={toggleListening}
-                className="mt-8 px-6 py-3 rounded-full bg-red-500/20 text-red-400 font-bold text-sm border border-red-500/30 hover:bg-red-500/30 transition-all"
-              >
-                Cancel
-              </button>
-            </div>
-          )}
-
-          <div className="relative flex items-center">
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Ask me about your spending..."
-              className="w-full bg-[var(--surface-input)] border border-[var(--border)] rounded-2xl px-5 py-4 text-xs text-[var(--text-primary)] focus:outline-none focus:border-[var(--teal)] focus:ring-1 focus:ring-[var(--teal)] pr-24"
-            />
-            <div className="absolute right-3 flex items-center gap-1">
-              <button 
-                onClick={toggleListening}
-                className={`p-2 rounded-xl transition-all ${
-                  isListening ? 'bg-red-500 text-white animate-pulse' : 'text-[var(--text-muted)] hover:bg-[var(--surface-card)]'
-                }`}
-              >
-                {isListening ? <MicOff size={16} /> : <Mic size={16} />}
-              </button>
-              <button 
-                onClick={() => handleSend()}
-                disabled={!input.trim() || isLoading}
-                className="p-2.5 rounded-xl bg-[var(--teal)] text-white hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-              >
-                <Send size={16} />
-              </button>
-            </div>
-          </div>
-        </div>
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          handleSend={() => handleSend()}
+          isListening={isListening}
+          toggleListening={toggleListening}
+          isLoading={isLoading}
+          dynamicQuickActions={dynamicQuickActions}
+        />
       </div>
     </div>
   );

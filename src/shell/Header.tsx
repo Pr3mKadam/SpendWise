@@ -184,10 +184,10 @@ export default function Header({
               style={{ padding: 0, border: 'none' }}
             >
               <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
-                {theme === 'dark' ? <Sun size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Moon size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
+                {theme === 'dark' ? <Moon size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Sun size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
               </span>
               <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
-                {theme === 'dark' ? <Sun size={16} style={{ color: 'var(--text-secondary)' }} /> : <Moon size={16} style={{ color: 'var(--text-secondary)' }} />}
+                {theme === 'dark' ? <Moon size={16} style={{ color: 'var(--text-secondary)' }} /> : <Sun size={16} style={{ color: 'var(--text-secondary)' }} />}
               </span>
             </button>
           </div>

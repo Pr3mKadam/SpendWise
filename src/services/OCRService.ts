@@ -1,4 +1,5 @@
 import { callGemini } from '@/services/gemini';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export interface OCRResult {
   merchant?: string;
@@ -47,7 +48,7 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
       return {
         merchant: result.merchant || 'Unknown Merchant',
         amount: result.amount || 0,
-        date: result.date || new Date().toISOString().split('T')[0],
+        date: result.date || formatLocalYYYYMMDD(new Date()),
         category: result.category || 'Other',
         rawText: result.rawText || text
       };
@@ -57,7 +58,7 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
       return {
         merchant: 'Receipt',
         amount: amountMatch ? parseFloat(amountMatch[1].replace(',', '.')) : 0,
-        date: new Date().toISOString().split('T')[0],
+        date: formatLocalYYYYMMDD(new Date()),
         rawText: text
       };
     }
@@ -120,11 +121,12 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
 
     // 3. Find Date
     const dateMatch = text.match(/\b(20\d{2}[-/]\d{1,2}[-/]\d{1,2}|\d{1,2}[-/]\d{1,2}[-/](?:20)?\d{2}|[A-Za-z]{3}\s+\d{1,2},?\s+20\d{2})\b/);
-    let dateStr = new Date().toISOString().split('T')[0];
+    let dateStr = formatLocalYYYYMMDD(new Date());
     if (dateMatch) {
       try {
         const d = new Date(dateMatch[0]);
-        if (!isNaN(d.getTime())) dateStr = d.toISOString().split('T')[0];
+        // R4 fix: use formatLocalYYYYMMDD for parsed receipt dates too
+        if (!isNaN(d.getTime())) dateStr = formatLocalYYYYMMDD(d);
       } catch(e){}
     }
 

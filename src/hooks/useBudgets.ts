@@ -3,6 +3,7 @@ import { useStore } from '@/store';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
 import { Category } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function useBudgets() {
   const budgets = useStore(state => state.budgets);
@@ -35,9 +36,9 @@ export function useBudgets() {
     startDate.setHours(0, 0, 0, 0);
     prevStartDate.setHours(0, 0, 0, 0);
     
-    const startDateStr    = startDate.toISOString().split('T')[0];
-    const endDateStr      = now.toISOString().split('T')[0]; // today — never include future dates
-    const prevStartDateStr = prevStartDate.toISOString().split('T')[0];
+    const startDateStr    = formatLocalYYYYMMDD(startDate);
+    const endDateStr      = formatLocalYYYYMMDD(now); // today — never include future dates
+    const prevStartDateStr = formatLocalYYYYMMDD(prevStartDate);
 
     // Compute period spending per category
     const periodSpending = new Map<string, number>();

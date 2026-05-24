@@ -4,6 +4,7 @@
  * chart it over time in the Analytics view.
  */
 import { useEffect, useMemo } from 'react';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 const KEY = 'spendwise_health_history_v1';
 const MAX_DAYS = 60;
@@ -25,7 +26,7 @@ export function useHealthHistory(currentScore: number): HealthHistoryPoint[] {
   // Append today's snapshot (de-duped by date)
   useEffect(() => {
     if (currentScore === 0) return;
-    const today = new Date().toISOString().split('T')[0];
+    const today = formatLocalYYYYMMDD(new Date());
     try {
       const raw = localStorage.getItem(KEY);
       const existing: HealthHistoryPoint[] = raw ? JSON.parse(raw) : [];

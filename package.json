@@ -10,9 +10,12 @@
     "test": "vitest run",
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "map": "npx repomix@latest"
   },
   "dependencies": {
+    "@trystero-p2p/mqtt": "^0.25.0",
+    "@trystero-p2p/torrent": "^0.25.0",
     "canvas-confetti": "^1.9.4",
     "clsx": "2.1.1",
     "dexie": "^4.4.2",
@@ -29,6 +32,7 @@
     "recharts": "^3.8.0",
     "tailwind-merge": "3.4.0",
     "tesseract.js": "^7.0.0",
+    "trystero": "^0.25.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

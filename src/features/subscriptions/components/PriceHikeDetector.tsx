@@ -77,6 +77,7 @@ export function PriceHikeDetector({ transactions, currency }: PriceHikeDetectorP
     return Object.entries(merchantMap).reduce<HikeAlert[]>((acc, [merchant, data]) => {
       if (data.amounts.length < 2) return acc;
       const oldAvg = data.amounts.slice(0,-1).reduce((a,b)=>a+b,0) / (data.amounts.length-1);
+      if (oldAvg <= 0) return acc;
       const newAmt = data.amounts[data.amounts.length-1];
       const pct = ((newAmt - oldAvg) / oldAvg) * 100;
       if (pct > 10) acc.push({ merchant, oldAmount: Math.round(oldAvg*100)/100, newAmount: newAmt, changePct: Math.round(pct), lastDate: data.lastDate });

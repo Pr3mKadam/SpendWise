@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 import { SavingsGoal, GoalStatus } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { useStore } from '@/store';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 function computeStatus(goal: SavingsGoal): GoalStatus {
   if (goal.savedAmount >= goal.targetAmount) return 'achieved';
@@ -34,7 +35,7 @@ export function useGoals() {
           ...partial,
           id: Math.random().toString(36).substr(2, 9),
           status,
-          createdAt: new Date().toISOString().split('T')[0]
+          createdAt: formatLocalYYYYMMDD(new Date())
         } as SavingsGoal];
         return next;
       });

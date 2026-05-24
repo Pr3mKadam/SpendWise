@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { CategorySpend } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface SpendingHeatmapProps {
   transactions: { date: string; amount: number; type: string }[];
@@ -27,9 +28,10 @@ function getDayColorDark(amount: number, max: number): string {
 }
 
 export default function SpendingHeatmap({ transactions, currency = '₹' }: SpendingHeatmapProps) {
-  const isDark = document.documentElement.classList.contains('dark');
+  const { weeks, maxAmount, selectedMonth, isDark } = useMemo(() => {
+    // R3-A fix: compute isDark inside useMemo so it re-evaluates on theme changes
+    const isDark = document.documentElement.classList.contains('dark');
 
-  const { weeks, maxAmount, selectedMonth } = useMemo(() => {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
@@ -67,12 +69,12 @@ export default function SpendingHeatmap({ transactions, currency = '₹' }: Spen
     const maxAmount = Math.max(...Object.values(dayMap), 1);
     const selectedMonth = firstDay.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
-    return { weeks, maxAmount, selectedMonth };
+    return { weeks, maxAmount, selectedMonth, isDark };
   }, [transactions]);
 
   const DOW_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
-  const today = new Date().toISOString().split('T')[0];
+  const today = formatLocalYYYYMMDD(new Date());
 
   return (
     <div className="card px-4 sm:px-6 py-5">

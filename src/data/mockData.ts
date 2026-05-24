@@ -1,11 +1,12 @@
 import { Transaction, Category } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function daysAgo(n: number): string {
   const d = new Date();
   d.setDate(d.getDate() - n);
-  return d.toISOString().split('T')[0];
+  return formatLocalYYYYMMDD(d);
 }
 
 /** Replaces ALL occurrences of every {key} in a template string */
@@ -194,7 +195,7 @@ export function parseTransaction(text: string): Transaction {
 
   return {
     id:          `${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-    date:        new Date().toISOString().split('T')[0],
+    date:        formatLocalYYYYMMDD(new Date()),
     amount,
     category,
     merchant,

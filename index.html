@@ -4,8 +4,8 @@
     <!-- Inline theme script: apply saved theme before React mounts to prevent FOUC (NEW-v3-04) -->
     <script>
       try {
-        var prefs = JSON.parse(localStorage.getItem('spendwise_config_v1') || '{}');
-        if (prefs.theme !== 'light') document.documentElement.classList.add('dark');
+        var theme = localStorage.getItem('spendwise_theme');
+        if (theme === 'dark') document.documentElement.classList.add('dark');
       } catch (e) {
         document.documentElement.classList.add('dark'); // safe dark default
       }

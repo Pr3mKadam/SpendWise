@@ -1,12 +1,14 @@
 import React from 'react';
 import {
   Landmark, Zap, MoreVertical, TrendingDown, Hash, Sparkles, Brain,
-  SmartphoneNfc, Link2, History, CreditCard, Clock, RefreshCw, Activity
+  SmartphoneNfc, Link2, History, CreditCard, Clock, RefreshCw, Activity, Users
 } from 'lucide-react';
 import { Transaction, LinkedAccount, SyncView } from '@/types';
 import { UPI_PROVIDERS } from '@/parsers/upi';
 import CSVImporter from '@/features/sync/components/CSVImporter';
 import { CloudSync } from '@/features/sync/components/CloudSync';
+import { useSharedWallets } from '@/features/shared/hooks/useSharedWallets';
+import { useAuth } from '@/hooks/useAuth';
 
 export interface SyncDashboardProps {
   totalUPISpend: number;
@@ -19,6 +21,7 @@ export interface SyncDashboardProps {
   onSetView: (view: SyncView) => void;
   currency: string;
   onAutoAddTransactions: (txs: Transaction[]) => void;
+  onNavigate?: (view: any) => void;
 }
 
 export function SyncDashboard({
@@ -32,8 +35,13 @@ export function SyncDashboard({
   onSetView,
   currency,
   onAutoAddTransactions,
+  onNavigate,
 }: SyncDashboardProps) {
-  
+  const { user } = useAuth();
+  const userId = user?.id ?? 'local-user';
+  const userEmail = user?.email ?? null;
+  const { groups, pendingInvites, acceptInvite, declineInvite, createGroup } = useSharedWallets(userId, userEmail);
+
   const formatDate = (iso: string) =>
     new Intl.DateTimeFormat('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(iso));
 
@@ -135,7 +143,7 @@ export function SyncDashboard({
                       </div>
                       <div className="flex items-start gap-3 mb-4">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-white shrink-0" style={{ background: providerDef.color }}>
-                          {providerDef.icon}
+                          {'icon' in providerDef ? (providerDef as any).icon : providerDef.name.charAt(0)}
                         </div>
                         <div>
                           <p className="font-inter font-semibold text-[14px] text-[var(--text-primary)]">{providerDef.name}</p>
@@ -157,6 +165,66 @@ export function SyncDashboard({
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+
+          {/* Shared Wallets */}
+          <div className="card px-6 py-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="flex items-center gap-2 font-manrope font-bold text-lg text-[var(--text-primary)]">
+                <Users size={18} className="text-[var(--teal)]" />
+                Shared Wallets
+              </h3>
+              <button
+                onClick={() => {
+                  const name = prompt('Enter Group Name:');
+                  if (!name) return;
+                  createGroup(name, 'friends', 'Me', '👑');
+                }}
+                className="font-inter text-xs font-bold text-[var(--teal)] px-3 py-1.5 rounded-lg bg-[var(--teal-dim)] border-none cursor-pointer"
+              >
+                + Create Wallet
+              </button>
+            </div>
+
+            {pendingInvites.length > 0 && (
+              <div className="mb-4 space-y-2">
+                <h4 className="text-xs font-bold text-[var(--text-muted)] uppercase tracking-wider">Pending Invites</h4>
+                {pendingInvites.map(inv => (
+                  <div key={inv.memberId} className="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                    <div>
+                      <p className="font-bold text-sm text-amber-700 dark:text-amber-400">{inv.groupName}</p>
+                      <p className="text-xs text-amber-600/80 dark:text-amber-400/80">Invited you</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button onClick={() => acceptInvite(inv.memberId)} className="px-3 py-1.5 rounded-lg bg-amber-500 text-white text-xs font-bold border-none cursor-pointer">Accept</button>
+                      <button onClick={() => declineInvite(inv.memberId)} className="px-3 py-1.5 rounded-lg bg-transparent text-amber-600 text-xs font-bold border border-amber-500/30 cursor-pointer">Decline</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {groups.length === 0 ? (
+              <p className="text-sm text-[var(--text-muted)]">No active shared wallets. Create one to split bills with friends!</p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {groups.map((g: any) => (
+                  <button
+                    key={g.id}
+                    onClick={() => {
+                      if (onNavigate) onNavigate('shared');
+                    }}
+                    className="p-4 rounded-xl border border-[var(--border)] bg-[var(--surface-input)] flex items-center justify-between hover:border-[var(--teal)] hover:bg-[var(--surface-card)] cursor-pointer text-left w-full transition-all duration-200 hover:scale-[1.01] active:scale-[0.99] border-solid"
+                  >
+                    <div>
+                      <p className="font-bold text-sm text-[var(--text-primary)] m-0">{g.name}</p>
+                      <p className="text-xs text-[var(--text-muted)] capitalize m-0 mt-0.5">{g.purpose}</p>
+                    </div>
+                    <Users size={16} className="text-[var(--text-muted)]" />
+                  </button>
+                ))}
               </div>
             )}
           </div>

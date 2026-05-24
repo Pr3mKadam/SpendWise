@@ -1,0 +1,38 @@
+{
+  "output": {
+    "filePath": "repomix-output.md",
+    "style": "markdown",
+    "compress": true,
+    "headerText": "SpendWise Codebase - AI Context File\nTech: React 18 + TypeScript + Vite + Tailwind v4 + Zustand + Dexie + Supabase\nTheme: CSS variables via :root.dark class. Date util: formatLocalYYYYMMDD from src/utils/date.ts",
+    "showLineNumbers": false,
+    "removeComments": false,
+    "removeEmptyLines": false,
+    "topFilesLength": 20,
+    "showFileSummary": true,
+    "copyToClipboard": false,
+    "includeEmptyDirectories": false
+  },
+  "include": [
+    "src/**/*.tsx",
+    "src/**/*.ts",
+    "src/index.css",
+    "CODEBASE_MAP.md"
+  ],
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "**/*.test.ts",
+      "**/*.test.tsx",
+      "**/*.spec.ts",
+      "**/*.d.ts",
+      "src/vite-env.d.ts",
+      "node_modules/**",
+      "dist/**",
+      ".git/**"
+    ]
+  },
+  "security": {
+    "enableSecretDetection": true
+  }
+}

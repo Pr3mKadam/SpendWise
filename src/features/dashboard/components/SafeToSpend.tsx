@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldCheck, TrendingDown, AlertCircle, CheckCircle } from 'lucide-react';
 import { Transaction } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface SafeToSpendProps {
   transactions: Transaction[];
@@ -17,7 +18,7 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
     const daysLeft = daysInMonth - dayOfMonth + 1;
 
     // Monthly income (credits this month)
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+    const monthStart = formatLocalYYYYMMDD(new Date(now.getFullYear(), now.getMonth(), 1));
     const monthTx = transactions.filter(t => t.date >= monthStart);
     const monthlyIncome = monthTx.filter(t => t.type === 'credit').reduce((a, t) => a + t.amount, 0);
     const monthlySpent = monthTx.filter(t => t.type === 'debit').reduce((a, t) => a + t.amount, 0);
@@ -36,8 +37,9 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
     const status: 'great' | 'ok' | 'tight' =
       ratio > 1.2 ? 'great' : ratio > 0.7 ? 'ok' : 'tight';
 
+    const todayStr = formatLocalYYYYMMDD(now);
     const todaySpent = transactions
-      .filter(t => t.type === 'debit' && t.date === now.toISOString().split('T')[0])
+      .filter(t => t.type === 'debit' && t.date === todayStr)
       .reduce((a, t) => a + t.amount, 0);
 
     const remaining = Math.max(0, safePerDay - todaySpent);

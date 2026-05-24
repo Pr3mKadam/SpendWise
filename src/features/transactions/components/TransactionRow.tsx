@@ -98,7 +98,7 @@ export function TransactionRow({
   }
 
   return (
-    <div className="relative overflow-hidden bg-white" style={{ borderBottom: '1px solid #f7f8fa' }}>
+    <div className="relative overflow-hidden bg-[var(--surface-card)]" style={{ borderBottom: '1px solid var(--border)' }}>
       {/* Background Actions (Delete on Left drag, Category on Right drag) */}
       <div className="absolute inset-0 flex items-center justify-between z-0">
         {/* Swiping Right → Reveals Category trigger on the left */}
@@ -132,7 +132,7 @@ export function TransactionRow({
           }
         }}
         style={{ x }}
-        className="group flex items-center gap-2 px-3 sm:px-5 py-3 transition-colors hover:bg-gray-50/50 bg-white relative z-10"
+        className="group flex items-center gap-2 px-3 sm:px-5 py-3 transition-colors hover:bg-[var(--surface-light)] bg-[var(--surface-card)] relative z-10"
         role="row"
         aria-selected={selected}
         onTouchStart={startPress}
@@ -161,7 +161,7 @@ export function TransactionRow({
           <div className="flex flex-wrap items-center gap-1.5 mt-0.5" style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
             <span>{dateStr}</span>
             {tx.tags?.map(t => (
-              <span key={t} className="rounded-md px-1.5 py-0.5 text-[length:var(--fs-overline)] font-semibold" style={{ background: '#f1f5f9', color: 'var(--text-secondary)' }}>
+              <span key={t} className="rounded-md px-1.5 py-0.5 text-[length:var(--fs-overline)] font-semibold" style={{ background: 'var(--surface-input)', color: 'var(--text-secondary)' }}>
                 #{t}
               </span>
             ))}

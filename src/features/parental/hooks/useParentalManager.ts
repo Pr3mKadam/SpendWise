@@ -19,10 +19,7 @@ export function useParentalManager() {
   const isSetup = settings.enabled && (settings.parentPinHash || settings.parentId);
   const isLocked = settings.enabled && settings.parentPinHash && !settings.sessionUnlocked;
 
-  const pendingTransactions = useMemo(() => 
-    transactions.filter((t: Transaction) => t.status === 'pending_approval'),
-    [transactions]
-  );
+  const pendingTransactions = settings.pendingTransactions || [];
 
   const handleUnlock = async () => {
     const isValid = await store.verifyPin(unlockPin);

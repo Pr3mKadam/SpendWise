@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Transaction, RecurringPattern } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 
@@ -10,7 +11,7 @@ const MIN_OCCURRENCES = 2; // need at least 2 hits to flag as recurring
 function addDays(date: string, days: number): string {
   const d = new Date(date + 'T00:00:00');
   d.setDate(d.getDate() + days);
-  return d.toISOString().split('T')[0];
+  return formatLocalYYYYMMDD(d);
 }
 
 function daysBetween(a: string, b: string): number {

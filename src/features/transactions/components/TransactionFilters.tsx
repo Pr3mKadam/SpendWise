@@ -5,7 +5,7 @@ import { haptic } from '@/lib/haptic';
 
 export type TypeFilter = 'all' | 'credit' | 'debit';
 
-export interface FilterBarProps {
+export interface TransactionFiltersProps {
   search: string;
   setSearch: (s: string) => void;
   showDateFilter: boolean;
@@ -31,7 +31,7 @@ export interface FilterBarProps {
   setShowAmountFilter?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function FilterBar({
+export function TransactionFilters({
   search, setSearch,
   showDateFilter, setShowDateFilter,
   dateFrom, setDateFrom,
@@ -43,7 +43,7 @@ export function FilterBar({
   amountMin = '', setAmountMin,
   amountMax = '', setAmountMax,
   showAmountFilter = false, setShowAmountFilter,
-}: FilterBarProps) {
+}: TransactionFiltersProps) {
   const hasAmountFilter = Boolean(amountMin || amountMax);
   return (
     <div className="card px-3 sm:px-5 py-3 sm:py-4 space-y-3">
@@ -204,4 +204,5 @@ export function FilterBar({
   );
 }
 
-export default FilterBar;
+export default TransactionFilters;
+

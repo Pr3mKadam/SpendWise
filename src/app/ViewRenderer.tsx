@@ -236,6 +236,7 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
                 t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
               )}
               currency={currency}
+              onNavigate={onNavigate}
             />
           </ViewWrapper>
         )}

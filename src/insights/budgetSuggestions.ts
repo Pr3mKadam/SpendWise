@@ -1,4 +1,5 @@
 import { Transaction, BudgetSuggestion } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 /**
  * Analyzes last 3 months of spending to suggest smart budget limits.
@@ -8,7 +9,7 @@ import { Transaction, BudgetSuggestion } from '@/types';
 export function generateBudgetSuggestions(transactions: Transaction[]): BudgetSuggestion[] {
   const now = new Date();
   const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-  const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
+  const threeMonthsAgoStr = formatLocalYYYYMMDD(threeMonthsAgo);
 
   const recentDebits = transactions.filter(
     t => t.type === 'debit' && t.date >= threeMonthsAgoStr

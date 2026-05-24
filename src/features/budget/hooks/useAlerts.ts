@@ -1,5 +1,6 @@
 import { useMemo, useCallback, useState } from 'react';
 import { Transaction, SpendingAlert, AlertSeverity, Budget, Category } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 const STORAGE_KEY = 'spendwise_dismissed_alerts_v1';
 
@@ -58,18 +59,19 @@ export function useAlerts(
 ) {
   const [dismissed, setDismissed] = useState<Set<string>>(loadDismissed);
 
-  const sym = extras?.currency ?? '$';
-  const fmt = (n: number, fractionDigits = 2) =>
-    `${sym}${n.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}`;
-  const fmt0 = (n: number) =>
-    `${sym}${Math.round(n).toLocaleString('en-US')}`;
-
   // ── Generate all alerts from current state ─────────────────────────────────
 
   const rawAlerts = useMemo((): SpendingAlert[] => {
     const alerts: SpendingAlert[] = [];
     const now   = new Date();
-    const today = now.toISOString().split('T')[0];
+    const today = formatLocalYYYYMMDD(now);
+
+    // R3-B fix: fmt helpers defined inside useMemo to avoid stale-closure issues
+    const sym = extras?.currency ?? '$';
+    const fmt = (n: number, fractionDigits = 2) =>
+      `${sym}${n.toLocaleString('en-US', { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits })}`;
+    const fmt0 = (n: number) =>
+      `${sym}${Math.round(n).toLocaleString('en-US')}`;
 
     const pred      = extras?.predictedEndOfMonth;
     const daysLeftM = extras?.daysLeftInMonth ?? 0;
@@ -202,7 +204,7 @@ export function useAlerts(
     // 8. Unusual vs your median in that category (30d)
     const cutoff30 = new Date(now);
     cutoff30.setDate(cutoff30.getDate() - 30);
-    const cutoff30Str = cutoff30.toISOString().split('T')[0];
+    const cutoff30Str = formatLocalYYYYMMDD(cutoff30);
     const debits30 = transactions.filter(tx => tx.type === 'debit' && tx.date >= cutoff30Str);
     const byCat = new Map<Category, number[]>();
     for (const tx of debits30) {
@@ -212,7 +214,7 @@ export function useAlerts(
     }
     const threeDaysAgo = new Date(now);
     threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
-    const threeStr = threeDaysAgo.toISOString().split('T')[0];
+    const threeStr = formatLocalYYYYMMDD(threeDaysAgo);
     const recentDebits = debits30.filter(tx => tx.date >= threeStr);
     let unusual: Transaction | null = null;
     for (const tx of recentDebits) {

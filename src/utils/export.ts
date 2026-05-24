@@ -1,4 +1,5 @@
 import { Transaction } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function exportCSV(transactions: Transaction[]) {
   const headers = ['Date', 'Merchant', 'Category', 'Type', 'Amount', 'Description'];
@@ -15,7 +16,7 @@ export function exportCSV(transactions: Transaction[]) {
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'), {
     href: url,
-    download: `spendwise-export-${new Date().toISOString().split('T')[0]}.csv`,
+    download: `spendwise-export-${formatLocalYYYYMMDD(new Date())}.csv`,
   });
   a.click();
   URL.revokeObjectURL(url);
@@ -27,7 +28,7 @@ export function exportJSON(transactions: Transaction[]) {
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'), {
     href: url,
-    download: `spendwise-export-${new Date().toISOString().split('T')[0]}.json`,
+    download: `spendwise-export-${formatLocalYYYYMMDD(new Date())}.json`,
   });
   a.click();
   URL.revokeObjectURL(url);

@@ -48,6 +48,7 @@ const SUPABASE_ANON  = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefi
 
 export const isSupabaseConfigured = !!SUPABASE_URL && !!SUPABASE_ANON;
 
+
 // ─── Lightweight REST client (no npm package required) ───────────────────────
 async function supabaseRequest(
   path: string,

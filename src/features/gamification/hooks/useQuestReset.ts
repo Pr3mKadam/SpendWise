@@ -6,6 +6,7 @@
  */
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useStore } from '@/store';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface QuestProgress {
   date: string;                   // YYYY-MM-DD — the day this applies to
@@ -14,7 +15,7 @@ interface QuestProgress {
 }
 
 const KEY = 'spendwise_quest_progress_v2';
-const TODAY = () => new Date().toISOString().split('T')[0];
+const TODAY = () => formatLocalYYYYMMDD(new Date());
 
 function load(): QuestProgress {
   try {
