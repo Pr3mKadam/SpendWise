@@ -95,6 +95,8 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
   const [missingPrompt,  setMissingPrompt]  = useState<string | null>(null);
   const [pendingConfirm, setPendingConfirm] = useState<VoiceCommand | null>(null);
   const [history,        setHistory]        = useState<HistoryEntry[]>([]);
+  const takeUndoSnapshot = useStore(s => s.takeUndoSnapshot);
+  const undoLastAction   = useStore(s => s.undoLastAction);
 
   const recognitionRef      = useRef<SpeechRecognition | null>(null);
   const timeoutRef          = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -159,7 +161,11 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
           scheduleReset();
           return h;
         }
-        // Pop the last entry (visual only — store undo is TODO Phase 3)
+
+        // Restore previous state
+        undoLastAction();
+
+        // Pop the last entry
         const [last, ...rest] = h;
         const res: CommandResult = {
           success: true,
@@ -175,6 +181,11 @@ export function useMasterVoice({ navigate, onExport, toggleTheme, setSearchQuery
     }
 
     try {
+      // Take snapshot before mutating commands
+      if (['ADD_TRANSACTION', 'DELETE_TRANSACTION', 'UPDATE_BUDGET', 'SET_GOAL'].includes(cmd.intent)) {
+        takeUndoSnapshot();
+      }
+
       const outcome = await executeCommand(
         cmd,
         optionsRef.current.navigate,

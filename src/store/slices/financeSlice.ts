@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand';
 import { Transaction, Category, RecurringPattern, RecurringTransaction } from '@/types';
 import { SpendWiseStore } from '@/store/index';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export interface BudgetSettings {
   period: 'weekly' | 'biweekly' | 'monthly';
@@ -79,7 +80,7 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
         return;
       }
       if (state.parentalState.monthlyLimit !== null && tx.type === 'debit') {
-        const currentMonthStr = new Date().toISOString().substring(0, 7);
+        const currentMonthStr = formatLocalYYYYMMDD().substring(0, 7);
         const monthlySpent = state.transactions
           .filter(t => t.type === 'debit' && t.date.startsWith(currentMonthStr))
           .reduce((acc, t) => acc + t.amount, 0);

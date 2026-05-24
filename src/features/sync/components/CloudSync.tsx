@@ -16,6 +16,7 @@ import {
 } from '@/services/supabase';
 import { useStore } from '@/store';
 import { Transaction } from '@/types';
+import { formatLocalISO } from '@/utils/date';
 
 const SESSION_KEY = 'spendwise_supabase_session_v1';
 const LAST_SYNC_KEY = 'spendwise_last_sync_v1';
@@ -80,12 +81,12 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
         lastSync ?? undefined,
       );
       await pushGamification(
-        { totalXP, level, streak, lastActive: new Date().toISOString() },
+        { totalXP, level, streak, lastActive: formatLocalISO() },
         user.id,
         user.access_token,
       );
       if (newTransactions.length > 0) onPullTransactions(newTransactions);
-      const now = new Date().toISOString();
+      const now = formatLocalISO();
       setLastSync(now);
       localStorage.setItem(LAST_SYNC_KEY, now);
       setSyncResult({ pushed: result.pushed, pulled: result.pulled });

@@ -335,7 +335,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
           isOpen={showFeedback}
           onClose={() => setShowFeedback(false)}
           onSubmit={(data) => {
-            if (import.meta.env.DEV) console.log('Feedback submitted:', data);
+          if (import.meta.env.DEV) console.info('[MainShell] Feedback submitted:', data);
           }}
         />
       </Suspense>

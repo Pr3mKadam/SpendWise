@@ -1,11 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useBudgets } from '@/hooks/useBudgets';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface BudgetAlertToastProps {
   currency?: string;
 }
 
-const ALERT_KEY = (cat: string, level: '80' | '100') => `spendwise_budget_alert_${cat}_${level}_${new Date().toISOString().substring(0, 7)}`;
+const ALERT_KEY = (cat: string, level: '80' | '100') => `spendwise_budget_alert_${cat}_${level}_${formatLocalYYYYMMDD().substring(0, 7)}`;
 
 let toastContainer: HTMLDivElement | null = null;
 

@@ -1,6 +1,7 @@
 import { Transaction, Category } from '@/types';
 import { processNaturalLanguageExpense } from '@/parsers/nlp';
 import { useStore } from '@/store';
+import { formatLocalISO } from '@/utils/date';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
 export type MerchantMemory = Record<string, { merchant: string; category: string }>;
@@ -159,7 +160,7 @@ function processPaymentsToTransactions(payments: any[]): Transaction[] {
   for (const p of payments) {
     if (p.status !== 'captured') continue;
 
-    const isoDate = new Date(p.created_at * 1000).toISOString();
+    const isoDate = formatLocalISO(new Date(p.created_at * 1000));
     const realAmount = typeof p.amount === 'number' ? p.amount / 100 : 0;
     if (realAmount <= 0) continue;
 

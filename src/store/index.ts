@@ -154,6 +154,9 @@ export type SpendWiseStore = FinanceSlice & PortfolioSlice & GamificationSlice &
   restoreBackup: (data: any) => void;
   privacyEnabled: boolean;
   togglePrivacy: () => void;
+  undoSnapshot: any | null;
+  takeUndoSnapshot: () => void;
+  undoLastAction: () => void;
 };
 
 export const useStore = create<SpendWiseStore>()(
@@ -173,6 +176,38 @@ export const useStore = create<SpendWiseStore>()(
           parentalState: { ...state.parentalState, hideBalances: next }
         };
       }),
+
+      undoSnapshot: null,
+      takeUndoSnapshot: () => {
+        const state = get();
+        const snapshot = {
+          transactions: JSON.parse(JSON.stringify(state.transactions)),
+          budgets: JSON.parse(JSON.stringify(state.budgets)),
+          sharedData: JSON.parse(JSON.stringify(state.sharedData)),
+          goals: JSON.parse(JSON.stringify(state.goals)),
+          assets: JSON.parse(JSON.stringify(state.assets)),
+          liabilities: JSON.parse(JSON.stringify(state.liabilities)),
+          subscriptions: JSON.parse(JSON.stringify(state.subscriptions)),
+          recurringTransactions: JSON.parse(JSON.stringify(state.recurringTransactions)),
+        };
+        set({ undoSnapshot: snapshot });
+      },
+      undoLastAction: () => {
+        const { undoSnapshot } = get();
+        if (!undoSnapshot) return;
+        set({
+          transactions: undoSnapshot.transactions,
+          budgets: undoSnapshot.budgets,
+          sharedData: undoSnapshot.sharedData,
+          goals: undoSnapshot.goals,
+          assets: undoSnapshot.assets,
+          liabilities: undoSnapshot.liabilities,
+          subscriptions: undoSnapshot.subscriptions,
+          recurringTransactions: undoSnapshot.recurringTransactions,
+          undoSnapshot: null,
+        });
+        get().reindex();
+      },
 
       resetData: () => {
         set({ 

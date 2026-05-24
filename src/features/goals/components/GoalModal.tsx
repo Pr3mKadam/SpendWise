@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Target, X } from 'lucide-react';
 import Portal from '@/ui/Portal';
 import { GOAL_EMOJIS, GOAL_COLORS } from '@/features/goals/components/constants';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export interface GoalFormData {
   name:                string;
@@ -21,7 +22,7 @@ function defaultForm(): GoalFormData {
     emoji:               '🎯',
     targetAmount:        '',
     savedAmount:         '0',
-    targetDate:          d.toISOString().split('T')[0],
+    targetDate:          formatLocalYYYYMMDD(d),
     monthlyContribution: '',
     color:               '#10b981',
   };

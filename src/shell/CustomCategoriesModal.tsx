@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { X, Plus, Trash2, Edit3, Tag as TagIcon } from 'lucide-react';
 import { CustomCategoryDef, Transaction } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface CustomCategoriesModalProps {
   isOpen: boolean;
@@ -207,7 +208,7 @@ export default function CustomCategoriesModal({
                           <div className="h-1.5 w-full bg-[var(--surface-submerged)] rounded-full overflow-hidden">
                             {(() => {
                               const spent = transactions
-                                .filter(t => t.category === cat.name && t.type === 'debit' && t.date.startsWith(new Date().toISOString().substring(0, 7)))
+                                .filter(t => t.category === cat.name && t.type === 'debit' && t.date.startsWith(formatLocalYYYYMMDD().substring(0, 7)))
                                 .reduce((s, t) => s + t.amount, 0);
                               const pct = Math.min(100, (spent / cat.monthlyLimit) * 100);
                               return (

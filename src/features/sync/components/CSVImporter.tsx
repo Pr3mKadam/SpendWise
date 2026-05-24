@@ -1,6 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, AlertCircle, CheckCircle2, ChevronRight, RefreshCw, FileText, X } from 'lucide-react';
 import { Transaction, Category } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 import { parseCSVLocally } from '@/parsers/csv';
 
 interface CSVImporterProps {
@@ -59,8 +60,8 @@ function parseDate(raw: string): string {
   const m = cleaned.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (m) return `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
   const d = new Date(cleaned);
-  if (!isNaN(d.getTime())) return d.toISOString().split('T')[0];
-  return new Date().toISOString().split('T')[0];
+  if (!isNaN(d.getTime())) return formatLocalYYYYMMDD(d);
+  return formatLocalYYYYMMDD();
 }
 
 function guessCategory(raw: string): Category {

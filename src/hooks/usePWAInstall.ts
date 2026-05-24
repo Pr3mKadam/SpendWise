@@ -18,7 +18,7 @@ export function usePWAInstall() {
       // Log install to analytics or clear state
       setIsAppInstalled(true);
       setDeferredPrompt(null);
-      console.log('PWA was installed');
+      console.info('[PWA] PWA was installed');
     };
 
     // Check if it's already installed globally (standalone mode)
@@ -52,7 +52,7 @@ export function usePWAInstall() {
     
     // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to the install prompt: ${outcome}`);
+    console.info(`[PWA] User response to the install prompt: ${outcome}`);
     
     // We've used the prompt, and can't use it again, throw it away
     setDeferredPrompt(null);

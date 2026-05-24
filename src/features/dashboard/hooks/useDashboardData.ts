@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { Transaction } from '@/types';
 import { FinanceState } from '@/types/state';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function useDashboardData(
   transactions: Transaction[],
@@ -58,8 +59,7 @@ export function useDashboardData(
 
   // Subscription Spend (Mobile)
   const subSpend = useMemo(() => {
-    const now = new Date();
-    const monthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const monthStr = formatLocalYYYYMMDD().substring(0, 7);
     return transactions
       .filter(t => t.type === 'debit' && t.category === 'Subscriptions' && t.date.startsWith(monthStr))
       .reduce((sum, t) => sum + t.amount, 0);
@@ -68,8 +68,8 @@ export function useDashboardData(
   // AI Insights
   const insights = useMemo(() => {
     const now = new Date();
-    const thisMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const prevMonthStr = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString().slice(0, 7);
+    const thisMonthStr = formatLocalYYYYMMDD().substring(0, 7);
+    const prevMonthStr = formatLocalYYYYMMDD(new Date(now.getFullYear(), now.getMonth() - 1, 1)).substring(0, 7);
 
     const thisMonthTx = transactions.filter(t => t.date.startsWith(thisMonthStr) && t.type === 'debit');
     const prevMonthTx = transactions.filter(t => t.date.startsWith(prevMonthStr) && t.type === 'debit');

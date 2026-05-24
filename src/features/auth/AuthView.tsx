@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { ChildQRScanner } from '@/features/parental/components/ChildQRScanner';
 import { useAuth } from '@/hooks/useAuth';
+import { formatLocalISO } from '@/utils/date';
 
 // ── Feature list shown on left panel ────────────────────────────
 const features = [
@@ -76,7 +77,7 @@ export default function AuthView() {
         initialBalance: 0,
         currency: '₹',
         onboardingComplete: true,
-        createdAt: new Date().toISOString()
+        createdAt: formatLocalISO()
       };
       cfg.userRole = 'student';
       cfg.parentId = parentId;
