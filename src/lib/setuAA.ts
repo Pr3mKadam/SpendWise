@@ -13,6 +13,7 @@
  */
 
 import { Transaction } from '@/types';
+import { formatLocalYYYYMMDD } from '@/utils/date';
 
 // These would normally be stored in .env and only accessed by the backend
 const SETU_CLIENT_ID = 'mock_setu_client_id';
@@ -67,21 +68,21 @@ export async function fetchSetuBankStatements(consentId: string): Promise<Partia
       amount: 15000,
       type: 'credit',
       description: 'IMPS-1234567890-SALARY',
-      date: new Date().toISOString(),
+      date: formatLocalYYYYMMDD(new Date()),
     },
     {
       merchant: 'Zomato Ltd',
       amount: 450,
       type: 'debit',
       description: 'UPI-ZOMATO@HDFC-FOOD',
-      date: new Date(Date.now() - 86400000).toISOString(),
+      date: formatLocalYYYYMMDD(new Date(Date.now() - 86400000)),
     },
     {
       merchant: 'Amazon India',
       amount: 1299,
       type: 'debit',
       description: 'UPI-AMAZON@SBI-SHOPPING',
-      date: new Date(Date.now() - 172800000).toISOString(),
+      date: formatLocalYYYYMMDD(new Date(Date.now() - 172800000)),
     }
   ];
 }

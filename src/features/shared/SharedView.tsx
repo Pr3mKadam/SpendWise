@@ -101,7 +101,6 @@ export default function SharedView({ currency, userId: propUserId }: { currency:
   const [showExpense, setExpense]   = useState(false);
   const [showGoal, setGoal]         = useState(false);
   const [showContrib, setContrib]   = useState(false);
-  const [showContrib, setContrib]   = useState(false);
   const [showQR, setQR]             = useState(false);
   const [activeGoal, setActiveGoal] = useState<SharedGoal | null>(null);
 

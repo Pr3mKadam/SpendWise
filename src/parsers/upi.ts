@@ -11,6 +11,7 @@
 
 import { Transaction, DefaultCategory } from "../types";
 import { useStore } from "../store";
+import { formatLocalYYYYMMDD } from "../utils/date";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -200,7 +201,7 @@ const UPI_PATTERNS = [
 ];
 
 function parseIndianDate(dateStr: string): string {
-  if (!dateStr) return new Date().toISOString().split("T")[0];
+  if (!dateStr) return formatLocalYYYYMMDD(new Date());
 
   // DD/MM/YY or DD-MM-YY
   const dmy = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
@@ -223,7 +224,7 @@ function parseIndianDate(dateStr: string): string {
     return `${year}-${months[mon.toLowerCase()] ?? "01"}-${d.padStart(2, "0")}`;
   }
 
-  return new Date().toISOString().split("T")[0];
+  return formatLocalYYYYMMDD(new Date());
 }
 
 /**
@@ -237,7 +238,7 @@ export function parseUPIString(text: string): ParsedUPITransaction | null {
   let type: "debit" | "credit" = "debit";
   let upiId    = "";
   let bankRef  = "";
-  let date     = new Date().toISOString().split("T")[0];
+  let date     = formatLocalYYYYMMDD(new Date());
 
   // Run all patterns
   for (const { pattern, extract } of UPI_PATTERNS) {
@@ -559,7 +560,7 @@ export async function fetchRazorpayTransactions(
       amount:     p.amount / 100,            // Razorpay stores in paise
       type:       "credit" as const,         // received payment = credit
       category:   "Income" as DefaultCategory,
-      date:       new Date(p.created_at * 1000).toISOString().split("T")[0],
+      date:       formatLocalYYYYMMDD(new Date(p.created_at * 1000)),
       bankRef:    p.id,
       rawText:    JSON.stringify(p),
       confidence: "high" as const,
@@ -630,7 +631,7 @@ export function generateRealisticMocks(): ParsedUPITransaction[] {
       amount: amount,
       type: merchant.type as 'credit' | 'debit',
       category: merchant.category as DefaultCategory,
-      date: date.toISOString(),
+      date: formatLocalYYYYMMDD(date),
       rawText: `Mock ${merchant.name} transaction`,
       confidence: "high"
     });
