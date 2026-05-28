@@ -88,10 +88,10 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
           const match = transactions.find(t => t.merchant.toLowerCase() === res.merchant.toLowerCase());
           if (match) {
             res.category = match.category;
-          } else {
+          } else if (res.category === 'Shopping' || res.category === 'Uncategorized') {
             res.category = predictCategory(res.merchant);
           }
-        } else {
+        } else if (res.category === 'Shopping' || res.category === 'Uncategorized') {
           res.category = predictCategory(res.merchant);
         }
       }
@@ -188,10 +188,10 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
               const match = transactions.find(t => t.merchant.toLowerCase() === res.merchant.toLowerCase());
               if (match) {
                 res.category = match.category;
-              } else {
+              } else if (res.category === 'Shopping' || res.category === 'Uncategorized') {
                 res.category = predictCategory(res.merchant);
               }
-            } else {
+            } else if (res.category === 'Shopping' || res.category === 'Uncategorized') {
               res.category = predictCategory(res.merchant);
             }
           }

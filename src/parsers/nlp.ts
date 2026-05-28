@@ -147,8 +147,18 @@ Return ONLY the JSON array of objects.`;
       const { category, type } = analyzeItem(part, text);
 
       if (amount !== undefined || parts.length === 1) {
+        const rawMerchant = part || text;
+        let cleanMerchant = rawMerchant
+          .replace(/\b(\d+[\d,]*\.?\d*)\b/g, '')
+          .replace(/\b(rs\.?|inr|rupees?|₹|\$|€|£|¥)\b/ig, '')
+          .replace(/\b(spent|spend|paid|pay|got|received|on|for|at|to|from)\b/ig, '')
+          .trim()
+          .replace(/\s+/g, ' ');
+
+        if (!cleanMerchant) cleanMerchant = rawMerchant;
+
         results.push({
-          merchant: part || text,
+          merchant: cleanMerchant,
           category,
           amount: amount || 0,
           type,
