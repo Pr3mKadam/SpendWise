@@ -22,4 +22,4 @@ export const ALL_NAV_ITEMS = [
   { id: 'reports'       as AppView, label: 'Reports',       icon: FileText },
 ];
 
-export const MOBILE_BOTTOM_IDS = ['dashboard', 'history', 'analytics', 'budget'];
+export const MOBILE_BOTTOM_IDS = ['dashboard', 'analytics', 'budget'];
