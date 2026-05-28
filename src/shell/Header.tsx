@@ -176,7 +176,7 @@ export default function Header({
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
 
           {/* Theme toggle - Visible on all viewports */}
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2">
             <button
               onClick={onToggleTheme}
               className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
@@ -195,7 +195,7 @@ export default function Header({
           {/* Privacy toggle - Visible on all devices */}
           <button
             onClick={onTogglePrivacy}
-            className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+            className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
             aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
             style={{ padding: 0, border: 'none' }}
           >
@@ -213,7 +213,7 @@ export default function Header({
               onClick={() => {
                 onOpenSearch?.();
               }}
-              className="flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
+              className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl transition-all hover:scale-105"
               aria-label="Search transactions and settings (Cmd+K)"
               style={{ padding: 0, border: 'none' }}
             >
@@ -268,7 +268,7 @@ export default function Header({
               onNavigate('profile');
             }}
             aria-label="View Profile and Settings"
-            className="group relative flex h-9 w-9 items-center justify-center rounded-full text-white font-bold text-sm shrink-0 transition-all hover:scale-105"
+            className="hidden md:flex group relative h-9 w-9 items-center justify-center rounded-full text-white font-bold text-sm shrink-0 transition-all hover:scale-105"
             style={{
               background: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
               fontFamily: 'var(--font-manrope)',
