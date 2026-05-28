@@ -66,6 +66,8 @@ export default function Header({
     .toUpperCase()
     .slice(0, 2);
 
+  const fallbackTitle = activeView.charAt(0).toUpperCase() + activeView.slice(1);
+
   /* ── helpers for responsive styles ── */
   const isMobileGlassBtn: React.CSSProperties = {
     background: 'rgba(255,255,255,0.13)',
@@ -136,7 +138,7 @@ export default function Header({
             >
               {activeView === 'dashboard'
                 ? `Hi, ${displayName.split(' ')[0]} 👋`
-                : VIEW_TITLES[activeView] ?? activeView}
+                : VIEW_TITLES[activeView] ?? fallbackTitle}
             </div>
             {/* Desktop: themed text */}
             <div
@@ -148,7 +150,7 @@ export default function Header({
             >
               {activeView === 'dashboard'
                 ? `${getGreeting()}, ${displayName} 👋`
-                : VIEW_TITLES[activeView] ?? activeView}
+                : VIEW_TITLES[activeView] ?? fallbackTitle}
             </div>
 
             {activeView === 'dashboard' && (
