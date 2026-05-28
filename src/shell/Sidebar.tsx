@@ -100,48 +100,53 @@ export default function Sidebar({
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* Three-section layout: left wing | FAB | right wing — FAB always centred */}
-        <div className="flex items-center h-[60px]">
-
-          {/* ── LEFT WING: Overview + Statistics ── */}
-          <div className="flex flex-1 items-center justify-around">
-            {mobileBottomItems.slice(0, 2).map(item => {
-              const Icon = item.icon;
-              const isActive = activeView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(item.id)}
-                  aria-label={item.label}
-                  aria-current={isActive ? 'page' : undefined}
-                  role="tab"
-                  aria-selected={isActive}
-                  className="relative flex flex-col items-center justify-center gap-[3px] w-[60px] h-full outline-none"
-                  style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)' }}
-                >
-                  <div
-                    className="absolute inset-x-1 inset-y-2 rounded-xl transition-opacity duration-200"
-                    style={{ background: 'var(--teal)', opacity: isActive ? 0.12 : 0 }}
-                  />
-                  <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                  <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>
-                    {item.label}
+        {/* Flat layout: items distributed evenly across the screen */}
+        <div className="flex items-center justify-evenly w-full px-1 h-[60px]">
+          {/* ── First 2 items (Overview, Budget) ── */}
+          {mobileBottomItems.slice(0, 2).map(item => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => navigate(item.id)}
+                aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
+                role="tab"
+                aria-selected={isActive}
+                className="relative flex flex-col items-center justify-center gap-[3px] min-w-[48px] h-full outline-none"
+                style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)' }}
+              >
+                <div
+                  className="absolute inset-x-0 inset-y-2 rounded-xl transition-opacity duration-200"
+                  style={{ background: 'var(--teal)', opacity: isActive ? 0.12 : 0 }}
+                />
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1, whiteSpace: 'nowrap' }}>
+                  {item.label}
+                </span>
+                {item.id === 'budget' && overBudgetCount > 0 && (
+                  <span
+                    className="absolute top-1.5 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-0.5"
+                    style={{ background: 'var(--red, #ef4444)', color: '#fff' }}
+                  >
+                    {overBudgetCount > 9 ? '9+' : overBudgetCount}
                   </span>
-                </button>
-              );
-            })}
-          </div>
+                )}
+              </button>
+            );
+          })}
 
           {/* ── CENTRE FAB (QuickAdd) ── */}
-          <div className="flex items-center justify-center shrink-0" style={{ width: '72px' }}>
+          <div className="flex items-center justify-center shrink-0" style={{ width: '60px' }}>
             <button
               onClick={() => { haptic.medium(); onOpenQuickAdd?.(); }}
               aria-label="Quick add transaction"
               className="relative flex items-center justify-center rounded-full shadow-lg active:scale-95 transition-transform outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)] focus-visible:ring-offset-2"
               style={{
-                width: '52px',
-                height: '52px',
-                marginTop: '-22px',
+                width: '50px',
+                height: '50px',
+                marginTop: '-20px',
                 background: 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)',
                 boxShadow: '0 4px 16px rgba(20,184,166,0.4)',
                 border: '3px solid var(--sidebar-bg)',
@@ -151,55 +156,52 @@ export default function Sidebar({
             </button>
           </div>
 
-          {/* ── RIGHT WING: Budget + More ── */}
-          <div className="flex flex-1 items-center justify-around">
-            {mobileBottomItems.slice(2).map(item => {
-              const Icon = item.icon;
-              const isActive = activeView === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(item.id)}
-                  aria-label={item.label}
-                  aria-current={isActive ? 'page' : undefined}
-                  role="tab"
-                  aria-selected={isActive}
-                  className="relative flex flex-col items-center justify-center gap-[3px] w-[60px] h-full outline-none"
-                  style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)' }}
-                >
-                  <div
-                    className="absolute inset-x-1 inset-y-2 rounded-xl transition-opacity duration-200"
-                    style={{ background: 'var(--teal)', opacity: isActive ? 0.12 : 0 }}
-                  />
-                  <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                  <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>
-                    {item.label}
+          {/* ── Last 2 items (Transactions, Sync) ── */}
+          {mobileBottomItems.slice(2).map(item => {
+            const Icon = item.icon;
+            const isActive = activeView === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => navigate(item.id)}
+                aria-label={item.label}
+                aria-current={isActive ? 'page' : undefined}
+                role="tab"
+                aria-selected={isActive}
+                className="relative flex flex-col items-center justify-center gap-[3px] min-w-[48px] h-full outline-none"
+                style={{ color: isActive ? 'var(--teal)' : 'var(--sidebar-text)' }}
+              >
+                <div
+                  className="absolute inset-x-0 inset-y-2 rounded-xl transition-opacity duration-200"
+                  style={{ background: 'var(--teal)', opacity: isActive ? 0.12 : 0 }}
+                />
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1, whiteSpace: 'nowrap' }}>
+                  {item.label}
+                </span>
+                {item.id === 'budget' && overBudgetCount > 0 && (
+                  <span
+                    className="absolute top-1.5 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-0.5"
+                    style={{ background: 'var(--red, #ef4444)', color: '#fff' }}
+                  >
+                    {overBudgetCount > 9 ? '9+' : overBudgetCount}
                   </span>
-                  {item.id === 'budget' && overBudgetCount > 0 && (
-                    <span
-                      className="absolute top-1.5 right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full text-[9px] font-bold px-0.5"
-                      style={{ background: 'var(--red, #ef4444)', color: '#fff' }}
-                    >
-                      {overBudgetCount > 9 ? '9+' : overBudgetCount}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+                )}
+              </button>
+            );
+          })}
 
-            {/* More — always in right wing */}
-            <button
-              onClick={() => { haptic.light(); setIsDrawerOpen(true); }}
-              aria-label="More features"
-              aria-expanded={isDrawerOpen}
-              className="relative flex flex-col items-center justify-center gap-[3px] w-[60px] h-full outline-none"
-              style={{ color: 'var(--sidebar-text)' }}
-            >
-              <MoreHorizontal size={20} strokeWidth={2} />
-              <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>More</span>
-            </button>
-          </div>
-
+          {/* ── More ── */}
+          <button
+            onClick={() => { haptic.light(); setIsDrawerOpen(true); }}
+            aria-label="More features"
+            aria-expanded={isDrawerOpen}
+            className="relative flex flex-col items-center justify-center gap-[3px] min-w-[48px] h-full outline-none"
+            style={{ color: 'var(--sidebar-text)' }}
+          >
+            <MoreHorizontal size={20} strokeWidth={2} />
+            <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>More</span>
+          </button>
         </div>
       </div>
 
