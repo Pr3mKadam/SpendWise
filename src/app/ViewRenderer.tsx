@@ -4,6 +4,7 @@ import { AppView, Transaction, Category } from '@/types';
 import { SkeletonLoader } from '@/ui/SkeletonLoader';
 import { ErrorBoundary } from '@/ui/ErrorBoundary';
 import AlertBanner from '@/shell/AlertBanner';
+import { DesktopOnlyGuard } from '@/shell/DesktopOnlyGuard';
 
 // Lazy loaded views
 const AnalyticsView = lazy(() => import('@/features/analytics/AnalyticsView'));
@@ -162,19 +163,21 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         )}
 
         {activeView === 'analytics' && (
-          <ViewWrapper id="analytics" activeView={activeView} className="w-full h-full space-y-6">
-            <AnalyticsView
-              monthlyHistory={financeState.monthlyHistory}
-              monthlyStats={financeState.monthlyStats}
-              categorySpending={financeState.categorySpending}
-              totalSpent={financeState.totalSpent}
-              currency={currency}
-              transactions={transactions}
-              onNavigate={onNavigate}
-              config={config}
-            />
-            <RecurringView patterns={recurringData} currency={currency} transactions={transactions} />
-          </ViewWrapper>
+          <DesktopOnlyGuard viewLabel="Statistics & Analytics" onNavigate={onNavigate}>
+            <ViewWrapper id="analytics" activeView={activeView} className="w-full h-full space-y-6">
+              <AnalyticsView
+                monthlyHistory={financeState.monthlyHistory}
+                monthlyStats={financeState.monthlyStats}
+                categorySpending={financeState.categorySpending}
+                totalSpent={financeState.totalSpent}
+                currency={currency}
+                transactions={transactions}
+                onNavigate={onNavigate}
+                config={config}
+              />
+              <RecurringView patterns={recurringData} currency={currency} transactions={transactions} />
+            </ViewWrapper>
+          </DesktopOnlyGuard>
         )}
 
         {activeView === 'goals' && (
@@ -269,9 +272,11 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         )}
 
         {activeView === 'portfolio' && (
-          <ViewWrapper id="portfolio" activeView={activeView}>
-            <PortfolioView currency={currency} financeState={financeState} config={config} />
-          </ViewWrapper>
+          <DesktopOnlyGuard viewLabel="Net Worth & Portfolio" onNavigate={onNavigate}>
+            <ViewWrapper id="portfolio" activeView={activeView}>
+              <PortfolioView currency={currency} financeState={financeState} config={config} />
+            </ViewWrapper>
+          </DesktopOnlyGuard>
         )}
 
         {activeView === 'subscriptions' && (
@@ -287,15 +292,19 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         )}
 
         {activeView === 'education' && (
-          <ViewWrapper id="education" activeView={activeView}>
-            <EducationView currency={currency} financeState={financeState} addNotification={notifState.addNotification} config={config} />
-          </ViewWrapper>
+          <DesktopOnlyGuard viewLabel="Financial Education" onNavigate={onNavigate}>
+            <ViewWrapper id="education" activeView={activeView}>
+              <EducationView currency={currency} financeState={financeState} addNotification={notifState.addNotification} config={config} />
+            </ViewWrapper>
+          </DesktopOnlyGuard>
         )}
 
         {activeView === 'reports' && (
-          <ViewWrapper id="reports" activeView={activeView}>
-            <ReportsView transactions={transactions} currency={currency} monthlyStats={financeState.monthlyStats} />
-          </ViewWrapper>
+          <DesktopOnlyGuard viewLabel="Reports" onNavigate={onNavigate}>
+            <ViewWrapper id="reports" activeView={activeView}>
+              <ReportsView transactions={transactions} currency={currency} monthlyStats={financeState.monthlyStats} />
+            </ViewWrapper>
+          </DesktopOnlyGuard>
         )}
 
         {(activeView === 'quests' || activeView === 'badges' || activeView === 'inventory' || activeView === 'shop' || activeView === 'gamification') && (

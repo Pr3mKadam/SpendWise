@@ -22,4 +22,9 @@ export const ALL_NAV_ITEMS = [
   { id: 'reports'       as AppView, label: 'Reports',       icon: FileText },
 ];
 
-export const MOBILE_BOTTOM_IDS = ['dashboard', 'analytics', 'budget'];
+/** Views shown in the mobile bottom tab bar (2 left + FAB + 2 right) */
+export const MOBILE_BOTTOM_IDS = ['dashboard', 'budget', 'history', 'sync'];
+
+/** Views that are too data-heavy for mobile — only navigable from the desktop sidebar */
+export const DESKTOP_ONLY_IDS = ['analytics', 'portfolio', 'reports', 'education'];
+

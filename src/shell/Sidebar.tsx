@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { haptic } from '@/lib/haptic';
 import { useStore } from '@/store';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
-import { ALL_NAV_ITEMS, MOBILE_BOTTOM_IDS } from './navigation';
+import { ALL_NAV_ITEMS, MOBILE_BOTTOM_IDS, DESKTOP_ONLY_IDS } from './navigation';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { MobileDrawer } from './components/MobileDrawer';
 
@@ -60,8 +60,14 @@ export default function Sidebar({
   const wealthItems = navItems.filter(i => ['portfolio', 'subscriptions', 'shared', 'sync'].includes(i.id));
   const toolItems   = navItems.filter(i => ['advisor', 'education', 'quests', 'parental', 'reports'].includes(i.id));
 
-  const mobileBottomItems = navItems.filter(i => MOBILE_BOTTOM_IDS.includes(i.id)).slice(0, 4);
-  const mobileDrawerItems = navItems.filter(i => !MOBILE_BOTTOM_IDS.includes(i.id));
+  // Bottom tab items (exactly 4: dashboard, budget, history, sync)
+  const mobileBottomItems = navItems.filter(i => MOBILE_BOTTOM_IDS.includes(i.id))
+    .sort((a, b) => MOBILE_BOTTOM_IDS.indexOf(a.id) - MOBILE_BOTTOM_IDS.indexOf(b.id));
+
+  // Drawer items: not in bottom bar, and NOT desktop-only (those are hidden from mobile entirely)
+  const mobileDrawerItems = navItems.filter(
+    i => !MOBILE_BOTTOM_IDS.includes(i.id) && !DESKTOP_ONLY_IDS.includes(i.id)
+  );
 
   const navigate = (view: AppView) => {
     haptic.light();
