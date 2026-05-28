@@ -5,6 +5,7 @@ import { Transaction } from '@/types';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
 import IOSInstallModal from '@/shell/IOSInstallModal';
+import Portal from '@/ui/Portal';
 
 import ProfileForm from '@/features/profile/components/ProfileForm';
 import { CurrencySelector } from '@/features/profile/components/CurrencySelector';
@@ -120,10 +121,12 @@ export default function ProfileView({
           }
         />
         <input ref={avatarInputRef} type="file" accept="image/*" className="sr-only" onChange={handleAvatarChange} />
-        {showSecureExportModal && <SecureExportModal onClose={() => setShowSecureExportModal(false)} onExport={handleSecureExport} isExporting={isExporting} />}
-        {showRestoreModal      && <RestoreModal      onClose={() => setShowRestoreModal(false)}      onRestore={handleRestore}    isRestoring={isRestoring} />}
-        {showResetConfirm      && <ResetConfirmModal onClose={() => setShowResetConfirm(false)}       onConfirm={onResetData} />}
-        {showIOSPrompt         && <IOSInstallModal   onClose={closeIOSPrompt} />}
+        <Portal>
+          {showSecureExportModal && <SecureExportModal onClose={() => setShowSecureExportModal(false)} onExport={handleSecureExport} isExporting={isExporting} />}
+          {showRestoreModal      && <RestoreModal      onClose={() => setShowRestoreModal(false)}      onRestore={handleRestore}    isRestoring={isRestoring} />}
+          {showResetConfirm      && <ResetConfirmModal onClose={() => setShowResetConfirm(false)}       onConfirm={onResetData} />}
+          {showIOSPrompt         && <IOSInstallModal   onClose={closeIOSPrompt} />}
+        </Portal>
       </>
     );
   }
@@ -218,10 +221,12 @@ export default function ProfileView({
       </div>
 
       {/* Modals */}
-      {showSecureExportModal && <SecureExportModal onClose={() => setShowSecureExportModal(false)} onExport={handleSecureExport} isExporting={isExporting} />}
-      {showRestoreModal      && <RestoreModal      onClose={() => setShowRestoreModal(false)}      onRestore={handleRestore}    isRestoring={isRestoring} />}
-      {showResetConfirm      && <ResetConfirmModal onClose={() => setShowResetConfirm(false)}       onConfirm={onResetData} />}
-      {showIOSPrompt         && <IOSInstallModal   onClose={closeIOSPrompt} />}
+      <Portal>
+        {showSecureExportModal && <SecureExportModal onClose={() => setShowSecureExportModal(false)} onExport={handleSecureExport} isExporting={isExporting} />}
+        {showRestoreModal      && <RestoreModal      onClose={() => setShowRestoreModal(false)}      onRestore={handleRestore}    isRestoring={isRestoring} />}
+        {showResetConfirm      && <ResetConfirmModal onClose={() => setShowResetConfirm(false)}       onConfirm={onResetData} />}
+        {showIOSPrompt         && <IOSInstallModal   onClose={closeIOSPrompt} />}
+      </Portal>
     </div>
   );
 }
