@@ -75,11 +75,11 @@ Return ONLY the JSON array of objects.`;
     else if (/movie|game|play|event|party|concert|cinema|theatre|show/.test(lowerDesc)) category = 'Entertainment';
 
     // Explicit credit keywords that guarantee credit
-    const hasExplicitCredit = /\b(income|salary|credited|payment received|earned|bonus|refund|cashback|reward|deposit|payout|allowance|freelance|interest|dividend|pocket money)\b/i.test(lowerDesc) || /\b(income|salary|credited|payment received|earned|bonus|refund|cashback|reward|deposit|payout|allowance|freelance|interest|dividend|pocket money)\b/i.test(lowerFull);
+    const hasExplicitCredit = /\b(income|salary|credited|payment received|earned|bonus|refund|cashback|reward|deposit|payout|allowance|freelance|interest|dividend|pocket money)\b/i.test(lowerDesc);
 
     // Ambiguous credit keywords (got, get, received, win, won, gain, profit, gift)
     // If these exist AND no debit category matched, it's credit/income! E.g. "I got 2000 rs"
-    const hasAmbiguousCredit = /\b(got|get|received|win|won|gain|gained|profit|gift)\b/i.test(lowerDesc) || /\b(got|get|received|win|won|gain|gained|profit|gift)\b/i.test(lowerFull);
+    const hasAmbiguousCredit = /\b(got|get|received|win|won|gain|gained|profit|gift)\b/i.test(lowerDesc);
 
     let type: 'credit' | 'debit' = 'debit';
 

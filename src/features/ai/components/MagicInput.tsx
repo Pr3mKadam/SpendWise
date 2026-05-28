@@ -173,20 +173,39 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
     recognition.onresult = async (event: any) => {
       const transcript = event.results[0][0].transcript;
       setScanStatus(`✅ Heard: "${transcript}"`);
-      const today = formatLocalYYYYMMDD(new Date());
+      setInput(transcript);
+      setIsProcessing(true);
       
       try {
-        const res = await parseVoiceWithGemini(transcript, today);
-        setPrediction([{
-          ...res,
-          confidence: 0.9,
-        }]);
+        const results = await processNaturalLanguageExpense(transcript, activeCurrency);
+        if (!results || results.length === 0) {
+          throw new Error('No results from NLP');
+        }
+        
+        const enrichedResults = results.map(res => {
+          if (res && res.merchant) {
+            if (transactions) {
+              const match = transactions.find(t => t.merchant.toLowerCase() === res.merchant.toLowerCase());
+              if (match) {
+                res.category = match.category;
+              } else {
+                res.category = predictCategory(res.merchant);
+              }
+            } else {
+              res.category = predictCategory(res.merchant);
+            }
+          }
+          return res;
+        });
+        setPrediction(enrichedResults);
       } catch (err) {
-        console.error('Gemini voice parsing failed, falling back to local:', err);
+        console.error('Voice NLP parsing failed, falling back to local:', err);
+        const today = formatLocalYYYYMMDD(new Date());
         const res = parseVoiceLocally(transcript, today);
         setPrediction([res]);
       }
       
+      setIsProcessing(false);
       setIsListening(false);
       setTimeout(() => setScanStatus(undefined), 3000);
     };
