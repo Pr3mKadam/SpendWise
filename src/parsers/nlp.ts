@@ -59,14 +59,20 @@ Return ONLY the JSON array of objects.`;
   // Helper functions
   const toTitleCase = (str: string) => str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase());
   
+  const CURRENCIES = 'rs\\.?|inr|rupees?|usd|eur|gbp|cad|aud|jpy|chf|cny|nzd|sgd|hkd|krw|mxn|thb|idr|myr|php|vnd|aed|sar|zar|brl|rub|₹|\\$|€|£|¥';
+  const CURRENCY_LETTERS = 'rs|inr|rupees|usd|eur|gbp|cad|aud|jpy|chf|cny|nzd|sgd|hkd|krw|mxn|thb|idr|myr|php|vnd|aed|sar|zar|brl|rub';
+
   const expandIndianShorthand = (t: string) => {
     let res = t
       .replace(/\b(\d+(?:\.\d+)?)\s*[kK]\b/g, (_, n) => (parseFloat(n) * 1000).toString())
       .replace(/\b(\d+(?:\.\d+)?)\s*(?:lakh|lacs?|[lL])\b/g, (_, n) => (parseFloat(n) * 100000).toString())
       .replace(/\b(\d+(?:\.\d+)?)\s*(?:crores?|crs?)\b/g, (_, n) => (parseFloat(n) * 10000000).toString());
     
-    // Separate attached currencies so \b boundaries work correctly (e.g. "500rs" -> "500 rs")
-    res = res.replace(/(\d)(rs|inr|rupees)\b/ig, '$1 $2');
+    // Separate attached currencies so \b boundaries work correctly (e.g. "500usd" -> "500 usd")
+    const currencyAttachedRegex = new RegExp(`(\\d)(${CURRENCY_LETTERS})\\b`, 'ig');
+    const currencyFrontRegex = new RegExp(`\\b(${CURRENCY_LETTERS})(\\d+)`, 'ig');
+    res = res.replace(currencyAttachedRegex, '$1 $2');
+    res = res.replace(currencyFrontRegex, '$1 $2');
     return res;
   };
 
@@ -127,7 +133,7 @@ Return ONLY the JSON array of objects.`;
     const firstIndex = numberMatches[0].index!;
     const textBeforeFirst = expandedText.slice(0, firstIndex).trim();
     const cleanTextBeforeFirst = textBeforeFirst.replace(/\b(i|my|spent|spend|paid|pay|bought|buy|gave|give)\b/ig, '').trim();
-    const isAmountFirst = cleanTextBeforeFirst.length === 0 || /^(?:rs\.?|inr|₹|\$|€|£|¥)$/i.test(cleanTextBeforeFirst);
+    const isAmountFirst = cleanTextBeforeFirst.length === 0 || new RegExp(`^(?:${CURRENCIES})$`, 'i').test(cleanTextBeforeFirst);
 
     for (let i = 0; i < numberMatches.length; i++) {
       const match = numberMatches[i];
@@ -150,7 +156,7 @@ Return ONLY the JSON array of objects.`;
       const rawMerchant = desc || `Expense ${i + 1}`;
       let cleanMerchant = rawMerchant
         .replace(/\b(\d+[\d,]*\.?\d*)\b/g, '')
-        .replace(/\b(rs\.?|inr|rupees?|₹|\$|€|£|¥)\b/ig, '')
+        .replace(new RegExp(`\\b(?:${CURRENCIES})\\b`, 'ig'), '')
         .replace(/\b(spent|spend|paid|pay|got|received|on|for|at|to|from)\b/ig, '')
         .trim()
         .replace(/\s+/g, ' ');
@@ -173,8 +179,8 @@ Return ONLY the JSON array of objects.`;
     
     for (const part of parts) {
       const amountMatch =
-        part.match(/(?:rs\.?|inr|₹|\$|€|£|¥)\s*([\d,]+\.?\d*)/i) ||
-        part.match(/\b([\d,]+\.?\d*)\s*(?:rs\.?|inr|rupees?|\$|€|£|¥)\b/i) ||
+        part.match(new RegExp(`(?:${CURRENCIES})\\s*([\\d,]+\\.?\\d*)`, 'i')) ||
+        part.match(new RegExp(`\\b([\\d,]+\\.?\\d*)\\s*(?:${CURRENCIES})\\b`, 'i')) ||
         part.match(/\b(\d{2,}[.,]?\d*)\b/);
       
       const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : undefined;
@@ -184,7 +190,7 @@ Return ONLY the JSON array of objects.`;
         const rawMerchant = part || expandedText;
         let cleanMerchant = rawMerchant
           .replace(/\b(\d+[\d,]*\.?\d*)\b/g, '')
-          .replace(/\b(rs\.?|inr|rupees?|₹|\$|€|£|¥)\b/ig, '')
+          .replace(new RegExp(`\\b(?:${CURRENCIES})\\b`, 'ig'), '')
           .replace(/\b(spent|spend|paid|pay|got|received|on|for|at|to|from)\b/ig, '')
           .trim()
           .replace(/\s+/g, ' ');
