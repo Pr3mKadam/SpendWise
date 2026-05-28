@@ -80,18 +80,6 @@ export function OnboardingSidebar() {
         ))}
       </div>
 
-      <div className="mt-6 md:mt-8 flex items-center gap-2">
-        <Shield size={13} style={{ color: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
-        <span
-          style={{
-            fontFamily: 'var(--font-inter)',
-            fontSize: '11px',
-            color: 'rgba(255,255,255,0.3)',
-          }}
-        >
-          All data stored locally on your device
-        </span>
-      </div>
     </div>
   );
 }

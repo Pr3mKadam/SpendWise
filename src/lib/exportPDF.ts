@@ -230,9 +230,6 @@ function buildHTML(data: PDFReportData): string {
     </table>
   </div>
 
-  <div style="text-align:center;font-size:11px;color:${MUTED};margin-top:20px;padding-top:16px;border-top:1px solid #edf2f7">
-    SpendWise · All data stored locally · No data leaves your device 🔒
-  </div>
 
 </body>
 </html>`;

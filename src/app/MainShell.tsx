@@ -293,11 +293,6 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
                 voiceSearchQuery={voiceSearchQuery}
               />
 
-              <footer className="mt-8 pb-6 text-center" role="contentinfo">
-                <p className="text-caption">
-                  SpendWise · All data stored locally · No data leaves your device 🔒
-                </p>
-              </footer>
             </main>
 
             <div className="mobile-nav-spacer md:hidden" />

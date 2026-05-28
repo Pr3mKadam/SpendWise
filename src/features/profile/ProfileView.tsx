@@ -199,7 +199,7 @@ export default function ProfileView({
         <div>
           <p className="font-inter font-semibold text-[13px]" style={{ color: 'var(--text-primary)' }}>SpendWise</p>
           <p className="font-inter text-[length:var(--fs-caption)]" style={{ color: 'var(--text-muted)' }}>
-            SpendWise PWA · {transactions.length} transactions · All data stored locally
+            SpendWise PWA · {transactions.length} transactions
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -214,7 +214,6 @@ export default function ProfileView({
               <CheckCircle2 size={14} /> App Installed
             </span>
           )}
-          <span className="text-2xl">🔒</span>
         </div>
       </div>
 
