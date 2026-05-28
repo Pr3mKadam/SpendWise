@@ -60,10 +60,14 @@ Return ONLY the JSON array of objects.`;
   const toTitleCase = (str: string) => str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase());
   
   const expandIndianShorthand = (t: string) => {
-    return t
+    let res = t
       .replace(/\b(\d+(?:\.\d+)?)\s*[kK]\b/g, (_, n) => (parseFloat(n) * 1000).toString())
       .replace(/\b(\d+(?:\.\d+)?)\s*(?:lakh|lacs?|[lL])\b/g, (_, n) => (parseFloat(n) * 100000).toString())
       .replace(/\b(\d+(?:\.\d+)?)\s*(?:crores?|crs?)\b/g, (_, n) => (parseFloat(n) * 10000000).toString());
+    
+    // Separate attached currencies so \b boundaries work correctly (e.g. "500rs" -> "500 rs")
+    res = res.replace(/(\d)(rs|inr|rupees)\b/ig, '$1 $2');
+    return res;
   };
 
   // Local Heuristics Fallback for multiple items (Highly advanced tokenizer)
