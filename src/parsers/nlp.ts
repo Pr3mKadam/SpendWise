@@ -20,8 +20,10 @@ export async function processNaturalLanguageExpense(text: string, currencyContex
 Description: "${text}"
 ${currencyContext ? `Context: User's base currency is ${currencyContext}.` : ''}
 
-For example, if description is "500 on food 700 on travel 800 on subscription", return an array with THREE objects.
-If description is "I got 2000 rs" or "received 5000 salary", return an object with type "credit" and category "Income".
+For example:
+- "500 on food 700 on travel 800 on subscription" -> 3 objects.
+- "Spent 500 on food, got 2000 salary" -> 1 debit object (Food) and 1 credit object (Salary).
+- "I got 2000 rs" or "received 5000 salary" -> 1 credit object (Income).
 
 Each object in the JSON array must have:
 - merchant: The business, person name, or short description (e.g. "Food", "Starbucks", "Travel", "Salary", "Refund", "Income", "Rahul")
@@ -54,11 +56,23 @@ Return ONLY the JSON array of objects.`;
       console.warn("AI Transaction Parse failed, falling back to local heuristics:", e);
     }
 
+  // Helper functions
+  const toTitleCase = (str: string) => str.replace(/\w\S*/g, t => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase());
+  
+  const expandIndianShorthand = (t: string) => {
+    return t
+      .replace(/\b(\d+(?:\.\d+)?)\s*[kK]\b/g, (_, n) => (parseFloat(n) * 1000).toString())
+      .replace(/\b(\d+(?:\.\d+)?)\s*(?:lakh|lacs?|[lL])\b/g, (_, n) => (parseFloat(n) * 100000).toString())
+      .replace(/\b(\d+(?:\.\d+)?)\s*(?:crores?|crs?)\b/g, (_, n) => (parseFloat(n) * 10000000).toString());
+  };
+
   // Local Heuristics Fallback for multiple items (Highly advanced tokenizer)
   const results: AIParseResult[] = [];
   
+  const expandedText = expandIndianShorthand(text);
+  
   // Find all number occurrences in the text (e.g., 500, 700, 1,200.50)
-  const numberMatches = Array.from(text.matchAll(/\b(\d+[\d,]*\.?\d*)\b/g));
+  const numberMatches = Array.from(expandedText.matchAll(/\b(\d+[\d,]*\.?\d*)\b/g));
 
   // Helper to determine credit and category
   const analyzeItem = (desc: string, fullText: string): { category: Category; type: 'credit' | 'debit' } => {
@@ -67,12 +81,14 @@ Return ONLY the JSON array of objects.`;
 
     // Check explicit debit categories first
     let category: Category | null = null;
-    if (/zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|snack|starbucks|coffee|burger|pizza|bakery/.test(lowerDesc)) category = 'Food';
-    else if (/transport|uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab|ticket|auto/.test(lowerDesc)) category = 'Transport';
+    if (/zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|snack|starbucks|coffee|burger|pizza|bakery|chai|grocery|groceries/.test(lowerDesc)) category = 'Food';
+    else if (/transport|uber|ola|rapido|metro|bus|train|flight|fuel|travel|cab|ticket|auto|rickshaw/.test(lowerDesc)) category = 'Transport';
     else if (/netflix|spotify|amazon|prime|youtube|hotstar|sub|susbcription|subscription|apple music/.test(lowerDesc)) category = 'Subscriptions';
-    else if (/electricity|water|bill|recharge|mobile|broadband|wifi|gas|rent|maintenance/.test(lowerDesc)) category = 'Utilities';
+    else if (/electricity|water|bill|recharge|mobile|broadband|wifi|gas|rent|maintenance|emi|loan/.test(lowerDesc)) category = 'Utilities';
     else if (/doctor|hospital|pharma|med|health|clinic|gym|therapy|medicine/.test(lowerDesc)) category = 'Health';
     else if (/movie|game|play|event|party|concert|cinema|theatre|show/.test(lowerDesc)) category = 'Entertainment';
+    else if (/school|college|tuition|course|books|education|class/.test(lowerDesc)) category = 'Education';
+    else if (/business|office|freelance|client/.test(lowerDesc)) category = 'Business';
 
     // Explicit credit keywords that guarantee credit
     const hasExplicitCredit = /\b(income|salary|credited|payment received|earned|bonus|refund|cashback|reward|deposit|payout|allowance|freelance|interest|dividend|pocket money)\b/i.test(lowerDesc);
@@ -81,12 +97,17 @@ Return ONLY the JSON array of objects.`;
     // If these exist AND no debit category matched, it's credit/income! E.g. "I got 2000 rs"
     const hasAmbiguousCredit = /\b(got|get|received|win|won|gain|gained|profit|gift)\b/i.test(lowerDesc);
 
+    // Explicit debit keywords
+    const hasExplicitDebit = /\b(spent|spend|paid|pay|bought|buy|give|gave|sent)\b/i.test(lowerDesc);
+
     let type: 'credit' | 'debit' = 'debit';
 
     if (hasExplicitCredit) {
       type = 'credit';
-    } else if (hasAmbiguousCredit && !category) {
+    } else if (hasAmbiguousCredit && !category && !hasExplicitDebit) {
       type = 'credit';
+    } else if (hasExplicitDebit) {
+      type = 'debit';
     }
 
     // Assign final category
@@ -100,8 +121,9 @@ Return ONLY the JSON array of objects.`;
   if (numberMatches.length > 1) {
     // We have multiple numbers! Determine if it's Amount-First or Description-First
     const firstIndex = numberMatches[0].index!;
-    const textBeforeFirst = text.slice(0, firstIndex).trim();
-    const isAmountFirst = textBeforeFirst.length === 0 || /^(?:rs\.?|inr|₹|\$|€|£|¥)$/i.test(textBeforeFirst);
+    const textBeforeFirst = expandedText.slice(0, firstIndex).trim();
+    const cleanTextBeforeFirst = textBeforeFirst.replace(/\b(i|my|spent|spend|paid|pay|bought|buy|gave|give)\b/ig, '').trim();
+    const isAmountFirst = cleanTextBeforeFirst.length === 0 || /^(?:rs\.?|inr|₹|\$|€|£|¥)$/i.test(cleanTextBeforeFirst);
 
     for (let i = 0; i < numberMatches.length; i++) {
       const match = numberMatches[i];
@@ -111,22 +133,30 @@ Return ONLY the JSON array of objects.`;
 
       if (isAmountFirst) {
         const start = match.index! + match[0].length;
-        const end = i < numberMatches.length - 1 ? numberMatches[i + 1].index! : text.length;
-        desc = text.slice(start, end).trim();
+        const end = i < numberMatches.length - 1 ? numberMatches[i + 1].index! : expandedText.length;
+        desc = expandedText.slice(start, end).trim();
         desc = desc.replace(/^(?:on|and|&|,|;|\+|for)\s+/i, '').replace(/\s+(?:and|&|,|;|\+|for|on)$/i, '').trim();
-        if (!desc) desc = `Expense ${i + 1}`;
       } else {
         const start = i === 0 ? 0 : numberMatches[i - 1].index! + numberMatches[i - 1][0].length;
         const end = match.index!;
-        desc = text.slice(start, end).trim();
+        desc = expandedText.slice(start, end).trim();
         desc = desc.replace(/^(?:on|and|&|,|;|\+|for)\s+/i, '').replace(/\s+(?:and|&|,|;|\+|for|on)$/i, '').trim();
-        if (!desc) desc = `Expense ${i + 1}`;
       }
 
-      const { category, type } = analyzeItem(desc, text);
+      const rawMerchant = desc || `Expense ${i + 1}`;
+      let cleanMerchant = rawMerchant
+        .replace(/\b(\d+[\d,]*\.?\d*)\b/g, '')
+        .replace(/\b(rs\.?|inr|rupees?|₹|\$|€|£|¥)\b/ig, '')
+        .replace(/\b(spent|spend|paid|pay|got|received|on|for|at|to|from)\b/ig, '')
+        .trim()
+        .replace(/\s+/g, ' ');
+
+      if (!cleanMerchant) cleanMerchant = rawMerchant;
+
+      const { category, type } = analyzeItem(desc, expandedText);
 
       results.push({
-        merchant: desc,
+        merchant: toTitleCase(cleanMerchant),
         category,
         amount,
         type,
@@ -135,7 +165,7 @@ Return ONLY the JSON array of objects.`;
     }
   } else {
     // Single number or fallback splitting by "and", "&", ",", ";", "+"
-    const parts = text.split(/\b(?:and|&|,|;|\+)\b/i).map(p => p.trim()).filter(Boolean);
+    const parts = expandedText.split(/\b(?:and|&|,|;|\+)\b/i).map(p => p.trim()).filter(Boolean);
     
     for (const part of parts) {
       const amountMatch =
@@ -144,10 +174,10 @@ Return ONLY the JSON array of objects.`;
         part.match(/\b(\d{2,}[.,]?\d*)\b/);
       
       const amount = amountMatch ? parseFloat(amountMatch[1].replace(/,/g, '')) : undefined;
-      const { category, type } = analyzeItem(part, text);
+      const { category, type } = analyzeItem(part, expandedText);
 
       if (amount !== undefined || parts.length === 1) {
-        const rawMerchant = part || text;
+        const rawMerchant = part || expandedText;
         let cleanMerchant = rawMerchant
           .replace(/\b(\d+[\d,]*\.?\d*)\b/g, '')
           .replace(/\b(rs\.?|inr|rupees?|₹|\$|€|£|¥)\b/ig, '')
@@ -158,7 +188,7 @@ Return ONLY the JSON array of objects.`;
         if (!cleanMerchant) cleanMerchant = rawMerchant;
 
         results.push({
-          merchant: cleanMerchant,
+          merchant: toTitleCase(cleanMerchant),
           category,
           amount: amount || 0,
           type,
@@ -169,11 +199,11 @@ Return ONLY the JSON array of objects.`;
   }
 
   if (results.length === 0) {
-    const { category, type } = analyzeItem(text, text);
+    const { category, type } = analyzeItem(expandedText, expandedText);
     return [{
-      merchant: text,
+      merchant: toTitleCase(expandedText),
       category,
-      amount: parseFloat(text.replace(/[^0-9.]/g, '')) || 0,
+      amount: parseFloat(expandedText.replace(/[^0-9.]/g, '')) || 0,
       type,
       confidence: 0.6,
     }];

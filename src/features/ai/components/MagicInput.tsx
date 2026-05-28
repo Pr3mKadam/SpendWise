@@ -102,6 +102,15 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
     setIsProcessing(false);
   };
 
+  const updatePrediction = (idx: number, field: keyof typeof prediction[0], value: any) => {
+    setPrediction(prev => {
+      if (!prev) return prev;
+      const newPred = [...prev];
+      newPred[idx] = { ...newPred[idx], [field]: value };
+      return newPred;
+    });
+  };
+
   const handleConfirm = () => {
     if (prediction && prediction.length > 0) {
       const invalid = prediction.find(p => !p.amount || p.amount <= 0);
@@ -337,16 +346,41 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
 
             <div className="space-y-3 pr-1 mb-6">
               {prediction.map((item, idx) => (
-                <div key={idx} className="flex items-center gap-6 p-3 bg-[var(--surface-bg)] rounded-2xl border border-[var(--border)]">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-xl font-black text-[var(--text-primary)] truncate">{item.merchant || 'Unknown Merchant'}</h4>
-                    <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{item.category || 'Expense'}</p>
+                <div key={idx} className="flex items-center gap-4 p-3 bg-[var(--surface-bg)] rounded-2xl border border-[var(--border)]">
+                  <div className="flex-1 min-w-0 flex flex-col gap-1">
+                    <input 
+                      type="text"
+                      value={item.merchant || ''}
+                      onChange={(e) => updatePrediction(idx, 'merchant', e.target.value)}
+                      className="text-lg font-black text-[var(--text-primary)] bg-transparent border-b border-transparent hover:border-[var(--border)] focus:border-[var(--teal)] outline-none w-full truncate"
+                    />
+                    <select
+                      value={item.category || 'Shopping'}
+                      onChange={(e) => updatePrediction(idx, 'category', e.target.value)}
+                      className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider bg-[var(--surface-bg)] border-none outline-none cursor-pointer w-max"
+                    >
+                      {['Food', 'Shopping', 'Transport', 'Entertainment', 'Subscriptions', 'Utilities', 'Health', 'Travel', 'Education', 'Business', 'Income', 'Uncategorized'].map(cat => (
+                        <option key={cat} value={cat}>{cat}</option>
+                      ))}
+                    </select>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-xl font-black text-[var(--teal)]">
-                      {item.type === 'debit' ? '-' : '+'}{activeCurrency}{item.amount || 0}
-                    </p>
-                    <p className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{item.type || 'debit'}</p>
+                  <div className="text-right flex-shrink-0 flex flex-col items-end gap-1">
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => updatePrediction(idx, 'type', item.type === 'debit' ? 'credit' : 'debit')}
+                        className={`text-xl font-black bg-transparent border-none cursor-pointer px-1 rounded ${item.type === 'debit' ? 'text-red-500' : 'text-green-500'}`}
+                      >
+                        {item.type === 'debit' ? '-' : '+'}
+                      </button>
+                      <span className="text-xl font-black text-[var(--teal)]">{activeCurrency}</span>
+                      <input 
+                        type="number"
+                        value={item.amount || ''}
+                        onChange={(e) => updatePrediction(idx, 'amount', parseFloat(e.target.value) || 0)}
+                        className="text-xl font-black text-[var(--teal)] bg-transparent border-b border-transparent hover:border-[var(--border)] focus:border-[var(--teal)] outline-none w-20 text-right"
+                      />
+                    </div>
+                    <span className="text-[var(--text-muted)] font-bold text-xs uppercase tracking-wider">{item.type || 'debit'}</span>
                   </div>
                 </div>
               ))}
