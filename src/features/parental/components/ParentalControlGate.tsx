@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Lock, Baby, ChevronRight } from 'lucide-react';
 import { useStore } from '@/store';
-import { PinInput } from '@/ui/PinInput';
+import { PinInput } from '@/components/ui/PinInput';
 
 export function ParentalPinGate({ onContinueAsKid, onUnlocked }: { onContinueAsKid?: () => void, onUnlocked?: () => void }) {
   const store = useStore();

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Target, Sparkles, TrendingUp, RefreshCw } from 'lucide-react';
 import { AppView } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 // ─── Snap-row card ────────────────────────────────────────────────────────────
 

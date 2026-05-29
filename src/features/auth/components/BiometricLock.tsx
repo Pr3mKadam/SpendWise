@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Shield, Fingerprint, CheckCircle2, AlertCircle } from 'lucide-react';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface BiometricLockProps {
   onUnlocked: () => void;

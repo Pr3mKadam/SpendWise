@@ -14,7 +14,7 @@ import DebtPlanner from '@/features/portfolio/components/DebtPlanner';
 import EntryCard from '@/features/portfolio/components/EntryCard';
 import AllocationDonut from '@/features/portfolio/components/AllocationDonut';
 import { MobilePortfolioHero } from '@/features/portfolio/components/MobilePortfolioHero';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface PortfolioViewMobileProps {
   netWorth: number;

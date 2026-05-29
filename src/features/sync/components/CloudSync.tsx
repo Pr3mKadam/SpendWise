@@ -13,7 +13,7 @@ import {
   syncAll,
   pushGamification,
   SupabaseUser,
-} from '@/services/supabase';
+} from '@/core/api/supabase';
 import { useStore } from '@/store';
 import { Transaction } from '@/types';
 

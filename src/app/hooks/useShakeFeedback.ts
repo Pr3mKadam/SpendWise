@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useStore } from '@/store';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 export function useShakeFeedback(
   setShowFeedback: (show: boolean) => void,

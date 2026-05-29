@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { FileText, Sparkles, Download, Share2, Calendar, Loader2, Printer } from 'lucide-react';
-import { generateMonthlyReport } from '@/insights/reporting';
+import { generateMonthlyReport } from '@/features/reports/insights/reporting';
 
 import ReactMarkdown from 'react-markdown';
 import { motion } from 'framer-motion';

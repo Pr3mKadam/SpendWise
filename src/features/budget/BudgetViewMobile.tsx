@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useCategories } from '@/hooks/useCategories';
 import { Category } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 import { BudgetSummaryMobile } from '@/features/budget/components/BudgetSummaryMobile';
 import { BudgetCategoryCardMobile } from '@/features/budget/components/BudgetCategoryCardMobile';
 

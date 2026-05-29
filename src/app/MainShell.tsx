@@ -3,15 +3,15 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AppView, Transaction, Category } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 
-import Sidebar from '@/shell/Sidebar';
-import Header from '@/shell/Header';
+import Sidebar from '@/components/layout/Sidebar';
+import Header from '@/components/layout/Header';
 import type { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { ViewRenderer } from '@/app/ViewRenderer';
 import { useAppState } from '@/hooks/useAppState';
 import { useAutomations } from '@/features/recurring/hooks/useAutomations';
 import { useStore } from '@/store';
-import ServiceWorkerToast from '@/shell/ServiceWorkerToast';
-import { haptic } from '@/lib/haptic';
+import ServiceWorkerToast from '@/components/layout/ServiceWorkerToast';
+import { haptic } from '@/core/haptic';
 import { useUPIReturn } from '@/hooks/useUPIReturn';
 import { Shield } from 'lucide-react';
 
@@ -25,8 +25,8 @@ const AppModals = lazy(() => import('@/app/AppModals').then(m => ({ default: m.A
 const OnboardingModal = lazy(() => import('@/features/onboarding/components/OnboardingModal'));
 const ParentalPinGate = lazy(() => import('@/features/parental/components/ParentalControlGate').then(m => ({ default: m.ParentalPinGate })));
 const KidModeBanner = lazy(() => import('@/features/parental/components/ParentalControlGate').then(m => ({ default: m.KidModeBanner })));
-const QuickAddModal = lazy(() => import('@/shell/QuickAddModal').then(m => ({ default: m.QuickAddModal })));
-const FeedbackModal = lazy(() => import('@/shell/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
+const QuickAddModal = lazy(() => import('@/components/layout/QuickAddModal').then(m => ({ default: m.QuickAddModal })));
+const FeedbackModal = lazy(() => import('@/components/layout/FeedbackModal').then(m => ({ default: m.FeedbackModal })));
 
 interface MainShellProps {
   config:     SpendWiseConfig | null;
@@ -90,7 +90,7 @@ export function MainShell({ config, setConfig, userId, initialView = 'dashboard'
   }, [financeState.addTransaction]);
 
   const handlePDFReport = useCallback(async () => {
-    const { generatePDFReport } = await import('@/lib/exportPDF');
+    const { generatePDFReport } = await import('@/core/exportPDF');
     const now = new Date();
     const month = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     generatePDFReport({

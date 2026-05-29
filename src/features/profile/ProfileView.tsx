@@ -4,8 +4,8 @@ import { exportCSV } from '@/utils/export';
 import { Transaction } from '@/types';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
 import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
-import IOSInstallModal from '@/shell/IOSInstallModal';
-import Portal from '@/ui/Portal';
+import IOSInstallModal from '@/components/layout/IOSInstallModal';
+import Portal from '@/components/ui/Portal';
 
 import ProfileForm from '@/features/profile/components/ProfileForm';
 import { CurrencySelector } from '@/features/profile/components/CurrencySelector';

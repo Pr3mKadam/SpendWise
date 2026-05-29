@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { TrendingUp, TrendingDown } from 'lucide-react';
-import Card from '@/ui/Card';
-import { haptic } from '@/lib/haptic';
+import Card from '@/components/ui/Card';
+import { haptic } from '@/core/haptic';
 
 export interface StatCardProps {
   label: string;

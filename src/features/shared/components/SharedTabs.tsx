@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { SharedGoal, SharedGroupMember } from '@/features/shared/hooks/useSharedWallets';
-import { Ico } from '@/ui/Icons';
-import { Avatar } from '@/ui/Avatar';
-import { StatusPill } from '@/ui/StatusPill';
+import { Ico } from '@/components/ui/Icons';
+import { Avatar } from '@/components/ui/Avatar';
+import { StatusPill } from '@/components/ui/StatusPill';
 import { Activity, Plus, ArrowRight, Sparkles } from 'lucide-react';
 
 const fmt = (v: number, currency: string) => `${currency}${v.toLocaleString()}`;

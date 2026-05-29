@@ -2,11 +2,11 @@ import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { Transaction, Category } from '@/types';
 import { db } from '@/db/db';
-import { createFinanceSlice, FinanceSlice } from '@/store/slices/financeSlice';
-import { createPortfolioSlice, PortfolioSlice } from '@/store/slices/portfolioSlice';
-import { createGamificationSlice, GamificationSlice } from '@/store/slices/gamificationSlice';
-import { createParentalSlice, ParentalSlice } from '@/store/slices/parentalSlice';
-import { createSecuredSlice, SecuredSlice } from '@/store/slices/securedSlice';
+import { createFinanceSlice, FinanceSlice } from '@/features/transactions/store/financeSlice';
+import { createPortfolioSlice, PortfolioSlice } from '@/features/portfolio/store/portfolioSlice';
+import { createGamificationSlice, GamificationSlice } from '@/features/gamification/store/gamificationSlice';
+import { createParentalSlice, ParentalSlice } from '@/features/parental/store/parentalSlice';
+import { createSecuredSlice, SecuredSlice } from '@/core/store/securedSlice';
 
 // Helper functions for base64 conversion
 function arrayBufferToBase64(buffer: ArrayBuffer): string {

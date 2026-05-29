@@ -1,6 +1,6 @@
 import { CategorySpend, AppView } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface CategoryBreakdownListProps {
   categorySpending: CategorySpend[];

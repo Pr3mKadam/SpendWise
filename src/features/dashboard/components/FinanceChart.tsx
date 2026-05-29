@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
-import Card from '@/ui/Card';
+import Card from '@/components/ui/Card';
 import ChartTooltip from '@/features/dashboard/components/ChartTooltip';
 
 const TEXT_PRIMARY = '#0f1117';

@@ -5,7 +5,7 @@
 import { useMemo } from 'react';
 import { Lock, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface Badge {
   id: string;

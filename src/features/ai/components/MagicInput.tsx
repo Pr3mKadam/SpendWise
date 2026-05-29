@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Wand2, Sparkles, Loader2, Check, X, Mic, Camera, Paperclip } from 'lucide-react';
-import { processNaturalLanguageExpense } from '@/parsers/nlp';
+import { processNaturalLanguageExpense } from '@/features/ai/parsers/nlp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Transaction } from '@/types';
 import { AIInputTools } from '@/features/ai/components/AIInputTools';
 import { compressImage } from '@/utils/imageUtils';
-import { recognizeReceipt, parseOfflineReceipt } from '@/parsers/ocr';
-import { parseVoiceLocally } from '@/parsers/voice';
-import { parseVoiceWithGemini } from '@/services/VoiceService';
+import { recognizeReceipt, parseOfflineReceipt } from '@/features/ai/parsers/ocr';
+import { parseVoiceLocally } from '@/features/ai/parsers/voice';
+import { parseVoiceWithGemini } from '@/core/api/VoiceService';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import ReceiptScanner from '@/features/ai/components/ReceiptScanner';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 import { predictCategory } from '@/utils/merchantMapper';
 import { useCategories } from '@/hooks/useCategories';
 import { useStore } from '@/store';
@@ -102,7 +102,7 @@ export default function MagicInput({ onAdd, externalInput, onInputChange, transa
     setIsProcessing(false);
   };
 
-  const updatePrediction = (idx: number, field: keyof typeof prediction[0], value: any) => {
+  const updatePrediction = (idx: number, field: 'merchant' | 'category' | 'amount' | 'type', value: any) => {
     setPrediction(prev => {
       if (!prev) return prev;
       const newPred = [...prev];

@@ -1,10 +1,10 @@
 import React, { Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppView, Transaction, Category } from '@/types';
-import { SkeletonLoader } from '@/ui/SkeletonLoader';
-import { ErrorBoundary } from '@/ui/ErrorBoundary';
-import AlertBanner from '@/shell/AlertBanner';
-import { DesktopOnlyGuard } from '@/shell/DesktopOnlyGuard';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import AlertBanner from '@/components/layout/AlertBanner';
+import { DesktopOnlyGuard } from '@/components/layout/DesktopOnlyGuard';
 
 // Lazy loaded views
 const AnalyticsView = lazy(() => import('@/features/analytics/AnalyticsView'));

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { Transaction } from '@/types/finance';
-import { detectAnomalies } from '@/insights/anomaly';
+import { detectAnomalies } from '@/features/analytics/insights/anomaly';
 import { AlertTriangle, Sparkles } from 'lucide-react';
 
 interface AnomalyDetectorProps {

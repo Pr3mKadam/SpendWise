@@ -2,8 +2,8 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { Transaction, Category } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { Virtuoso } from 'react-virtuoso';
-import PullToRefresh from '@/shell/PullToRefresh';
-import { haptic } from '@/lib/haptic';
+import PullToRefresh from '@/components/layout/PullToRefresh';
+import { haptic } from '@/core/haptic';
 import { useStore } from '@/store';
 
 import { TransactionFilters } from '@/features/transactions/components/TransactionFilters';

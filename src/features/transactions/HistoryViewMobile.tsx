@@ -12,8 +12,8 @@ import {
   X
 } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
-import { haptic } from '@/lib/haptic';
-import EmptyState from '@/ui/EmptyState';
+import { haptic } from '@/core/haptic';
+import EmptyState from '@/components/ui/EmptyState';
 import TransactionRow from './components/TransactionRow';
 
 interface HistoryViewMobileProps {

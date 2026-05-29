@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Copy, Share2, Check, Info, Users } from 'lucide-react';
-import { Modal } from '@/ui/Modal';
-import { Btn } from '@/ui/Button';
-import { Field, Inp } from '@/ui/Input';
-import { Sel } from '@/ui/Select';
-import { Err, Ok } from '@/ui/Alert';
-import { EmojiBtn } from '@/ui/Avatar';
-import { Ico } from '@/ui/Icons';
+import { Modal } from '@/components/ui/Modal';
+import { Btn } from '@/components/ui/Button';
+import { Field, Inp } from '@/components/ui/Input';
+import { Sel } from '@/components/ui/Select';
+import { Err, Ok } from '@/components/ui/Alert';
+import { EmojiBtn } from '@/components/ui/Avatar';
+import { Ico } from '@/components/ui/Icons';
 import { SharedGoal, SharedGroupMember } from '@/features/shared/hooks/useSharedWallets';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 

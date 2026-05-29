@@ -5,7 +5,7 @@ import {
   Smartphone as PhoneIcon, MapPin, Briefcase, CreditCard
 } from 'lucide-react';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface ProfileViewMobileProps {
   name: string;

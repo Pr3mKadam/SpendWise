@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
 import { STORAGE_KEYS } from '@/constants';
 import { useStore } from '@/store';
-import { isSupabaseConfigured, signInWithEmail, signUpWithEmail } from '@/services/supabase';
+import { isSupabaseConfigured, signInWithEmail, signUpWithEmail } from '@/core/api/supabase';
 
 export interface User {
   id: string;

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, ChevronRight, Loader2, CheckCircle2 } from 'lucide-react';
-import { UPI_PROVIDERS } from '@/parsers/upi';
+import { UPI_PROVIDERS } from '@/features/sync/parsers/upi';
 
 export interface UPILinkProps {
   onSetView: (view: any) => void;

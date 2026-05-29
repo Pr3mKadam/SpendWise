@@ -9,7 +9,7 @@ import { BadgeGallery } from '@/features/gamification/components/BadgeGallery';
 import { SavingsChallenges } from '@/features/gamification/components/SavingsChallenges';
 import { useQuestReset } from '@/features/gamification/hooks/useQuestReset';
 import { UserLevelCard } from '@/features/gamification/components/UserLevelCard';
-import { getSpendingPersonality } from '@/insights/advisor';
+import { getSpendingPersonality } from '@/features/analytics/insights/advisor';
 
 type Tab = 'overview' | 'quests' | 'badges' | 'challenges';
 

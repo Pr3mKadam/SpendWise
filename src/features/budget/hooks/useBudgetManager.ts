@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Category, Transaction, Budget, BudgetSuggestion } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
-import { generateBudgetSuggestions } from '@/insights/budgetSuggestions';
+import { generateBudgetSuggestions } from '@/features/budget/insights/budgetSuggestions';
 
 interface UseBudgetManagerOptions {
   budgets:       Budget[];

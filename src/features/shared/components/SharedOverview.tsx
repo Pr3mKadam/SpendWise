@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion';
 import { Users, Sparkles, Wallet, Target } from 'lucide-react';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 const PURPOSE_EMOJI: Record<string, string> = { friends: '🎉', roommates: '🏠', family: '👨‍👩‍👧', other: '🤝' };
 

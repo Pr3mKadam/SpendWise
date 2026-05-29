@@ -1,5 +1,5 @@
 import { Transaction, AppView } from '@/types';
-import Card from '@/ui/Card';
+import Card from '@/components/ui/Card';
 import { WalletCards } from 'lucide-react';
 import { initials, avatarColor } from '@/utils/avatar';
 

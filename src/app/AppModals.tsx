@@ -1,10 +1,10 @@
 import React from 'react';
-import NotificationCenter from '@/shell/NotificationCenter';
-import CustomCategoriesModal from '@/shell/CustomCategoriesModal';
-import CommandPalette from '@/shell/CommandPalette';
+import NotificationCenter from '@/components/layout/NotificationCenter';
+import CustomCategoriesModal from '@/components/layout/CustomCategoriesModal';
+import CommandPalette from '@/components/layout/CommandPalette';
 import LevelUpModal from '@/features/gamification/components/LevelUpModal';
-import PrivacyShield from '@/shell/PrivacyShield';
-import { OfflineIndicator } from '@/shell/OfflineIndicator';
+import PrivacyShield from '@/components/layout/PrivacyShield';
+import { OfflineIndicator } from '@/components/layout/OfflineIndicator';
 import { BudgetAlertToast } from '@/features/budget/components/BudgetAlertToast';
 import { AppView, Transaction, Category } from '@/types';
 

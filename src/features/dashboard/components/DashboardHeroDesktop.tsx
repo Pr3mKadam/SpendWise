@@ -4,7 +4,7 @@ import { LineChart, Line, ResponsiveContainer, Tooltip } from 'recharts';
 import { Sparkles, TrendingUp, TrendingDown, ArrowDownLeft, ArrowUpRight, Shield } from 'lucide-react';
 import { useCountUp } from '@/hooks/useCountUp';
 import { MonthlyStats, BalanceDataPoint } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface DashboardHeroProps {
   currentBalance: number;

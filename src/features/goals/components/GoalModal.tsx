@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Target, X } from 'lucide-react';
-import Portal from '@/ui/Portal';
+import Portal from '@/components/ui/Portal';
 import { GOAL_EMOJIS, GOAL_COLORS } from '@/features/goals/components/constants';
 
 export interface GoalFormData {

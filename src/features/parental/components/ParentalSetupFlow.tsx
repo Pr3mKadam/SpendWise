@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ShieldCheck, ArrowRight, Save, Lock, Camera } from 'lucide-react';
-import { PinInput } from '@/ui/PinInput';
+import { PinInput } from '@/components/ui/PinInput';
 import { ChildQRScanner } from '@/features/parental/components/ChildQRScanner';
 
 interface ParentalSetupFlowProps {

@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion';
 import { Target, Edit2, Trash2, AlertCircle } from 'lucide-react';
 import { Category } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface BudgetCategoryCardMobileProps {
   b: {

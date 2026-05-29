@@ -2,13 +2,13 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
 import { useTransactions } from '@/hooks/useTransactions';
 import { SpendingPersonality } from '@/types';
-import { getFinancialAdvice, getSpendingPersonality, ConversationMessage } from '@/insights/advisor';
+import { getFinancialAdvice, getSpendingPersonality, ConversationMessage } from '@/features/analytics/insights/advisor';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import EducationCards from '@/features/education/components/EducationCards';
 import { SpeechRecognition, SpeechRecognitionEvent } from '@/types/dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import AdvisorViewMobile from '@/features/advisor/AdvisorViewMobile';
-import { isSupabaseConfigured } from '@/services/supabase';
+import { isSupabaseConfigured } from '@/core/api/supabase';
 
 
 const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';

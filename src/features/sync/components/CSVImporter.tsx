@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef } from 'react';
 import { Upload, AlertCircle, CheckCircle2, ChevronRight, RefreshCw, FileText, X } from 'lucide-react';
 import { Transaction, Category } from '@/types';
-import { parseCSVLocally } from '@/parsers/csv';
+import { parseCSVLocally } from '@/features/sync/parsers/csv';
 
 interface CSVImporterProps {
   onImport: (transactions: Transaction[]) => void;

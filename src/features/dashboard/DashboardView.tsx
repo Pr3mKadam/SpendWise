@@ -8,8 +8,8 @@ import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
 import LevelProgress from '@/features/gamification/components/LevelProgress';
 import DashboardHero from '@/features/dashboard/components/DashboardHero';
 import MagicInput from '@/features/ai/components/MagicInput';
-import PullToRefresh from '@/shell/PullToRefresh';
-import { haptic } from '@/lib/haptic';
+import PullToRefresh from '@/components/layout/PullToRefresh';
+import { haptic } from '@/core/haptic';
 import StatCard from '@/features/dashboard/components/StatCard';
 import { Sparkles, TrendingUp, TrendingDown, Wallet, Target, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -24,7 +24,7 @@ import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
 import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
 import { AIInsights } from '@/features/dashboard/components/AIInsights';
 import { useBudgets } from '@/hooks/useBudgets';
-import { getProactiveNudge } from '@/insights/advisor';
+import { getProactiveNudge } from '@/features/analytics/insights/advisor';
 
 // Lazy load non-critical/heavy components
 const FinanceChartLazy = lazy(() => import('@/features/dashboard/components/FinanceChart'));

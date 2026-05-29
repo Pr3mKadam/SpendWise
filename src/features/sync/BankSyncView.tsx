@@ -3,9 +3,9 @@ import {
   Brain, CheckCircle2, Sparkles, Loader2, AlertCircle
 } from 'lucide-react';
 import { Transaction, LinkedAccount, FinanceProvider, Category, SyncView, WizardStep } from '@/types';
-import { UPI_PROVIDERS, generateRealisticMocks } from '@/parsers/upi';
+import { UPI_PROVIDERS, generateRealisticMocks } from '@/features/sync/parsers/upi';
 import { initiateRazorpayPayment, parseUPIPayment, rememberMerchant, parseUPIDescription, loadMerchantMemory } from '@/utils/razorpaySync';
-import { createSetuConsent, fetchSetuBankStatements } from '@/lib/setuAA';
+import { createSetuConsent, fetchSetuBankStatements } from '@/core/setuAA';
 import { predictCategory } from '@/utils/merchantMapper';
 import { useStore } from '@/store';
 import { Category as CategoryType } from '@/types';

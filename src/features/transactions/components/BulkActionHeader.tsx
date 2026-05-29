@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trash2, X } from 'lucide-react';
 import { Category } from '@/types';
-import { CategoryDropdown } from '@/ui/CategoryDropdown';
+import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 
 export interface BulkActionHeaderProps {
   selectedCount: number;

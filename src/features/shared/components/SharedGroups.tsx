@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, ChevronDown, Plus } from 'lucide-react';
-import { Ico } from '@/ui/Icons';
-import { haptic } from '@/lib/haptic';
+import { Ico } from '@/components/ui/Icons';
+import { haptic } from '@/core/haptic';
 
 const PURPOSE_EMOJI: Record<string, string> = { friends: '🎉', roommates: '🏠', family: '👨‍👩‍👧', other: '🤝' };
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AppView } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface UseAppNavigationProps {
   initialView: AppView;

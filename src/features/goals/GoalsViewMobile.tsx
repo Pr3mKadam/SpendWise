@@ -3,7 +3,7 @@ import { Target, Plus, Award, ChevronRight, TrendingUp, CheckCircle2 } from 'luc
 import { SavingsGoal } from '@/types';
 import { GoalCard } from '@/features/goals/components/GoalCard';
 import { BadgeGallery } from '@/features/gamification/components/BadgeGallery';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface GoalsViewMobileProps {
   goals: SavingsGoal[];

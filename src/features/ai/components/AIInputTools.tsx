@@ -3,9 +3,9 @@ import { RefObject } from 'react';
 // import removed
 import { useCategories } from '@/hooks/useCategories';
 import { useStore } from '@/store';
-import { parseVoiceLocally } from '@/parsers/voice';
+import { parseVoiceLocally } from '@/features/ai/parsers/voice';
 import { compressImage } from '@/utils/imageUtils';
-import { recognizeReceipt, parseOfflineReceipt } from '@/parsers/ocr';
+import { recognizeReceipt, parseOfflineReceipt } from '@/features/ai/parsers/ocr';
 
 const PulsingWave = () => (
   <div className="flex items-center gap-[3px] h-4">

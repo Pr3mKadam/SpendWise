@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import { Award, Zap, CheckCircle, RefreshCw, Sparkles, Coffee, BookOpen, TrendingUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { haptic } from '@/lib/haptic';
-import { generateQuests } from '@/insights/advisor';
+import { haptic } from '@/core/haptic';
+import { generateQuests } from '@/features/analytics/insights/advisor';
 import { Transaction } from '@/types';
 import { useQuestReset } from '@/features/gamification/hooks/useQuestReset';
 

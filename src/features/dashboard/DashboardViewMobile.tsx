@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { AppView } from '@/types';
 import { FinanceState } from '@/types/state';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useGoals } from '@/features/goals/hooks/useGoals';
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
-import { getProactiveNudge } from '@/insights/advisor';
+import { getProactiveNudge } from '@/features/analytics/insights/advisor';
 import { useGamification } from '@/features/gamification/hooks/useGamification';
 
 import { MobileBalanceHero } from './components/MobileBalanceHero';

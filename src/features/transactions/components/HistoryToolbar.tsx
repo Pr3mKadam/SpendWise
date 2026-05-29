@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { Download, Upload, FileText } from 'lucide-react';
 import { Transaction } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 import { exportCSV, exportJSON } from '@/utils/export';
 
 interface HistoryToolbarProps {

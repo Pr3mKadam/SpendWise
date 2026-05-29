@@ -18,10 +18,10 @@ import {
   SharedGroup, SharedGroupMember, SharedWalletEntry,
   SharedExpense, SharedExpenseSplit, SharedGoal,
   SharedGoalContribution, SharedStorage, mergeSharedStorage
-} from '@/lib/crdt';
-import { syncEngine, SyncState } from '@/lib/syncEngine';
+} from '@/core/crdt';
+import { syncEngine, SyncState } from '@/core/syncEngine';
 import { useStore } from '@/store';
-import { isSupabaseConfigured } from '@/services/supabase';
+import { isSupabaseConfigured } from '@/core/api/supabase';
 
 export type {
   SharedGroup, SharedGroupMember, SharedWalletEntry,

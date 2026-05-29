@@ -4,7 +4,7 @@ import {
   SmartphoneNfc, Link2, History, CreditCard, Clock, RefreshCw, Activity, Users
 } from 'lucide-react';
 import { Transaction, LinkedAccount, SyncView } from '@/types';
-import { UPI_PROVIDERS } from '@/parsers/upi';
+import { UPI_PROVIDERS } from '@/features/sync/parsers/upi';
 import CSVImporter from '@/features/sync/components/CSVImporter';
 import { CloudSync } from '@/features/sync/components/CloudSync';
 import { useSharedWallets } from '@/features/shared/hooks/useSharedWallets';

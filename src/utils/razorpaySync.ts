@@ -1,5 +1,5 @@
 import { Transaction, Category } from '@/types';
-import { processNaturalLanguageExpense } from '@/parsers/nlp';
+import { processNaturalLanguageExpense } from '@/features/ai/parsers/nlp';
 import { useStore } from '@/store';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────

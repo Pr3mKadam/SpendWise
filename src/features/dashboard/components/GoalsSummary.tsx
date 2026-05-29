@@ -1,5 +1,5 @@
 import { Plus, Target } from 'lucide-react';
-import Card from '@/ui/Card';
+import Card from '@/components/ui/Card';
 import { AppView } from '@/types';
 
 const TEXT_PRIMARY = '#0f1117';

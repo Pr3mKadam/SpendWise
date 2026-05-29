@@ -3,11 +3,11 @@ import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModa
 import { exportCSV } from '@/utils/export';
 import { parseTransactionsJSON } from '@/utils/import';
 import { Transaction } from '@/types';
-import { encryptData, decryptData } from '@/lib/encryption';
+import { encryptData, decryptData } from '@/core/encryption';
 import { useStore } from '@/store';
 import { downloadDatabaseBackup, importDatabase } from '@/db/backup';
 import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 const FONT_SIZES = ['text-sm', 'text-base', 'text-lg', 'text-xl'] as const;
 export type FontSizeKey = typeof FONT_SIZES[number];

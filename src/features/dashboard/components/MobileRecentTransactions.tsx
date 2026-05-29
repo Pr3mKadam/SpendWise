@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronRight, Plus } from 'lucide-react';
 import { Transaction, AppView } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 const CAT_EMOJI: Record<string, string> = {
   Food: '🍔', Transport: '🚗', Shopping: '🛍️', Utilities: '⚡',

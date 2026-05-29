@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { ArrowUpRight, ArrowDownLeft, Trash2, X, Tag } from 'lucide-react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Transaction, Category } from '@/types';
-import { CategoryDropdown } from '@/ui/CategoryDropdown';
-import { haptic } from '@/lib/haptic';
+import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
+import { haptic } from '@/core/haptic';
 import { useCategories } from '@/hooks/useCategories';
 
 export interface TransactionRowProps {

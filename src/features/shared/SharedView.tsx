@@ -3,15 +3,15 @@ import { useSharedWallets } from '@/features/shared/hooks/useSharedWallets';
 import { useAuth } from '@/hooks/useAuth';
 import { SharedGoal } from '@/features/shared/hooks/useSharedWallets';
 
-import { Ico } from '@/ui/Icons';
-import { Btn } from '@/ui/Button';
-import { Err } from '@/ui/Alert';
+import { Ico } from '@/components/ui/Icons';
+import { Btn } from '@/components/ui/Button';
+import { Err } from '@/components/ui/Alert';
 import { CreateGroupModal, InviteModal, WalletModal, ExpenseModal, GoalModal, ContribModal, GroupQRModal } from '@/features/shared/components/SharedModals';
 import { WalletTab, ExpensesTab, GoalsTab, MembersTab, ActivityTab } from '@/features/shared/components/SharedTabs';
 import { SharedOverview } from '@/features/shared/components/SharedOverview';
 import { InviteBanner, EmptyState, GroupSelector } from '@/features/shared/components/SharedGroups';
 import { Activity, Share2, Scan, Plus, Users, Target, Wallet } from 'lucide-react';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 const PURPOSE_COLORS: Record<string, { gradient: string; text: string; bg: string; border: string }> = {
   friends: {
