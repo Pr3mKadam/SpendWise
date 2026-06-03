@@ -1,6 +1,13 @@
 import { useMemo } from 'react';
 import {
-  AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine, CartesianGrid,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+  CartesianGrid,
 } from 'recharts';
 import { BalanceDataPoint } from '@/types';
 import { useStore } from '@/store';
@@ -34,7 +41,8 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
     });
   }, [data, splitIndex]);
 
-  const todayLabel = splitIndex > 0 && splitIndex < data.length ? data[splitIndex - 1]?.date : undefined;
+  const todayLabel =
+    splitIndex > 0 && splitIndex < data.length ? data[splitIndex - 1]?.date : undefined;
 
   const store = useStore();
   const settings = store.parentalState;
@@ -54,8 +62,16 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
 
   if (data.length === 0) {
     return (
-      <div className="card flex items-center justify-center h-[300px]" role="region" aria-label="Weekly Comparison">
-        <p style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', fontSize: '14px' }}>No balance data yet</p>
+      <div
+        className="card flex items-center justify-center h-[300px]"
+        role="region"
+        aria-label="Weekly Comparison"
+      >
+        <p
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)', fontSize: '14px' }}
+        >
+          No balance data yet
+        </p>
       </div>
     );
   }
@@ -63,7 +79,7 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
   return (
     <div className="card px-6 py-5" role="region" aria-label="Weekly Comparison Balance Chart Card">
       {/* Visually hidden screen reader summary */}
-      <div 
+      <div
         style={{
           position: 'absolute',
           width: '1px',
@@ -73,7 +89,7 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
           overflow: 'hidden',
           clip: 'rect(0, 0, 0, 0)',
           whiteSpace: 'nowrap',
-          border: '0'
+          border: '0',
         }}
       >
         Balance summary: {screenReaderSummary}
@@ -88,23 +104,39 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
         <div className="flex items-center gap-5">
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full" style={{ background: 'var(--teal)' }} />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Actual</span>
+            <span
+              style={{
+                fontFamily: 'var(--font-inter)',
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              Actual
+            </span>
           </div>
           <div className="flex items-center gap-2">
             <div className="w-3 h-3 rounded-full" style={{ background: '#cbd5e0' }} />
-            <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>Projected</span>
+            <span
+              style={{
+                fontFamily: 'var(--font-inter)',
+                fontSize: '12px',
+                color: 'var(--text-muted)',
+              }}
+            >
+              Projected
+            </span>
           </div>
         </div>
       </div>
 
-      <div 
-        role="img" 
+      <div
+        role="img"
         aria-label="Weekly balance comparison line chart showing actual and projected trends"
         style={{
           height: 260,
           filter: shouldHideBalances ? 'blur(8px)' : 'none',
           opacity: shouldHideBalances ? 0.7 : 1,
-          transition: 'filter 0.3s'
+          transition: 'filter 0.3s',
         }}
       >
         <ResponsiveContainer width="100%" height="100%">
@@ -143,7 +175,15 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
                 x={todayLabel}
                 stroke="#cbd5e0"
                 strokeDasharray="4 4"
-                label={{ value: 'TODAY', position: 'top', fill: '#a0aec0', fontSize: 10, fontFamily: 'var(--font-inter)', fontWeight: 600, letterSpacing: '0.08em' }}
+                label={{
+                  value: 'TODAY',
+                  position: 'top',
+                  fill: '#a0aec0',
+                  fontSize: 10,
+                  fontFamily: 'var(--font-inter)',
+                  fontWeight: 600,
+                  letterSpacing: '0.08em',
+                }}
               />
             )}
 
@@ -155,11 +195,34 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
                 const value = point?.balance;
                 return (
                   <div className="card px-4 py-3 shadow-lg">
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>{label}</p>
-                    <p style={{ fontFamily: 'var(--font-manrope)', fontSize: '18px', fontWeight: 800, color: isProj ? 'var(--text-muted)' : 'var(--teal)' }}>
-                      {currency}{Number(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-inter)',
+                        fontSize: '12px',
+                        color: 'var(--text-muted)',
+                        marginBottom: '4px',
+                      }}
+                    >
+                      {label}
                     </p>
-                    <p style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-manrope)',
+                        fontSize: '18px',
+                        fontWeight: 800,
+                        color: isProj ? 'var(--text-muted)' : 'var(--teal)',
+                      }}
+                    >
+                      {currency}
+                      {Number(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    </p>
+                    <p
+                      style={{
+                        fontFamily: 'var(--font-inter)',
+                        fontSize: '11px',
+                        color: 'var(--text-muted)',
+                      }}
+                    >
                       {isProj ? 'AI Projected' : 'Actual Balance'}
                     </p>
                   </div>
@@ -167,8 +230,29 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
               }}
             />
 
-            <Area type="monotone" dataKey="actualBalance" stroke="#14b8a6" strokeWidth={2.5} fillOpacity={1} fill="url(#gradActual)" connectNulls activeDot={{ r: 5, fill: '#14b8a6', stroke: '#fff', strokeWidth: 2 }} isAnimationActive={!prefersReducedMotion} />
-            <Area type="monotone" dataKey="projectedBalance" stroke="#94a3b8" strokeWidth={2} strokeDasharray="5 4" fillOpacity={1} fill="url(#gradProjected)" connectNulls activeDot={{ r: 5, fill: '#94a3b8', stroke: '#fff', strokeWidth: 2 }} isAnimationActive={!prefersReducedMotion} />
+            <Area
+              type="monotone"
+              dataKey="actualBalance"
+              stroke="#14b8a6"
+              strokeWidth={2.5}
+              fillOpacity={1}
+              fill="url(#gradActual)"
+              connectNulls
+              activeDot={{ r: 5, fill: '#14b8a6', stroke: '#fff', strokeWidth: 2 }}
+              isAnimationActive={!prefersReducedMotion}
+            />
+            <Area
+              type="monotone"
+              dataKey="projectedBalance"
+              stroke="#94a3b8"
+              strokeWidth={2}
+              strokeDasharray="5 4"
+              fillOpacity={1}
+              fill="url(#gradProjected)"
+              connectNulls
+              activeDot={{ r: 5, fill: '#94a3b8', stroke: '#fff', strokeWidth: 2 }}
+              isAnimationActive={!prefersReducedMotion}
+            />
           </AreaChart>
         </ResponsiveContainer>
       </div>

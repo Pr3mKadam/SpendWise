@@ -1,6 +1,14 @@
 import React from 'react';
 
-export function Field({ label, children, className = '' }: { label: string; children: React.ReactNode; className?: string }) {
+export function Field({
+  label,
+  children,
+  className = '',
+}: {
+  label: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div className={`mb-4 ${className}`}>
       <span className="block text-xs font-bold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider">

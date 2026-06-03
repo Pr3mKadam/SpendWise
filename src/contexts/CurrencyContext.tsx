@@ -16,14 +16,14 @@ const CurrencyContext = createContext<CurrencyContextType | undefined>(undefined
 
 // Simulated rates relative to USD (1.0)
 const SIMULATED_RATES: Record<CurrencyCode, number> = {
-  '$':   1.0,
-  '€':   0.92,
-  '£':   0.79,
-  '₹':   83.12,
-  '¥':   151.42,
-  'A$':  1.52,
-  'C$':  1.35,
-  'AED': 3.67,
+  $: 1.0,
+  '€': 0.92,
+  '£': 0.79,
+  '₹': 83.12,
+  '¥': 151.42,
+  A$: 1.52,
+  C$: 1.35,
+  AED: 3.67,
 };
 
 export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -34,7 +34,9 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         const config = JSON.parse(raw);
         if (config.currency) return config.currency as CurrencyCode;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return '₹'; // Default to Rupees as requested
   });
 
@@ -45,7 +47,9 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         const c = JSON.parse(raw);
         if (c.currency) return c.currency as CurrencyCode;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return '₹';
   });
 
@@ -60,7 +64,9 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
             setActiveCurrency(config.currency as CurrencyCode);
           }
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     };
 
     window.addEventListener('spendwise-config-updated', handleConfigChange);
@@ -72,7 +78,11 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
   }, []);
 
-  const convert = (amount: number, from: CurrencyCode = baseCurrency, to: CurrencyCode = activeCurrency) => {
+  const convert = (
+    amount: number,
+    from: CurrencyCode = baseCurrency,
+    to: CurrencyCode = activeCurrency
+  ) => {
     if (from === to) return amount;
     // Convert to USD first, then to target
     const amountInUSD = amount / SIMULATED_RATES[from];
@@ -86,32 +96,45 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
       currency: getISOCode(currency),
       minimumFractionDigits: 0,
       maximumFractionDigits: 2,
-    }).format(converted).replace(/[A-Z]{3}/, currency); // Replace ISO with our custom symbol if needed
+    })
+      .format(converted)
+      .replace(/[A-Z]{3}/, currency); // Replace ISO with our custom symbol if needed
   };
 
   const getISOCode = (code: CurrencyCode): string => {
     switch (code) {
-      case '$':   return 'USD';
-      case '€':   return 'EUR';
-      case '£':   return 'GBP';
-      case '₹':   return 'INR';
-      case '¥':   return 'JPY';
-      case 'A$':  return 'AUD';
-      case 'C$':  return 'CAD';
-      case 'AED': return 'AED';
-      default:    return 'USD';
+      case '$':
+        return 'USD';
+      case '€':
+        return 'EUR';
+      case '£':
+        return 'GBP';
+      case '₹':
+        return 'INR';
+      case '¥':
+        return 'JPY';
+      case 'A$':
+        return 'AUD';
+      case 'C$':
+        return 'CAD';
+      case 'AED':
+        return 'AED';
+      default:
+        return 'USD';
     }
   };
 
   return (
-    <CurrencyContext.Provider value={{
-      baseCurrency,
-      activeCurrency,
-      rates: SIMULATED_RATES,
-      convert,
-      format,
-      setActiveCurrency,
-    }}>
+    <CurrencyContext.Provider
+      value={{
+        baseCurrency,
+        activeCurrency,
+        rates: SIMULATED_RATES,
+        convert,
+        format,
+        setActiveCurrency,
+      }}
+    >
       {children}
     </CurrencyContext.Provider>
   );

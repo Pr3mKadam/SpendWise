@@ -18,8 +18,17 @@ interface MobileDrawerProps {
 }
 
 export function MobileDrawer({
-  isOpen, onClose, activeView, navigate, mobileDrawerItems,
-  overBudgetCount, theme, onToggleTheme, showInstall, onInstall, signOut
+  isOpen,
+  onClose,
+  activeView,
+  navigate,
+  mobileDrawerItems,
+  overBudgetCount,
+  theme,
+  onToggleTheme,
+  showInstall,
+  onInstall,
+  signOut,
 }: MobileDrawerProps) {
   return (
     <AnimatePresence>
@@ -46,11 +55,24 @@ export function MobileDrawer({
             }}
           >
             <div className="flex justify-center pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.15)' }} />
+              <div
+                className="w-10 h-1 rounded-full"
+                style={{ background: 'rgba(255,255,255,0.15)' }}
+              />
             </div>
 
-            <div className="flex items-center justify-between px-5 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              <span style={{ fontFamily: 'var(--font-manrope)', fontWeight: 800, fontSize: '18px', color: '#fff' }}>
+            <div
+              className="flex items-center justify-between px-5 pb-3"
+              style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}
+            >
+              <span
+                style={{
+                  fontFamily: 'var(--font-manrope)',
+                  fontWeight: 800,
+                  fontSize: '18px',
+                  color: '#fff',
+                }}
+              >
                 Spend<span style={{ color: 'var(--teal)' }}>Wise</span>
               </span>
               <button
@@ -87,8 +109,10 @@ export function MobileDrawer({
                       <Icon size={16} strokeWidth={isActive ? 2.5 : 2} />
                       <span>{item.label}</span>
                       {item.id === 'budget' && overBudgetCount > 0 && (
-                        <span className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full text-[10px] font-bold px-1"
-                          style={{ background: 'var(--red, #ef4444)', color: '#fff' }}>
+                        <span
+                          className="ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full text-[10px] font-bold px-1"
+                          style={{ background: 'var(--red, #ef4444)', color: '#fff' }}
+                        >
                           {overBudgetCount}
                         </span>
                       )}
@@ -101,7 +125,10 @@ export function MobileDrawer({
 
               <div className="flex flex-col gap-2">
                 <button
-                  onClick={() => { haptic.medium(); onToggleTheme?.(); }}
+                  onClick={() => {
+                    haptic.medium();
+                    onToggleTheme?.();
+                  }}
                   className="flex items-center justify-between px-4 py-3 rounded-2xl min-h-[52px]"
                   style={{
                     background: 'rgba(255,255,255,0.05)',
@@ -116,7 +143,10 @@ export function MobileDrawer({
                     {theme === 'dark' ? <Moon size={18} /> : <Sun size={18} />}
                     <span>Dark Mode</span>
                   </div>
-                  <div className="w-10 h-5 rounded-full relative" style={{ background: 'rgba(255,255,255,0.1)' }}>
+                  <div
+                    className="w-10 h-5 rounded-full relative"
+                    style={{ background: 'rgba(255,255,255,0.1)' }}
+                  >
                     <div
                       className="absolute top-1 w-3 h-3 rounded-full transition-all"
                       style={{
@@ -129,7 +159,11 @@ export function MobileDrawer({
 
                 {showInstall && (
                   <button
-                    onClick={() => { haptic.medium(); onInstall?.(); onClose(); }}
+                    onClick={() => {
+                      haptic.medium();
+                      onInstall?.();
+                      onClose();
+                    }}
                     className="flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[52px]"
                     style={{
                       background: 'var(--teal)',
@@ -148,9 +182,10 @@ export function MobileDrawer({
                   onClick={() => navigate('profile')}
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[52px]"
                   style={{
-                    background: activeView === 'profile'
-                      ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)'
-                      : 'rgba(255,255,255,0.05)',
+                    background:
+                      activeView === 'profile'
+                        ? 'linear-gradient(135deg, var(--teal) 0%, #0d9488 100%)'
+                        : 'rgba(255,255,255,0.05)',
                     color: activeView === 'profile' ? '#fff' : 'var(--sidebar-text)',
                     fontFamily: 'var(--font-inter)',
                     fontSize: '14px',
@@ -163,7 +198,10 @@ export function MobileDrawer({
                 </button>
 
                 <button
-                  onClick={() => { haptic.light(); signOut(); }}
+                  onClick={() => {
+                    haptic.light();
+                    signOut();
+                  }}
                   className="flex items-center gap-3 px-4 py-3 rounded-2xl min-h-[52px]"
                   style={{
                     color: 'var(--teal)',

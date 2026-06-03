@@ -4,13 +4,13 @@ export function ProgressRing({
   size = 80,
 }: {
   percent: number;
-  color:   string;
-  size?:   number;
+  color: string;
+  size?: number;
 }) {
-  const r          = (size - 10) / 2;
-  const circ       = 2 * Math.PI * r;
-  const offset     = circ - (Math.min(percent, 100) / 100) * circ;
-  const center     = size / 2;
+  const r = (size - 10) / 2;
+  const circ = 2 * Math.PI * r;
+  const offset = circ - (Math.min(percent, 100) / 100) * circ;
+  const center = size / 2;
 
   return (
     <svg width={size} height={size} className="-rotate-90">
@@ -24,9 +24,19 @@ export function ProgressRing({
           <stop offset="100%" stopColor={color} stopOpacity="0.6" />
         </linearGradient>
       </defs>
-      <circle cx={center} cy={center} r={r} fill="none" stroke="#f0f2f5" strokeWidth={6} className="dark:stroke-gray-800" />
       <circle
-        cx={center} cy={center} r={r}
+        cx={center}
+        cy={center}
+        r={r}
+        fill="none"
+        stroke="#f0f2f5"
+        strokeWidth={6}
+        className="dark:stroke-gray-800"
+      />
+      <circle
+        cx={center}
+        cy={center}
+        r={r}
         fill="none"
         stroke={`url(#gradient-${color})`}
         strokeWidth={6}

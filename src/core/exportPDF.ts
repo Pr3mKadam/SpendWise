@@ -2,22 +2,22 @@ import { Transaction, MonthlyStats, Budget, SavingsGoal } from '@/types';
 
 interface PDFReportData {
   transactions: Transaction[];
-  monthlyStats:  MonthlyStats;
-  budgets:       Budget[];
-  goals:         SavingsGoal[];
-  currency:      string;
-  month:         string; // e.g. "April 2026"
+  monthlyStats: MonthlyStats;
+  budgets: Budget[];
+  goals: SavingsGoal[];
+  currency: string;
+  month: string; // e.g. "April 2026"
 }
 
 // ─── Inline styles (no external CSS needed for print window) ───────────────────
 
-const TEAL    = '#14b8a6';
-const DARK    = '#1a202c';
-const MUTED   = '#718096';
+const TEAL = '#14b8a6';
+const DARK = '#1a202c';
+const MUTED = '#718096';
 const BG_CARD = '#f8fafc';
-const GREEN   = '#10b981';
-const RED     = '#ef4444';
-const AMBER   = '#f59e0b';
+const GREEN = '#10b981';
+const RED = '#ef4444';
+const AMBER = '#f59e0b';
 
 function fmt(currency: string, amount: number): string {
   return `${currency}${Math.abs(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -30,7 +30,9 @@ function pct(val: number, total: number): string {
 
 // ─── Category aggregation ──────────────────────────────────────────────────────
 
-function aggregateByCategory(txs: Transaction[]): { category: string; total: number; count: number }[] {
+function aggregateByCategory(
+  txs: Transaction[]
+): { category: string; total: number; count: number }[] {
   const map = new Map<string, { total: number; count: number }>();
   txs.forEach(tx => {
     if (tx.type === 'debit') {
@@ -49,24 +51,23 @@ function buildHTML(data: PDFReportData): string {
   const { transactions, monthlyStats, budgets, goals, currency, month } = data;
   const catBreakdown = aggregateByCategory(transactions);
   const totalExpenses = monthlyStats.totalExpenses || 0;
-  const totalIncome   = monthlyStats.totalIncome   || 0;
-  const netCashFlow   = monthlyStats.netCashFlow;
-  const savingsRate   = monthlyStats.savingsRate;
-  const generatedAt   = new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
+  const totalIncome = monthlyStats.totalIncome || 0;
+  const netCashFlow = monthlyStats.netCashFlow;
+  const savingsRate = monthlyStats.savingsRate;
+  const generatedAt = new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' });
 
   const netColor = netCashFlow >= 0 ? GREEN : RED;
   const savingsColor = savingsRate >= 20 ? GREEN : savingsRate >= 10 ? AMBER : RED;
 
   // ── Transaction rows (top 20 for PDF readability) ──────────────────────────
-  const recentTxs = [...transactions]
-    .sort((a, b) => b.date.localeCompare(a.date))
-    .slice(0, 20);
+  const recentTxs = [...transactions].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 20);
 
-  const txRows = recentTxs.map(tx => {
-    const isCredit = tx.type === 'credit';
-    const color = isCredit ? GREEN : DARK;
-    const sign  = isCredit ? '+' : '−';
-    return `
+  const txRows = recentTxs
+    .map(tx => {
+      const isCredit = tx.type === 'credit';
+      const color = isCredit ? GREEN : DARK;
+      const sign = isCredit ? '+' : '−';
+      return `
       <tr style="border-bottom:1px solid #edf2f7">
         <td style="padding:8px 10px;font-size:12px;color:${MUTED}">${tx.date}</td>
         <td style="padding:8px 10px;font-size:13px;font-weight:600;color:${DARK}">${tx.merchant}</td>
@@ -77,13 +78,15 @@ function buildHTML(data: PDFReportData): string {
         </td>
         <td style="padding:8px 10px;font-size:13px;font-weight:700;color:${color};text-align:right">${sign}${fmt(currency, tx.amount)}</td>
       </tr>`;
-  }).join('');
+    })
+    .join('');
 
   // ── Budget rows ────────────────────────────────────────────────────────────
-  const budgetRows = budgets.map(b => {
-    const barColor = b.status === 'danger' ? RED : b.status === 'warning' ? AMBER : TEAL;
-    const pctVal   = Math.min(b.percent, 100);
-    return `
+  const budgetRows = budgets
+    .map(b => {
+      const barColor = b.status === 'danger' ? RED : b.status === 'warning' ? AMBER : TEAL;
+      const pctVal = Math.min(b.percent, 100);
+      return `
       <tr style="border-bottom:1px solid #edf2f7">
         <td style="padding:8px 10px;font-size:13px;font-weight:600;color:${DARK}">${b.category}</td>
         <td style="padding:8px 10px;font-size:12px;color:${MUTED}">${fmt(currency, b.spent)} / ${fmt(currency, b.limit)}</td>
@@ -94,13 +97,16 @@ function buildHTML(data: PDFReportData): string {
         </td>
         <td style="padding:8px 10px;font-size:12px;font-weight:700;color:${barColor};text-align:right">${pctVal}%</td>
       </tr>`;
-  }).join('');
+    })
+    .join('');
 
   // ── Goals rows ─────────────────────────────────────────────────────────────
-  const goalRows = goals.map(g => {
-    const progress = g.targetAmount > 0 ? Math.min(Math.round((g.savedAmount / g.targetAmount) * 100), 100) : 0;
-    const statusColor = g.status === 'achieved' ? GREEN : g.status === 'at-risk' ? RED : TEAL;
-    return `
+  const goalRows = goals
+    .map(g => {
+      const progress =
+        g.targetAmount > 0 ? Math.min(Math.round((g.savedAmount / g.targetAmount) * 100), 100) : 0;
+      const statusColor = g.status === 'achieved' ? GREEN : g.status === 'at-risk' ? RED : TEAL;
+      return `
       <tr style="border-bottom:1px solid #edf2f7">
         <td style="padding:8px 10px;font-size:14px">${g.emoji} <span style="font-size:13px;font-weight:600;color:${DARK}">${g.name}</span></td>
         <td style="padding:8px 10px;font-size:12px;color:${MUTED}">${fmt(currency, g.savedAmount)} / ${fmt(currency, g.targetAmount)}</td>
@@ -111,10 +117,13 @@ function buildHTML(data: PDFReportData): string {
         </td>
         <td style="padding:8px 10px;font-size:12px;font-weight:700;color:${statusColor};text-align:right">${progress}%</td>
       </tr>`;
-  }).join('');
+    })
+    .join('');
 
   // ── Category breakdown rows ────────────────────────────────────────────────
-  const catRows = catBreakdown.map(c => `
+  const catRows = catBreakdown
+    .map(
+      c => `
     <tr style="border-bottom:1px solid #edf2f7">
       <td style="padding:8px 10px;font-size:13px;font-weight:600;color:${DARK}">${c.category}</td>
       <td style="padding:8px 10px;font-size:12px;color:${MUTED}">${c.count} transaction${c.count !== 1 ? 's' : ''}</td>
@@ -125,7 +134,8 @@ function buildHTML(data: PDFReportData): string {
       </td>
       <td style="padding:8px 10px;font-size:13px;font-weight:700;color:${DARK};text-align:right">${fmt(currency, c.total)}</td>
     </tr>`
-  ).join('');
+    )
+    .join('');
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -202,24 +212,32 @@ function buildHTML(data: PDFReportData): string {
   </div>
 
   <!-- Budgets -->
-  ${budgets.length ? `
+  ${
+    budgets.length
+      ? `
   <div class="section">
     <h2>Budget Performance</h2>
     <table>
       <thead><tr><th>Category</th><th>Spent / Limit</th><th>Progress</th><th>Used</th></tr></thead>
       <tbody>${budgetRows}</tbody>
     </table>
-  </div>` : ''}
+  </div>`
+      : ''
+  }
 
   <!-- Goals -->
-  ${goals.length ? `
+  ${
+    goals.length
+      ? `
   <div class="section">
     <h2>Savings Goals</h2>
     <table>
       <thead><tr><th>Goal</th><th>Saved / Target</th><th>Progress</th><th>Complete</th></tr></thead>
       <tbody>${goalRows}</tbody>
     </table>
-  </div>` : ''}
+  </div>`
+      : ''
+  }
 
   <!-- Recent Transactions -->
   <div class="section">
@@ -239,7 +257,7 @@ function buildHTML(data: PDFReportData): string {
 
 export function generatePDFReport(data: PDFReportData): void {
   const html = buildHTML(data);
-  const win  = window.open('', '_blank', 'width=960,height=800');
+  const win = window.open('', '_blank', 'width=960,height=800');
   if (!win) {
     alert('Pop-up blocked! Please allow pop-ups for SpendWise to generate the PDF report.');
     return;
@@ -247,5 +265,7 @@ export function generatePDFReport(data: PDFReportData): void {
   win.document.write(html);
   win.document.close();
   // Give browser a moment to render before auto-focusing
-  setTimeout(() => { win.focus(); }, 300);
+  setTimeout(() => {
+    win.focus();
+  }, 300);
 }

@@ -30,7 +30,7 @@ export function speak(text: string, options?: { rate?: number; pitch?: number })
   window.speechSynthesis.cancel();
 
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate  = options?.rate  ?? 1.05;
+  utterance.rate = options?.rate ?? 1.05;
   utterance.pitch = options?.pitch ?? 1.0;
   utterance.volume = 0.9;
   if (preferredVoice) utterance.voice = preferredVoice;

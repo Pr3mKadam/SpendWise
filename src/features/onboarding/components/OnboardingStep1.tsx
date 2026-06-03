@@ -56,7 +56,9 @@ export function OnboardingStep1({
         >
           Let's get started
         </h3>
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
+        <p
+          style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}
+        >
           Enter your current balance to begin tracking
         </p>
       </div>
@@ -223,14 +225,16 @@ export function OnboardingStep1({
           justifyContent: 'center',
           gap: '8px',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           if (isValid) {
             (e.currentTarget as HTMLButtonElement).style.background = 'var(--teal-light)';
             (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 20px var(--teal-glow)';
           }
         }}
-        onMouseLeave={(e) => {
-          (e.currentTarget as HTMLButtonElement).style.background = isValid ? 'var(--teal)' : '#a0aec0';
+        onMouseLeave={e => {
+          (e.currentTarget as HTMLButtonElement).style.background = isValid
+            ? 'var(--teal)'
+            : '#a0aec0';
           (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
         }}
       >

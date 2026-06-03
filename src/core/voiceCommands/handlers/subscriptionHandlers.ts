@@ -6,14 +6,14 @@ export const handleSubscriptionAdd: IntentHandler = ({ command }) => {
   const { amount, name, frequency } = command.entities;
   if (!amount || amount <= 0) return { success: false, message: 'What is the subscription cost?' };
   store.addSubscription({
-    merchant:    name || 'Subscription',
-    avgAmount:   amount,
-    frequency:   frequency || 'monthly',
-    category:    'Entertainment',
-    lastSeen:     todayISO(),
+    merchant: name || 'Subscription',
+    avgAmount: amount,
+    frequency: frequency || 'monthly',
+    category: 'Entertainment',
+    lastSeen: todayISO(),
     nextExpected: todayISO(),
-    occurrences:  1,
-    totalSpent:   amount,
+    occurrences: 1,
+    totalSpent: amount,
   });
   return {
     success: true,
@@ -26,10 +26,10 @@ export const handleSubscriptionUpdate: IntentHandler = ({ command }) => {
   const store = useStore.getState();
   const { name, amount, frequency } = command.entities;
   if (!name) return { success: false, message: 'Which subscription should I update?' };
-  
+
   const sub = store.subscriptions.find(s => s.merchant.toLowerCase().includes(name.toLowerCase()));
   if (!sub) return { success: false, message: `I couldn't find a subscription for ${name}.` };
-  
+
   store.updateSubscription(sub.merchant, {
     avgAmount: amount || sub.avgAmount,
     frequency: frequency || sub.frequency,
@@ -41,10 +41,10 @@ export const handleSubscriptionDelete: IntentHandler = ({ command }) => {
   const store = useStore.getState();
   const { name } = command.entities;
   if (!name) return { success: false, message: 'Which subscription should I delete?' };
-  
+
   const sub = store.subscriptions.find(s => s.merchant.toLowerCase().includes(name.toLowerCase()));
   if (!sub) return { success: false, message: `I couldn't find a subscription for ${name}.` };
-  
+
   store.deleteSubscription(sub.merchant);
   return { success: true, message: `🗑️ Deleted subscription: ${sub.merchant}.`, undoable: true };
 };

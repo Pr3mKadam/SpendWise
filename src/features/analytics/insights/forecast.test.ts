@@ -32,7 +32,9 @@ function monthsAgo(offset: number): string {
 
 // ── tests ─────────────────────────────────────────────────────────────────────
 describe('forecastNextMonth', () => {
-  beforeEach(() => { idCounter = 0; });
+  beforeEach(() => {
+    idCounter = 0;
+  });
 
   it('returns low confidence with no transactions', () => {
     const result = forecastNextMonth([]);
@@ -99,9 +101,9 @@ describe('forecastNextMonth', () => {
 
   it('trend is "up" when predicted > last month', () => {
     const txs = [
-      makeTx(500,  'debit', 'Shopping', monthsAgo(3)),
-      makeTx(500,  'debit', 'Shopping', monthsAgo(2)),
-      makeTx(200,  'debit', 'Shopping', monthsAgo(1)), // ← last month low
+      makeTx(500, 'debit', 'Shopping', monthsAgo(3)),
+      makeTx(500, 'debit', 'Shopping', monthsAgo(2)),
+      makeTx(200, 'debit', 'Shopping', monthsAgo(1)), // ← last month low
     ];
     const result = forecastNextMonth(txs);
     const cat = result.categoryForecasts.find(c => c.category === 'Shopping');
@@ -123,7 +125,7 @@ describe('forecastNextMonth', () => {
     const txs = [];
     for (let i = 1; i <= 3; i++) {
       txs.push(makeTx(5000, 'credit', 'Income', monthsAgo(i)));
-      txs.push(makeTx(1000, 'debit',  'Food',   monthsAgo(i)));
+      txs.push(makeTx(1000, 'debit', 'Food', monthsAgo(i)));
     }
     const result = forecastNextMonth(txs);
     expect(result.predictedIncome).toBeGreaterThan(0);
@@ -143,8 +145,8 @@ describe('forecastNextMonth', () => {
   it('categoryForecasts are sorted by predicted spend descending', () => {
     const txs = [];
     for (let i = 1; i <= 3; i++) {
-      txs.push(makeTx(100, 'debit', 'Food',      monthsAgo(i)));
-      txs.push(makeTx(500, 'debit', 'Shopping',  monthsAgo(i)));
+      txs.push(makeTx(100, 'debit', 'Food', monthsAgo(i)));
+      txs.push(makeTx(500, 'debit', 'Shopping', monthsAgo(i)));
       txs.push(makeTx(300, 'debit', 'Transport', monthsAgo(i)));
     }
     const result = forecastNextMonth(txs);
@@ -165,7 +167,7 @@ describe('forecastNextMonth', () => {
     for (let i = 1; i <= 4; i++) {
       txs.push(makeTx(1000, 'debit', 'Food', monthsAgo(i)));
     }
-    
+
     // Add transaction on the 2nd day of current month
     const d1 = new Date();
     d1.setDate(2);

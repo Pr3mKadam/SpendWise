@@ -14,7 +14,7 @@ export function BulkActionHeader({
   selectedCount,
   onClearSelection,
   onBulkCategoryChange,
-  onBulkDelete
+  onBulkDelete,
 }: BulkActionHeaderProps) {
   if (selectedCount === 0) return null;
 
@@ -25,7 +25,7 @@ export function BulkActionHeader({
         background: 'var(--teal-dim)',
         border: '1.5px solid var(--teal-glow)',
         borderRadius: '16px',
-        animation: 'slideDown 0.3s ease-out'
+        animation: 'slideDown 0.3s ease-out',
       }}
     >
       <div className="flex items-center gap-3">
@@ -37,7 +37,14 @@ export function BulkActionHeader({
         >
           <X size={14} />
         </button>
-        <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--teal)' }}>
+        <span
+          style={{
+            fontFamily: 'var(--font-inter)',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: 'var(--teal)',
+          }}
+        >
           {selectedCount} transaction{selectedCount > 1 ? 's' : ''} selected
         </span>
       </div>
@@ -46,7 +53,7 @@ export function BulkActionHeader({
         <div className="w-40">
           <CategoryDropdown
             value="Move to..."
-            onChange={(cat) => onBulkCategoryChange(cat as Category)}
+            onChange={cat => onBulkCategoryChange(cat as Category)}
           />
         </div>
 

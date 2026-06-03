@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Plus,
-  BarChart2,
-  BrainCircuit,
-  Zap,
-  PieChart,
-  Wallet,
-  ShieldAlert,
-} from 'lucide-react';
+import { Plus, BarChart2, BrainCircuit, Zap, PieChart, Wallet, ShieldAlert } from 'lucide-react';
 import NetWorthEvolution from '@/features/portfolio/components/NetWorthEvolution';
 import FutureWealthSimulator from '@/features/portfolio/components/FutureWealthSimulator';
 import DebtPlanner from '@/features/portfolio/components/DebtPlanner';
@@ -63,7 +55,7 @@ export default function PortfolioViewMobile({
           { id: 'overview', icon: BarChart2, label: 'Overview' },
           { id: 'simulation', icon: BrainCircuit, label: 'Wealth Sim' },
           { id: 'debt', icon: Zap, label: 'Debt Lab' },
-        ].map((tab) => (
+        ].map(tab => (
           <button
             key={tab.id}
             onClick={() => {
@@ -116,7 +108,10 @@ export default function PortfolioViewMobile({
           {/* Chart & Allocation */}
           <div className="space-y-4">
             <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-2 shadow-sm">
-              <NetWorthEvolution transactions={financeState?.transactions ?? []} currency={currency} />
+              <NetWorthEvolution
+                transactions={financeState?.transactions ?? []}
+                currency={currency}
+              />
             </div>
 
             <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-6 shadow-sm">
@@ -126,7 +121,11 @@ export default function PortfolioViewMobile({
                   Asset Allocation
                 </h3>
               </div>
-              <AllocationDonut allocationByType={allocationByType} total={totalAssets} currency={currency} />
+              <AllocationDonut
+                allocationByType={allocationByType}
+                total={totalAssets}
+                currency={currency}
+              />
             </div>
           </div>
 
@@ -143,7 +142,7 @@ export default function PortfolioViewMobile({
                 </span>
               </div>
               <div className="space-y-2">
-                {assets.map((asset) => (
+                {assets.map(asset => (
                   <EntryCard
                     key={asset.id}
                     label={asset.name}
@@ -173,7 +172,7 @@ export default function PortfolioViewMobile({
                 </span>
               </div>
               <div className="space-y-2">
-                {liabilities.map((liability) => (
+                {liabilities.map(liability => (
                   <EntryCard
                     key={liability.id}
                     label={liability.name}
@@ -200,7 +199,8 @@ export default function PortfolioViewMobile({
             currentBalance={netWorth}
             monthlySavings={Math.max(
               0,
-              (financeState?.monthlyStats?.totalIncome ?? 0) - (financeState?.monthlyStats?.totalExpenses ?? 0)
+              (financeState?.monthlyStats?.totalIncome ?? 0) -
+                (financeState?.monthlyStats?.totalExpenses ?? 0)
             )}
             currency={currency}
           />

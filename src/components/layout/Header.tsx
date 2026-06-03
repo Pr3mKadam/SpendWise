@@ -5,32 +5,32 @@ import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModa
 import { MasterMic } from '@/components/layout/MasterMic';
 
 interface HeaderProps {
-  activeView:            AppView;
-  unreadCount:           number;
+  activeView: AppView;
+  unreadCount: number;
   onToggleNotifications: () => void;
-  onNavigate:            (view: AppView) => void;
-  currency:              string;
-  currentBalance:        number;
-  theme:                 'light' | 'dark';
-  onToggleTheme:         () => void;
-  config?:               SpendWiseConfig | null;
-  onOpenSearch?:         () => void;
-  isPrivacyEnabled?:     boolean; // Kept for backwards compatibility if needed
-  onTogglePrivacy?:      () => void; // Kept for backwards compatibility if needed
-  onExport?:             () => void;
-  setSearchQuery?:       (q: string) => void;
+  onNavigate: (view: AppView) => void;
+  currency: string;
+  currentBalance: number;
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
+  config?: SpendWiseConfig | null;
+  onOpenSearch?: () => void;
+  isPrivacyEnabled?: boolean; // Kept for backwards compatibility if needed
+  onTogglePrivacy?: () => void; // Kept for backwards compatibility if needed
+  onExport?: () => void;
+  setSearchQuery?: (q: string) => void;
 }
 
 const VIEW_TITLES: Partial<Record<AppView, string>> = {
-  dashboard:     'Overview',
-  analytics:     'Statistics',
-  budget:        'Budget',
-  goals:         'Goals',
-  shared:        'Shared money',
-  history:       'Transactions',
-  sync:          'Bank & UPI Sync',
-  profile:       'Profile & Settings',
-  portfolio:     'Net worth',
+  dashboard: 'Overview',
+  analytics: 'Statistics',
+  budget: 'Budget',
+  goals: 'Goals',
+  shared: 'Shared money',
+  history: 'Transactions',
+  sync: 'Bank & UPI Sync',
+  profile: 'Profile & Settings',
+  portfolio: 'Net worth',
   subscriptions: 'Subscriptions',
 };
 
@@ -56,7 +56,11 @@ export default function Header({
   onTogglePrivacy = () => {},
 }: HeaderProps) {
   const now = new Date();
-  const dateStr = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const dateStr = now.toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 
   const displayName = config?.name?.trim() || 'User';
   const initials = displayName
@@ -89,7 +93,7 @@ export default function Header({
         style={{
           background: 'linear-gradient(120deg, #0f1c35 0%, #0d2d3f 55%, #0b3d3a 100%)',
           borderRadius: '0 0 24px 24px',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+          boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
         }}
       />
 
@@ -104,7 +108,6 @@ export default function Header({
 
       {/* ─── Content row ─── */}
       <div className="relative flex items-center justify-between h-full px-3 md:px-6 lg:px-8">
-
         {/* Left — Greeting / Page Title */}
         <div className="flex items-center gap-1.5 min-w-0">
           {activeView !== 'dashboard' && (
@@ -115,9 +118,14 @@ export default function Header({
                 }}
                 aria-label="Go to Dashboard"
                 style={{
-                  fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 500,
+                  fontFamily: 'var(--font-inter)',
+                  fontSize: '12px',
+                  fontWeight: 500,
                   color: 'var(--text-muted)',
-                  background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: 0,
                 }}
               >
                 Home
@@ -130,7 +138,9 @@ export default function Header({
             <div
               className="md:hidden truncate"
               style={{
-                fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '16px',
+                fontFamily: 'var(--font-manrope)',
+                fontWeight: 700,
+                fontSize: '16px',
                 color: '#ffffff',
                 lineHeight: 1.2,
                 textShadow: '0 1px 8px rgba(0,0,0,0.4)',
@@ -138,19 +148,22 @@ export default function Header({
             >
               {activeView === 'dashboard'
                 ? `Hi, ${displayName.split(' ')[0]} 👋`
-                : VIEW_TITLES[activeView] ?? fallbackTitle}
+                : (VIEW_TITLES[activeView] ?? fallbackTitle)}
             </div>
             {/* Desktop: themed text */}
             <div
               className="hidden md:block"
               style={{
-                fontFamily: 'var(--font-manrope)', fontWeight: 700, fontSize: '18px',
-                color: 'var(--text-primary)', lineHeight: 1.2,
+                fontFamily: 'var(--font-manrope)',
+                fontWeight: 700,
+                fontSize: '18px',
+                color: 'var(--text-primary)',
+                lineHeight: 1.2,
               }}
             >
               {activeView === 'dashboard'
                 ? `${getGreeting()}, ${displayName} 👋`
-                : VIEW_TITLES[activeView] ?? fallbackTitle}
+                : (VIEW_TITLES[activeView] ?? fallbackTitle)}
             </div>
 
             {activeView === 'dashboard' && (
@@ -158,14 +171,25 @@ export default function Header({
                 {/* Mobile date */}
                 <div
                   className="md:hidden"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', fontWeight: 400, color: 'rgba(255,255,255,0.78)', marginTop: 1 }}
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '11px',
+                    fontWeight: 400,
+                    color: 'rgba(255,255,255,0.78)',
+                    marginTop: 1,
+                  }}
                 >
                   {dateStr}
                 </div>
                 {/* Desktop date */}
                 <div
                   className="hidden md:block"
-                  style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', fontWeight: 400, color: 'var(--text-muted)' }}
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '12px',
+                    fontWeight: 400,
+                    color: 'var(--text-muted)',
+                  }}
                 >
                   {dateStr}
                 </div>
@@ -176,7 +200,6 @@ export default function Header({
 
         {/* Right — Action buttons */}
         <div className="flex items-center gap-1 sm:gap-2 shrink-0">
-
           {/* Theme toggle - Visible on all viewports */}
           <div className="hidden md:flex items-center gap-2">
             <button
@@ -185,11 +208,25 @@ export default function Header({
               aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               style={{ padding: 0, border: 'none' }}
             >
-              <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
-                {theme === 'dark' ? <Moon size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Sun size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
+              <span
+                className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl"
+                style={isMobileGlassBtn}
+              >
+                {theme === 'dark' ? (
+                  <Moon size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />
+                ) : (
+                  <Sun size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />
+                )}
               </span>
-              <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
-                {theme === 'dark' ? <Moon size={16} style={{ color: 'var(--text-secondary)' }} /> : <Sun size={16} style={{ color: 'var(--text-secondary)' }} />}
+              <span
+                className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl"
+                style={{ background: 'var(--surface-input)' }}
+              >
+                {theme === 'dark' ? (
+                  <Moon size={16} style={{ color: 'var(--text-secondary)' }} />
+                ) : (
+                  <Sun size={16} style={{ color: 'var(--text-secondary)' }} />
+                )}
               </span>
             </button>
           </div>
@@ -201,11 +238,25 @@ export default function Header({
             aria-label={isPrivacyEnabled ? 'Disable privacy mode' : 'Enable privacy mode'}
             style={{ padding: 0, border: 'none' }}
           >
-            <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
-              {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'rgba(255,255,255,0.85)' }} /> : <Eye size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />}
+            <span
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl"
+              style={isMobileGlassBtn}
+            >
+              {isPrivacyEnabled ? (
+                <EyeOff size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />
+              ) : (
+                <Eye size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />
+              )}
             </span>
-            <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
-              {isPrivacyEnabled ? <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} /> : <Eye size={16} style={{ color: 'var(--text-secondary)' }} />}
+            <span
+              className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl"
+              style={{ background: 'var(--surface-input)' }}
+            >
+              {isPrivacyEnabled ? (
+                <EyeOff size={16} style={{ color: 'var(--text-secondary)' }} />
+              ) : (
+                <Eye size={16} style={{ color: 'var(--text-secondary)' }} />
+              )}
             </span>
           </button>
 
@@ -219,10 +270,16 @@ export default function Header({
               aria-label="Search transactions and settings (Cmd+K)"
               style={{ padding: 0, border: 'none' }}
             >
-              <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
+              <span
+                className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl"
+                style={isMobileGlassBtn}
+              >
                 <Search size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />
               </span>
-              <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+              <span
+                className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl"
+                style={{ background: 'var(--surface-input)' }}
+              >
                 <Search size={16} style={{ color: 'var(--text-secondary)' }} />
               </span>
             </button>
@@ -230,7 +287,7 @@ export default function Header({
 
           {/* Master Voice Mic */}
           {onExport && (
-            <MasterMic 
+            <MasterMic
               variant="header"
               navigate={onNavigate}
               onExport={onExport}
@@ -248,10 +305,16 @@ export default function Header({
             aria-label={`View notifications, ${unreadCount} unread`}
             style={{ padding: 0, border: 'none' }}
           >
-            <span className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl" style={isMobileGlassBtn}>
+            <span
+              className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl"
+              style={isMobileGlassBtn}
+            >
               <Bell size={16} style={{ color: 'rgba(255,255,255,0.85)' }} />
             </span>
-            <span className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl" style={{ background: 'var(--surface-input)' }}>
+            <span
+              className="hidden md:flex items-center justify-center w-9 h-9 rounded-xl"
+              style={{ background: 'var(--surface-input)' }}
+            >
               <Bell size={16} style={{ color: 'var(--text-secondary)' }} />
             </span>
             {unreadCount > 0 && (
@@ -275,9 +338,10 @@ export default function Header({
               background: 'linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)',
               fontFamily: 'var(--font-manrope)',
               /* Mobile: white ring; desktop: teal glow */
-              boxShadow: activeView === 'profile'
-                ? '0 0 0 2.5px rgba(255,255,255,0.45), 0 4px 14px rgba(20,184,166,0.55)'
-                : '0 0 0 2px rgba(255,255,255,0.25), 0 3px 10px rgba(20,184,166,0.4)',
+              boxShadow:
+                activeView === 'profile'
+                  ? '0 0 0 2.5px rgba(255,255,255,0.45), 0 4px 14px rgba(20,184,166,0.55)'
+                  : '0 0 0 2px rgba(255,255,255,0.25), 0 3px 10px rgba(20,184,166,0.4)',
               border: 'none',
               cursor: 'pointer',
             }}
@@ -292,7 +356,6 @@ export default function Header({
               {displayName} · Settings
             </span>
           </button>
-
         </div>
       </div>
     </header>

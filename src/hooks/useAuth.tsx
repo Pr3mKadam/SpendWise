@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  ReactNode,
+} from 'react';
 import { STORAGE_KEYS } from '@/constants';
 import { useStore } from '@/store';
 import { isSupabaseConfigured, signInWithEmail, signUpWithEmail } from '@/core/api/supabase';
@@ -43,14 +51,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(JSON.parse(storedUser));
     } else {
       // Use a STABLE guest ID tied to the device, not random each time
-      const stableId = localStorage.getItem('spendwise_device_id')
-        || ('device_' + Math.random().toString(36).substr(2, 12));
+      const stableId =
+        localStorage.getItem('spendwise_device_id') ||
+        'device_' + Math.random().toString(36).substr(2, 12);
       localStorage.setItem('spendwise_device_id', stableId);
 
       const guestUser = { id: stableId, email: 'guest@local' };
       localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
       setUser(guestUser);
-      
+
       // Reset gamification for new guest so streak starts at 0
       useStore.getState().checkStreak();
     }
@@ -67,8 +76,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const signInAnonymously = useCallback(() => {
-    const stableId = localStorage.getItem('spendwise_device_id')
-      || ('device_' + Math.random().toString(36).substr(2, 12));
+    const stableId =
+      localStorage.getItem('spendwise_device_id') ||
+      'device_' + Math.random().toString(36).substr(2, 12);
     localStorage.setItem('spendwise_device_id', stableId);
 
     const guestUser = { id: stableId, email: 'guest@local' };
@@ -81,18 +91,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await new Promise(resolve => setTimeout(resolve, 800));
       // BUG-08 fix: use full-email-based stable id (not just prefix) to avoid collisions
       const userObj = {
-        id: 'local_' + btoa(email).replace(/[^a-z0-9]/gi, '').substring(0, 20),
+        id:
+          'local_' +
+          btoa(email)
+            .replace(/[^a-z0-9]/gi, '')
+            .substring(0, 20),
         email,
-        user_metadata: { first_name: 'Guest', last_name: 'User' }
+        user_metadata: { first_name: 'Guest', last_name: 'User' },
       };
       localStorage.setItem('spendwise_user', JSON.stringify(userObj));
       setUser(userObj);
-      
+
       const { db } = await import('@/db/db');
       const { toast } = await import('react-hot-toast');
       const existingTx = await db.transactions.count();
       if (existingTx === 0) {
-        toast('Welcome back! Your data will sync once cloud backup is set up.', { icon: '☁️', duration: 5000 });
+        toast('Welcome back! Your data will sync once cloud backup is set up.', {
+          icon: '☁️',
+          duration: 5000,
+        });
       }
       return;
     }
@@ -100,7 +117,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userObj = {
       id: res.id,
       email: res.email,
-      user_metadata: {}
+      user_metadata: {},
     };
     localStorage.setItem('spendwise_user', JSON.stringify(userObj));
     sessionStorage.setItem('spendwise_supabase_token', res.access_token);
@@ -112,9 +129,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       await new Promise(resolve => setTimeout(resolve, 800));
       // BUG-08 fix: use full-email-based stable id (not just prefix) to avoid collisions
       const userObj = {
-        id: 'local_' + btoa(email).replace(/[^a-z0-9]/gi, '').substring(0, 20),
+        id:
+          'local_' +
+          btoa(email)
+            .replace(/[^a-z0-9]/gi, '')
+            .substring(0, 20),
         email,
-        user_metadata: metadata || {}
+        user_metadata: metadata || {},
       };
       localStorage.setItem('spendwise_user', JSON.stringify(userObj));
       setUser(userObj);
@@ -124,30 +145,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const userObj = {
       id: res.id,
       email: res.email,
-      user_metadata: metadata || {}
+      user_metadata: metadata || {},
     };
     localStorage.setItem('spendwise_user', JSON.stringify(userObj));
     sessionStorage.setItem('spendwise_supabase_token', res.access_token);
     setUser(userObj);
   }, []);
 
-  const value = useMemo<AuthContextType>(() => ({
-    user,
-    session: user ? { user } : null,
-    loading: !authReady,
-    authReady,
-    mfaRequired: false,
-    signOut,
-    signInAnonymously,
-    signIn,
-    signUp,
-  }), [user, authReady, signOut, signInAnonymously, signIn, signUp]);
-
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<AuthContextType>(
+    () => ({
+      user,
+      session: user ? { user } : null,
+      loading: !authReady,
+      authReady,
+      mfaRequired: false,
+      signOut,
+      signInAnonymously,
+      signIn,
+      signUp,
+    }),
+    [user, authReady, signOut, signInAnonymously, signIn, signUp]
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = (): AuthContextType => {

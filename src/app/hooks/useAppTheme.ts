@@ -35,7 +35,7 @@ export function useAppTheme(activeView: AppView) {
   const toggleTheme = useCallback(() => {
     setUserPreferences(prev => ({
       ...prev,
-      darkMode: !prev.darkMode
+      darkMode: !prev.darkMode,
     }));
   }, [setUserPreferences]);
 

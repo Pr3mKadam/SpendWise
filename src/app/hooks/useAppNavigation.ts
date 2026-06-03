@@ -44,7 +44,7 @@ export function useAppNavigation({
       setShowNotifications(false);
       setShowCommandPalette(false);
       setShowCategoriesModal(false);
-      
+
       // Update activeView based on state
       if (e.state && e.state.view) {
         setActiveView(e.state.view);
@@ -65,12 +65,12 @@ export function useAppNavigation({
     // Handle PWA shortcuts or deep links
     const handleUrlParams = () => {
       const params = new URLSearchParams(window.location.search);
-      
+
       if (params.get('action') === 'new' || params.get('open-add') === 'true') {
         haptic.medium();
         setShowQuickAdd(true);
       }
-      
+
       const viewParam = params.get('view') as AppView;
       if (viewParam) {
         haptic.light();
@@ -84,14 +84,14 @@ export function useAppNavigation({
     };
 
     handleUrlParams();
-    
+
     // Also listen for visibility changes (when resuming from background)
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         handleUrlParams();
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, [setShowQuickAdd]);
@@ -113,7 +113,8 @@ export function useAppNavigation({
       const duration = Date.now() - touchStartTime;
       const distance = touchEndX - touchStartX;
 
-      if (duration < 300) { // Fast swipe
+      if (duration < 300) {
+        // Fast swipe
         // Swipe from Left Edge -> Right (Back)
         if (touchStartX < edgeThreshold && distance > swipeThreshold) {
           haptic.light();

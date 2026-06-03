@@ -15,10 +15,10 @@ export function useAppState(config: SpendWiseConfig | null) {
   const currency = config?.currency ?? '$';
 
   const financeState = useTransactions(config?.initialBalance ?? FINANCE_DEFAULTS.INITIAL_BALANCE);
-  
+
   // Exclude pending-approval transactions from balance & budget calculations
-  const transactions = useMemo(() => 
-    financeState.transactions.filter(t => t.status !== 'pending_approval'),
+  const transactions = useMemo(
+    () => financeState.transactions.filter(t => t.status !== 'pending_approval'),
     [financeState.transactions]
   );
 
@@ -39,27 +39,30 @@ export function useAppState(config: SpendWiseConfig | null) {
     }
   );
 
-  const notifState = useNotifications(
-    alertState.alerts,
-    recurringData,
-    goalsState.goals
-  );
+  const notifState = useNotifications(alertState.alerts, recurringData, goalsState.goals);
 
   // Budget derived state & handlers
   const resetLimits = budgetState.resetLimits;
 
-  const totalSpentAgainstBudget = budgetState.budgetStats.reduce((a: number, b: Budget) => a + (b.spent || 0), 0);
+  const totalSpentAgainstBudget = budgetState.budgetStats.reduce(
+    (a: number, b: Budget) => a + (b.spent || 0),
+    0
+  );
   const overBudgetCount = budgetState.budgetStats.filter(b => b.status === 'danger').length;
-  
-  const periodLabel = budgetState.budgetSettings.period === 'weekly' 
-    ? 'This Week' 
-    : budgetState.budgetSettings.period === 'biweekly' 
-      ? 'Last 14 Days' 
-      : 'This Month';
 
-  const updatePeriod = useCallback((p: BudgetPeriod) => {
-    budgetState.updateBudgetSettings({ period: p });
-  }, [budgetState.updateBudgetSettings]);
+  const periodLabel =
+    budgetState.budgetSettings.period === 'weekly'
+      ? 'This Week'
+      : budgetState.budgetSettings.period === 'biweekly'
+        ? 'Last 14 Days'
+        : 'This Month';
+
+  const updatePeriod = useCallback(
+    (p: BudgetPeriod) => {
+      budgetState.updateBudgetSettings({ period: p });
+    },
+    [budgetState.updateBudgetSettings]
+  );
 
   const parentalState = useStore((state: any) => state.parentalState);
 

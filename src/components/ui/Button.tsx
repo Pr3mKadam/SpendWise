@@ -8,8 +8,9 @@ interface BtnProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export function Btn({ children, v = 'primary', full, className = '', ...props }: BtnProps) {
-  const baseStyles = 'inline-flex items-center justify-center gap-1.5 border-none rounded-[10px] py-2.5 px-4 font-semibold text-sm cursor-pointer transition-opacity disabled:opacity-45';
-  
+  const baseStyles =
+    'inline-flex items-center justify-center gap-1.5 border-none rounded-[10px] py-2.5 px-4 font-semibold text-sm cursor-pointer transition-opacity disabled:opacity-45';
+
   const variantStyles: Record<BtnVariant, string> = {
     primary: 'bg-[var(--teal)] text-white',
     ghost: 'bg-[var(--card-border)] text-[var(--text)]',

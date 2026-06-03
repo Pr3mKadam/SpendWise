@@ -8,8 +8,8 @@ interface MetricCardsProps {
   predictedEndOfMonth: number;
   projectionMeta: {
     daysLeftInMonth: number;
-    dataQuality:     'low' | 'medium' | 'high';
-    expectedChange:  number;
+    dataQuality: 'low' | 'medium' | 'high';
+    expectedChange: number;
   };
   monthlyStats: MonthlyStats;
   currency?: string;
@@ -18,11 +18,10 @@ interface MetricCardsProps {
 
 export default function MetricCards(props: MetricCardsProps) {
   const isMobile = useIsMobile();
-  
+
   if (isMobile) {
     return <MetricCardsMobile {...props} />;
   }
-  
+
   return <MetricCardsDesktop {...props} />;
 }
-

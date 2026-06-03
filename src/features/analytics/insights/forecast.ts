@@ -26,7 +26,10 @@ export interface SpendingForecast {
  * Uses a simple weighted average (recent months weigh more)
  * and a "burn rate" extrapolation for the current month.
  */
-export function forecastNextMonth(transactions: Transaction[], referenceDate: Date = new Date()): SpendingForecast {
+export function forecastNextMonth(
+  transactions: Transaction[],
+  referenceDate: Date = new Date()
+): SpendingForecast {
   const now = referenceDate;
   const currentYM = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
@@ -54,10 +57,10 @@ export function forecastNextMonth(transactions: Transaction[], referenceDate: Da
     months.length === 0
       ? 'No historical data — add more transactions for forecasts'
       : months.length < 2
-      ? 'Only 1 month of history — predictions improve with more data'
-      : months.length < 4
-      ? `Based on ${months.length} months of data`
-      : `Based on ${months.length} months of data — high confidence`;
+        ? 'Only 1 month of history — predictions improve with more data'
+        : months.length < 4
+          ? `Based on ${months.length} months of data`
+          : `Based on ${months.length} months of data — high confidence`;
 
   // Weighted average (last month = 3x, second to last = 2x, rest = 1x)
   const weights = months.map((_, i) => {
@@ -95,7 +98,7 @@ export function forecastNextMonth(transactions: Transaction[], referenceDate: Da
 
   // Build category forecasts
   const lastMonthYM = months[months.length - 1];
-  const lastMonthTxs = lastMonthYM ? (byMonth[lastMonthYM] || []) : [];
+  const lastMonthTxs = lastMonthYM ? byMonth[lastMonthYM] || [] : [];
   const lastMonthCatSpend: Record<string, number> = {};
   for (const tx of lastMonthTxs) {
     if (tx.type !== 'debit') continue;
@@ -107,8 +110,7 @@ export function forecastNextMonth(transactions: Transaction[], referenceDate: Da
 
   for (const cat of allCategories) {
     const vals = catTotals[cat];
-    const avgMonthly =
-      vals.reduce((sum, v, i) => sum + v * weights[i], 0) / totalWeight;
+    const avgMonthly = vals.reduce((sum, v, i) => sum + v * weights[i], 0) / totalWeight;
     const lastMonth = lastMonthCatSpend[cat] || 0;
     const predicted = Math.round(avgMonthly);
     const trendPct = lastMonth > 0 ? ((predicted - lastMonth) / lastMonth) * 100 : 0;
@@ -156,9 +158,13 @@ export function forecastNextMonth(transactions: Transaction[], referenceDate: Da
     runRate = Math.round(dailyRate * totalDaysInMonth);
   } else {
     // Graceful fallback to predicted total if historical data is available, otherwise simple projection
-    runRate = months.length > 0 ? predictedTotal : Math.round(spentSoFar * (totalDaysInMonth / Math.max(1, daysElapsed)));
+    runRate =
+      months.length > 0
+        ? predictedTotal
+        : Math.round(spentSoFar * (totalDaysInMonth / Math.max(1, daysElapsed)));
     finalConfidence = 'low';
-    finalConfidenceReason = 'Early in the month — confidence will increase after the 5th day when active telemetry stabilizes.';
+    finalConfidenceReason =
+      'Early in the month — confidence will increase after the 5th day when active telemetry stabilizes.';
   }
 
   const predictedSavings = predictedIncome - (months.length > 0 ? predictedTotal : runRate);

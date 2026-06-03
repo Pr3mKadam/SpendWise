@@ -1,6 +1,10 @@
 import React from 'react';
 
-export function Sel({ children, className = '', ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
+export function Sel({
+  children,
+  className = '',
+  ...props
+}: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}

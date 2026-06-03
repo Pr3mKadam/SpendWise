@@ -3,7 +3,13 @@ import { Lock, Baby, ChevronRight } from 'lucide-react';
 import { useStore } from '@/store';
 import { PinInput } from '@/components/ui/PinInput';
 
-export function ParentalPinGate({ onContinueAsKid, onUnlocked }: { onContinueAsKid?: () => void, onUnlocked?: () => void }) {
+export function ParentalPinGate({
+  onContinueAsKid,
+  onUnlocked,
+}: {
+  onContinueAsKid?: () => void;
+  onUnlocked?: () => void;
+}) {
   const store = useStore();
   const [pin, setPin] = useState('');
   const [error, setError] = useState('');
@@ -29,9 +35,17 @@ export function ParentalPinGate({ onContinueAsKid, onUnlocked }: { onContinueAsK
         <p className="text-sm text-[var(--text-muted)] text-center mb-6">
           Enter your parent PIN to access full settings and features.
         </p>
-        
-        <PinInput value={pin} onChange={(v: string) => { setPin(v); setError(''); }} error={error} label="Enter PIN" />
-        
+
+        <PinInput
+          value={pin}
+          onChange={(v: string) => {
+            setPin(v);
+            setError('');
+          }}
+          error={error}
+          label="Enter PIN"
+        />
+
         <button
           onClick={handleUnlock}
           disabled={pin.length !== 4}
@@ -60,7 +74,7 @@ export function KidModeBanner({ onParentLogin }: { onParentLogin: () => void }) 
         <Baby className="w-4 h-4" />
         Kid Mode Active
       </div>
-      <button 
+      <button
         onClick={onParentLogin}
         className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
       >

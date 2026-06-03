@@ -29,7 +29,11 @@ export function IconNavItem({ id, label, icon: Icon, isActive, badge, onClick }:
   };
 
   return (
-    <div className="relative flex items-center" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+    <div
+      className="relative flex items-center"
+      onMouseEnter={handleEnter}
+      onMouseLeave={handleLeave}
+    >
       <button
         ref={buttonRef}
         onClick={onClick}
@@ -82,11 +86,12 @@ export function IconNavItem({ id, label, icon: Icon, isActive, badge, onClick }:
                 background: 'rgba(15, 23, 42, 0.95)',
                 color: '#ffffff',
                 border: '1px solid rgba(255, 255, 255, 0.12)',
-                boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
+                boxShadow:
+                  '0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
                 fontFamily: 'var(--font-inter)',
               }}
             >
-              <div 
+              <div
                 className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rotate-45"
                 style={{
                   background: 'rgba(15, 23, 42, 0.95)',
@@ -104,5 +109,7 @@ export function IconNavItem({ id, label, icon: Icon, isActive, badge, onClick }:
 }
 
 export function Sep({ style }: { style?: React.CSSProperties }) {
-  return <div className="w-7 h-px mx-auto" style={{ background: 'rgba(255,255,255,0.08)', ...style }} />;
+  return (
+    <div className="w-7 h-px mx-auto" style={{ background: 'rgba(255,255,255,0.08)', ...style }} />
+  );
 }

@@ -18,22 +18,42 @@ export function RazorpayLink({ onSetView, onConnect }: RazorpayLinkProps) {
 
   return (
     <div className="max-w-md mx-auto py-8 animate-scale-in">
-      <button onClick={() => onSetView('select-source')} className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-6 border-none bg-transparent cursor-pointer font-semibold">
+      <button
+        onClick={() => onSetView('select-source')}
+        className="flex items-center gap-2 text-[var(--text-muted)] hover:text-[var(--text-primary)] mb-6 border-none bg-transparent cursor-pointer font-semibold"
+      >
         <ArrowLeft size={18} /> Back
       </button>
       <div className="card p-8">
-        <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6"><Zap size={32} className="text-[#3395FF]" /></div>
+        <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center mb-6">
+          <Zap size={32} className="text-[#3395FF]" />
+        </div>
         <h2 className="text-2xl font-manrope font-bold mb-2">Razorpay Credentials</h2>
         <p className="text-sm text-[var(--text-muted)] mb-6">Use your test keys for simulation.</p>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">Key ID</label>
-            <input type="text" value={rzpKeyId} onChange={e => setRzpKeyId(e.target.value)} placeholder="rzp_test_..." className="w-full p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] outline-none text-sm font-inter" />
+            <label className="block text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-1.5">
+              Key ID
+            </label>
+            <input
+              type="text"
+              value={rzpKeyId}
+              onChange={e => setRzpKeyId(e.target.value)}
+              placeholder="rzp_test_..."
+              className="w-full p-4 rounded-xl bg-[var(--surface-input)] border border-[var(--border)] outline-none text-sm font-inter"
+            />
           </div>
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-500 text-xs">
-            🔒 Security Notice: Key Secrets are no longer accepted on the client side. Please configure your Razorpay Key Secret securely in your backend Edge Function or Proxy.
+            🔒 Security Notice: Key Secrets are no longer accepted on the client side. Please
+            configure your Razorpay Key Secret securely in your backend Edge Function or Proxy.
           </div>
-          <button type="submit" disabled={!rzpKeyId} className="w-full py-4 rounded-xl bg-[var(--teal)] text-white font-bold border-none cursor-pointer disabled:opacity-50 mt-4 shadow-lg shadow-teal-500/10">Save Key ID</button>
+          <button
+            type="submit"
+            disabled={!rzpKeyId}
+            className="w-full py-4 rounded-xl bg-[var(--teal)] text-white font-bold border-none cursor-pointer disabled:opacity-50 mt-4 shadow-lg shadow-teal-500/10"
+          >
+            Save Key ID
+          </button>
         </form>
       </div>
     </div>

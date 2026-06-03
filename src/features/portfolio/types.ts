@@ -1,6 +1,28 @@
-export type AssetType = 'bank' | 'investment' | 'crypto' | 'property' | 'business' | 'education' | 'other';
-export type LiabilityType = 'loan' | 'credit_card' | 'mortgage' | 'student_loan' | 'business_loan' | 'other';
-export type FinanceProvider = 'gpay' | 'phonepe' | 'paytm' | 'cred' | 'bhim' | 'razorpay' | 'plaid' | 'web3' | 'other';
+export type AssetType =
+  | 'bank'
+  | 'investment'
+  | 'crypto'
+  | 'property'
+  | 'business'
+  | 'education'
+  | 'other';
+export type LiabilityType =
+  | 'loan'
+  | 'credit_card'
+  | 'mortgage'
+  | 'student_loan'
+  | 'business_loan'
+  | 'other';
+export type FinanceProvider =
+  | 'gpay'
+  | 'phonepe'
+  | 'paytm'
+  | 'cred'
+  | 'bhim'
+  | 'razorpay'
+  | 'plaid'
+  | 'web3'
+  | 'other';
 
 export interface AssetEntry {
   id: string;

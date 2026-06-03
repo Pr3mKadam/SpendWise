@@ -1,10 +1,10 @@
 /**
  * Setu Account Aggregator (AA) Sandbox Mock
- * 
+ *
  * This file simulates the interaction with the Setu AA API.
  * In a real environment, these calls would be made from a secure backend
  * to prevent leaking the Setu Client ID and Secret.
- * 
+ *
  * Flow:
  * 1. Create Consent Request (POST /consents)
  * 2. User approves consent via Setu UI
@@ -30,24 +30,26 @@ export interface SetuConsentResponse {
  */
 export async function createSetuConsent(mobileNumber: string): Promise<SetuConsentResponse> {
   console.info(`[Setu AA] Creating consent request for ${mobileNumber}...`);
-  
+
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 800));
 
   return {
     id: `setu_cons_${Date.now()}`,
     url: `https://sandbox.setu.co/consent?id=mock_${Date.now()}`,
-    status: 'PENDING'
+    status: 'PENDING',
   };
 }
 
 /**
  * Step 2: Poll for consent status (In production, use Webhooks instead)
  */
-export async function checkSetuConsentStatus(consentId: string): Promise<'PENDING' | 'ACTIVE' | 'REJECTED'> {
+export async function checkSetuConsentStatus(
+  consentId: string
+): Promise<'PENDING' | 'ACTIVE' | 'REJECTED'> {
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   // For the sake of the mock, we assume it's instantly active if they check
   return 'ACTIVE';
 }
@@ -57,7 +59,7 @@ export async function checkSetuConsentStatus(consentId: string): Promise<'PENDIN
  */
 export async function fetchSetuBankStatements(consentId: string): Promise<Partial<Transaction>[]> {
   console.info(`[Setu AA] Fetching secure bank statements for consent ${consentId}...`);
-  
+
   // Simulate network delay
   await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -83,6 +85,6 @@ export async function fetchSetuBankStatements(consentId: string): Promise<Partia
       type: 'debit',
       description: 'UPI-AMAZON@SBI-SHOPPING',
       date: formatLocalYYYYMMDD(new Date(Date.now() - 172800000)),
-    }
+    },
   ];
 }

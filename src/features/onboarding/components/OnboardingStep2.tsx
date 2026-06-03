@@ -28,7 +28,9 @@ export function OnboardingStep2({ step, userRole, setUserRole, setStep }: Onboar
         >
           Choose your Persona
         </h3>
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
+        <p
+          style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}
+        >
           We'll customize your tools based on your role
         </p>
       </div>
@@ -36,9 +38,19 @@ export function OnboardingStep2({ step, userRole, setUserRole, setStep }: Onboar
       <div className="space-y-3 mb-8">
         {[
           { id: 'student', title: 'Student', desc: 'Habit building & learning focus', icon: '🎓' },
-          { id: 'professional', title: 'Professional', desc: 'Net worth & goals focus', icon: '💼' },
-          { id: 'business', title: 'Business Owner', desc: 'Cash flow & analytics focus', icon: '🏢' },
-        ].map((role) => {
+          {
+            id: 'professional',
+            title: 'Professional',
+            desc: 'Net worth & goals focus',
+            icon: '💼',
+          },
+          {
+            id: 'business',
+            title: 'Business Owner',
+            desc: 'Cash flow & analytics focus',
+            icon: '🏢',
+          },
+        ].map(role => {
           const isSelected = userRole === role.id;
           return (
             <button

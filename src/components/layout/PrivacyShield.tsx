@@ -9,7 +9,10 @@ interface PrivacyShieldProps {
   isLocked?: boolean;
 }
 
-export default function PrivacyShield({ onUnlock, isLocked: controlledLocked }: PrivacyShieldProps) {
+export default function PrivacyShield({
+  onUnlock,
+  isLocked: controlledLocked,
+}: PrivacyShieldProps) {
   // Check if user has already unlocked this tab session
   const [isLocked, setIsLocked] = useState(() => {
     // If they already unlocked in this browser session, don't show the shield again on mount
@@ -24,12 +27,20 @@ export default function PrivacyShield({ onUnlock, isLocked: controlledLocked }: 
 
   const lock = useCallback(() => {
     setIsLocked(true);
-    try { sessionStorage.removeItem(SESSION_UNLOCKED_KEY); } catch { /* ignore */ }
+    try {
+      sessionStorage.removeItem(SESSION_UNLOCKED_KEY);
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   const unlock = useCallback(() => {
     setIsLocked(false);
-    try { sessionStorage.setItem(SESSION_UNLOCKED_KEY, 'true'); } catch { /* ignore */ }
+    try {
+      sessionStorage.setItem(SESSION_UNLOCKED_KEY, 'true');
+    } catch {
+      /* ignore */
+    }
     onUnlock?.();
   }, [onUnlock]);
 
@@ -97,9 +108,12 @@ export default function PrivacyShield({ onUnlock, isLocked: controlledLocked }: 
             <div className="w-20 h-20 rounded-full flex items-center justify-center bg-[var(--teal-dim)] text-[var(--teal)]">
               <Lock size={40} />
             </div>
-            
+
             <div className="space-y-2">
-              <h2 id="privacy-shield-title" className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+              <h2
+                id="privacy-shield-title"
+                className="text-2xl font-bold tracking-tight text-[var(--text-primary)]"
+              >
                 Privacy Shield Active
               </h2>
               <p className="text-sm text-[var(--text-muted)]">
@@ -110,11 +124,11 @@ export default function PrivacyShield({ onUnlock, isLocked: controlledLocked }: 
             <button
               onClick={unlock}
               className="w-full flex items-center justify-center gap-2 rounded-xl py-4 px-6 text-base font-bold transition-all hover:scale-[1.02] active:scale-[0.98]"
-              style={{ 
-                background: 'var(--teal)', 
-                color: '#fff', 
+              style={{
+                background: 'var(--teal)',
+                color: '#fff',
                 boxShadow: '0 8px 16px -4px rgba(20, 184, 166, 0.3)',
-                cursor: 'pointer'
+                cursor: 'pointer',
               }}
             >
               <Unlock size={18} />

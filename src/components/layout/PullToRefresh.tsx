@@ -19,7 +19,10 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
   useEffect(() => {
     const handleTouchStart = (e: TouchEvent) => {
       const target = e.target as HTMLElement;
-      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target?.closest('input, textarea, select, [contenteditable]')) {
+      if (
+        (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) ||
+        target?.closest('input, textarea, select, [contenteditable]')
+      ) {
         startY.current = -1;
         return;
       }
@@ -41,7 +44,7 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
         // Linear dampening
         const d = Math.min(diff * 0.5, PULL_THRESHOLD + 20);
         setPullDistance(d);
-        
+
         // Haptic feedback when crossing threshold
         if (d >= PULL_THRESHOLD && pullDistance < PULL_THRESHOLD) {
           haptic.light();
@@ -61,13 +64,13 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
         setIsRefreshing(true);
         setPullDistance(PULL_THRESHOLD);
         haptic.medium();
-        
+
         await onRefresh();
-        
+
         haptic.success();
         setIsRefreshing(false);
       }
-      
+
       setPullDistance(0);
       startY.current = -1;
     };
@@ -87,10 +90,10 @@ export default function PullToRefresh({ onRefresh, children }: PullToRefreshProp
     <div className="relative overflow-hidden">
       {/* Refresh Indicator */}
       <motion.div
-        style={{ 
+        style={{
           y: pullDistance - 40,
           opacity: pullDistance / PULL_THRESHOLD,
-          rotate: pullDistance * 2
+          rotate: pullDistance * 2,
         }}
         className="absolute top-0 left-0 right-0 flex justify-center z-50 pointer-events-none"
       >

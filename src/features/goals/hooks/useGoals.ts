@@ -7,11 +7,11 @@ import { formatLocalYYYYMMDD } from '@/utils/date';
 function computeStatus(goal: SavingsGoal): GoalStatus {
   if (goal.savedAmount >= goal.targetAmount) return 'achieved';
 
-  const today        = new Date();
-  const target       = new Date(goal.targetDate + 'T00:00:00');
-  const daysLeft     = Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
-  const monthsLeft   = daysLeft / 30;
-  const remaining    = goal.targetAmount - goal.savedAmount;
+  const today = new Date();
+  const target = new Date(goal.targetDate + 'T00:00:00');
+  const daysLeft = Math.max(0, Math.round((target.getTime() - today.getTime()) / 86_400_000));
+  const monthsLeft = daysLeft / 30;
+  const remaining = goal.targetAmount - goal.savedAmount;
   const neededPerMth = monthsLeft > 0 ? remaining / monthsLeft : Infinity;
 
   if (goal.monthlyContribution <= 0) return 'paused';
@@ -28,15 +28,23 @@ export function useGoals() {
   const addGoal = useCallback(
     async (partial: Omit<SavingsGoal, 'id' | 'status' | 'createdAt'>) => {
       if (!user) return;
-      
-      const status = computeStatus({ ...partial, id: "", status: "on-track", createdAt: "" } as SavingsGoal);
+
+      const status = computeStatus({
+        ...partial,
+        id: '',
+        status: 'on-track',
+        createdAt: '',
+      } as SavingsGoal);
       setGoals(prev => {
-        const next = [...prev, {
-          ...partial,
-          id: Math.random().toString(36).substr(2, 9),
-          status,
-          createdAt: formatLocalYYYYMMDD(new Date())
-        } as SavingsGoal];
+        const next = [
+          ...prev,
+          {
+            ...partial,
+            id: Math.random().toString(36).substr(2, 9),
+            status,
+            createdAt: formatLocalYYYYMMDD(new Date()),
+          } as SavingsGoal,
+        ];
         return next;
       });
     },
@@ -46,7 +54,9 @@ export function useGoals() {
   const updateGoal = useCallback(
     async (id: string, updates: Partial<SavingsGoal>) => {
       setGoals(prev => {
-        const next = prev.map(g => g.id === id ? { ...g, ...updates, status: computeStatus({ ...g, ...updates }) } : g);
+        const next = prev.map(g =>
+          g.id === id ? { ...g, ...updates, status: computeStatus({ ...g, ...updates }) } : g
+        );
         return next;
       });
     },
@@ -86,27 +96,30 @@ export function useGoals() {
   );
 
   const stats = useMemo(() => {
-    const active   = goals.filter(g => g.status !== 'achieved');
+    const active = goals.filter(g => g.status !== 'achieved');
     const achieved = goals.filter(g => g.status === 'achieved');
     const totalTarget = active.reduce((a, g) => a + g.targetAmount, 0);
-    const totalSaved  = active.reduce((a, g) => a + g.savedAmount, 0);
+    const totalSaved = active.reduce((a, g) => a + g.savedAmount, 0);
     const monthlyCommitted = active.reduce((a, g) => a + g.monthlyContribution, 0);
 
     return {
-      activeCount:       active.length,
-      achievedCount:     achieved.length,
+      activeCount: active.length,
+      achievedCount: achieved.length,
       totalTarget,
       totalSaved,
-      overallPercent:    totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0,
+      overallPercent: totalTarget > 0 ? Math.round((totalSaved / totalTarget) * 100) : 0,
       monthlyCommitted,
     };
   }, [goals]);
 
-  const goalStats = useMemo(() => ({
-    onTrack: goals.filter(g => computeStatus(g) === 'on-track').length,
-    atRisk:  goals.filter(g => computeStatus(g) === 'at-risk').length,
-    achieved: goals.filter(g => computeStatus(g) === 'achieved').length,
-  }), [goals]);
+  const goalStats = useMemo(
+    () => ({
+      onTrack: goals.filter(g => computeStatus(g) === 'on-track').length,
+      atRisk: goals.filter(g => computeStatus(g) === 'at-risk').length,
+      achieved: goals.filter(g => computeStatus(g) === 'achieved').length,
+    }),
+    [goals]
+  );
 
   return {
     goals,

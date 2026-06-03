@@ -11,7 +11,21 @@
     "test:ui": "vitest --ui",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "map": "npx repomix@latest"
+    "map": "npx repomix@latest",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "src/**/*.{ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "src/**/*.css": [
+      "prettier --write"
+    ]
   },
   "dependencies": {
     "@trystero-p2p/mqtt": "^0.25.0",
@@ -28,6 +42,7 @@
     "react-dom": "19.2.3",
     "react-hot-toast": "^2.6.0",
     "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.16.0",
     "react-virtuoso": "^4.18.6",
     "recharts": "^3.8.0",
     "tailwind-merge": "3.4.0",
@@ -36,6 +51,7 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.60.0",
     "@tailwindcss/vite": "4.1.17",
     "@types/canvas-confetti": "^1.9.0",
@@ -45,9 +61,19 @@
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
     "@vitest/ui": "^4.1.5",
+    "eslint": "^10.4.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.6",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.2",
+    "globals": "^17.6.0",
     "happy-dom": "^20.9.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.0.5",
+    "prettier": "^3.8.3",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
+    "typescript-eslint": "^8.60.0",
     "vite": "7.2.4",
     "vite-plugin-pwa": "^1.2.0",
     "vite-plugin-singlefile": "2.3.0",

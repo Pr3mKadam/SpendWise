@@ -20,7 +20,11 @@ interface PortfolioViewProps {
   config: SpendWiseConfig | null;
 }
 
-export default function PortfolioView({ currency = '₹', financeState, config }: PortfolioViewProps) {
+export default function PortfolioView({
+  currency = '₹',
+  financeState,
+  config,
+}: PortfolioViewProps) {
   const isMobile = useIsMobile();
   const {
     assets,
@@ -152,7 +156,11 @@ export default function PortfolioView({ currency = '₹', financeState, config }
           </div>
         ) : (
           <div className="animate-fade-in">
-            <DebtPlanner liabilities={liabilities} currency={currency} userRole={config?.userRole} />
+            <DebtPlanner
+              liabilities={liabilities}
+              currency={currency}
+              userRole={config?.userRole}
+            />
           </div>
         )}
 
@@ -163,16 +171,22 @@ export default function PortfolioView({ currency = '₹', financeState, config }
           >
             <BarChart2 size={18} style={{ color: 'var(--teal)' }} />
           </div>
-          <p className="font-inter text-[13px]" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          <p
+            className="font-inter text-[13px]"
+            style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}
+          >
             <strong style={{ color: 'var(--text-primary)' }}>Wealth Efficiency: </strong>
-            {totalAssets > 0 ? `${((totalLiabilities / totalAssets) * 100).toFixed(1)}% Debt Ratio` : 'N/A'} ·{' '}
+            {totalAssets > 0
+              ? `${((totalLiabilities / totalAssets) * 100).toFixed(1)}% Debt Ratio`
+              : 'N/A'}{' '}
+            ·{' '}
             {totalAssets === 0
               ? 'Add assets to begin portfolio tracking.'
               : positive
-              ? `Your portfolio is highly resilient with a safety margin of ${(
-                  totalAssets / Math.max(totalLiabilities, 1)
-                ).toFixed(1)}x.`
-              : 'Focus on aggressive debt repayment to flip your net worth positive.'}
+                ? `Your portfolio is highly resilient with a safety margin of ${(
+                    totalAssets / Math.max(totalLiabilities, 1)
+                  ).toFixed(1)}x.`
+                : 'Focus on aggressive debt repayment to flip your net worth positive.'}
           </p>
         </div>
       </div>

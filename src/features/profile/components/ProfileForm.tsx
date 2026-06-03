@@ -21,7 +21,10 @@ function FormField({ label, value, onChange, placeholder, type = 'text' }: Profi
 
   return (
     <div>
-      <label className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-muted)' }}>
+      <label
+        className="block font-inter text-xs font-semibold uppercase tracking-wider mb-2"
+        style={{ color: 'var(--text-muted)' }}
+      >
         {label}
       </label>
       <div className="relative">
@@ -31,7 +34,11 @@ function FormField({ label, value, onChange, placeholder, type = 'text' }: Profi
           onChange={e => onChange(e.target.value)}
           placeholder={placeholder}
           className="w-full font-inter text-sm px-4 py-3 rounded-xl focus:outline-none transition-colors"
-          style={{ background: 'var(--surface-input)', color: 'var(--text-primary)', border: '2px solid transparent' }}
+          style={{
+            background: 'var(--surface-input)',
+            color: 'var(--text-primary)',
+            border: '2px solid transparent',
+          }}
           onFocus={e => (e.target.style.borderColor = 'var(--teal)')}
           onBlur={e => (e.target.style.borderColor = 'transparent')}
         />
@@ -68,12 +75,20 @@ export function ProfileForm({ fields, currency, onSave, showSavedMsg }: ProfileF
           <button
             onClick={onSave}
             className="px-6 py-3 rounded-xl font-inter font-bold text-sm text-white transition-all hover:opacity-90"
-            style={{ background: 'var(--teal)', boxShadow: '0 4px 12px rgba(20,184,166,0.3)', border: 'none', cursor: 'pointer' }}
+            style={{
+              background: 'var(--teal)',
+              boxShadow: '0 4px 12px rgba(20,184,166,0.3)',
+              border: 'none',
+              cursor: 'pointer',
+            }}
           >
             Save Changes
           </button>
           {showSavedMsg && (
-            <span className="flex items-center gap-1.5 font-inter text-sm font-semibold animate-fade-in" style={{ color: 'var(--teal)' }}>
+            <span
+              className="flex items-center gap-1.5 font-inter text-sm font-semibold animate-fade-in"
+              style={{ color: 'var(--teal)' }}
+            >
               <CheckCircle2 size={16} /> Changes saved!
             </span>
           )}

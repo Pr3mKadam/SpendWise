@@ -11,24 +11,40 @@ interface HealthResult {
 
 export function HealthIndexCard({ health }: { health: HealthResult }) {
   return (
-    <div className="card p-0 overflow-hidden relative" style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}>
+    <div
+      className="card p-0 overflow-hidden relative"
+      style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)' }}
+    >
       <div className="p-6 sm:p-8 flex flex-col lg:flex-row gap-8 items-center relative z-10">
         {/* Gauge */}
         <div className="relative w-40 h-40 shrink-0">
           <svg className="w-full h-full transform -rotate-90">
-            <circle cx="80" cy="80" r="70" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="12" />
+            <circle
+              cx="80"
+              cy="80"
+              r="70"
+              fill="none"
+              stroke="rgba(255,255,255,0.05)"
+              strokeWidth="12"
+            />
             <motion.circle
               initial={{ strokeDasharray: '0 440' }}
               animate={{ strokeDasharray: `${(health.score / 100) * 440} 440` }}
               transition={{ duration: 1.5, ease: 'easeOut' }}
-              cx="80" cy="80" r="70"
-              fill="none" stroke={health.color} strokeWidth="12"
+              cx="80"
+              cy="80"
+              r="70"
+              fill="none"
+              stroke={health.color}
+              strokeWidth="12"
               strokeLinecap="round"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
             <span className="text-4xl font-black text-white leading-none">{health.score}</span>
-            <span className="text-[length:var(--fs-overline)] font-bold text-gray-400 tracking-widest uppercase mt-1">Health Index</span>
+            <span className="text-[length:var(--fs-overline)] font-bold text-gray-400 tracking-widest uppercase mt-1">
+              Health Index
+            </span>
           </div>
         </div>
 
@@ -39,7 +55,9 @@ export function HealthIndexCard({ health }: { health: HealthResult }) {
             </div>
             <div>
               <h3 className="text-white text-lg font-bold">AI Financial Health: {health.grade}</h3>
-              <p className="text-gray-400 text-sm">Based on your spending discipline, stability, and savings rate.</p>
+              <p className="text-gray-400 text-sm">
+                Based on your spending discipline, stability, and savings rate.
+              </p>
             </div>
           </div>
 
@@ -47,10 +65,14 @@ export function HealthIndexCard({ health }: { health: HealthResult }) {
             {Object.entries(health.breakdown).map(([key, val]) => (
               <div key={key}>
                 <div className="flex justify-between text-[length:var(--fs-overline)] font-bold text-gray-500 uppercase tracking-wider mb-1">
-                  <span>{key}</span><span>{val}%</span>
+                  <span>{key}</span>
+                  <span>{val}%</span>
                 </div>
                 <div className="h-1 bg-white/5 rounded-full overflow-hidden">
-                  <div className="h-full bg-teal-500/50 transition-all duration-1000" style={{ width: `${val}%` }} />
+                  <div
+                    className="h-full bg-teal-500/50 transition-all duration-1000"
+                    style={{ width: `${val}%` }}
+                  />
                 </div>
               </div>
             ))}
@@ -61,7 +83,9 @@ export function HealthIndexCard({ health }: { health: HealthResult }) {
               <Info size={14} className="text-teal-400 mt-0.5 shrink-0" />
               <div className="space-y-1">
                 {health.recommendations.map((rec, i) => (
-                  <p key={i} className="text-xs text-teal-100/90 leading-relaxed font-medium">{rec}</p>
+                  <p key={i} className="text-xs text-teal-100/90 leading-relaxed font-medium">
+                    {rec}
+                  </p>
                 ))}
               </div>
             </div>

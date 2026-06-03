@@ -46,19 +46,22 @@ const PENDING_UPI_KEY = 'sw_pending_upi';
 const PENDING_TTL = 15 * 60 * 1000; // 15 minutes
 
 export interface PendingUPIPayment {
-  tr: string;          // transaction reference
-  pa: string;          // payee VPA
-  pn: string;          // payee name
-  am: number;          // amount
-  tn: string;          // note / description
-  ts: number;          // timestamp millis when initiated
+  tr: string; // transaction reference
+  pa: string; // payee VPA
+  pn: string; // payee name
+  am: number; // amount
+  tn: string; // note / description
+  ts: number; // timestamp millis when initiated
 }
 
 /**
  * Build a UPI intent URL.
  * Returns both a upi:// URL (works on Android apps) and a web-intent URL.
  */
-export function buildUPIUrl(params: UPIPaymentParams, scheme?: string): { upiUrl: string; returnUrl: string; transactionRef: string } {
+export function buildUPIUrl(
+  params: UPIPaymentParams,
+  scheme?: string
+): { upiUrl: string; returnUrl: string; transactionRef: string } {
   const transactionRef = params.tr || `SW${Date.now()}`;
   const returnUrl = `${window.location.origin}${window.location.pathname}?upi_status=SUBMITTED&upi_tr=${transactionRef}&upi_pa=${encodeURIComponent(params.pa)}&upi_pn=${encodeURIComponent(params.pn)}&upi_am=${params.am}&upi_tn=${encodeURIComponent(params.tn || '')}`;
 
@@ -69,8 +72,8 @@ export function buildUPIUrl(params: UPIPaymentParams, scheme?: string): { upiUrl
     cu: 'INR',
     tn: params.tn || `Payment to ${params.pn}`,
     tr: transactionRef,
-    url: returnUrl,   // merchant callback (not all apps support this)
-    mc: '0000',        // merchant category code — generic
+    url: returnUrl, // merchant callback (not all apps support this)
+    mc: '0000', // merchant category code — generic
   });
 
   const baseUrl = scheme || 'upi://pay';
@@ -130,9 +133,11 @@ export function parseUPIReturnParams(): UPIPaymentResult | null {
   }
 
   const status: UPIPaymentResult['status'] =
-    upiStatus === 'SUCCESS' || responseCode === '00' ? 'SUCCESS' :
-    upiStatus === 'FAILURE' ? 'FAILURE' :
-    'PENDING';
+    upiStatus === 'SUCCESS' || responseCode === '00'
+      ? 'SUCCESS'
+      : upiStatus === 'FAILURE'
+        ? 'FAILURE'
+        : 'PENDING';
 
   return { status, transactionId, transactionRef, responseCode, amount, pa, pn, tn };
 }
@@ -152,7 +157,9 @@ export async function upiResultToTransaction(result: UPIPaymentResult): Promise<
     type: 'debit',
     category: parsed.category,
     merchant: parsed.merchant || result.pn || result.pa || 'UPI Payment',
-    description: result.tn ? `UPI · ${result.tn} · Ref: ${result.transactionRef}` : `UPI Payment · Ref: ${result.transactionRef}`,
+    description: result.tn
+      ? `UPI · ${result.tn} · Ref: ${result.transactionRef}`
+      : `UPI Payment · Ref: ${result.transactionRef}`,
     isNew: true,
     confidence: parsed.confidence,
     aiParsed: parsed.aiParsed,
@@ -165,7 +172,9 @@ export async function upiResultToTransaction(result: UPIPaymentResult): Promise<
  * On desktop/web it offers a fallback.
  */
 export function openUPIIntent(upiUrl: string): void {
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
 
   if (isMobile) {
     // Direct redirect is the safest, most robust way on mobile browsers (Chrome, Safari, etc.)
@@ -178,7 +187,9 @@ export function openUPIIntent(upiUrl: string): void {
     iframe.src = upiUrl;
     document.body.appendChild(iframe);
     setTimeout(() => {
-      try { document.body.removeChild(iframe); } catch {}
+      try {
+        document.body.removeChild(iframe);
+      } catch {}
     }, 2000);
 
     // Fallback if iframe didn't prompt anything
@@ -257,20 +268,23 @@ export const UPI_APP_INTENTS = [
 
 /**
  * P2P Verification Strategy (No Backend Required)
- * 
+ *
  * Since UPI intents (`upi://pay`) do not securely report back success to a web app,
  * and we don't have a merchant backend to receive Razorpay/Cashfree webhooks,
- * the only secure way to verify a P2P payment occurred on the device is by 
+ * the only secure way to verify a P2P payment occurred on the device is by
  * reading the bank's SMS confirmation ("Debited Rs. 500").
- * 
+ *
  * Future Implementation: WebOTP API or a React Native / Capacitor plugin.
  */
-export async function verifyPaymentViaSMS(expectedAmount: number, expectedRef: string): Promise<boolean> {
+export async function verifyPaymentViaSMS(
+  expectedAmount: number,
+  expectedRef: string
+): Promise<boolean> {
   // Check if WebOTP API is available
   if ('OTPCredential' in window) {
     try {
       console.info('[UPI] Waiting for Bank SMS via WebOTP API...');
-      // Note: WebOTP requires the SMS to end with `@ourdomain.com #12345` 
+      // Note: WebOTP requires the SMS to end with `@ourdomain.com #12345`
       // which banks do not send. So WebOTP only works if the app has native SMS read permissions.
       // In a PWA, this is highly restricted. In an Android wrapper (TWA/Capacitor), it's possible.
       return false; // Stub

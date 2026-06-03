@@ -56,7 +56,7 @@ export const AppModals: React.FC<AppModalsProps> = ({
         onMarkRead={notifState.markRead}
         onMarkAllRead={notifState.markAllRead}
         onSnooze={notifState.snoozeNotification}
-        onNavigate={(view) => {
+        onNavigate={view => {
           handleViewChange(view);
           setShowNotifications(false);
         }}
@@ -67,7 +67,7 @@ export const AppModals: React.FC<AppModalsProps> = ({
         isOpen={showCategoriesModal}
         onClose={() => setShowCategoriesModal(false)}
         customCategories={categoryState.customCategories}
-        onAdd={(newCat) => {
+        onAdd={newCat => {
           categoryState.addCustomCategory(newCat);
         }}
         onUpdate={categoryState.updateCustomCategory}

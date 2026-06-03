@@ -77,7 +77,9 @@ export interface SharedStorage {
 
 // LWW Union by ID, with Tombstone filtering
 export function mergeSharedStorage(local: SharedStorage, remote: SharedStorage): SharedStorage {
-  const mergedDeletedIds = Array.from(new Set([...(local.deleted_ids || []), ...(remote.deleted_ids || [])]));
+  const mergedDeletedIds = Array.from(
+    new Set([...(local.deleted_ids || []), ...(remote.deleted_ids || [])])
+  );
   const deletedSet = new Set(mergedDeletedIds);
 
   const unionById = <T extends { id: string }>(a: T[], b: T[]): T[] => {

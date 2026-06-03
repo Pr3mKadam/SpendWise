@@ -37,7 +37,12 @@ export function BudgetCategoryCardMobile({
         className="absolute left-0 top-0 bottom-0 opacity-[0.03] pointer-events-none transition-all duration-700"
         style={{
           width: `${Math.min(b.percent, 100)}%`,
-          background: b.status === 'danger' ? 'var(--red)' : b.status === 'warning' ? 'var(--amber)' : 'var(--teal)',
+          background:
+            b.status === 'danger'
+              ? 'var(--red)'
+              : b.status === 'warning'
+                ? 'var(--amber)'
+                : 'var(--teal)',
         }}
       />
 
@@ -65,7 +70,10 @@ export function BudgetCategoryCardMobile({
             <Edit2 size={18} />
           </button>
           <button
-            onClick={() => { haptic.medium(); onRemove(b.category); }}
+            onClick={() => {
+              haptic.medium();
+              onRemove(b.category);
+            }}
             className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-red-500 bg-white/5 rounded-xl border-none cursor-pointer"
             aria-label={`Delete ${b.category} budget`}
           >
@@ -77,15 +85,21 @@ export function BudgetCategoryCardMobile({
       <div className="flex items-end justify-between mb-3 relative z-10">
         <div>
           <p className="text-xl font-bold text-[var(--text-primary)]">
-            {currency}{b.spent.toLocaleString()}
+            {currency}
+            {b.spent.toLocaleString()}
           </p>
           <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)]">
-            / {currency}{b.limit.toLocaleString()} limit
+            / {currency}
+            {b.limit.toLocaleString()} limit
           </p>
         </div>
         <div className="text-right">
-          <p className={`text-sm font-bold ${b.remaining < 0 ? 'text-red-500' : 'text-[var(--teal)]'}`}>
-            {b.remaining < 0 ? '-' : ''}{currency}{Math.abs(b.remaining).toLocaleString()}
+          <p
+            className={`text-sm font-bold ${b.remaining < 0 ? 'text-red-500' : 'text-[var(--teal)]'}`}
+          >
+            {b.remaining < 0 ? '-' : ''}
+            {currency}
+            {Math.abs(b.remaining).toLocaleString()}
           </p>
           <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)]">
             {b.remaining < 0 ? 'Exceeded' : 'Left'}
@@ -104,7 +118,10 @@ export function BudgetCategoryCardMobile({
       {b.percent > 100 && (
         <div className="mt-3 flex items-center gap-2 text-[length:var(--fs-overline)] font-bold text-red-500 bg-red-500/10 py-1.5 px-3 rounded-full w-fit">
           <AlertCircle size={12} strokeWidth={3} />
-          <span>OVER BUDGET BY {currency}{Math.abs(b.remaining).toLocaleString()}</span>
+          <span>
+            OVER BUDGET BY {currency}
+            {Math.abs(b.remaining).toLocaleString()}
+          </span>
         </div>
       )}
     </motion.div>

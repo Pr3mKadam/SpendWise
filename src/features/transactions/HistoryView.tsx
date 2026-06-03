@@ -19,22 +19,25 @@ import HistoryViewMobile from '@/features/transactions/HistoryViewMobile';
 export type { SortKey, SortDir, TypeFilter } from '@/features/transactions/components/historyTypes';
 
 interface HistoryViewProps {
-  transactions:          Transaction[];
-  onCategoryChange?:     (id: string, newCategory: Category) => void;
+  transactions: Transaction[];
+  onCategoryChange?: (id: string, newCategory: Category) => void;
   onBulkCategoryChange?: (ids: string[], newCategory: Category) => void;
-  onDelete?:             (id: string) => void;
-  onBulkDelete?:         (ids: string[]) => void;
-  onImportClick?:        () => void;
-  onPDFReport?:          () => void;
-  currency?:             string;
-  initialSearchQuery?:   string;
+  onDelete?: (id: string) => void;
+  onBulkDelete?: (ids: string[]) => void;
+  onImportClick?: () => void;
+  onPDFReport?: () => void;
+  currency?: string;
+  initialSearchQuery?: string;
 }
 
 export default function HistoryView({
   transactions,
-  onCategoryChange, onBulkCategoryChange,
-  onDelete, onBulkDelete,
-  onImportClick, onPDFReport,
+  onCategoryChange,
+  onBulkCategoryChange,
+  onDelete,
+  onBulkDelete,
+  onImportClick,
+  onPDFReport,
   currency = '$',
   initialSearchQuery = '',
 }: HistoryViewProps) {
@@ -43,20 +46,38 @@ export default function HistoryView({
   const addTransactions = useStore(s => s.addTransactions);
 
   const [pendingDeleteIds, setPendingDeleteIds] = useState<Set<string>>(new Set());
-  
+
   // Create a visible subset of transactions that excludes pending deletes
   const visibleTransactions = useMemo(() => {
     return transactions.filter(tx => !pendingDeleteIds.has(tx.id));
   }, [transactions, pendingDeleteIds]);
 
   const {
-    search, setSearch, categoryFilter, setCategoryFilter,
-    typeFilter, setTypeFilter, sortKey, sortDir,
-    dateFrom, setDateFrom, dateTo, setDateTo,
-    showDateFilter, setShowDateFilter,
-    amountMin, setAmountMin, amountMax, setAmountMax,
-    showAmountFilter, setShowAmountFilter,
-    filtered, displayRows, hasFilters, clearFilters, handleSort
+    search,
+    setSearch,
+    categoryFilter,
+    setCategoryFilter,
+    typeFilter,
+    setTypeFilter,
+    sortKey,
+    sortDir,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    showDateFilter,
+    setShowDateFilter,
+    amountMin,
+    setAmountMin,
+    amountMax,
+    setAmountMax,
+    showAmountFilter,
+    setShowAmountFilter,
+    filtered,
+    displayRows,
+    hasFilters,
+    clearFilters,
+    handleSort,
   } = useTransactionHistory(visibleTransactions, initialSearchQuery);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -117,9 +138,9 @@ export default function HistoryView({
     if (!file) return;
     e.target.value = '';
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = event => {
       try {
-        const raw  = JSON.parse(event.target?.result as string);
+        const raw = JSON.parse(event.target?.result as string);
         const data: Transaction[] = Array.isArray(raw) ? raw : (raw.transactions ?? []);
         if (data.length === 0) {
           setImportToast('No transactions found in file.');
@@ -149,7 +170,7 @@ export default function HistoryView({
 
   if (isMobile) {
     return (
-      <HistoryViewMobile 
+      <HistoryViewMobile
         transactions={visibleTransactions}
         currency={currency}
         onDelete={handleInterceptDelete}
@@ -161,14 +182,15 @@ export default function HistoryView({
   return (
     <PullToRefresh onRefresh={handleRefresh}>
       <div className="animate-fade-in-up space-y-5">
-
         {/* Page Header */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-headline">Transaction History</h2>
             <p className="text-caption mt-1">
               {filtered.length} of {transactions.length} transactions · Net{' '}
-              {total >= 0 ? `+${currency}${total.toFixed(2)}` : `-${currency}${Math.abs(total).toFixed(2)}`}
+              {total >= 0
+                ? `+${currency}${total.toFixed(2)}`
+                : `-${currency}${Math.abs(total).toFixed(2)}`}
             </p>
           </div>
           <HistoryToolbar
@@ -181,26 +203,40 @@ export default function HistoryView({
         </div>
 
         <TransactionFilters
-          search={search} setSearch={setSearch}
-          showDateFilter={showDateFilter} setShowDateFilter={setShowDateFilter}
-          dateFrom={dateFrom} setDateFrom={setDateFrom}
-          dateTo={dateTo} setDateTo={setDateTo}
-          typeFilter={typeFilter} setTypeFilter={setTypeFilter}
-          categoryFilter={categoryFilter} setCategoryFilter={setCategoryFilter}
-          allCategories={allCategories} mergedIcons={mergedIcons}
-          hasFilters={hasFilters} clearFilters={clearFilters}
-          amountMin={amountMin} setAmountMin={setAmountMin}
-          amountMax={amountMax} setAmountMax={setAmountMax}
-          showAmountFilter={showAmountFilter} setShowAmountFilter={setShowAmountFilter}
+          search={search}
+          setSearch={setSearch}
+          showDateFilter={showDateFilter}
+          setShowDateFilter={setShowDateFilter}
+          dateFrom={dateFrom}
+          setDateFrom={setDateFrom}
+          dateTo={dateTo}
+          setDateTo={setDateTo}
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
+          categoryFilter={categoryFilter}
+          setCategoryFilter={setCategoryFilter}
+          allCategories={allCategories}
+          mergedIcons={mergedIcons}
+          hasFilters={hasFilters}
+          clearFilters={clearFilters}
+          amountMin={amountMin}
+          setAmountMin={setAmountMin}
+          amountMax={amountMax}
+          setAmountMax={setAmountMax}
+          showAmountFilter={showAmountFilter}
+          setShowAmountFilter={setShowAmountFilter}
         />
 
         {/* Table Card */}
-        <div className="card overflow-hidden flex flex-col" style={{ height: '65vh', minHeight: 320 }}>
+        <div
+          className="card overflow-hidden flex flex-col"
+          style={{ height: '65vh', minHeight: 320 }}
+        >
           {selectedIds.size > 0 && onCategoryChange && (
             <BulkActionHeader
               selectedCount={selectedIds.size}
               onClearSelection={() => setSelectedIds(new Set())}
-              onBulkCategoryChange={(newCat) => {
+              onBulkCategoryChange={newCat => {
                 const ids = Array.from(selectedIds);
                 if (onBulkCategoryChange) onBulkCategoryChange(ids, newCat);
                 else ids.forEach(id => onCategoryChange(id, newCat));
@@ -223,7 +259,7 @@ export default function HistoryView({
             selectedIds={selectedIds}
             setSelectedIds={setSelectedIds}
             onCategoryChange={onCategoryChange}
-            onDelete={(id) => {
+            onDelete={id => {
               const newSet = new Set(selectedIds);
               newSet.delete(id);
               setSelectedIds(newSet);
@@ -234,7 +270,7 @@ export default function HistoryView({
             mergedIcons={mergedIcons}
             sortKey={sortKey}
             sortDir={sortDir}
-            handleSort={(key) => {
+            handleSort={key => {
               handleSort(key);
               virtuosoRef.current?.scrollToIndex({ index: 0 });
             }}
@@ -247,7 +283,7 @@ export default function HistoryView({
           <div className="undo-toast show animate-slide-up">
             <div className="flex items-center justify-between w-full">
               <span className="text-[var(--text-primary)] font-medium">Transaction deleted</span>
-              <button 
+              <button
                 onClick={handleUndoDelete}
                 className="ml-4 px-3 py-1.5 rounded-xl bg-[var(--teal)] text-white text-[11px] font-black tracking-widest uppercase hover:brightness-110 active:scale-95 transition-all shadow-md"
               >
@@ -261,7 +297,11 @@ export default function HistoryView({
         {importToast && (
           <div
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-2xl shadow-xl text-sm font-semibold animate-fade-in-up"
-            style={{ background: 'var(--surface-card)', color: 'var(--text-primary)', border: '1.5px solid var(--border)' }}
+            style={{
+              background: 'var(--surface-card)',
+              color: 'var(--text-primary)',
+              border: '1.5px solid var(--border)',
+            }}
           >
             {importToast}
           </div>
@@ -270,7 +310,7 @@ export default function HistoryView({
         <DeleteConfirmModal
           deleteConfirmId={deleteConfirmId}
           onCancel={() => setDeleteConfirmId(null)}
-          onConfirm={(id) => {
+          onConfirm={id => {
             const newSet = new Set(selectedIds);
             newSet.delete(id);
             setSelectedIds(newSet);

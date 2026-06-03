@@ -53,5 +53,5 @@ export const haptic = {
       // Longer pulse
       navigator.vibrate(100);
     }
-  }
+  },
 };

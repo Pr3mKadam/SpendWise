@@ -46,7 +46,9 @@ export function OnboardingStep3({
         >
           Finalize Profile
         </h3>
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
+        <p
+          style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}
+        >
           All fields are required to secure your account
         </p>
       </div>
@@ -71,7 +73,7 @@ export function OnboardingStep3({
             type="text"
             placeholder="John Doe"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={e => setName(e.target.value)}
             className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
             style={{
               background: '#f8fafc',
@@ -79,11 +81,11 @@ export function OnboardingStep3({
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-inter)',
             }}
-            onFocus={(e) => {
+            onFocus={e => {
               e.target.style.border = '2px solid var(--teal)';
               e.target.style.background = '#ffffff';
             }}
-            onBlur={(e) => {
+            onBlur={e => {
               e.target.style.border = '2px solid #edf2f7';
               e.target.style.background = '#f8fafc';
             }}
@@ -107,9 +109,11 @@ export function OnboardingStep3({
           </label>
           <input
             type="text"
-            placeholder={userRole === 'student' ? 'e.g. University Student' : 'e.g. Software Engineer'}
+            placeholder={
+              userRole === 'student' ? 'e.g. University Student' : 'e.g. Software Engineer'
+            }
             value={occupation}
-            onChange={(e) => setOccupation(e.target.value)}
+            onChange={e => setOccupation(e.target.value)}
             className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
             style={{
               background: '#f8fafc',
@@ -117,11 +121,11 @@ export function OnboardingStep3({
               color: 'var(--text-primary)',
               fontFamily: 'var(--font-inter)',
             }}
-            onFocus={(e) => {
+            onFocus={e => {
               e.target.style.border = '2px solid var(--teal)';
               e.target.style.background = '#ffffff';
             }}
-            onBlur={(e) => {
+            onBlur={e => {
               e.target.style.border = '2px solid #edf2f7';
               e.target.style.background = '#f8fafc';
             }}
@@ -148,7 +152,7 @@ export function OnboardingStep3({
               type="text"
               placeholder="e.g. London"
               value={location}
-              onChange={(e) => setLocation(e.target.value)}
+              onChange={e => setLocation(e.target.value)}
               className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
               style={{
                 background: '#f8fafc',
@@ -156,11 +160,11 @@ export function OnboardingStep3({
                 color: 'var(--text-primary)',
                 fontFamily: 'var(--font-inter)',
               }}
-              onFocus={(e) => {
+              onFocus={e => {
                 e.target.style.border = '2px solid var(--teal)';
                 e.target.style.background = '#ffffff';
               }}
-              onBlur={(e) => {
+              onBlur={e => {
                 e.target.style.border = '2px solid #edf2f7';
                 e.target.style.background = '#f8fafc';
               }}
@@ -186,7 +190,7 @@ export function OnboardingStep3({
               type="number"
               placeholder="5000"
               value={monthlyGoal}
-              onChange={(e) => setMonthlyGoal(e.target.value)}
+              onChange={e => setMonthlyGoal(e.target.value)}
               className="w-full rounded-xl py-3 px-4 text-sm focus:outline-none transition-all"
               style={{
                 background: '#f8fafc',
@@ -194,11 +198,11 @@ export function OnboardingStep3({
                 color: 'var(--text-primary)',
                 fontFamily: 'var(--font-inter)',
               }}
-              onFocus={(e) => {
+              onFocus={e => {
                 e.target.style.border = '2px solid var(--teal)';
                 e.target.style.background = '#ffffff';
               }}
-              onBlur={(e) => {
+              onBlur={e => {
                 e.target.style.border = '2px solid #edf2f7';
                 e.target.style.background = '#f8fafc';
               }}
@@ -227,11 +231,11 @@ export function OnboardingStep3({
           justifyContent: 'center',
           gap: '8px',
         }}
-        onMouseEnter={(e) => {
+        onMouseEnter={e => {
           (e.currentTarget as HTMLButtonElement).style.background = 'var(--teal-light)';
           (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 20px var(--teal-glow)';
         }}
-        onMouseLeave={(e) => {
+        onMouseLeave={e => {
           (e.currentTarget as HTMLButtonElement).style.background = 'var(--teal)';
           (e.currentTarget as HTMLButtonElement).style.boxShadow = 'none';
         }}

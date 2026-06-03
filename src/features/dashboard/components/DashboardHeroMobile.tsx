@@ -43,13 +43,12 @@ export default function DashboardHeroMobile({
   const { label: healthLabel, color: healthColor } = getHealthLabel(healthScore);
 
   const sparkData = useMemo(
-    () => balanceTrend.map((p) => ({ date: p.date, balance: p.balance })),
+    () => balanceTrend.map(p => ({ date: p.date, balance: p.balance })),
     [balanceTrend]
   );
 
-  const isTrendUp = sparkData.length > 1
-    ? sparkData[sparkData.length - 1].balance >= sparkData[0].balance
-    : true;
+  const isTrendUp =
+    sparkData.length > 1 ? sparkData[sparkData.length - 1].balance >= sparkData[0].balance : true;
 
   return (
     <motion.div
@@ -64,10 +63,10 @@ export default function DashboardHeroMobile({
           healthScore >= 80
             ? 'linear-gradient(135deg, #064e3b 0%, #022c22 45%, #0f172a 100%)' // Emerald
             : healthScore >= 60
-            ? 'linear-gradient(135deg, #042f2e 0%, #0f172a 70%, #020617 100%)' // Teal/Slate
-            : healthScore >= 40
-            ? 'linear-gradient(135deg, #451a03 0%, #1e1b4b 65%, #0f172a 100%)' // Amber/Indigo
-            : 'linear-gradient(135deg, #450a0a 0%, #0f172a 75%, #020617 100%)', // Burgundy
+              ? 'linear-gradient(135deg, #042f2e 0%, #0f172a 70%, #020617 100%)' // Teal/Slate
+              : healthScore >= 40
+                ? 'linear-gradient(135deg, #451a03 0%, #1e1b4b 65%, #0f172a 100%)' // Amber/Indigo
+                : 'linear-gradient(135deg, #450a0a 0%, #0f172a 75%, #020617 100%)', // Burgundy
       }}
     >
       {/* Simplified Mobile Content */}
@@ -75,23 +74,48 @@ export default function DashboardHeroMobile({
         {/* Top: Balance and Actions */}
         <div className="flex items-start justify-between">
           <div className="flex flex-col gap-0.5">
-            <div style={{ fontSize: '11px', fontWeight: 600, color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-inter)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'rgba(255,255,255,0.6)',
+                fontFamily: 'var(--font-inter)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}
+            >
               Total Balance
             </div>
-            
+
             <div
               className={`tabular-nums transition-all duration-300 ${hideBalances ? 'blur-lg select-none' : ''}`}
-              style={{ fontFamily: 'var(--font-manrope)', fontSize: '32px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1, letterSpacing: hideBalances ? '4px' : '-0.02em' }}
+              style={{
+                fontFamily: 'var(--font-manrope)',
+                fontSize: '32px',
+                fontWeight: 800,
+                color: '#ffffff',
+                lineHeight: 1.1,
+                letterSpacing: hideBalances ? '4px' : '-0.02em',
+              }}
             >
-              {hideBalances ? '••••••' : `${currency}${displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+              {hideBalances
+                ? '••••••'
+                : `${currency}${displayBalance.toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
             </div>
-            
+
             <div className="flex items-center gap-1.5 mt-1">
-              {isTrendUp
-                ? <TrendingUp size={12} style={{ color: '#14b8a6' }} />
-                : <TrendingDown size={12} style={{ color: '#f59e0b' }} />
-              }
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.6)', fontFamily: 'var(--font-inter)' }}>
+              {isTrendUp ? (
+                <TrendingUp size={12} style={{ color: '#14b8a6' }} />
+              ) : (
+                <TrendingDown size={12} style={{ color: '#f59e0b' }} />
+              )}
+              <span
+                style={{
+                  fontSize: '11px',
+                  color: 'rgba(255,255,255,0.6)',
+                  fontFamily: 'var(--font-inter)',
+                }}
+              >
                 {isTrendUp ? 'Growing' : 'Declining'} over 14 days
               </span>
             </div>
@@ -99,16 +123,22 @@ export default function DashboardHeroMobile({
 
           {onTogglePrivacy && (
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 onTogglePrivacy();
                 haptic.medium();
               }}
               className="p-2 rounded-xl transition-colors"
-              style={{ background: hideBalances ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.08)' }}
+              style={{
+                background: hideBalances ? 'rgba(20,184,166,0.15)' : 'rgba(255,255,255,0.08)',
+              }}
               aria-label="Toggle Privacy"
             >
-              <Shield size={16} color={hideBalances ? '#14b8a6' : '#fff'} fill={hideBalances ? '#14b8a6' : 'none'} />
+              <Shield
+                size={16}
+                color={hideBalances ? '#14b8a6' : '#fff'}
+                fill={hideBalances ? '#14b8a6' : 'none'}
+              />
             </button>
           )}
         </div>
@@ -119,37 +149,99 @@ export default function DashboardHeroMobile({
         {/* Middle: Mini Stats */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.15)' }}>
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: 'rgba(16,185,129,0.15)' }}
+            >
               <ArrowDownLeft size={14} style={{ color: '#10b981' }} />
             </div>
             <div className="flex flex-col">
-              <span style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>In</span>
-              <span className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '13px', fontWeight: 700, color: '#10b981' }}>
-                {hideBalances ? '•••' : `${currency}${displayIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+              <span
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.5)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                In
+              </span>
+              <span
+                className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`}
+                style={{ fontSize: '13px', fontWeight: 700, color: '#10b981' }}
+              >
+                {hideBalances
+                  ? '•••'
+                  : `${currency}${displayIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: 'rgba(239,68,68,0.15)' }}>
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: 'rgba(239,68,68,0.15)' }}
+            >
               <ArrowUpRight size={14} style={{ color: '#ef4444' }} />
             </div>
             <div className="flex flex-col">
-              <span style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Out</span>
-              <span className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}>
-                {hideBalances ? '•••' : `${currency}${displayExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+              <span
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.5)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                Out
+              </span>
+              <span
+                className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`}
+                style={{ fontSize: '13px', fontWeight: 700, color: '#ef4444' }}
+              >
+                {hideBalances
+                  ? '•••'
+                  : `${currency}${displayExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
               </span>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-             <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: isPositive ? 'rgba(20,184,166,0.15)' : 'rgba(245,158,11,0.15)' }}>
-              {isPositive ? <TrendingUp size={14} style={{ color: '#14b8a6' }} /> : <TrendingDown size={14} style={{ color: '#f59e0b' }} />}
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: isPositive ? 'rgba(20,184,166,0.15)' : 'rgba(245,158,11,0.15)' }}
+            >
+              {isPositive ? (
+                <TrendingUp size={14} style={{ color: '#14b8a6' }} />
+              ) : (
+                <TrendingDown size={14} style={{ color: '#f59e0b' }} />
+              )}
             </div>
             <div className="flex flex-col">
-              <span style={{ fontSize: '9px', fontWeight: 600, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Net</span>
-              <span className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`} style={{ fontSize: '13px', fontWeight: 700, color: isPositive ? '#14b8a6' : '#f59e0b' }}>
-                {hideBalances ? '•••' : `${isPositive ? '+' : '-'}${currency}${displayNet.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+              <span
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 600,
+                  color: 'rgba(255,255,255,0.5)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                Net
+              </span>
+              <span
+                className={`tabular-nums ${hideBalances ? 'blur-md select-none' : ''}`}
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  color: isPositive ? '#14b8a6' : '#f59e0b',
+                }}
+              >
+                {hideBalances
+                  ? '•••'
+                  : `${isPositive ? '+' : '-'}${currency}${displayNet.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
               </span>
             </div>
           </div>
@@ -158,10 +250,28 @@ export default function DashboardHeroMobile({
         {/* Bottom: Health Score */}
         <div className="mt-1">
           <div className="flex justify-between items-center mb-1.5">
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Health: {healthLabel}</span>
-            <span style={{ fontSize: '11px', fontWeight: 800, color: healthColor }}>{healthScore}/100</span>
+            <span
+              style={{
+                fontSize: '10px',
+                color: 'rgba(255,255,255,0.7)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+              }}
+            >
+              Health: {healthLabel}
+            </span>
+            <span style={{ fontSize: '11px', fontWeight: 800, color: healthColor }}>
+              {healthScore}/100
+            </span>
           </div>
-          <div style={{ height: '4px', borderRadius: '999px', background: 'rgba(255,255,255,0.1)', overflow: 'hidden' }}>
+          <div
+            style={{
+              height: '4px',
+              borderRadius: '999px',
+              background: 'rgba(255,255,255,0.1)',
+              overflow: 'hidden',
+            }}
+          >
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${healthScore}%` }}

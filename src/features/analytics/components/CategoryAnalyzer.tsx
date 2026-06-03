@@ -12,12 +12,22 @@ interface CategoryAnalyzerProps {
   userRole?: string;
 }
 
-export function CategoryAnalyzer({ categorySpending, transactions, currency, userRole }: CategoryAnalyzerProps) {
+export function CategoryAnalyzer({
+  categorySpending,
+  transactions,
+  currency,
+  userRole,
+}: CategoryAnalyzerProps) {
   const { categoryLimits } = useCategories();
   const insights = useMemo(() => {
     if (categorySpending.length === 0) return [];
-    
-    const list: { title: string; desc: string; type: 'positive' | 'warning' | 'insight'; icon: any }[] = [];
+
+    const list: {
+      title: string;
+      desc: string;
+      type: 'positive' | 'warning' | 'insight';
+      icon: any;
+    }[] = [];
 
     // 1. Identify Highest Spending
     const top = [...categorySpending].sort((a, b) => b.value - a.value)[0];
@@ -26,9 +36,9 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
         title: `Dominant Spending: ${top.name}`,
         desc: `You spent ${currency}${top.value.toLocaleString()} here this month (${top.percent}% of total).`,
         type: 'insight',
-        icon: Lightbulb
+        icon: Lightbulb,
       });
-      
+
       // Historical Comparison for Top Category
       const now = new Date();
       const last3Months = Array.from({ length: 3 }, (_, i) => {
@@ -42,21 +52,23 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
           .reduce((sum, t) => sum + t.amount, 0);
       });
 
-      const avgHistory = historicalSpend.reduce((a, b) => a + b, 0) / (historicalSpend.filter(v => v > 0).length || 1);
-      
+      const avgHistory =
+        historicalSpend.reduce((a, b) => a + b, 0) /
+        (historicalSpend.filter(v => v > 0).length || 1);
+
       if (top.value > avgHistory * 1.2 && avgHistory > 0) {
         list.push({
           title: 'Unusual Spending Spike',
           desc: `Your ${top.name} spend is 20%+ higher than your usual ${currency}${Math.round(avgHistory).toLocaleString()} average.`,
           type: 'warning',
-          icon: TrendingUp
+          icon: TrendingUp,
         });
       } else if (top.value < avgHistory * 0.8 && avgHistory > 0) {
         list.push({
           title: 'Saving Master!',
           desc: `Great job! Your ${top.name} spend is 20% lower than your historical average.`,
           type: 'positive',
-          icon: TrendingDown
+          icon: TrendingDown,
         });
       }
     }
@@ -65,19 +77,21 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
     // For now, let's look for weekend vs weekday patterns in the top category
     if (top) {
       const topTxs = transactions.filter(t => t.category === top.name);
-      const weekendSpend = topTxs.filter(t => {
-        const day = new Date(t.date).getDay();
-        return day === 0 || day === 6;
-      }).reduce((acc, t) => acc + t.amount, 0);
-      
+      const weekendSpend = topTxs
+        .filter(t => {
+          const day = new Date(t.date).getDay();
+          return day === 0 || day === 6;
+        })
+        .reduce((acc, t) => acc + t.amount, 0);
+
       const weekdaySpend = topTxs.reduce((acc, t) => acc + t.amount, 0) - weekendSpend;
-      
+
       if (weekendSpend > weekdaySpend * 0.7) {
         list.push({
           title: 'Weekend Spike detected',
           desc: `Most of your ${top.name} spending happens on weekends. Consider a weekend budget!`,
           type: 'warning',
-          icon: AlertCircle
+          icon: AlertCircle,
         });
       }
     }
@@ -89,7 +103,7 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
         title: 'Subscription Audit',
         desc: `You have ${subsCount} active subscriptions. Audit them to reclaim leaked cash flow.`,
         type: 'insight',
-        icon: Sparkles
+        icon: Sparkles,
       });
     }
 
@@ -101,7 +115,7 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
           title: 'Student Tip',
           desc: 'No education expenses tracked. Remember to log tuition and book costs for tax credits!',
           type: 'insight',
-          icon: Lightbulb
+          icon: Lightbulb,
         });
       }
     } else if (userRole === 'business') {
@@ -111,31 +125,36 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
           title: 'Tax Deduction Alert',
           desc: `Your business expenses (${currency}${opex.toLocaleString()}) are potentially tax-deductible.`,
           type: 'positive',
-          icon: TrendingUp
+          icon: TrendingUp,
         });
       }
     }
-    
+
     // 5. Category Limits
     Object.entries(categoryLimits).forEach(([cat, limit]) => {
       const spent = transactions
-        .filter(t => t.category === cat && t.type === 'debit' && t.date.startsWith(new Date().toISOString().substring(0, 7)))
+        .filter(
+          t =>
+            t.category === cat &&
+            t.type === 'debit' &&
+            t.date.startsWith(new Date().toISOString().substring(0, 7))
+        )
         .reduce((sum, t) => sum + t.amount, 0);
-      
+
       const percent = (spent / limit) * 100;
       if (percent > 100) {
         list.push({
           title: `Limit Exceeded: ${cat}`,
           desc: `You've spent ${currency}${spent.toLocaleString()} in ${cat}, which is ${Math.round(percent - 100)}% over your ${currency}${limit} limit.`,
           type: 'warning',
-          icon: AlertCircle
+          icon: AlertCircle,
         });
       } else if (percent > 80) {
         list.push({
           title: `Approaching Limit: ${cat}`,
           desc: `You've used ${Math.round(percent)}% of your ${currency}${limit} limit for ${cat}.`,
           type: 'warning',
-          icon: TrendingDown
+          icon: TrendingDown,
         });
       }
     });
@@ -149,7 +168,9 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
     <div className="space-y-4">
       <div className="flex items-center gap-2 mb-4">
         <Sparkles size={18} className="text-[var(--teal)]" />
-        <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">Category Intelligence</h3>
+        <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">
+          Category Intelligence
+        </h3>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -163,11 +184,15 @@ export function CategoryAnalyzer({ categorySpending, transactions, currency, use
             onClick={() => haptic.light()}
           >
             <div className="flex gap-4">
-              <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
-                insight.type === 'positive' ? 'bg-teal-500/10 text-teal-500' :
-                insight.type === 'warning' ? 'bg-amber-500/10 text-amber-500' :
-                'bg-blue-500/10 text-blue-500'
-              }`}>
+              <div
+                className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
+                  insight.type === 'positive'
+                    ? 'bg-teal-500/10 text-teal-500'
+                    : insight.type === 'warning'
+                      ? 'bg-amber-500/10 text-amber-500'
+                      : 'bg-blue-500/10 text-blue-500'
+                }`}
+              >
                 <insight.icon size={20} />
               </div>
               <div>

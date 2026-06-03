@@ -8,7 +8,7 @@ export function usePortfolio() {
   const deleteAsset = useStore(state => state.deleteAsset);
   const addLiability = useStore(state => state.addLiability);
   const deleteLiability = useStore(state => state.deleteLiability);
-  
+
   const updateAsset = useStore(state => state.updateAsset);
   const updateLiability = useStore(state => state.updateLiability);
 
@@ -19,17 +19,31 @@ export function usePortfolio() {
 
   // Allocation by type
   const allocationByType = Object.entries(
-    assets.reduce((acc, a) => {
-      acc[a.type] = (acc[a.type] || 0) + a.balance;
-      return acc;
-    }, {} as Record<AssetType, number>)
-  ).map(([type, value]) => ({ type: type as AssetType, value, pct: totalAssets > 0 ? (value / totalAssets) * 100 : 0 }));
+    assets.reduce(
+      (acc, a) => {
+        acc[a.type] = (acc[a.type] || 0) + a.balance;
+        return acc;
+      },
+      {} as Record<AssetType, number>
+    )
+  ).map(([type, value]) => ({
+    type: type as AssetType,
+    value,
+    pct: totalAssets > 0 ? (value / totalAssets) * 100 : 0,
+  }));
 
   return {
-    assets, liabilities,
-    totalAssets, totalLiabilities, netWorth,
+    assets,
+    liabilities,
+    totalAssets,
+    totalLiabilities,
+    netWorth,
     allocationByType,
-    addAsset, updateAsset, deleteAsset,
-    addLiability, updateLiability, deleteLiability,
+    addAsset,
+    updateAsset,
+    deleteAsset,
+    addLiability,
+    updateLiability,
+    deleteLiability,
   };
 }

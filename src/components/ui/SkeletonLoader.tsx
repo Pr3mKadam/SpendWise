@@ -14,12 +14,7 @@ const Shimmer = ({
 }: {
   className?: string;
   style?: React.CSSProperties;
-}) => (
-  <div
-    className={`rounded-xl skeleton-wave ${className}`}
-    style={style}
-  />
-);
+}) => <div className={`rounded-xl skeleton-wave ${className}`} style={style} />;
 
 // ─── Variant renderers ────────────────────────────────────────────────────────
 const DashboardSkeleton = () => (
@@ -73,11 +68,7 @@ const ChartSkeleton = () => (
     {/* Bar chart skeleton */}
     <div className="flex items-end gap-3 h-48 px-4">
       {[65, 45, 80, 55, 70, 40, 90, 60, 75, 50, 85, 45].map((h, i) => (
-        <Shimmer
-          key={i}
-          className="flex-1"
-          style={{ height: `${h}%`, minWidth: 0 }}
-        />
+        <Shimmer key={i} className="flex-1" style={{ height: `${h}%`, minWidth: 0 }} />
       ))}
     </div>
     {/* Legend */}
@@ -176,12 +167,18 @@ export const SkeletonLoader: React.FC<SkeletonLoaderProps> = ({
 }) => {
   const content = (() => {
     switch (variant) {
-      case 'list':      return <ListSkeleton />;
-      case 'chart':     return <ChartSkeleton />;
-      case 'goals':     return <GoalsSkeleton />;
-      case 'budget':    return <BudgetSkeleton />;
-      case 'analytics': return <AnalyticsSkeleton />;
-      default:          return <DashboardSkeleton />;
+      case 'list':
+        return <ListSkeleton />;
+      case 'chart':
+        return <ChartSkeleton />;
+      case 'goals':
+        return <GoalsSkeleton />;
+      case 'budget':
+        return <BudgetSkeleton />;
+      case 'analytics':
+        return <AnalyticsSkeleton />;
+      default:
+        return <DashboardSkeleton />;
     }
   })();
 

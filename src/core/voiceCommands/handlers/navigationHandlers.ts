@@ -24,13 +24,14 @@ export const handleReportExport: IntentHandler = ({ onExport }) => {
 export const handleHelp: IntentHandler = () => {
   return {
     success: true,
-    message: '📋 Supported Commands:\n' +
-             '• "Spent 500 on Food"\n' +
-             '• "Set Rent budget to 15000"\n' +
-             '• "Add 5 expenses" (Batch mode)\n' +
-             '• "Summarize this month"\n' +
-             '• "Navigate to Analytics"\n' +
-             '• "Export PDF report"',
+    message:
+      '📋 Supported Commands:\n' +
+      '• "Spent 500 on Food"\n' +
+      '• "Set Rent budget to 15000"\n' +
+      '• "Add 5 expenses" (Batch mode)\n' +
+      '• "Summarize this month"\n' +
+      '• "Navigate to Analytics"\n' +
+      '• "Export PDF report"',
   };
 };
 
@@ -52,9 +53,19 @@ export const handleQuestAction: IntentHandler = ({ command, navigate }) => {
 export const handleQuestClaim: IntentHandler = ({ command }) => {
   const store = useStore.getState();
   const { name } = command.entities;
-  const quest = store.quests?.find(q => !q.completed && q.progress >= 100 && (!name || q.title.toLowerCase().includes(name.toLowerCase())));
-  if (!quest) return { success: false, message: `I couldn't find any completed quests to claim right now.` };
-  
+  const quest = store.quests?.find(
+    q =>
+      !q.completed &&
+      q.progress >= 100 &&
+      (!name || q.title.toLowerCase().includes(name.toLowerCase()))
+  );
+  if (!quest)
+    return { success: false, message: `I couldn't find any completed quests to claim right now.` };
+
   store.completeQuest(quest.id);
-  return { success: true, message: `🎉 Claimed reward for quest: ${quest.title}! You earned ${quest.xpReward} XP.`, undoable: false };
+  return {
+    success: true,
+    message: `🎉 Claimed reward for quest: ${quest.title}! You earned ${quest.xpReward} XP.`,
+    undoable: false,
+  };
 };

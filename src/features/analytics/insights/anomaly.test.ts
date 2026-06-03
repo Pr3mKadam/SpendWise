@@ -44,9 +44,9 @@ describe('detectAnomalies', () => {
     const txs = [
       tx({ amount: 100, category: 'Food' }),
       tx({ amount: 110, category: 'Food' }),
-      tx({ amount: 95,  category: 'Food' }),
+      tx({ amount: 95, category: 'Food' }),
       tx({ amount: 105, category: 'Food' }),
-      tx({ amount: 98,  category: 'Food' }),
+      tx({ amount: 98, category: 'Food' }),
       tx({ amount: 102, category: 'Food' }),
       tx({ amount: 5000, category: 'Food' }), // ← clear outlier
     ];

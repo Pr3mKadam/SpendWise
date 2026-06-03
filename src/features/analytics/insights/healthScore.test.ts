@@ -5,11 +5,11 @@ import type { Transaction, CategorySpend, MonthlyStats } from '@/types';
 // ── helpers ──────────────────────────────────────────────────────────────────
 function makeStats(overrides: Partial<MonthlyStats> = {}): MonthlyStats {
   return {
-    totalIncome:      5000,
-    totalExpenses:    3000,
-    savingsRate:      40,
-    netCashFlow:      2000,
-    avgDailySpend:    100,
+    totalIncome: 5000,
+    totalExpenses: 3000,
+    savingsRate: 40,
+    netCashFlow: 2000,
+    avgDailySpend: 100,
     transactionCount: 20,
     ...overrides,
   };
@@ -49,7 +49,7 @@ describe('calculateHealthScore', () => {
 
   it('score is higher when savings rate is 30% vs 0%', () => {
     const highSavings = makeStats({ savingsRate: 30, avgDailySpend: 50 });
-    const noSavings   = makeStats({ savingsRate: 0, avgDailySpend: 50 });
+    const noSavings = makeStats({ savingsRate: 0, avgDailySpend: 50 });
     const r1 = calculateHealthScore(sampleTxs, highSavings, [], 10000);
     const r2 = calculateHealthScore(sampleTxs, noSavings, [], 10000);
     expect(r1.score).toBeGreaterThan(r2.score);
@@ -58,19 +58,13 @@ describe('calculateHealthScore', () => {
   it('score is higher when balance (runway) is large', () => {
     const stats = makeStats({ avgDailySpend: 100 });
     const r1 = calculateHealthScore(sampleTxs, stats, [], 100000); // 1000 days runway
-    const r2 = calculateHealthScore(sampleTxs, stats, [], 1000);   // 10 days runway
+    const r2 = calculateHealthScore(sampleTxs, stats, [], 1000); // 10 days runway
     expect(r1.score).toBeGreaterThan(r2.score);
   });
 
   it('discipline score drops when "wants" categories dominate', () => {
-    const highWants = [
-      makeCatSpend('Entertainment', 800, 80),
-      makeCatSpend('Shopping', 200, 20),
-    ];
-    const noWants = [
-      makeCatSpend('Utilities', 500, 50),
-      makeCatSpend('Health', 500, 50),
-    ];
+    const highWants = [makeCatSpend('Entertainment', 800, 80), makeCatSpend('Shopping', 200, 20)];
+    const noWants = [makeCatSpend('Utilities', 500, 50), makeCatSpend('Health', 500, 50)];
     const stats = makeStats({ avgDailySpend: 50 });
     const r1 = calculateHealthScore(sampleTxs, stats, highWants, 10000);
     const r2 = calculateHealthScore(sampleTxs, stats, noWants, 10000);
@@ -87,7 +81,12 @@ describe('calculateHealthScore', () => {
   });
 
   it('returns at most 2 recommendations', () => {
-    const result = calculateHealthScore(sampleTxs, makeStats({ savingsRate: 0, avgDailySpend: 500 }), [], 100);
+    const result = calculateHealthScore(
+      sampleTxs,
+      makeStats({ savingsRate: 0, avgDailySpend: 500 }),
+      [],
+      100
+    );
     expect(result.recommendations.length).toBeLessThanOrEqual(2);
   });
 

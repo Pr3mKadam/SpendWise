@@ -6,32 +6,35 @@ export type DisplayRow =
   | { type: 'header'; date: string; subtotal: number }
   | { type: 'tx'; tx: Transaction };
 
-export function useTransactionHistory(transactions: Transaction[], initialSearchQuery: string = '') {
+export function useTransactionHistory(
+  transactions: Transaction[],
+  initialSearchQuery: string = ''
+) {
   const [search, setSearch] = useState(initialSearchQuery);
   const [categoryFilter, setCategoryFilter] = useState<Category | 'All'>('All');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [sortKey, setSortKey] = useState<SortKey>('date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
-  
+
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [showDateFilter, setShowDateFilter] = useState(false);
-  
+
   const [amountMin, setAmountMin] = useState('');
   const [amountMax, setAmountMax] = useState('');
   const [showAmountFilter, setShowAmountFilter] = useState(false);
 
-  useEffect(() => { 
-    if (initialSearchQuery) setSearch(initialSearchQuery); 
+  useEffect(() => {
+    if (initialSearchQuery) setSearch(initialSearchQuery);
   }, [initialSearchQuery]);
 
   const handleSort = (key: SortKey) => {
     setSortKey(k => {
-      if (k === key) { 
-        setSortDir(d => d === 'desc' ? 'asc' : 'desc'); 
-        return k; 
+      if (k === key) {
+        setSortDir(d => (d === 'desc' ? 'asc' : 'desc'));
+        return k;
       }
-      setSortDir('desc'); 
+      setSortDir('desc');
       return key;
     });
   };
@@ -40,7 +43,7 @@ export function useTransactionHistory(transactions: Transaction[], initialSearch
     const q = search.toLowerCase().trim();
     const minAmt = amountMin !== '' ? parseFloat(amountMin) : null;
     const maxAmt = amountMax !== '' ? parseFloat(amountMax) : null;
-    
+
     return transactions
       .filter(tx => {
         if (categoryFilter !== 'All' && tx.category !== categoryFilter) return false;
@@ -49,13 +52,14 @@ export function useTransactionHistory(transactions: Transaction[], initialSearch
         if (dateTo && tx.date > dateTo) return false;
         if (minAmt !== null && tx.amount < minAmt) return false;
         if (maxAmt !== null && tx.amount > maxAmt) return false;
-        if (q) return (
-          tx.merchant.toLowerCase().includes(q) ||
-          tx.category.toLowerCase().includes(q) ||
-          tx.amount.toString().includes(q) ||
-          tx.date.includes(q) ||
-          (tx.tags && tx.tags.some(t => t.toLowerCase().includes(q)))
-        );
+        if (q)
+          return (
+            tx.merchant.toLowerCase().includes(q) ||
+            tx.category.toLowerCase().includes(q) ||
+            tx.amount.toString().includes(q) ||
+            tx.date.includes(q) ||
+            (tx.tags && tx.tags.some(t => t.toLowerCase().includes(q)))
+          );
         return true;
       })
       .sort((a, b) => {
@@ -66,7 +70,18 @@ export function useTransactionHistory(transactions: Transaction[], initialSearch
         if (sortKey === 'category') cmp = a.category.localeCompare(b.category);
         return sortDir === 'desc' ? -cmp : cmp;
       });
-  }, [transactions, search, categoryFilter, typeFilter, sortKey, sortDir, dateFrom, dateTo, amountMin, amountMax]);
+  }, [
+    transactions,
+    search,
+    categoryFilter,
+    typeFilter,
+    sortKey,
+    sortDir,
+    dateFrom,
+    dateTo,
+    amountMin,
+    amountMax,
+  ]);
 
   const displayRows = useMemo(() => {
     const groups: Record<string, Transaction[]> = {};
@@ -81,7 +96,10 @@ export function useTransactionHistory(transactions: Transaction[], initialSearch
 
     sortedDates.forEach(date => {
       const list = groups[date];
-      const subtotal = list.reduce((sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+      const subtotal = list.reduce(
+        (sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount),
+        0
+      );
       rows.push({ type: 'header', date, subtotal });
       list.forEach(tx => {
         rows.push({ type: 'tx', tx });
@@ -91,30 +109,51 @@ export function useTransactionHistory(transactions: Transaction[], initialSearch
     return rows;
   }, [filtered]);
 
-  const hasFilters = Boolean(search || categoryFilter !== 'All' || typeFilter !== 'all' || dateFrom || dateTo || amountMin || amountMax);
-  
-  const clearFilters = () => { 
-    setSearch(''); 
-    setCategoryFilter('All'); 
-    setTypeFilter('all'); 
-    setDateFrom(''); 
-    setDateTo(''); 
-    setAmountMin(''); 
-    setAmountMax(''); 
+  const hasFilters = Boolean(
+    search ||
+    categoryFilter !== 'All' ||
+    typeFilter !== 'all' ||
+    dateFrom ||
+    dateTo ||
+    amountMin ||
+    amountMax
+  );
+
+  const clearFilters = () => {
+    setSearch('');
+    setCategoryFilter('All');
+    setTypeFilter('all');
+    setDateFrom('');
+    setDateTo('');
+    setAmountMin('');
+    setAmountMax('');
   };
 
   return {
-    search, setSearch,
-    categoryFilter, setCategoryFilter,
-    typeFilter, setTypeFilter,
-    sortKey, sortDir, handleSort,
-    dateFrom, setDateFrom,
-    dateTo, setDateTo,
-    showDateFilter, setShowDateFilter,
-    amountMin, setAmountMin,
-    amountMax, setAmountMax,
-    showAmountFilter, setShowAmountFilter,
-    filtered, displayRows,
-    hasFilters, clearFilters
+    search,
+    setSearch,
+    categoryFilter,
+    setCategoryFilter,
+    typeFilter,
+    setTypeFilter,
+    sortKey,
+    sortDir,
+    handleSort,
+    dateFrom,
+    setDateFrom,
+    dateTo,
+    setDateTo,
+    showDateFilter,
+    setShowDateFilter,
+    amountMin,
+    setAmountMin,
+    amountMax,
+    setAmountMax,
+    showAmountFilter,
+    setShowAmountFilter,
+    filtered,
+    displayRows,
+    hasFilters,
+    clearFilters,
   };
 }

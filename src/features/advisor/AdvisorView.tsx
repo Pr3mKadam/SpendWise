@@ -1,8 +1,25 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { Bot, Send, User, Sparkles, TrendingDown, TrendingUp, AlertTriangle, X, Trash2, Mic, MicOff, Zap } from 'lucide-react';
+import {
+  Bot,
+  Send,
+  User,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
+  AlertTriangle,
+  X,
+  Trash2,
+  Mic,
+  MicOff,
+  Zap,
+} from 'lucide-react';
 import { useTransactions } from '@/hooks/useTransactions';
 import { SpendingPersonality } from '@/types';
-import { getFinancialAdvice, getSpendingPersonality, ConversationMessage } from '@/features/analytics/insights/advisor';
+import {
+  getFinancialAdvice,
+  getSpendingPersonality,
+  ConversationMessage,
+} from '@/features/analytics/insights/advisor';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import EducationCards from '@/features/education/components/EducationCards';
 import { SpeechRecognition, SpeechRecognitionEvent } from '@/types/dom';
@@ -10,14 +27,12 @@ import { useIsMobile } from '@/hooks/useMediaQuery';
 import AdvisorViewMobile from '@/features/advisor/AdvisorViewMobile';
 import { isSupabaseConfigured } from '@/core/api/supabase';
 
-
 const ADVISOR_HISTORY_KEY = 'spendwise_advisor_history';
 const MAX_HISTORY = 20;
 
 import ChatMessageList from './components/ChatMessageList';
 import ChatInput from './components/ChatInput';
 import { Message, MessageData } from './types';
-
 
 interface AdvisorViewProps {
   onNavigate?: (view: any) => void;
@@ -27,7 +42,7 @@ const INITIAL_MESSAGE: Message = {
   id: '1',
   text: "Hello! I'm your SpendWise Advisor. How can I help you with your finances today?",
   sender: 'ai',
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 };
 
 export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
@@ -37,13 +52,14 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
   const [input, setInput] = useState('');
   const hasGemini = !!import.meta.env.VITE_GEMINI_API_KEY || isSupabaseConfigured;
 
-
   // Persist messages in localStorage
   const [messages, setMessages] = useState<Message[]>(() => {
     try {
       const saved = localStorage.getItem(ADVISOR_HISTORY_KEY);
       if (saved) return JSON.parse(saved);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return [INITIAL_MESSAGE];
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -59,85 +75,89 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     try {
       const toSave = messages.slice(-MAX_HISTORY);
       localStorage.setItem(ADVISOR_HISTORY_KEY, JSON.stringify(toSave));
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [messages]);
 
-  const handleSend = useCallback(async (overrideInput?: string) => {
-    const text = (overrideInput ?? input).trim();
-    if (!text || isLoading || isStreaming) return;
+  const handleSend = useCallback(
+    async (overrideInput?: string) => {
+      const text = (overrideInput ?? input).trim();
+      if (!text || isLoading || isStreaming) return;
 
-    const userMsg: Message = {
-      id: Date.now().toString(),
-      text,
-      sender: 'user',
-      timestamp: new Date().toISOString()
-    };
+      const userMsg: Message = {
+        id: Date.now().toString(),
+        text,
+        sender: 'user',
+        timestamp: new Date().toISOString(),
+      };
 
-    const streamingMsgId = (Date.now() + 1).toString();
-    const streamingMsg: Message = {
-      id: streamingMsgId,
-      text: '',
-      sender: 'ai',
-      timestamp: new Date().toISOString(),
-      streaming: true,
-    };
+      const streamingMsgId = (Date.now() + 1).toString();
+      const streamingMsg: Message = {
+        id: streamingMsgId,
+        text: '',
+        sender: 'ai',
+        timestamp: new Date().toISOString(),
+        streaming: true,
+      };
 
-    setMessages(prev => [...prev, userMsg, streamingMsg]);
-    setInput('');
-    setIsLoading(true); // show typing dots before first token
+      setMessages(prev => [...prev, userMsg, streamingMsg]);
+      setInput('');
+      setIsLoading(true); // show typing dots before first token
 
-    try {
-      // Map messages to ConversationMessage format
-      const history: ConversationMessage[] = messages
-        .filter(m => !m.streaming && m.type !== 'action_card' && m.type !== 'briefing')
-        .map(m => ({
-          role: m.sender === 'user' ? 'user' : 'model',
-          content: m.text
-        }));
+      try {
+        // Map messages to ConversationMessage format
+        const history: ConversationMessage[] = messages
+          .filter(m => !m.streaming && m.type !== 'action_card' && m.type !== 'briefing')
+          .map(m => ({
+            role: m.sender === 'user' ? 'user' : 'model',
+            content: m.text,
+          }));
 
-      let accumulated = await getFinancialAdvice(text, transactions, history, activeCurrency);
-      
-      setIsLoading(false);
-      setIsStreaming(true);
+        let accumulated = await getFinancialAdvice(text, transactions, history, activeCurrency);
 
-      // Finalise: extract [ACTION:...] tag and set proper type
-      let actionTag: string | null = null;
-      const actionMatch = accumulated.match(/\[ACTION:([A-Z_]+)\]/);
-      if (actionMatch) {
-        actionTag = actionMatch[1];
-        accumulated = accumulated.replace(actionMatch[0], '').trim();
+        setIsLoading(false);
+        setIsStreaming(true);
+
+        // Finalise: extract [ACTION:...] tag and set proper type
+        let actionTag: string | null = null;
+        const actionMatch = accumulated.match(/\[ACTION:([A-Z_]+)\]/);
+        if (actionMatch) {
+          actionTag = actionMatch[1];
+          accumulated = accumulated.replace(actionMatch[0], '').trim();
+        }
+
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === streamingMsgId
+              ? {
+                  ...m,
+                  text: accumulated,
+                  streaming: false,
+                  type: actionTag ? 'action_card' : 'text',
+                  data: actionTag ? { action: actionTag as MessageData['action'] } : undefined,
+                }
+              : m
+          )
+        );
+      } catch (error) {
+        console.error('Advisor streaming error:', error);
+        const fallbackText =
+          transactions.length > 0
+            ? `I had trouble processing your question. Based on your **${transactions.length} transactions**, your top focus area right now is tracking your spending.`
+            : 'I had trouble processing that. Once you add some transactions, I can give you personalised advice!';
+        setMessages(prev =>
+          prev.map(m =>
+            m.id === streamingMsgId ? { ...m, text: fallbackText, streaming: false } : m
+          )
+        );
+      } finally {
+        setIsLoading(false);
+        setIsStreaming(false);
       }
-
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === streamingMsgId
-            ? {
-                ...m,
-                text: accumulated,
-                streaming: false,
-                type: actionTag ? 'action_card' : 'text',
-                data: actionTag ? { action: actionTag as MessageData['action'] } : undefined,
-              }
-            : m
-        )
-      );
-    } catch (error) {
-      console.error('Advisor streaming error:', error);
-      const fallbackText = transactions.length > 0
-        ? `I had trouble processing your question. Based on your **${transactions.length} transactions**, your top focus area right now is tracking your spending.`
-        : "I had trouble processing that. Once you add some transactions, I can give you personalised advice!";
-      setMessages(prev =>
-        prev.map(m =>
-          m.id === streamingMsgId ? { ...m, text: fallbackText, streaming: false } : m
-        )
-      );
-    } finally {
-      setIsLoading(false);
-      setIsStreaming(false);
-    }
-  }, [input, isLoading, isStreaming, transactions, activeCurrency]);
-
-
+    },
+    [input, isLoading, isStreaming, transactions, activeCurrency]
+  );
 
   useEffect(() => {
     // Proactive Daily Briefing
@@ -145,7 +165,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     if (!hasBriefing && transactions.length > 0) {
       const briefingMsg: Message = {
         id: 'briefing',
-        text: "Your Daily Financial Briefing is ready.",
+        text: 'Your Daily Financial Briefing is ready.',
         sender: 'ai',
         timestamp: new Date().toISOString(),
         type: 'briefing',
@@ -153,8 +173,15 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
           balance: monthlyStats.totalIncome - monthlyStats.totalExpenses,
           expenses: monthlyStats.totalExpenses,
           topCategory: monthlyStats.topCategory,
-          savingsRate: monthlyStats.totalIncome > 0 ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome * 100).toFixed(1) : '0'
-        }
+          savingsRate:
+            monthlyStats.totalIncome > 0
+              ? (
+                  ((monthlyStats.totalIncome - monthlyStats.totalExpenses) /
+                    monthlyStats.totalIncome) *
+                  100
+                ).toFixed(1)
+              : '0',
+        },
       };
       setMessages(prev => [prev[0], briefingMsg, ...prev.slice(1)]);
     }
@@ -200,13 +227,13 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
   const dynamicQuickActions = useMemo(() => {
     const actions = [];
     if (monthlyStats.totalExpenses > monthlyStats.totalIncome && monthlyStats.totalIncome > 0) {
-      actions.push("How can I avoid going negative?");
+      actions.push('How can I avoid going negative?');
     }
     if (monthlyStats.topCategory) {
       actions.push(`Why is my ${monthlyStats.topCategory} spending so high?`);
     }
-    actions.push("What was my biggest expense?");
-    actions.push("How can I save more?");
+    actions.push('What was my biggest expense?');
+    actions.push('How can I save more?');
     return actions.slice(0, 4);
   }, [monthlyStats]);
 
@@ -218,7 +245,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         archetype: result.archetype,
         description: result.description,
         traits: [result.challenge, result.tip],
-        advice: result.tip
+        advice: result.tip,
       });
     } catch (error) {
       console.error(error);
@@ -233,14 +260,14 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         id: Date.now().toString(),
         text: "Hello! I'm your SpendWise Advisor. I've cleared our chat history. How can I help you today?",
         sender: 'ai',
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     ]);
   };
 
   if (isMobile) {
     return (
-      <AdvisorViewMobile 
+      <AdvisorViewMobile
         messages={messages}
         onSend={handleSend}
         isLoading={isLoading}
@@ -260,7 +287,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
       {/* Sidebar - Desktop Only */}
       <div className="hidden lg:flex lg:col-span-4 flex-col gap-6 overflow-y-auto pr-2 scrollbar-hide">
         <EducationCards />
-        
+
         {/* Quick Stats Mini-Card */}
         <div className="card p-5 bg-gradient-to-br from-[var(--purple)] to-[#818cf8] border-none text-white">
           <div className="flex items-center gap-3 mb-4">
@@ -268,29 +295,46 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               <Sparkles size={20} />
             </div>
             <div>
-              <p className="text-[length:var(--fs-overline)] font-bold opacity-80 uppercase tracking-widest">Financial Health</p>
+              <p className="text-[length:var(--fs-overline)] font-bold opacity-80 uppercase tracking-widest">
+                Financial Health
+              </p>
               <h4 className="font-manrope font-bold text-lg">Smart Insights</h4>
             </div>
           </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs opacity-80">Savings Rate</span>
-              <span className="text-sm font-bold">{monthlyStats.totalIncome > 0 ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome * 100).toFixed(1) : '0'}%</span>
+              <span className="text-sm font-bold">
+                {monthlyStats.totalIncome > 0
+                  ? (
+                      ((monthlyStats.totalIncome - monthlyStats.totalExpenses) /
+                        monthlyStats.totalIncome) *
+                      100
+                    ).toFixed(1)
+                  : '0'}
+                %
+              </span>
             </div>
             <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-white" 
-                style={{ width: `${Math.min(100, Math.max(0, monthlyStats.totalIncome > 0 ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome * 100) : 0))}%` }} 
+              <div
+                className="h-full bg-white"
+                style={{
+                  width: `${Math.min(100, Math.max(0, monthlyStats.totalIncome > 0 ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100 : 0))}%`,
+                }}
               />
             </div>
             <p className="text-[length:var(--fs-overline)] opacity-70 leading-relaxed mt-2">
               {(() => {
-                const rate = monthlyStats.totalIncome > 0
-                  ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome * 100)
-                  : 0;
+                const rate =
+                  monthlyStats.totalIncome > 0
+                    ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) /
+                        monthlyStats.totalIncome) *
+                      100
+                    : 0;
                 if (rate <= 0) return 'Start saving to improve your financial health!';
                 if (rate < 10) return 'Try to save at least 10% of your income each month.';
-                if (rate < 20) return 'Good progress! Aim for 20% savings rate for long-term stability.';
+                if (rate < 20)
+                  return 'Good progress! Aim for 20% savings rate for long-term stability.';
                 if (rate < 30) return 'Great savings rate! You are outpacing most households.';
                 return `Excellent! A ${rate.toFixed(0)}% savings rate puts you in the top tier.`;
               })()}
@@ -311,13 +355,15 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               <h2 className="text-sm font-bold text-[var(--text-primary)]">AI Financial Advisor</h2>
               <div className="flex items-center gap-1.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">Active • Powered by Local Intelligence</span>
+                <span className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">
+                  Active • Powered by Local Intelligence
+                </span>
               </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {!personality && (
-              <button 
+              <button
                 onClick={handleAnalyzePersonality}
                 disabled={isAnalyzingPersonality || transactions.length < 5}
                 className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--teal)] text-white text-[length:var(--fs-overline)] font-bold hover:opacity-90 disabled:opacity-50 transition-all shadow-sm"
@@ -325,7 +371,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                 {isAnalyzingPersonality ? 'Analyzing...' : 'Analyze Personality'}
               </button>
             )}
-            <button 
+            <button
               onClick={handleClearChat}
               className="p-2 rounded-lg hover:bg-[var(--surface-card)] text-[var(--text-muted)] hover:text-red-500 transition-colors"
               title="Clear Chat"
@@ -340,7 +386,10 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
             <AlertTriangle className="text-yellow-500 mt-0.5 flex-shrink-0" size={16} />
             <div>
               <p className="text-xs font-bold text-yellow-500">Local Advisor Mode Active</p>
-              <p className="text-[length:var(--fs-overline)] text-yellow-500/80 mt-0.5">Gemini API key is not configured. The advisor is using the local rule-based fallback engine. Set VITE_GEMINI_API_KEY in .env for AI advice.</p>
+              <p className="text-[length:var(--fs-overline)] text-yellow-500/80 mt-0.5">
+                Gemini API key is not configured. The advisor is using the local rule-based fallback
+                engine. Set VITE_GEMINI_API_KEY in .env for AI advice.
+              </p>
             </div>
           </div>
         )}
@@ -354,11 +403,15 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                   🎭
                 </div>
                 <div>
-                  <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">{personality.archetype}</h3>
-                  <p className="text-[length:var(--fs-overline)] font-bold text-purple-500 uppercase tracking-widest">Your Spending Archetype</p>
+                  <h3 className="font-manrope font-bold text-lg text-[var(--text-primary)]">
+                    {personality.archetype}
+                  </h3>
+                  <p className="text-[length:var(--fs-overline)] font-bold text-purple-500 uppercase tracking-widest">
+                    Your Spending Archetype
+                  </p>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={() => setPersonality(null)}
                 className="text-[var(--text-muted)] hover:text-[var(--text-primary)]"
               >
@@ -370,13 +423,18 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
             </p>
             <div className="flex flex-wrap gap-2 mb-4">
               {personality.traits.map((trait: string, i: number) => (
-                <span key={i} className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">
+                <span
+                  key={i}
+                  className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]"
+                >
                   {trait}
                 </span>
               ))}
             </div>
             <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/10">
-              <p className="text-[length:var(--fs-overline)] font-bold text-purple-500 uppercase mb-1">Expert Advice</p>
+              <p className="text-[length:var(--fs-overline)] font-bold text-purple-500 uppercase mb-1">
+                Expert Advice
+              </p>
               <p className="text-xs text-[var(--text-primary)]">{personality.advice}</p>
             </div>
           </div>
@@ -387,7 +445,8 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
           <div className="mx-6 mt-4 p-4 rounded-2xl bg-[var(--teal)]/5 border border-[var(--teal)]/20">
             <p className="text-xs font-bold text-[var(--teal)] mb-1">👋 Getting Started</p>
             <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] leading-relaxed">
-              Add your first transaction to unlock AI-powered financial insights. Try asking: <span className="text-[var(--teal)] font-semibold">"How can I save more?"</span>
+              Add your first transaction to unlock AI-powered financial insights. Try asking:{' '}
+              <span className="text-[var(--teal)] font-semibold">"How can I save more?"</span>
             </p>
           </div>
         )}
@@ -407,9 +466,13 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
             <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
               <TrendingUp size={12} className="text-[var(--teal)]" />
               <span className="text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">
-                Saved {format(monthlyStats.totalIncome - monthlyStats.totalExpenses > 0 
-                  ? (monthlyStats.totalIncome - monthlyStats.totalExpenses) 
-                  : 0)} this month
+                Saved{' '}
+                {format(
+                  monthlyStats.totalIncome - monthlyStats.totalExpenses > 0
+                    ? monthlyStats.totalIncome - monthlyStats.totalExpenses
+                    : 0
+                )}{' '}
+                this month
               </span>
             </div>
             {monthlyStats.topCategory && (

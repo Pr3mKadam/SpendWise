@@ -11,9 +11,7 @@ export function generateBudgetSuggestions(transactions: Transaction[]): BudgetSu
   const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1);
   const threeMonthsAgoStr = formatLocalYYYYMMDD(threeMonthsAgo);
 
-  const recentDebits = transactions.filter(
-    t => t.type === 'debit' && t.date >= threeMonthsAgoStr
-  );
+  const recentDebits = transactions.filter(t => t.type === 'debit' && t.date >= threeMonthsAgoStr);
 
   if (recentDebits.length === 0) return [];
 
@@ -50,13 +48,15 @@ export function generateBudgetSuggestions(transactions: Transaction[]): BudgetSu
       // Essentials: set exact average (can't really cut these)
       suggestedLimit = Math.ceil(avgSpend / 100) * 100;
       reasoning = `Essential expense. Based on ₹${Math.round(avgSpend).toLocaleString()}/mo average.`;
-    } else if (HIGH_SPEND_CATEGORIES.some(hc => category.toLowerCase().includes(hc.toLowerCase()))) {
+    } else if (
+      HIGH_SPEND_CATEGORIES.some(hc => category.toLowerCase().includes(hc.toLowerCase()))
+    ) {
       // Discretionary: suggest 90% of average to encourage reduction
-      suggestedLimit = Math.ceil(avgSpend * 0.9 / 100) * 100;
+      suggestedLimit = Math.ceil((avgSpend * 0.9) / 100) * 100;
       reasoning = `Set 10% below your ₹${Math.round(avgSpend).toLocaleString()}/mo average to build savings.`;
     } else {
       // Others: 110% buffer
-      suggestedLimit = Math.ceil(avgSpend * 1.1 / 100) * 100;
+      suggestedLimit = Math.ceil((avgSpend * 1.1) / 100) * 100;
       reasoning = `10% buffer above your ₹${Math.round(avgSpend).toLocaleString()}/mo average.`;
     }
 

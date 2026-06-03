@@ -63,15 +63,18 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
             aria-labelledby="quick-add-title"
           >
             {/* Focus Trap Anchor (Top) */}
-            <div tabIndex={0} onFocus={() => {
-              // Focus the close button if tabbed backwards from modal start
-              const closeBtn = document.getElementById('modal-close-btn');
-              closeBtn?.focus();
-            }} />
+            <div
+              tabIndex={0}
+              onFocus={() => {
+                // Focus the close button if tabbed backwards from modal start
+                const closeBtn = document.getElementById('modal-close-btn');
+                closeBtn?.focus();
+              }}
+            />
 
             {/* Pull Bar (Android/iOS style) - Click & drag trigger */}
-            <div 
-              onPointerDown={(e) => dragControls.start(e)}
+            <div
+              onPointerDown={e => dragControls.start(e)}
               className="w-12 h-1.5 bg-[var(--border)] rounded-full mx-auto mb-6 opacity-50 cursor-grab active:cursor-grabbing"
               style={{ touchAction: 'none' }}
             />
@@ -83,17 +86,19 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                   <Zap className="text-[var(--teal)]" size={20} aria-hidden="true" />
                 </div>
                 <div>
-                  <h2 
+                  <h2
                     id="quick-add-title"
-                    className="text-[length:var(--fs-title)] font-bold text-[var(--text-primary)]" 
+                    className="text-[length:var(--fs-title)] font-bold text-[var(--text-primary)]"
                     style={{ fontFamily: 'var(--font-manrope)' }}
                   >
                     Quick Add
                   </h2>
-                  <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-medium">Add transaction via text, voice, or OCR</p>
+                  <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] font-medium">
+                    Add transaction via text, voice, or OCR
+                  </p>
                 </div>
               </div>
-              <button 
+              <button
                 id="modal-close-btn"
                 onClick={() => {
                   haptic.light();
@@ -108,15 +113,15 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
 
             {/* Body */}
             <div className="space-y-4">
-              <MagicInput 
-                onAdd={(tx) => {
+              <MagicInput
+                onAdd={tx => {
                   haptic.success();
                   onAdd(tx);
                   onClose();
                 }}
                 transactions={transactions}
               />
-              
+
               <div className="flex items-center justify-center p-4">
                 <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-bold uppercase tracking-[0.1em] text-center">
                   Tip: Say "Spent 500 on Coffee" or scan a receipt
@@ -128,11 +133,14 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
             </div>
 
             {/* Focus Trap Anchor (Bottom) */}
-            <div tabIndex={0} onFocus={() => {
-              // Focus the magic input if tabbed forward from modal end
-              const input = document.querySelector('input[name="magic-input"]');
-              (input as HTMLElement)?.focus();
-            }} />
+            <div
+              tabIndex={0}
+              onFocus={() => {
+                // Focus the magic input if tabbed forward from modal end
+                const input = document.querySelector('input[name="magic-input"]');
+                (input as HTMLElement)?.focus();
+              }}
+            />
           </motion.div>
         </>
       )}

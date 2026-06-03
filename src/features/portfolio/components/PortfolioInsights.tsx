@@ -42,15 +42,15 @@ export function PortfolioInsights({
               {config?.userRole === 'student'
                 ? 'Future value is promising.'
                 : config?.userRole === 'business'
-                ? 'Business velocity is high.'
-                : 'Growth potential is high.'}
+                  ? 'Business velocity is high.'
+                  : 'Growth potential is high.'}
             </p>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
               {config?.userRole === 'student'
                 ? `Your discipline could grow your education fund to ${currency}${(netWorth * 1.8).toLocaleString()} by graduation.`
                 : config?.userRole === 'business'
-                ? `At this rate, your business reinvestment capacity will increase by 40% in the next quarter.`
-                : `Your current savings rate of ${savingsRate.toFixed(1)}% could lead to a ${currency}{(netWorth * 1.5).toLocaleString()} portfolio in 2 years.`}
+                  ? `At this rate, your business reinvestment capacity will increase by 40% in the next quarter.`
+                  : `Your current savings rate of ${savingsRate.toFixed(1)}% could lead to a ${currency}{(netWorth * 1.5).toLocaleString()} portfolio in 2 years.`}
             </p>
           </div>
         </div>
@@ -62,7 +62,11 @@ export function PortfolioInsights({
         >
           Portfolio Allocation
         </h3>
-        <AllocationDonut allocationByType={allocationByType} total={totalAssets} currency={currency} />
+        <AllocationDonut
+          allocationByType={allocationByType}
+          total={totalAssets}
+          currency={currency}
+        />
         <div className="mt-8 pt-6 border-t border-[var(--border)]">
           <div className="flex items-center gap-2 mb-3">
             <BrainCircuit size={16} className="text-[var(--teal)]" />
@@ -74,12 +78,14 @@ export function PortfolioInsights({
             {config?.userRole === 'student'
               ? "Since you're a student, focus on high-yield accounts for your scholarship funds while avoiding high-interest credit card debt."
               : config?.userRole === 'business'
-              ? 'Keep a 3-month operational runway in a liquid business account before making major equipment investments.'
-              : `Based on your current ${
-                  allocationByType.find((a) => a.type === 'bank') ? 'high cash' : 'diversified'
-                } position, consider ${
-                  netWorth > 100000 ? 'exploring tax-efficient index funds' : 'building a 6-month emergency buffer'
-                }.`}
+                ? 'Keep a 3-month operational runway in a liquid business account before making major equipment investments.'
+                : `Based on your current ${
+                    allocationByType.find(a => a.type === 'bank') ? 'high cash' : 'diversified'
+                  } position, consider ${
+                    netWorth > 100000
+                      ? 'exploring tax-efficient index funds'
+                      : 'building a 6-month emergency buffer'
+                  }.`}
           </p>
         </div>
 
@@ -101,7 +107,9 @@ export function PortfolioInsights({
               </p>
             </div>
             <div className="text-right">
-              <p className="font-manrope font-bold text-lg text-gray-500 dark:text-gray-400">+10.2%</p>
+              <p className="font-manrope font-bold text-lg text-gray-500 dark:text-gray-400">
+                +10.2%
+              </p>
               <p className="font-inter text-[length:var(--fs-overline)] text-gray-400 uppercase">
                 S&P 500 (YTD)
               </p>

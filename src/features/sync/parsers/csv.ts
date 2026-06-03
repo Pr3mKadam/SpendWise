@@ -1,5 +1,10 @@
-import { Transaction, Category } from "@/types";
-import { VALID_CATEGORIES, inferCategory, inferType, toTitleCase } from '@/features/ai/parsers/common';
+import { Transaction, Category } from '@/types';
+import {
+  VALID_CATEGORIES,
+  inferCategory,
+  inferType,
+  toTitleCase,
+} from '@/features/ai/parsers/common';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function parseCSVLocally(csvContent: string): Transaction[] {
@@ -13,10 +18,13 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
     for (let i = 0; i < line.length; i++) {
       const ch = line[i];
       if (ch === '"') {
-        if (inQuotes && line[i + 1] === '"') { current += '"'; i++; }
-        else inQuotes = !inQuotes;
+        if (inQuotes && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else inQuotes = !inQuotes;
       } else if (ch === ',' && !inQuotes) {
-        result.push(current.trim()); current = '';
+        result.push(current.trim());
+        current = '';
       } else current += ch;
     }
     result.push(current.trim());
@@ -26,10 +34,16 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
   const headers = parseRow(lines[0]).map(h => h.toLowerCase().replace(/[^a-z]/g, ''));
 
   const colIdx = {
-    date:     headers.findIndex(h => ['date', 'transactiondate', 'txdate', 'posted', 'valudate'].includes(h)),
-    merchant: headers.findIndex(h => ['merchant', 'description', 'payee', 'name', 'vendor', 'narration', 'particulars'].includes(h)),
-    amount:   headers.findIndex(h => ['amount', 'value', 'sum', 'debit', 'credit', 'txnamount', 'transactionamount'].includes(h)),
-    type:     headers.findIndex(h => ['type', 'txtype', 'transactiontype', 'crdr'].includes(h)),
+    date: headers.findIndex(h =>
+      ['date', 'transactiondate', 'txdate', 'posted', 'valudate'].includes(h)
+    ),
+    merchant: headers.findIndex(h =>
+      ['merchant', 'description', 'payee', 'name', 'vendor', 'narration', 'particulars'].includes(h)
+    ),
+    amount: headers.findIndex(h =>
+      ['amount', 'value', 'sum', 'debit', 'credit', 'txnamount', 'transactionamount'].includes(h)
+    ),
+    type: headers.findIndex(h => ['type', 'txtype', 'transactiontype', 'crdr'].includes(h)),
     category: headers.findIndex(h => ['category', 'kind'].includes(h)),
   };
 
@@ -46,16 +60,19 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
     const rawDate = row[colIdx.date] ?? '';
     const rawMerchant = row[colIdx.merchant] ?? 'Unknown';
     const rawAmount = row[colIdx.amount] ?? '0';
-    const rawType = colIdx.type >= 0 ? row[colIdx.type] ?? '' : '';
-    const rawCategory = colIdx.category >= 0 ? row[colIdx.category] ?? '' : '';
+    const rawType = colIdx.type >= 0 ? (row[colIdx.type] ?? '') : '';
+    const rawCategory = colIdx.category >= 0 ? (row[colIdx.category] ?? '') : '';
 
     let date = formatLocalYYYYMMDD(new Date());
     const cleaned = rawDate.replace(/['"]/g, '').trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) date = cleaned;
     else {
       const m = cleaned.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-      if (m) date = `${m[3]}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`;
-      else { const d = new Date(cleaned); if (!isNaN(d.getTime())) date = formatLocalYYYYMMDD(d); }
+      if (m) date = `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+      else {
+        const d = new Date(cleaned);
+        if (!isNaN(d.getTime())) date = formatLocalYYYYMMDD(d);
+      }
     }
 
     const amount = Math.abs(parseFloat(rawAmount.replace(/[^0-9.\-]/g, '')) || 0);
@@ -68,13 +85,18 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
     else type = inferType(rawMerchant, parseFloat(rawAmount.replace(/[^0-9.\-]/g, '')));
 
     const category: Category = rawCategory
-      ? toTitleCase(rawCategory) as Category
-      : (type === 'credit' ? 'Income' : inferCategory(rawMerchant));
+      ? (toTitleCase(rawCategory) as Category)
+      : type === 'credit'
+        ? 'Income'
+        : inferCategory(rawMerchant);
 
     transactions.push({
       id: `csv-${Date.now()}-${i}`,
       date,
-      merchant: rawMerchant.replace(/^["']|["']$/g, '').trim().slice(0, 80),
+      merchant: rawMerchant
+        .replace(/^["']|["']$/g, '')
+        .trim()
+        .slice(0, 80),
       amount,
       category,
       type,

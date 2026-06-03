@@ -1,5 +1,14 @@
 import { useState } from 'react';
-import { RefreshCw, TrendingUp, AlertTriangle, DollarSign, Calendar, Plus, Zap, Clock } from 'lucide-react';
+import {
+  RefreshCw,
+  TrendingUp,
+  AlertTriangle,
+  DollarSign,
+  Calendar,
+  Plus,
+  Zap,
+  Clock,
+} from 'lucide-react';
 import { RecurringPattern } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import AddSubscriptionModal from '@/features/subscriptions/components/AddSubscriptionModal';
@@ -8,16 +17,24 @@ import { SubscriptionCalendar } from '@/features/subscriptions/components/Subscr
 import { useSubscriptionManager } from '@/features/subscriptions/hooks/useSubscriptionManager';
 
 interface SubscriptionManagerProps {
-  patterns:  RecurringPattern[];
+  patterns: RecurringPattern[];
   currency?: string;
 }
 
 function getServiceColor(name: string): string {
   const SERVICE_COLORS: Record<string, string> = {
-    netflix: '#e50914', spotify: '#1db954', notion: '#000000',
-    amazon:  '#ff9900', apple:   '#555555', youtube: '#ff0000',
-    gym:     '#6366f1', jio:     '#0052cc', airtel:  '#e40000',
-    phone:   '#64748b', adobe:   '#ff0000', canva:   '#00c4cc',
+    netflix: '#e50914',
+    spotify: '#1db954',
+    notion: '#000000',
+    amazon: '#ff9900',
+    apple: '#555555',
+    youtube: '#ff0000',
+    gym: '#6366f1',
+    jio: '#0052cc',
+    airtel: '#e40000',
+    phone: '#64748b',
+    adobe: '#ff0000',
+    canva: '#00c4cc',
   };
   const lower = name.toLowerCase();
   for (const [key, color] of Object.entries(SERVICE_COLORS)) {
@@ -27,26 +44,53 @@ function getServiceColor(name: string): string {
 }
 
 function getServiceInitials(name: string): string {
-  return name.split(/[\s/]+/).map(w => w[0]).join('').toUpperCase().slice(0, 2);
+  return name
+    .split(/[\s/]+/)
+    .map(w => w[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 }
 
-export default function SubscriptionManager({ patterns, currency = '₹' }: SubscriptionManagerProps) {
-  const { mergedIcons }      = useCategories();
-  const { format }           = useCurrency();
+export default function SubscriptionManager({
+  patterns,
+  currency = '₹',
+}: SubscriptionManagerProps) {
+  const { mergedIcons } = useCategories();
+  const { format } = useCurrency();
   const [showAddModal, setShowAddModal] = useState(false);
   const { subscriptions, monthlyTotal, annualTotal, upcoming, daysUntil } =
     useSubscriptionManager(patterns);
 
   const statsCards = [
-    { label: 'Monthly Burn',    value: format(monthlyTotal),          color: 'var(--teal)',   icon: <RefreshCw size={16} /> },
-    { label: 'Annual Spend',    value: format(annualTotal),           color: 'var(--purple)', icon: <TrendingUp size={16} /> },
-    { label: 'Active Services', value: `${subscriptions.length}`,     color: 'var(--blue)',   icon: <DollarSign size={16} /> },
-    { label: 'Due This Week',   value: `${upcoming.length}`,          color: 'var(--amber)',  icon: <AlertTriangle size={16} /> },
+    {
+      label: 'Monthly Burn',
+      value: format(monthlyTotal),
+      color: 'var(--teal)',
+      icon: <RefreshCw size={16} />,
+    },
+    {
+      label: 'Annual Spend',
+      value: format(annualTotal),
+      color: 'var(--purple)',
+      icon: <TrendingUp size={16} />,
+    },
+    {
+      label: 'Active Services',
+      value: `${subscriptions.length}`,
+      color: 'var(--blue)',
+      icon: <DollarSign size={16} />,
+    },
+    {
+      label: 'Due This Week',
+      value: `${upcoming.length}`,
+      color: 'var(--amber)',
+      icon: <AlertTriangle size={16} />,
+    },
   ];
 
   return (
     <div className="animate-fade-in-up space-y-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -72,21 +116,41 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
           <div key={s.label} className="card px-5 py-4">
             <div className="flex items-center gap-1.5 mb-3">
               <span style={{ color: s.color }}>{s.icon}</span>
-              <span className="font-inter text-[length:var(--fs-overline)] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{s.label}</span>
+              <span
+                className="font-inter text-[length:var(--fs-overline)] font-bold uppercase tracking-wider"
+                style={{ color: 'var(--text-muted)' }}
+              >
+                {s.label}
+              </span>
             </div>
-            <p className="font-manrope font-bold text-2xl" style={{ color: s.color }}>{s.value}</p>
+            <p className="font-manrope font-bold text-2xl" style={{ color: s.color }}>
+              {s.value}
+            </p>
           </div>
         ))}
       </div>
 
       {/* Upcoming this week alert */}
       {upcoming.length > 0 && (
-        <div className="card px-5 py-4 flex items-start gap-3" style={{ background: 'rgba(251,191,36,0.08)', border: '1.5px solid rgba(251,191,36,0.3)' }}>
+        <div
+          className="card px-5 py-4 flex items-start gap-3"
+          style={{
+            background: 'rgba(251,191,36,0.08)',
+            border: '1.5px solid rgba(251,191,36,0.3)',
+          }}
+        >
           <AlertTriangle size={20} style={{ color: 'var(--amber)', flexShrink: 0, marginTop: 2 }} />
           <div>
-            <p className="font-inter font-bold text-[14px]" style={{ color: 'var(--amber)' }}>Bills due within 7 days</p>
+            <p className="font-inter font-bold text-[14px]" style={{ color: 'var(--amber)' }}>
+              Bills due within 7 days
+            </p>
             <p className="font-inter text-[12px] mt-1" style={{ color: 'var(--text-muted)' }}>
-              {upcoming.map(s => `${s.merchant} (${daysUntil(s.nextExpected) === 0 ? 'Today' : `in ${daysUntil(s.nextExpected)}d`})`).join(' · ')}
+              {upcoming
+                .map(
+                  s =>
+                    `${s.merchant} (${daysUntil(s.nextExpected) === 0 ? 'Today' : `in ${daysUntil(s.nextExpected)}d`})`
+                )
+                .join(' · ')}
             </p>
           </div>
         </div>
@@ -102,17 +166,24 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
             billingDay: new Date(s.nextExpected + 'T00:00:00').getDate(),
             color: getServiceColor(s.merchant),
           }))}
-          currency={format(0).replace(/[0-9.,]/g, '').trim()}
+          currency={format(0)
+            .replace(/[0-9.,]/g, '')
+            .trim()}
         />
       )}
 
       {/* Subscriptions Grid */}
       {subscriptions.length === 0 ? (
         <div className="card flex flex-col items-center justify-center py-16 text-center">
-          <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4" style={{ background: '#f5f7fa' }}>
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+            style={{ background: '#f5f7fa' }}
+          >
             <RefreshCw size={26} style={{ color: 'var(--text-muted)' }} />
           </div>
-          <p className="font-inter font-medium text-[14px]" style={{ color: 'var(--text-muted)' }}>No subscriptions detected yet</p>
+          <p className="font-inter font-medium text-[14px]" style={{ color: 'var(--text-muted)' }}>
+            No subscriptions detected yet
+          </p>
           <p className="font-inter text-[12px] mt-1" style={{ color: 'var(--text-dim)' }}>
             Add recurring transactions — they'll automatically appear here after 2+ charges.
           </p>
@@ -120,10 +191,10 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {subscriptions.map(sub => {
-            const color      = getServiceColor(sub.merchant);
-            const initials   = getServiceInitials(sub.merchant);
-            const days       = daysUntil(sub.nextExpected);
-            const isUrgent   = days <= 5;
+            const color = getServiceColor(sub.merchant);
+            const initials = getServiceInitials(sub.merchant);
+            const days = daysUntil(sub.nextExpected);
+            const isUrgent = days <= 5;
             const annualCost = sub.frequency === 'monthly' ? sub.avgAmount * 12 : sub.avgAmount;
 
             return (
@@ -138,11 +209,17 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                       className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-white text-sm shrink-0"
                       style={{ background: color, fontFamily: 'var(--font-manrope)' }}
                     >
-                      {mergedIcons[sub.category] ? <span className="text-lg">{mergedIcons[sub.category]}</span> : initials}
+                      {mergedIcons[sub.category] ? (
+                        <span className="text-lg">{mergedIcons[sub.category]}</span>
+                      ) : (
+                        initials
+                      )}
                     </div>
                     <div className="flex flex-col items-end gap-1">
-                      <span className="font-inter text-[length:var(--fs-overline)] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
-                        style={{ background: color + '15', color }}>
+                      <span
+                        className="font-inter text-[length:var(--fs-overline)] font-bold uppercase tracking-wider rounded-full px-2 py-0.5"
+                        style={{ background: color + '15', color }}
+                      >
                         {sub.frequency}
                       </span>
                       {sub.isTrial && (
@@ -153,12 +230,21 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                     </div>
                   </div>
 
-                  <p className="font-inter font-bold text-[14px] mb-1 truncate" style={{ color: 'var(--text-primary)' }}>
+                  <p
+                    className="font-inter font-bold text-[14px] mb-1 truncate"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     {sub.merchant}
                   </p>
-                  <p className="font-manrope font-bold text-2xl" style={{ color: 'var(--text-primary)' }}>
+                  <p
+                    className="font-manrope font-bold text-2xl"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     {format(sub.avgAmount)}
-                    <span className="font-inter text-[length:var(--fs-caption)] font-medium ml-1" style={{ color: 'var(--text-muted)' }}>
+                    <span
+                      className="font-inter text-[length:var(--fs-caption)] font-medium ml-1"
+                      style={{ color: 'var(--text-muted)' }}
+                    >
                       /{sub.frequency === 'monthly' ? 'mo' : 'yr'}
                     </span>
                   </p>
@@ -167,7 +253,11 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                     <div className="flex items-center gap-1.5 mt-1">
                       <Clock size={11} className="text-amber-500" />
                       <span className="font-inter text-[length:var(--fs-overline)] text-amber-600 font-medium">
-                        Ends {new Date(sub.trialEndsAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                        Ends{' '}
+                        {new Date(sub.trialEndsAt).toLocaleDateString(undefined, {
+                          month: 'short',
+                          day: 'numeric',
+                        })}
                       </span>
                     </div>
                   )}
@@ -175,20 +265,35 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                   {sub.priceCreep && (
                     <div className="flex items-center gap-1.5 mt-1 animate-pulse">
                       <TrendingUp size={12} className="text-red-500" />
-                      <span className="font-inter text-[length:var(--fs-overline)] font-bold text-red-500 uppercase tracking-tight">Price Increased Recently</span>
+                      <span className="font-inter text-[length:var(--fs-overline)] font-bold text-red-500 uppercase tracking-tight">
+                        Price Increased Recently
+                      </span>
                     </div>
                   )}
 
-                  <p className="font-inter text-[length:var(--fs-caption)] mt-1" style={{ color: 'var(--text-muted)' }}>
+                  <p
+                    className="font-inter text-[length:var(--fs-caption)] mt-1"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
                     {format(annualCost)} / year
                   </p>
 
-                  <div className="flex items-center justify-between mt-4 pt-3" style={{ borderTop: '1px dashed var(--border)' }}>
+                  <div
+                    className="flex items-center justify-between mt-4 pt-3"
+                    style={{ borderTop: '1px dashed var(--border)' }}
+                  >
                     <div className="flex items-center gap-1.5">
                       <Calendar size={11} style={{ color: 'var(--text-muted)' }} />
-                      <span className="font-inter text-[length:var(--fs-caption)]" style={{ color: 'var(--text-muted)' }}>
-                        Next: <strong style={{ color: 'var(--text-primary)' }}>
-                          {new Date(sub.nextExpected + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      <span
+                        className="font-inter text-[length:var(--fs-caption)]"
+                        style={{ color: 'var(--text-muted)' }}
+                      >
+                        Next:{' '}
+                        <strong style={{ color: 'var(--text-primary)' }}>
+                          {new Date(sub.nextExpected + 'T00:00:00').toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
                         </strong>
                       </span>
                     </div>
@@ -196,7 +301,7 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
                       className="font-inter text-[length:var(--fs-overline)] font-bold rounded-full px-2 py-0.5"
                       style={{
                         background: isUrgent ? 'var(--amber-dim)' : '#f5f7fa',
-                        color:      isUrgent ? 'var(--amber)' : 'var(--text-muted)',
+                        color: isUrgent ? 'var(--amber)' : 'var(--text-muted)',
                       }}
                     >
                       {days === 0 ? 'Today!' : `${days}d`}
@@ -211,8 +316,16 @@ export default function SubscriptionManager({ patterns, currency = '₹' }: Subs
 
       {/* Annual Summary */}
       {subscriptions.length > 0 && (
-        <div className="card px-6 py-5" style={{ background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)', border: 'none' }}>
-          <p className="font-inter text-[12px] font-semibold text-white/70 uppercase tracking-wider mb-2">Total Annual Subscription Cost</p>
+        <div
+          className="card px-6 py-5"
+          style={{
+            background: 'linear-gradient(135deg, #6366f1 0%, #818cf8 100%)',
+            border: 'none',
+          }}
+        >
+          <p className="font-inter text-[12px] font-semibold text-white/70 uppercase tracking-wider mb-2">
+            Total Annual Subscription Cost
+          </p>
           <p className="font-manrope font-bold text-4xl text-white">{format(annualTotal)}</p>
           <p className="font-inter text-[13px] text-white/70 mt-2">
             across {subscriptions.length} recurring service{subscriptions.length !== 1 ? 's' : ''}

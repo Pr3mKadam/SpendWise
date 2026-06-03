@@ -21,18 +21,24 @@ export function SecureExportModal({ onClose, onExport, isExporting }: SecureExpo
         <div className="w-12 h-12 rounded-full bg-[var(--teal-dim)] flex items-center justify-center mx-auto mb-4">
           <Shield className="text-[var(--teal)] w-6 h-6" />
         </div>
-        <h3 className="font-manrope font-bold text-xl text-center text-[var(--text-primary)] mb-2">Set Backup Password</h3>
+        <h3 className="font-manrope font-bold text-xl text-center text-[var(--text-primary)] mb-2">
+          Set Backup Password
+        </h3>
         <p className="font-inter text-sm text-[var(--text-secondary)] text-center mb-6">
-          This password will be required to restore your data. SpendWise does not store this password; if you lose it, your backup cannot be recovered.
+          This password will be required to restore your data. SpendWise does not store this
+          password; if you lose it, your backup cannot be recovered.
         </p>
-        
+
         <div className="space-y-4 mb-8">
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" size={16} />
+            <Lock
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
+              size={16}
+            />
             <input
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={e => setPassword(e.target.value)}
               placeholder="Enter a strong password"
               className="w-full font-inter text-sm pl-10 pr-4 py-3 rounded-xl focus:outline-none transition-colors border-2 border-transparent"
               style={{ background: 'var(--surface-input)', color: 'var(--text-primary)' }}

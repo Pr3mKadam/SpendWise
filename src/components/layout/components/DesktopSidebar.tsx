@@ -18,8 +18,15 @@ interface DesktopSidebarProps {
 }
 
 export function DesktopSidebar({
-  activeView, navigate, coreItems, wealthItems, toolItems,
-  overBudgetCount, showInstall, onInstall, signOut
+  activeView,
+  navigate,
+  coreItems,
+  wealthItems,
+  toolItems,
+  overBudgetCount,
+  showInstall,
+  onInstall,
+  signOut,
 }: DesktopSidebarProps) {
   const [showSignOutTip, setShowSignOutTip] = useState(false);
   const [signOutTipTop, setSignOutTipTop] = useState(0);
@@ -47,7 +54,11 @@ export function DesktopSidebar({
 
       <Sep />
 
-      <nav className="flex flex-col items-center gap-1 mt-2" role="navigation" aria-label="Core navigation">
+      <nav
+        className="flex flex-col items-center gap-1 mt-2"
+        role="navigation"
+        aria-label="Core navigation"
+      >
         {coreItems.map(item => (
           <IconNavItem
             key={item.id}
@@ -63,7 +74,11 @@ export function DesktopSidebar({
 
       <Sep style={{ marginTop: '8px', marginBottom: '8px' }} />
 
-      <nav className="flex flex-col items-center gap-1" role="navigation" aria-label="Wealth navigation">
+      <nav
+        className="flex flex-col items-center gap-1"
+        role="navigation"
+        aria-label="Wealth navigation"
+      >
         {wealthItems.map(item => (
           <IconNavItem
             key={item.id}
@@ -78,7 +93,11 @@ export function DesktopSidebar({
 
       <Sep style={{ marginTop: '8px', marginBottom: '8px' }} />
 
-      <nav className="flex flex-col items-center gap-1" role="navigation" aria-label="Tools navigation">
+      <nav
+        className="flex flex-col items-center gap-1"
+        role="navigation"
+        aria-label="Tools navigation"
+      >
         {toolItems.map(item => (
           <IconNavItem
             key={item.id}
@@ -100,7 +119,10 @@ export function DesktopSidebar({
             label="Install SpendWise"
             icon={DownloadCloud}
             isActive={false}
-            onClick={() => { haptic.medium(); onInstall?.(); }}
+            onClick={() => {
+              haptic.medium();
+              onInstall?.();
+            }}
           />
         )}
         <IconNavItem
@@ -110,15 +132,15 @@ export function DesktopSidebar({
           isActive={activeView === 'profile'}
           onClick={() => navigate('profile')}
         />
-        <div 
-          className="relative flex items-center" 
+        <div
+          className="relative flex items-center"
           onMouseEnter={() => {
             if (signOutRef.current) {
               const rect = signOutRef.current.getBoundingClientRect();
               setSignOutTipTop(rect.top + rect.height / 2);
             }
             signOutTimer.current = setTimeout(() => setShowSignOutTip(true), 120);
-          }} 
+          }}
           onMouseLeave={() => {
             clearTimeout(signOutTimer.current);
             setShowSignOutTip(false);
@@ -126,7 +148,10 @@ export function DesktopSidebar({
         >
           <button
             ref={signOutRef}
-            onClick={() => { haptic.light(); signOut(); }}
+            onClick={() => {
+              haptic.light();
+              signOut();
+            }}
             aria-label="Sign out"
             className="w-10 h-10 flex items-center justify-center rounded-xl transition-colors"
             style={{ color: 'var(--sidebar-text)' }}
@@ -158,11 +183,12 @@ export function DesktopSidebar({
                     background: 'rgba(239, 68, 68, 0.95)',
                     color: '#ffffff',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
-                    boxShadow: '0 10px 25px -5px rgba(239, 68, 68, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
+                    boxShadow:
+                      '0 10px 25px -5px rgba(239, 68, 68, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.4)',
                     fontFamily: 'var(--font-inter)',
                   }}
                 >
-                  <div 
+                  <div
                     className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rotate-45"
                     style={{
                       background: 'rgba(239, 68, 68, 0.95)',

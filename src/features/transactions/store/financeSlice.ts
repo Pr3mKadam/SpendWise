@@ -17,7 +17,7 @@ export interface FinanceSlice {
   budgetSettings: BudgetSettings;
   subscriptions: RecurringPattern[];
   recurringTransactions: RecurringTransaction[];
-  razorpayKeys: { keyId: string, keySecret: string } | null;
+  razorpayKeys: { keyId: string; keySecret: string } | null;
 
   addTransaction: (tx: Transaction) => void;
   addTransactions: (txs: Transaction[]) => void;
@@ -38,11 +38,16 @@ export interface FinanceSlice {
   addRecurringTransaction: (rt: RecurringTransaction) => void;
   updateRecurringTransaction: (id: string, data: Partial<RecurringTransaction>) => void;
   removeRecurringTransaction: (id: string) => void;
-  setRazorpayKeys: (keys: { keyId: string, keySecret: string } | null) => void;
+  setRazorpayKeys: (keys: { keyId: string; keySecret: string } | null) => void;
   reindex: () => void;
 }
 
-export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist", unknown]], [], FinanceSlice> = (set, get) => ({
+export const createFinanceSlice: StateCreator<
+  SpendWiseStore,
+  [['zustand/persist', unknown]],
+  [],
+  FinanceSlice
+> = (set, get) => ({
   transactions: [],
   indexedData: { byCategory: {}, byMonth: {} },
   budgets: {},
@@ -51,7 +56,7 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
   recurringTransactions: [],
   razorpayKeys: null,
 
-  setRazorpayKeys: (keys) => set({ razorpayKeys: keys }),
+  setRazorpayKeys: keys => set({ razorpayKeys: keys }),
 
   reindex: () => {
     const { transactions } = get();
@@ -70,7 +75,7 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
     set({ indexedData: { byCategory, byMonth } });
   },
 
-  addTransaction: (tx) => {
+  addTransaction: tx => {
     const state = get();
     // Parental control logic is moved to combined store or handled via actions
     if (state.parentalState?.isTeenMode) {
@@ -90,105 +95,126 @@ export const createFinanceSlice: StateCreator<SpendWiseStore, [["zustand/persist
         }
       }
     }
-    set((state) => ({ transactions: [tx, ...state.transactions] }));
+    set(state => ({ transactions: [tx, ...state.transactions] }));
     get().reindex();
   },
 
-  addTransactions: (txs) => {
-    set((state) => ({ transactions: [...txs, ...state.transactions] }));
+  addTransactions: txs => {
+    set(state => ({ transactions: [...txs, ...state.transactions] }));
     get().reindex();
   },
 
-  deleteTransaction: (id) => {
-    set((state) => ({ transactions: state.transactions.filter(t => t.id !== id) }));
+  deleteTransaction: id => {
+    set(state => ({ transactions: state.transactions.filter(t => t.id !== id) }));
     get().reindex();
   },
 
   updateTransactionCategory: (id, newCategory) => {
-    set((state) => ({
-      transactions: state.transactions.map(t => t.id === id ? { ...t, category: newCategory } : t)
+    set(state => ({
+      transactions: state.transactions.map(t =>
+        t.id === id ? { ...t, category: newCategory } : t
+      ),
     }));
     get().reindex();
   },
 
   bulkUpdateTransactionsCategory: (ids, newCategory) => {
     const idSet = new Set(ids);
-    set((state) => ({
-      transactions: state.transactions.map(t => idSet.has(t.id) ? { ...t, category: newCategory } : t)
+    set(state => ({
+      transactions: state.transactions.map(t =>
+        idSet.has(t.id) ? { ...t, category: newCategory } : t
+      ),
     }));
     get().reindex();
   },
 
-  bulkDeleteTransactions: (ids) => {
+  bulkDeleteTransactions: ids => {
     const idSet = new Set(ids);
-    set((state) => ({
-      transactions: state.transactions.filter(t => !idSet.has(t.id))
+    set(state => ({
+      transactions: state.transactions.filter(t => !idSet.has(t.id)),
     }));
     get().reindex();
   },
 
   bulkReassignCategory: (oldCategory, newCategory) => {
-    set((state) => ({
-      transactions: state.transactions.map(t => t.category === oldCategory ? { ...t, category: newCategory as Category } : t)
+    set(state => ({
+      transactions: state.transactions.map(t =>
+        t.category === oldCategory ? { ...t, category: newCategory as Category } : t
+      ),
     }));
     get().reindex();
   },
 
-  setBudget: (category, amount) => set((state) => ({
-    budgets: { ...state.budgets, [category]: amount }
-  })),
+  setBudget: (category, amount) =>
+    set(state => ({
+      budgets: { ...state.budgets, [category]: amount },
+    })),
 
-  removeBudget: (category) => set((state) => {
-    const newBudgets = { ...state.budgets };
-    delete newBudgets[category];
-    return { budgets: newBudgets };
-  }),
+  removeBudget: category =>
+    set(state => {
+      const newBudgets = { ...state.budgets };
+      delete newBudgets[category];
+      return { budgets: newBudgets };
+    }),
 
   resetBudgets: () => set({ budgets: {} }),
 
-  resetLimits: () => set((state) => {
-    const resetB: Record<string, number> = {};
-    Object.keys(state.budgets).forEach(cat => {
-      resetB[cat] = 0;
-    });
-    return { budgets: resetB };
-  }),
+  resetLimits: () =>
+    set(state => {
+      const resetB: Record<string, number> = {};
+      Object.keys(state.budgets).forEach(cat => {
+        resetB[cat] = 0;
+      });
+      return { budgets: resetB };
+    }),
 
-  updateBudgetSettings: (settings) => set((state) => ({
-    budgetSettings: { 
-      ...(state.budgetSettings || { period: 'monthly', rolloverEnabled: false }), 
-      ...settings 
-    }
-  })),
+  updateBudgetSettings: settings =>
+    set(state => ({
+      budgetSettings: {
+        ...(state.budgetSettings || { period: 'monthly', rolloverEnabled: false }),
+        ...settings,
+      },
+    })),
 
-  toggleRollover: () => set((state) => ({
-    budgetSettings: {
-      ...(state.budgetSettings || { period: 'monthly', rolloverEnabled: false }),
-      rolloverEnabled: !(state.budgetSettings?.rolloverEnabled ?? false)
-    }
-  })),
+  toggleRollover: () =>
+    set(state => ({
+      budgetSettings: {
+        ...(state.budgetSettings || { period: 'monthly', rolloverEnabled: false }),
+        rolloverEnabled: !(state.budgetSettings?.rolloverEnabled ?? false),
+      },
+    })),
 
-  addSubscription: (sub) => set((state) => ({
-    subscriptions: [...state.subscriptions, sub]
-  })),
+  addSubscription: sub =>
+    set(state => ({
+      subscriptions: [...state.subscriptions, sub],
+    })),
 
-  updateSubscription: (merchant, data) => set((state) => ({
-    subscriptions: state.subscriptions.map(s => s.merchant === merchant ? { ...s, ...data } : s)
-  })),
+  updateSubscription: (merchant, data) =>
+    set(state => ({
+      subscriptions: state.subscriptions.map(s =>
+        s.merchant === merchant ? { ...s, ...data } : s
+      ),
+    })),
 
-  deleteSubscription: (merchant) => set((state) => ({
-    subscriptions: state.subscriptions.filter(s => s.merchant !== merchant)
-  })),
+  deleteSubscription: merchant =>
+    set(state => ({
+      subscriptions: state.subscriptions.filter(s => s.merchant !== merchant),
+    })),
 
-  addRecurringTransaction: (rt) => set((state) => ({
-    recurringTransactions: [...state.recurringTransactions, rt]
-  })),
+  addRecurringTransaction: rt =>
+    set(state => ({
+      recurringTransactions: [...state.recurringTransactions, rt],
+    })),
 
-  updateRecurringTransaction: (id, data) => set((state) => ({
-    recurringTransactions: state.recurringTransactions.map(rt => rt.id === id ? { ...rt, ...data } : rt)
-  })),
+  updateRecurringTransaction: (id, data) =>
+    set(state => ({
+      recurringTransactions: state.recurringTransactions.map(rt =>
+        rt.id === id ? { ...rt, ...data } : rt
+      ),
+    })),
 
-  removeRecurringTransaction: (id) => set((state) => ({
-    recurringTransactions: state.recurringTransactions.filter(rt => rt.id !== id)
-  })),
+  removeRecurringTransaction: id =>
+    set(state => ({
+      recurringTransactions: state.recurringTransactions.filter(rt => rt.id !== id),
+    })),
 });

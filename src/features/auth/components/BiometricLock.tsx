@@ -8,9 +8,9 @@ interface BiometricLockProps {
   appName?: string;
 }
 
-export const BiometricLock: React.FC<BiometricLockProps> = ({ 
-  onUnlocked, 
-  appName = "SpendWise" 
+export const BiometricLock: React.FC<BiometricLockProps> = ({
+  onUnlocked,
+  appName = 'SpendWise',
 }) => {
   const [status, setStatus] = useState<'idle' | 'scanning' | 'success' | 'error'>('idle');
   const [attempts, setAttempts] = useState(0);
@@ -41,12 +41,12 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
 
       // Get the stored credential ID (set during biometric enrollment)
       const credentialId = localStorage.getItem('sw_biometric_credential_id');
-      
+
       if (!credentialId) {
         // First time — enroll the biometric credential
         const challenge = crypto.getRandomValues(new Uint8Array(32));
         const userId = crypto.getRandomValues(new Uint8Array(16));
-        const cred = await navigator.credentials.create({
+        const cred = (await navigator.credentials.create({
           publicKey: {
             challenge,
             rp: { name: 'SpendWise', id: window.location.hostname },
@@ -55,19 +55,23 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
               name: 'spendwise-user',
               displayName: 'SpendWise User',
             },
-            pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+            pubKeyCredParams: [
+              { type: 'public-key', alg: -7 },
+              { type: 'public-key', alg: -257 },
+            ],
             authenticatorSelection: {
-              authenticatorAttachment: 'platform',  // device biometric only
+              authenticatorAttachment: 'platform', // device biometric only
               userVerification: 'required',
             },
             timeout: 60000,
-          }
-        }) as PublicKeyCredential;
-        
+          },
+        })) as PublicKeyCredential;
+
         if (cred) {
-          localStorage.setItem('sw_biometric_credential_id', btoa(String.fromCharCode(
-            ...new Uint8Array(cred.rawId)
-          )));
+          localStorage.setItem(
+            'sw_biometric_credential_id',
+            btoa(String.fromCharCode(...new Uint8Array(cred.rawId)))
+          );
           setStatus('success');
           haptic.success();
           setTimeout(onUnlocked, 800);
@@ -84,14 +88,17 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
             allowCredentials: [{ type: 'public-key', id: credIdBytes }],
             userVerification: 'required',
             timeout: 60000,
-          }
+          },
         });
         setStatus('success');
         haptic.success();
         setTimeout(onUnlocked, 800);
       }
     } catch (err: any) {
-      console.warn('WebAuthn failed or not supported, falling back to secure local simulation:', err);
+      console.warn(
+        'WebAuthn failed or not supported, falling back to secure local simulation:',
+        err
+      );
       if (err.name === 'NotAllowedError') {
         setStatus('error');
         setAttempts(prev => prev + 1);
@@ -158,15 +165,21 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
           </AnimatePresence>
 
           <motion.div
-            animate={status === 'scanning' ? { 
-              scale: [1, 1.05, 1],
-              opacity: [1, 0.7, 1]
-            } : {}}
+            animate={
+              status === 'scanning'
+                ? {
+                    scale: [1, 1.05, 1],
+                    opacity: [1, 0.7, 1],
+                  }
+                : {}
+            }
             transition={{ duration: 1, repeat: Infinity }}
             className={`w-28 h-28 rounded-full flex items-center justify-center bg-white/5 backdrop-blur-xl border-2 transition-colors duration-500 ${
-              status === 'success' ? 'border-emerald-500 bg-emerald-500/10' : 
-              status === 'error' ? 'border-red-500 bg-red-500/10' : 
-              'border-white/10'
+              status === 'success'
+                ? 'border-emerald-500 bg-emerald-500/10'
+                : status === 'error'
+                  ? 'border-red-500 bg-red-500/10'
+                  : 'border-white/10'
             }`}
           >
             {status === 'success' ? (
@@ -178,9 +191,9 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
                 <AlertCircle size={48} className="text-red-500" />
               </motion.div>
             ) : (
-              <Fingerprint 
-                size={48} 
-                className={`transition-colors duration-500 ${status === 'scanning' ? 'text-teal-400' : 'text-white/30'}`} 
+              <Fingerprint
+                size={48}
+                className={`transition-colors duration-500 ${status === 'scanning' ? 'text-teal-400' : 'text-white/30'}`}
               />
             )}
           </motion.div>
@@ -192,7 +205,7 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
                 initial={{ top: '20%', opacity: 0 }}
                 animate={{ top: '80%', opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 1.2, repeat: Infinity, ease: "linear" }}
+                transition={{ duration: 1.2, repeat: Infinity, ease: 'linear' }}
                 className="absolute left-1/2 -translate-x-1/2 w-24 h-0.5 bg-gradient-to-r from-transparent via-teal-400 to-transparent shadow-[0_0_15px_rgba(45,212,191,0.8)] z-20"
               />
             )}
@@ -207,15 +220,17 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -10, opacity: 0 }}
               className={`text-sm font-medium tracking-wide ${
-                status === 'error' ? 'text-red-400' : 
-                status === 'success' ? 'text-emerald-400' : 
-                'text-white/70'
+                status === 'error'
+                  ? 'text-red-400'
+                  : status === 'success'
+                    ? 'text-emerald-400'
+                    : 'text-white/70'
               }`}
             >
-              {status === 'idle' && "Tap to authenticate"}
-              {status === 'scanning' && "Verifying identity..."}
-              {status === 'success' && "Access Granted"}
-              {status === 'error' && "Not Recognized"}
+              {status === 'idle' && 'Tap to authenticate'}
+              {status === 'scanning' && 'Verifying identity...'}
+              {status === 'success' && 'Access Granted'}
+              {status === 'error' && 'Not Recognized'}
             </motion.p>
           </AnimatePresence>
         </div>
@@ -233,7 +248,9 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
       </div>
 
       <div className="absolute bottom-12 left-0 right-0 text-center">
-        <p className="text-[length:var(--fs-overline)] text-white/20 uppercase tracking-[0.2em]">Secure Session Encrypted</p>
+        <p className="text-[length:var(--fs-overline)] text-white/20 uppercase tracking-[0.2em]">
+          Secure Session Encrypted
+        </p>
       </div>
     </motion.div>
   );

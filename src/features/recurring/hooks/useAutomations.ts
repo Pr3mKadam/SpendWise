@@ -6,10 +6,18 @@ import { formatLocalYYYYMMDD } from '@/utils/date';
 function getNextDate(dateStr: string, frequency: RecurringTransaction['frequency']): string {
   const d = new Date(dateStr + 'T00:00:00');
   switch (frequency) {
-    case 'daily':   d.setDate(d.getDate() + 1); break;
-    case 'weekly':  d.setDate(d.getDate() + 7); break;
-    case 'monthly': d.setMonth(d.getMonth() + 1); break;
-    case 'annual':  d.setFullYear(d.getFullYear() + 1); break;
+    case 'daily':
+      d.setDate(d.getDate() + 1);
+      break;
+    case 'weekly':
+      d.setDate(d.getDate() + 7);
+      break;
+    case 'monthly':
+      d.setMonth(d.getMonth() + 1);
+      break;
+    case 'annual':
+      d.setFullYear(d.getFullYear() + 1);
+      break;
   }
   return formatLocalYYYYMMDD(d);
 }
@@ -18,7 +26,7 @@ export function useAutomations() {
   const recurringTransactions = useStore(s => s.recurringTransactions);
   const addTransactions = useStore(s => s.addTransactions);
   const updateRecurringTransaction = useStore(s => s.updateRecurringTransaction);
-  
+
   // Use a ref to ensure we only run this once per mount, or avoid infinite loops if state updates trigger re-renders
   const hasRun = useRef(false);
 
@@ -49,7 +57,7 @@ export function useAutomations() {
           isRecurring: true,
           status: 'completed',
         });
-        
+
         // Calculate the next one
         nextOccur = getNextDate(nextOccur, rt.frequency);
         updated = true;

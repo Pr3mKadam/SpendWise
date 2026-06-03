@@ -20,7 +20,12 @@ export interface GamificationSlice {
 
 const XP_PER_LEVEL = 1000;
 
-export const createGamificationSlice: StateCreator<SpendWiseStore, [["zustand/persist", unknown]], [], GamificationSlice> = (set, get) => ({
+export const createGamificationSlice: StateCreator<
+  SpendWiseStore,
+  [['zustand/persist', unknown]],
+  [],
+  GamificationSlice
+> = (set, get) => ({
   quests: [
     {
       id: 'q1',
@@ -33,7 +38,7 @@ export const createGamificationSlice: StateCreator<SpendWiseStore, [["zustand/pe
       progress: 0,
       completed: false,
       type: 'spending',
-      icon: '☕'
+      icon: '☕',
     },
     {
       id: 'q2',
@@ -44,7 +49,7 @@ export const createGamificationSlice: StateCreator<SpendWiseStore, [["zustand/pe
       progress: 0,
       completed: false,
       type: 'saving',
-      icon: '💰'
+      icon: '💰',
     },
     {
       id: 'q3',
@@ -55,8 +60,8 @@ export const createGamificationSlice: StateCreator<SpendWiseStore, [["zustand/pe
       progress: 0,
       completed: false,
       type: 'habit',
-      icon: '📸'
-    }
+      icon: '📸',
+    },
   ],
   totalXP: 0,
   level: 1,
@@ -65,71 +70,75 @@ export const createGamificationSlice: StateCreator<SpendWiseStore, [["zustand/pe
   lastLoginDate: null,
   showLevelUp: false,
 
-  checkStreak: () => set((state) => {
-    const d = new Date();
-    const year = d.getFullYear();
-    const month = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
-    const today = `${year}-${month}-${day}`;
-    if (state.lastLoginDate === today) return state; // Already checked today ✓
+  checkStreak: () =>
+    set(state => {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const today = `${year}-${month}-${day}`;
+      if (state.lastLoginDate === today) return state; // Already checked today ✓
 
-    let newStreak = 1; // Always start at 1 (today counts)
-    let xpBonus = 0;
+      let newStreak = 1; // Always start at 1 (today counts)
+      let xpBonus = 0;
 
-    if (state.lastLoginDate) {
-      const last = new Date(state.lastLoginDate + 'T00:00:00');
-      const curr = new Date(today + 'T00:00:00');
-      const diffDays = Math.round((curr.getTime() - last.getTime()) / 86400000);
+      if (state.lastLoginDate) {
+        const last = new Date(state.lastLoginDate + 'T00:00:00');
+        const curr = new Date(today + 'T00:00:00');
+        const diffDays = Math.round((curr.getTime() - last.getTime()) / 86400000);
 
-      if (diffDays === 1) {
-        newStreak = state.streak + 1; // Genuine consecutive day
-        xpBonus = 10;
-      } else if (diffDays === 0) {
-        return state; // Same day, no change
+        if (diffDays === 1) {
+          newStreak = state.streak + 1; // Genuine consecutive day
+          xpBonus = 10;
+        } else if (diffDays === 0) {
+          return state; // Same day, no change
+        }
+        // diffDays > 1: streak broken, newStreak stays 1
       }
-      // diffDays > 1: streak broken, newStreak stays 1
-    }
 
-    if (xpBonus > 0) setTimeout(() => get().addXP(xpBonus), 0);
-    return { streak: newStreak, lastLoginDate: today };
-  }),
+      if (xpBonus > 0) setTimeout(() => get().addXP(xpBonus), 0);
+      return { streak: newStreak, lastLoginDate: today };
+    }),
 
-  addXP: (amount) => set((state) => {
-    const newXP = state.totalXP + amount;
-    const newLevel = Math.floor(newXP / XP_PER_LEVEL) + 1;
-    const leveledUp = newLevel > state.level;
-    
-    let newRank = state.rank;
-    if (newLevel >= 20) newRank = 'Infinity Tycoon';
-    else if (newLevel >= 10) newRank = 'Wealth Wizard';
-    else if (newLevel >= 5) newRank = 'Budget Baron';
-    else if (newLevel >= 2) newRank = 'Saver';
+  addXP: amount =>
+    set(state => {
+      const newXP = state.totalXP + amount;
+      const newLevel = Math.floor(newXP / XP_PER_LEVEL) + 1;
+      const leveledUp = newLevel > state.level;
 
-    return { 
-      totalXP: newXP, 
-      level: newLevel, 
-      rank: newRank,
-      showLevelUp: leveledUp || state.showLevelUp 
-    };
-  }),
+      let newRank = state.rank;
+      if (newLevel >= 20) newRank = 'Infinity Tycoon';
+      else if (newLevel >= 10) newRank = 'Wealth Wizard';
+      else if (newLevel >= 5) newRank = 'Budget Baron';
+      else if (newLevel >= 2) newRank = 'Saver';
+
+      return {
+        totalXP: newXP,
+        level: newLevel,
+        rank: newRank,
+        showLevelUp: leveledUp || state.showLevelUp,
+      };
+    }),
 
   dismissLevelUp: () => set({ showLevelUp: false }),
 
-  updateQuestProgress: (id, progress) => set((state) => ({
-    quests: state.quests.map(q => q.id === id ? { ...q, progress } : q)
-  })),
+  updateQuestProgress: (id, progress) =>
+    set(state => ({
+      quests: state.quests.map(q => (q.id === id ? { ...q, progress } : q)),
+    })),
 
-  completeQuest: (id) => {
+  completeQuest: id => {
     const quest = get().quests.find(q => q.id === id);
     if (quest && !quest.completed) {
-      set((state) => ({
-        quests: state.quests.map(q => q.id === id ? { ...q, completed: true, progress: 100 } : q)
+      set(state => ({
+        quests: state.quests.map(q => (q.id === id ? { ...q, completed: true, progress: 100 } : q)),
       }));
       get().addXP(quest.xpReward);
     }
   },
 
-  resetQuests: () => set((state) => ({
-    quests: state.quests.map(q => ({ ...q, completed: false, progress: 0 }))
-  })),
+  resetQuests: () =>
+    set(state => ({
+      quests: state.quests.map(q => ({ ...q, completed: false, progress: 0 })),
+    })),
 });

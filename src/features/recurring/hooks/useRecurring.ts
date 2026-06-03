@@ -21,8 +21,8 @@ function daysBetween(a: string, b: string): number {
 }
 
 function detectFrequency(avgDays: number): RecurringPattern['frequency'] {
-  if (avgDays <= 10)  return 'weekly';
-  if (avgDays <= 45)  return 'monthly';
+  if (avgDays <= 10) return 'weekly';
+  if (avgDays <= 45) return 'monthly';
   return 'annual';
 }
 
@@ -59,41 +59,39 @@ export function useRecurring(transactions: Transaction[]): RecurringPattern[] {
         gaps.push(daysBetween(sorted[i - 1].date, sorted[i].date));
       }
 
-      const avgGap = gaps.length > 0
-        ? gaps.reduce((a, b) => a + b, 0) / gaps.length
-        : 30;
+      const avgGap = gaps.length > 0 ? gaps.reduce((a, b) => a + b, 0) / gaps.length : 30;
 
       // Only flag as recurring if gap is reasonably consistent (CV < 0.5)
-      const variance = gaps.length > 1
-        ? gaps.reduce((s, g) => s + Math.pow(g - avgGap, 2), 0) / gaps.length
-        : 0;
+      const variance =
+        gaps.length > 1 ? gaps.reduce((s, g) => s + Math.pow(g - avgGap, 2), 0) / gaps.length : 0;
       const cv = avgGap > 0 ? Math.sqrt(variance) / avgGap : 1;
       if (cv > 0.6 && txs.length < 4) return; // too irregular to be "recurring"
 
-      const freq      = detectFrequency(avgGap);
-      const lastSeen  = sorted[sorted.length - 1].date;
-      const nextGap   = freq === 'weekly' ? 7 : freq === 'monthly' ? 30 : 365;
+      const freq = detectFrequency(avgGap);
+      const lastSeen = sorted[sorted.length - 1].date;
+      const nextGap = freq === 'weekly' ? 7 : freq === 'monthly' ? 30 : 365;
       const nextExpected = addDays(lastSeen, nextGap);
       const totalSpent = sorted.reduce((a, b) => a + b.amount, 0);
-      const avgAmount  = totalSpent / sorted.length;
+      const avgAmount = totalSpent / sorted.length;
 
       const lastAmount = sorted[sorted.length - 1].amount;
       const prevTxs = sorted.slice(0, -1);
-      const avgPrevAmount = prevTxs.length > 0
-        ? prevTxs.reduce((a, tx) => a + tx.amount, 0) / prevTxs.length
-        : avgAmount;
+      const avgPrevAmount =
+        prevTxs.length > 0
+          ? prevTxs.reduce((a, tx) => a + tx.amount, 0) / prevTxs.length
+          : avgAmount;
 
       const priceCreep = lastAmount > avgPrevAmount * 1.05; // 5% threshold
 
       patterns.push({
-        merchant:     sorted[0].merchant, // use original casing
-        category:     sorted[0].category,
-        avgAmount:    Math.round(avgAmount * 100) / 100,
-        frequency:    freq,
+        merchant: sorted[0].merchant, // use original casing
+        category: sorted[0].category,
+        avgAmount: Math.round(avgAmount * 100) / 100,
+        frequency: freq,
         lastSeen,
         nextExpected,
-        occurrences:  sorted.length,
-        totalSpent:   Math.round(totalSpent * 100) / 100,
+        occurrences: sorted.length,
+        totalSpent: Math.round(totalSpent * 100) / 100,
         priceCreep,
       });
     });

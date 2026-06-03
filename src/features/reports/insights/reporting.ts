@@ -1,6 +1,9 @@
-import { Transaction } from "@/types";
+import { Transaction } from '@/types';
 
-export async function generateMonthlyReport(month: string, transactions: Transaction[]): Promise<string> {
+export async function generateMonthlyReport(
+  month: string,
+  transactions: Transaction[]
+): Promise<string> {
   const debits = transactions.filter(t => t.type === 'debit');
   const credits = transactions.filter(t => t.type === 'credit');
   const totalSpent = debits.reduce((a, t) => a + t.amount, 0);
@@ -9,7 +12,9 @@ export async function generateMonthlyReport(month: string, transactions: Transac
   const savingsRate = totalIncome > 0 ? Math.round((net / totalIncome) * 100) : 0;
 
   const byCategory: Record<string, number> = {};
-  debits.forEach(t => { byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount; });
+  debits.forEach(t => {
+    byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
+  });
   const sorted = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
   const topCat = sorted[0];
 
@@ -44,12 +49,15 @@ export async function getSpendingPersonality(transactions: Transaction[]): Promi
 }> {
   const debits = transactions.filter(t => t.type === 'debit');
   const byCategory: Record<string, number> = {};
-  debits.forEach(t => { byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount; });
+  debits.forEach(t => {
+    byCategory[t.category] = (byCategory[t.category] ?? 0) + t.amount;
+  });
 
   if (debits.length === 0) {
     return {
       archetype: 'The Blank Canvas',
-      description: 'Your spending story is just beginning. Log more transactions to reveal your archetype.',
+      description:
+        'Your spending story is just beginning. Log more transactions to reveal your archetype.',
       traits: ['Data-shy', 'New starter', 'Full potential'],
       advice: 'Log at least 10 transactions to unlock your spending personality.',
     };
@@ -58,9 +66,12 @@ export async function getSpendingPersonality(transactions: Transaction[]): Promi
   const total = Object.values(byCategory).reduce((a, b) => a + b, 0);
   const top = Object.entries(byCategory).sort((a, b) => b[1] - a[1]);
   const topCat = top[0]?.[0] ?? 'Shopping';
-  const topPct = total > 0 ? Math.round((top[0]?.[1] ?? 0) / total * 100) : 0;
+  const topPct = total > 0 ? Math.round(((top[0]?.[1] ?? 0) / total) * 100) : 0;
 
-  const ARCHETYPES: Record<string, { archetype: string; description: string; traits: string[]; advice: string }> = {
+  const ARCHETYPES: Record<
+    string,
+    { archetype: string; description: string; traits: string[]; advice: string }
+  > = {
     Food: {
       archetype: 'The Urban Foodie',
       description: `You live to eat — ${topPct}% of your spending goes toward food and dining.`,
@@ -105,10 +116,12 @@ export async function getSpendingPersonality(transactions: Transaction[]): Promi
     },
   };
 
-  return ARCHETYPES[topCat] ?? {
-    archetype: 'The Strategic Minimalist',
-    description: 'Your spending is balanced and diversified across categories.',
-    traits: ['Disciplined', 'Balanced', 'Thoughtful'],
-    advice: 'Your balanced approach is great. Focus on growing your income streams next.',
-  };
+  return (
+    ARCHETYPES[topCat] ?? {
+      archetype: 'The Strategic Minimalist',
+      description: 'Your spending is balanced and diversified across categories.',
+      traits: ['Disciplined', 'Balanced', 'Thoughtful'],
+      advice: 'Your balanced approach is great. Focus on growing your income streams next.',
+    }
+  );
 }

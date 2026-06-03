@@ -27,11 +27,28 @@ function SnapCard({ label, value, sub, accent, icon, onClick }: SnapCardProps) {
     >
       <div className="flex items-center gap-1.5 mb-0.5">
         <span style={{ color: accent, lineHeight: 1 }}>{icon}</span>
-        <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', fontFamily: 'var(--font-inter)' }}>
+        <span
+          style={{
+            fontSize: '9px',
+            fontWeight: 700,
+            color: 'var(--text-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.06em',
+            fontFamily: 'var(--font-inter)',
+          }}
+        >
           {label}
         </span>
       </div>
-      <p style={{ fontSize: '17px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)', lineHeight: 1 }}>
+      <p
+        style={{
+          fontSize: '17px',
+          fontWeight: 700,
+          color: 'var(--text-primary)',
+          fontFamily: 'var(--font-manrope)',
+          lineHeight: 1,
+        }}
+      >
         {value}
       </p>
       <p style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
@@ -71,10 +88,17 @@ export function SnapCardRow({
         <SnapCard
           label="Budget"
           value={`${Math.round(overallBudgetPercent)}%`}
-          sub={totalBudgeted > 0 ? `of ${currency}${totalBudgeted.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : 'not set'}
+          sub={
+            totalBudgeted > 0
+              ? `of ${currency}${totalBudgeted.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+              : 'not set'
+          }
           accent="#f59e0b"
           icon={<Target size={12} />}
-          onClick={() => { haptic.light(); onNavigate('budget'); }}
+          onClick={() => {
+            haptic.light();
+            onNavigate('budget');
+          }}
         />
         <SnapCard
           label="Goals"
@@ -82,7 +106,10 @@ export function SnapCardRow({
           sub={goalsCount === 1 ? 'active goal' : 'active goals'}
           accent="#8b5cf6"
           icon={<Sparkles size={12} />}
-          onClick={() => { haptic.light(); onNavigate('goals'); }}
+          onClick={() => {
+            haptic.light();
+            onNavigate('goals');
+          }}
         />
         <SnapCard
           label="Savings"
@@ -90,15 +117,25 @@ export function SnapCardRow({
           sub="rate this month"
           accent={savingsRate >= 20 ? '#10b981' : savingsRate >= 10 ? '#f59e0b' : '#ef4444'}
           icon={<TrendingUp size={12} />}
-          onClick={() => { haptic.light(); onNavigate('analytics'); }}
+          onClick={() => {
+            haptic.light();
+            onNavigate('analytics');
+          }}
         />
         <SnapCard
           label="Subs"
-          value={subSpend > 0 ? `${currency}${subSpend.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : '—'}
+          value={
+            subSpend > 0
+              ? `${currency}${subSpend.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+              : '—'
+          }
           sub="this month"
           accent="#06b6d4"
           icon={<RefreshCw size={12} />}
-          onClick={() => { haptic.light(); onNavigate('subscriptions'); }}
+          onClick={() => {
+            haptic.light();
+            onNavigate('subscriptions');
+          }}
         />
       </div>
     </section>

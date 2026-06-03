@@ -45,7 +45,11 @@ interface OnboardingModalProps {
   preferredPhone?: string;
 }
 
-export default function OnboardingModal({ onComplete, preferredName, preferredPhone }: OnboardingModalProps) {
+export default function OnboardingModal({
+  onComplete,
+  preferredName,
+  preferredPhone,
+}: OnboardingModalProps) {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [currency, setCurrency] = useState<CurrencySymbol>('₹'); // Default to ₹ as per user audio
   const [rawValue, setRawValue] = useState('');
@@ -132,7 +136,12 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
           inputRef={inputRef}
         />
 
-        <OnboardingStep2 step={step} userRole={userRole} setUserRole={setUserRole} setStep={setStep} />
+        <OnboardingStep2
+          step={step}
+          userRole={userRole}
+          setUserRole={setUserRole}
+          setStep={setStep}
+        />
 
         <OnboardingStep3
           step={step}

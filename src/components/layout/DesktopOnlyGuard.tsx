@@ -35,7 +35,8 @@ export function DesktopOnlyGuard({ viewLabel, onNavigate, children }: DesktopOnl
       <div
         className="flex items-center justify-center w-20 h-20 rounded-3xl mb-6"
         style={{
-          background: 'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(13,148,136,0.1) 100%)',
+          background:
+            'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(13,148,136,0.1) 100%)',
           border: '1.5px solid rgba(20,184,166,0.25)',
         }}
       >
@@ -66,9 +67,9 @@ export function DesktopOnlyGuard({ viewLabel, onNavigate, children }: DesktopOnl
           marginBottom: '28px',
         }}
       >
-        <strong style={{ color: 'var(--text-secondary)' }}>{viewLabel}</strong> contains
-        detailed charts and tables that need a bigger screen to shine.
-        Open SpendWise on your laptop or PC for the full experience.
+        <strong style={{ color: 'var(--text-secondary)' }}>{viewLabel}</strong> contains detailed
+        charts and tables that need a bigger screen to shine. Open SpendWise on your laptop or PC
+        for the full experience.
       </p>
 
       {/* CTA */}

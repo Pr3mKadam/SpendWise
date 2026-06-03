@@ -1,14 +1,14 @@
 import Dexie, { Table } from 'dexie';
-import { 
-  Transaction, 
-  CustomCategoryDef, 
-  Budget, 
-  SavingsGoal, 
+import {
+  Transaction,
+  CustomCategoryDef,
+  Budget,
+  SavingsGoal,
   SharedWalletEntry,
   SharedExpense,
   HouseholdSettings,
   AssetEntry,
-  LiabilityEntry
+  LiabilityEntry,
 } from '@/types';
 
 export interface AppConfig {
@@ -29,13 +29,13 @@ export class SpendWiseDatabase extends Dexie {
   assets!: Table<AssetEntry, string>;
   liabilities!: Table<LiabilityEntry, string>;
   config!: Table<AppConfig, string>;
-  keyval!: Table<{ key: string, value: string }, string>;
+  keyval!: Table<{ key: string; value: string }, string>;
 
   constructor() {
     super('SpendWiseDatabase');
-    
+
     // Define tables and indexes
-    // Note: only index fields you want to query by. 
+    // Note: only index fields you want to query by.
     // '&id' means it's a primary key and unique.
     this.version(1).stores({
       transactions: 'id, date, category, type, isRecurring',
@@ -48,7 +48,7 @@ export class SpendWiseDatabase extends Dexie {
       assets: 'id, type',
       liabilities: 'id, type',
       config: 'id',
-      keyval: 'key'
+      keyval: 'key',
     });
   }
 }

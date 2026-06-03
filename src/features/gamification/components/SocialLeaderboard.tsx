@@ -5,11 +5,19 @@ import { useStore } from '@/store';
 
 // Mock leaderboard data (in a real app this would come from a backend)
 const MOCK_FRIENDS = [
-  { name: 'Aditya K.', avatar: '🧑‍💻', level: 12, xp: 12340, streak: 21, savingsRate: 34, badge: '🏆' },
-  { name: 'Priya M.',  avatar: '👩‍🎨', level: 9,  xp: 9100,  streak: 14, savingsRate: 28, badge: '🥈' },
-  { name: 'Rahul S.',  avatar: '👨‍🔬', level: 7,  xp: 7200,  streak: 7,  savingsRate: 22, badge: '🥉' },
-  { name: 'Sneha T.',  avatar: '👩‍🏫', level: 5,  xp: 5050,  streak: 3,  savingsRate: 18, badge: '⭐' },
-  { name: 'Karan P.',  avatar: '🧑‍🚀', level: 4,  xp: 4300,  streak: 0,  savingsRate: 12, badge: '🔸' },
+  {
+    name: 'Aditya K.',
+    avatar: '🧑‍💻',
+    level: 12,
+    xp: 12340,
+    streak: 21,
+    savingsRate: 34,
+    badge: '🏆',
+  },
+  { name: 'Priya M.', avatar: '👩‍🎨', level: 9, xp: 9100, streak: 14, savingsRate: 28, badge: '🥈' },
+  { name: 'Rahul S.', avatar: '👨‍🔬', level: 7, xp: 7200, streak: 7, savingsRate: 22, badge: '🥉' },
+  { name: 'Sneha T.', avatar: '👩‍🏫', level: 5, xp: 5050, streak: 3, savingsRate: 18, badge: '⭐' },
+  { name: 'Karan P.', avatar: '🧑‍🚀', level: 4, xp: 4300, streak: 0, savingsRate: 12, badge: '🔸' },
 ];
 
 type SortKey = 'xp' | 'level' | 'streak' | 'savingsRate';
@@ -17,11 +25,19 @@ type SortKey = 'xp' | 'level' | 'streak' | 'savingsRate';
 export function SocialLeaderboard() {
   const [sortKey, setSortKey] = React.useState<SortKey>('xp');
   const userLevel = useStore(s => s.level);
-  const userXP    = useStore(s => s.totalXP);
-  const userRank  = useStore(s => s.rank);
+  const userXP = useStore(s => s.totalXP);
+  const userRank = useStore(s => s.rank);
   const userStreak = useStore(s => s.streak);
 
-  const you = { name: 'You', avatar: '😊', level: userLevel, xp: userXP, streak: userStreak, savingsRate: 20, badge: '✨' };
+  const you = {
+    name: 'You',
+    avatar: '😊',
+    level: userLevel,
+    xp: userXP,
+    streak: userStreak,
+    savingsRate: 20,
+    badge: '✨',
+  };
 
   const allEntries = useMemo(() => {
     const combined = [...MOCK_FRIENDS, you];
@@ -31,10 +47,10 @@ export function SocialLeaderboard() {
   const youRank = allEntries.findIndex(e => e.name === 'You') + 1;
 
   const tabs: { key: SortKey; label: string; icon: React.ElementType }[] = [
-    { key: 'xp',         label: 'XP',      icon: Zap },
-    { key: 'level',      label: 'Level',   icon: Star },
-    { key: 'streak',     label: 'Streak',  icon: TrendingUp },
-    { key: 'savingsRate',label: 'Savings', icon: Trophy },
+    { key: 'xp', label: 'XP', icon: Zap },
+    { key: 'level', label: 'Level', icon: Star },
+    { key: 'streak', label: 'Streak', icon: TrendingUp },
+    { key: 'savingsRate', label: 'Savings', icon: Trophy },
   ];
 
   const medalColors = ['#f59e0b', '#94a3b8', '#cd7f32'];
@@ -47,7 +63,9 @@ export function SocialLeaderboard() {
             <Trophy size={18} className="text-amber-500" />
           </div>
           <div>
-            <h3 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Social Leaderboard</h3>
+            <h3 className="font-manrope font-bold text-sm text-[var(--text-primary)]">
+              Social Leaderboard
+            </h3>
             <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter mt-0.5">
               You're ranked #{youRank} of {allEntries.length}
             </p>
@@ -93,35 +111,51 @@ export function SocialLeaderboard() {
               {/* Rank */}
               <div className="w-6 shrink-0 text-center">
                 {rank <= 3 ? (
-                  <span style={{ fontSize: 16 }}>{['🥇','🥈','🥉'][rank-1]}</span>
+                  <span style={{ fontSize: 16 }}>{['🥇', '🥈', '🥉'][rank - 1]}</span>
                 ) : (
                   <span className="text-xs font-bold text-[var(--text-muted)]">#{rank}</span>
                 )}
               </div>
 
               {/* Avatar */}
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-lg ${isYou ? 'bg-[var(--teal)]/20' : 'bg-[var(--surface-card)]'}`}>
+              <div
+                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 text-lg ${isYou ? 'bg-[var(--teal)]/20' : 'bg-[var(--surface-card)]'}`}
+              >
                 {entry.avatar}
               </div>
 
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <p className={`text-xs font-bold truncate ${isYou ? 'text-[var(--teal)]' : 'text-[var(--text-primary)]'}`}>
+                  <p
+                    className={`text-xs font-bold truncate ${isYou ? 'text-[var(--teal)]' : 'text-[var(--text-primary)]'}`}
+                  >
                     {entry.name}
                   </p>
-                  {isYou && <span className="text-[8px] font-bold bg-[var(--teal)] text-white px-1.5 py-0.5 rounded-full">YOU</span>}
+                  {isYou && (
+                    <span className="text-[8px] font-bold bg-[var(--teal)] text-white px-1.5 py-0.5 rounded-full">
+                      YOU
+                    </span>
+                  )}
                 </div>
-                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">Lvl {entry.level} · {entry.streak}d streak</p>
+                <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">
+                  Lvl {entry.level} · {entry.streak}d streak
+                </p>
               </div>
 
               {/* Sort value */}
               <div className="text-right shrink-0">
-                <p className="font-manrope font-bold text-sm tabular-nums" style={{ color: isYou ? 'var(--teal)' : 'var(--text-primary)' }}>
-                  {sortKey === 'xp'          ? `${entry.xp.toLocaleString()} XP`
-                  : sortKey === 'level'      ? `L${entry.level}`
-                  : sortKey === 'streak'     ? `${entry.streak}d`
-                  : `${entry.savingsRate}%`}
+                <p
+                  className="font-manrope font-bold text-sm tabular-nums"
+                  style={{ color: isYou ? 'var(--teal)' : 'var(--text-primary)' }}
+                >
+                  {sortKey === 'xp'
+                    ? `${entry.xp.toLocaleString()} XP`
+                    : sortKey === 'level'
+                      ? `L${entry.level}`
+                      : sortKey === 'streak'
+                        ? `${entry.streak}d`
+                        : `${entry.savingsRate}%`}
                 </p>
               </div>
             </motion.div>

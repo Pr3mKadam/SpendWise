@@ -1,8 +1,20 @@
 import React from 'react';
-import { 
-  User, ShieldCheck, DownloadCloud, CheckCircle2, Camera, 
-  ChevronRight, Globe, Bell, Smartphone, Database, Lock, 
-  Smartphone as PhoneIcon, MapPin, Briefcase, CreditCard
+import {
+  User,
+  ShieldCheck,
+  DownloadCloud,
+  CheckCircle2,
+  Camera,
+  ChevronRight,
+  Globe,
+  Bell,
+  Smartphone,
+  Database,
+  Lock,
+  Smartphone as PhoneIcon,
+  MapPin,
+  Briefcase,
+  CreditCard,
 } from 'lucide-react';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { haptic } from '@/core/haptic';
@@ -49,7 +61,7 @@ export default function ProfileViewMobile({
   dataManagement,
   accessibility,
   notifications,
-  transactionsCount
+  transactionsCount,
 }: ProfileViewMobileProps) {
   return (
     <div className="view-enter space-y-6 pb-20">
@@ -63,8 +75,11 @@ export default function ProfileViewMobile({
               <User size={40} className="text-[var(--teal)]" />
             )}
           </div>
-          <button 
-            onClick={() => { haptic.medium(); onAvatarClick(); }}
+          <button
+            onClick={() => {
+              haptic.medium();
+              onAvatarClick();
+            }}
             className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[var(--teal)] text-white border-2 border-[var(--surface-card)] flex items-center justify-center shadow-lg active:scale-90 transition-transform"
           >
             <Camera size={14} />
@@ -82,11 +97,18 @@ export default function ProfileViewMobile({
       {/* 2. Quick Stats Grid */}
       <div className="grid grid-cols-2 gap-3 px-1">
         <div className="bg-[var(--surface-card)] p-4 rounded-3xl border border-[var(--border)] shadow-sm">
-          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">Target</p>
-          <p className="text-sm font-bold text-[var(--text-primary)]">{currency}{monthlyGoal || '0'}</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">
+            Target
+          </p>
+          <p className="text-sm font-bold text-[var(--text-primary)]">
+            {currency}
+            {monthlyGoal || '0'}
+          </p>
         </div>
         <div className="bg-[var(--surface-card)] p-4 rounded-3xl border border-[var(--border)] shadow-sm">
-          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">Logged</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">
+            Logged
+          </p>
           <p className="text-sm font-bold text-[var(--teal)]">{transactionsCount} Tx</p>
         </div>
       </div>
@@ -129,8 +151,11 @@ export default function ProfileViewMobile({
             <ShieldCheck size={12} /> Security & Family
           </div>
           <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-4 shadow-sm">
-            <button 
-              onClick={() => { haptic.light(); onNavigate('parental'); }}
+            <button
+              onClick={() => {
+                haptic.light();
+                onNavigate('parental');
+              }}
               className="w-full flex items-center justify-between p-3 rounded-2xl bg-[var(--surface-input)] active:bg-[var(--surface-card)] transition-colors"
             >
               <div className="flex items-center gap-4">
@@ -139,7 +164,9 @@ export default function ProfileViewMobile({
                 </div>
                 <div className="text-left">
                   <p className="text-xs font-bold text-[var(--text-primary)]">Parental Controls</p>
-                  <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">PIN Lock & Spend Limits</p>
+                  <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">
+                    PIN Lock & Spend Limits
+                  </p>
                 </div>
               </div>
               <ChevronRight size={18} className="text-[var(--text-muted)]" />
@@ -170,21 +197,28 @@ export default function ProfileViewMobile({
 
       {/* 4. App Info & Install */}
       <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-5 text-center shadow-sm">
-        <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">SpendWise PWA</p>
-        <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] leading-relaxed mb-6">
-          Your data is encrypted and stored locally on this device.<br/>We never upload your transactions to any server.
+        <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">
+          SpendWise PWA
         </p>
-        
+        <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] leading-relaxed mb-6">
+          Your data is encrypted and stored locally on this device.
+          <br />
+          We never upload your transactions to any server.
+        </p>
+
         {!isAppInstalled && (isInstallable || isIOS) && (
-          <button 
-            onClick={() => { haptic.heavy(); triggerInstall(); }}
+          <button
+            onClick={() => {
+              haptic.heavy();
+              triggerInstall();
+            }}
             className="w-full h-14 bg-[var(--teal)] text-white rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
           >
             <DownloadCloud size={20} />
             Install App
           </button>
         )}
-        
+
         {isAppInstalled && (
           <div className="flex items-center justify-center gap-2 text-[var(--teal)]">
             <CheckCircle2 size={18} />

@@ -1,10 +1,10 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "@/app/App";
-import { AuthProvider } from "@/hooks/useAuth";
-import { CategoryProvider } from "@/hooks/useCategories";
-import { CurrencyProvider } from "@/contexts/CurrencyContext";
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+import App from '@/app/App';
+import { AuthProvider } from '@/hooks/useAuth';
+import { CategoryProvider } from '@/hooks/useCategories';
+import { CurrencyProvider } from '@/contexts/CurrencyContext';
 
 import { registerSW } from 'virtual:pwa-register';
 import { runDexieMigration } from '@/db/migration';
@@ -19,7 +19,7 @@ runDexieMigration().catch(err =>
 
 // Preferences are now restored via the encrypted Zustand store inside App.tsx
 
-createRoot(document.getElementById("root")!).render(
+createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <CurrencyProvider>

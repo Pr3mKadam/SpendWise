@@ -57,10 +57,10 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
           />
 
           <motion.div
-            initial={{ y: "100%", opacity: 0 }}
+            initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            exit={{ y: "100%", opacity: 0 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="relative w-full max-w-lg bg-[var(--card-bg)] border border-white/10 rounded-t-[2rem] sm:rounded-[2rem] shadow-2xl overflow-hidden"
           >
             {isSuccess ? (
@@ -73,14 +73,18 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                   <Star size={40} fill="currentColor" />
                 </motion.div>
                 <h2 className="text-2xl font-bold text-white mb-2">Thank You!</h2>
-                <p className="text-white/60">Your feedback helps us make SpendWise better for everyone.</p>
+                <p className="text-white/60">
+                  Your feedback helps us make SpendWise better for everyone.
+                </p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="p-6">
                 <div className="flex items-center justify-between mb-8">
                   <div>
                     <h2 className="text-2xl font-bold text-white">Share your thoughts</h2>
-                    <p className="text-white/50 text-sm">Detected a shake! Something on your mind?</p>
+                    <p className="text-white/50 text-sm">
+                      Detected a shake! Something on your mind?
+                    </p>
                   </div>
                   <button
                     type="button"
@@ -92,7 +96,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mb-8">
-                  {types.map((t) => (
+                  {types.map(t => (
                     <button
                       key={t.id}
                       type="button"
@@ -101,21 +105,25 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                         haptic.light();
                       }}
                       className={`flex flex-col items-center p-4 rounded-2xl border-2 transition-all ${
-                        type === t.id 
-                          ? 'border-[var(--teal)] bg-[var(--teal)]/10 text-[var(--teal)]' 
+                        type === t.id
+                          ? 'border-[var(--teal)] bg-[var(--teal)]/10 text-[var(--teal)]'
                           : 'border-white/5 bg-white/5 text-white/40'
                       }`}
                     >
                       <t.icon size={24} className="mb-2" />
-                      <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">{t.label}</span>
+                      <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">
+                        {t.label}
+                      </span>
                     </button>
                   ))}
                 </div>
 
                 <div className="mb-8">
-                  <label className="block text-xs font-bold text-white/40 uppercase tracking-widest mb-3">Rating</label>
+                  <label className="block text-xs font-bold text-white/40 uppercase tracking-widest mb-3">
+                    Rating
+                  </label>
                   <div className="flex items-center gap-2 justify-center py-4 bg-white/5 rounded-2xl">
-                    {[1, 2, 3, 4, 5].map((s) => (
+                    {[1, 2, 3, 4, 5].map(s => (
                       <button
                         key={s}
                         type="button"
@@ -132,10 +140,12 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                 </div>
 
                 <div className="mb-8">
-                  <label className="block text-xs font-bold text-white/40 uppercase tracking-widest mb-3">Your Message</label>
+                  <label className="block text-xs font-bold text-white/40 uppercase tracking-widest mb-3">
+                    Your Message
+                  </label>
                   <textarea
                     value={message}
-                    onChange={(e) => setMessage(e.target.value)}
+                    onChange={e => setMessage(e.target.value)}
                     placeholder="Tell us more..."
                     rows={4}
                     className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[var(--teal)]/50 transition-all resize-none"
@@ -150,7 +160,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                   {isSubmitting ? (
                     <motion.div
                       animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                       className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                     />
                   ) : (

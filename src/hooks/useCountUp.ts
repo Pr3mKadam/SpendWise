@@ -10,18 +10,18 @@ import { useEffect, useRef, useState } from 'react';
  */
 export function useCountUp(target: number, duration = 600): number {
   const [display, setDisplay] = useState(target);
-  const prevRef   = useRef(target);
-  const rafRef    = useRef<number | null>(null);
-  const startRef  = useRef<number | null>(null);
+  const prevRef = useRef(target);
+  const rafRef = useRef<number | null>(null);
+  const startRef = useRef<number | null>(null);
 
   useEffect(() => {
     const from = prevRef.current;
-    const to   = target;
+    const to = target;
 
     // Cancel any in-progress animation
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
-      rafRef.current  = null;
+      rafRef.current = null;
       startRef.current = null;
     }
 
@@ -30,7 +30,7 @@ export function useCountUp(target: number, duration = 600): number {
 
     function step(timestamp: number) {
       if (startRef.current === null) startRef.current = timestamp;
-      const elapsed  = timestamp - startRef.current;
+      const elapsed = timestamp - startRef.current;
       const progress = Math.min(elapsed / duration, 1);
 
       // Ease-out cubic: decelerates as it approaches target
@@ -44,7 +44,7 @@ export function useCountUp(target: number, duration = 600): number {
       } else {
         setDisplay(to);
         prevRef.current = to;
-        rafRef.current  = null;
+        rafRef.current = null;
         startRef.current = null;
       }
     }

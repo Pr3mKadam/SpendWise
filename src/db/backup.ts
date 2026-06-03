@@ -45,7 +45,7 @@ export const importDatabase = async (file: File) => {
     await db.delete(); // Delete current DB
     await db.open(); // Re-open fresh DB
     await importDB(file);
-    
+
     // After importing Dexie tables, we need to refresh the Zustand store
     // Since Zustand's persist reads from db.keyval on init, we can force a reload
     window.location.reload();

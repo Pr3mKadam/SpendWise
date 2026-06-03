@@ -59,29 +59,29 @@ export type AppView =
   | 'subscriptions';
 
 export interface VoiceEntities {
-  category?: string;       // "food", "transport", "fuel"
-  amount?: number;         // 1200, 200000
-  targetAmount?: number;   // for goal deposits, liability payments
+  category?: string; // "food", "transport", "fuel"
+  amount?: number; // 1200, 200000
+  targetAmount?: number; // for goal deposits, liability payments
   previousAmount?: number; // for "from X to Y" patterns
-  name?: string;           // merchant, liability name, goal name
-  period?: string;         // "yesterday", "today", "this month"
-  ticker?: string;         // investment name / symbol
-  view?: AppView;          // for navigation commands
+  name?: string; // merchant, liability name, goal name
+  period?: string; // "yesterday", "today", "this month"
+  ticker?: string; // investment name / symbol
+  view?: AppView; // for navigation commands
   frequency?: 'daily' | 'weekly' | 'monthly' | 'annual';
   type?: 'debit' | 'credit';
   items?: Array<{ amount?: number; category?: string; name?: string }>; // for batching
-  settingKey?: string;     // "dark mode", "privacy", "currency"
-  settingValue?: string;   // "on", "off", "usd", "inr"
-  searchQuery?: string;    // "rent", "starbucks"
-  actionType?: string;     // "start", "check", "claim"
+  settingKey?: string; // "dark mode", "privacy", "currency"
+  settingValue?: string; // "on", "off", "usd", "inr"
+  searchQuery?: string; // "rent", "starbucks"
+  actionType?: string; // "start", "check", "claim"
 }
 
 export interface VoiceCommand {
   intent: VoiceIntent;
   entities: VoiceEntities;
-  confidence: number;      // 0–1
+  confidence: number; // 0–1
   rawTranscript: string;
-  summary: string;         // human-readable description of action
+  summary: string; // human-readable description of action
 }
 
 export interface CommandResult {

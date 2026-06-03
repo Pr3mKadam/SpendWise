@@ -14,7 +14,7 @@ export const ParentalSettingsCard: React.FC<ParentalSettingsCardProps> = ({
   settings,
   updateSettings,
   lockSession,
-  removePin
+  removePin,
 }) => {
   return (
     <div className="card shadow-xl border border-[var(--border-color)] overflow-hidden">
@@ -25,7 +25,9 @@ export const ParentalSettingsCard: React.FC<ParentalSettingsCardProps> = ({
               <Shield className="w-5 h-5 text-purple-500" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-[var(--text-primary)] font-manrope">Security & Limits</h3>
+              <h3 className="text-lg font-bold text-[var(--text-primary)] font-manrope">
+                Security & Limits
+              </h3>
               <p className="text-[var(--text-muted)] text-xs">Configure control strictness</p>
             </div>
           </div>
@@ -47,14 +49,17 @@ export const ParentalSettingsCard: React.FC<ParentalSettingsCardProps> = ({
             <div className="space-y-3">
               {[
                 { key: 'notifyOnAllSpending', label: 'All Spending' },
-                { key: 'notifyOnLowBalance', label: 'Low Balance' }
+                { key: 'notifyOnLowBalance', label: 'Low Balance' },
               ].map(item => (
-                <label key={item.key} className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--background-primary)] transition-colors cursor-pointer">
+                <label
+                  key={item.key}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--background-primary)] transition-colors cursor-pointer"
+                >
                   <span className="text-sm text-[var(--text-muted)] font-medium">{item.label}</span>
                   <input
                     type="checkbox"
                     checked={Boolean(settings[item.key as keyof ParentalControlState])}
-                    onChange={(e) => updateSettings({ [item.key]: e.target.checked })}
+                    onChange={e => updateSettings({ [item.key]: e.target.checked })}
                     className="w-4 h-4 rounded border-[var(--border-color)] text-[var(--teal)] focus:ring-[var(--teal)]"
                   />
                 </label>
@@ -69,14 +74,17 @@ export const ParentalSettingsCard: React.FC<ParentalSettingsCardProps> = ({
             <div className="space-y-3">
               {[
                 { key: 'blockAdultContent', label: 'Block Adult Merchants' },
-                { key: 'restrictLateNightSpending', label: 'Curfew Mode' }
+                { key: 'restrictLateNightSpending', label: 'Curfew Mode' },
               ].map(item => (
-                <label key={item.key} className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--background-primary)] transition-colors cursor-pointer">
+                <label
+                  key={item.key}
+                  className="flex items-center justify-between p-3 rounded-xl hover:bg-[var(--background-primary)] transition-colors cursor-pointer"
+                >
                   <span className="text-sm text-[var(--text-muted)] font-medium">{item.label}</span>
                   <input
                     type="checkbox"
                     checked={Boolean(settings[item.key as keyof ParentalControlState])}
-                    onChange={(e) => updateSettings({ [item.key]: e.target.checked })}
+                    onChange={e => updateSettings({ [item.key]: e.target.checked })}
                     className="w-4 h-4 rounded border-[var(--border-color)] text-[var(--teal)] focus:ring-[var(--teal)]"
                   />
                 </label>

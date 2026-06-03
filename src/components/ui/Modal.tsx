@@ -69,7 +69,7 @@ export function Modal({
 
       const focusables = Array.from(
         container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)
-      ).filter((el) => !el.closest('[hidden]'));
+      ).filter(el => !el.closest('[hidden]'));
 
       if (focusables.length === 0) return;
 

@@ -5,7 +5,8 @@ interface BudgetAlertToastProps {
   currency?: string;
 }
 
-const ALERT_KEY = (cat: string, level: '80' | '100') => `spendwise_budget_alert_${cat}_${level}_${new Date().toISOString().substring(0, 7)}`;
+const ALERT_KEY = (cat: string, level: '80' | '100') =>
+  `spendwise_budget_alert_${cat}_${level}_${new Date().toISOString().substring(0, 7)}`;
 
 let toastContainer: HTMLDivElement | null = null;
 
@@ -75,11 +76,12 @@ if (!document.getElementById('budget-toast-keyframe')) {
 }
 
 function escapeHtml(str: string): string {
-  return str.replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
@@ -88,7 +90,7 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
 
   useEffect(() => {
     budgetStats.forEach(stat => {
-      const key80  = ALERT_KEY(stat.category, '80');
+      const key80 = ALERT_KEY(stat.category, '80');
       const key100 = ALERT_KEY(stat.category, '100');
 
       const safeCategory = escapeHtml(stat.category);
@@ -101,7 +103,9 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
         try {
           if (sessionStorage.getItem(key100)) return;
           sessionStorage.setItem(key100, 'true');
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         firedRef.current.add(key100);
         showToast(
           `🚨 <strong>${safeCategory}</strong> budget exceeded! You've spent ${currency}${safeSpent} of ${currency}${safeLimit}.`,
@@ -112,7 +116,9 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
         try {
           if (sessionStorage.getItem(key80)) return;
           sessionStorage.setItem(key80, 'true');
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         firedRef.current.add(key80);
         showToast(
           `⚠️ <strong>${safeCategory}</strong> at ${safePercent}% of budget — ${currency}${safeRemaining} remaining.`,

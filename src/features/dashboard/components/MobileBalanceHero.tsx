@@ -29,7 +29,16 @@ export function MobileBalanceHero({
       >
         {/* Top row: label + trend */}
         <div className="flex items-center justify-between mb-2">
-          <p style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+          <p
+            style={{
+              fontSize: '10px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-inter)',
+            }}
+          >
             Total Balance
           </p>
           <div
@@ -39,11 +48,19 @@ export function MobileBalanceHero({
               border: `1px solid ${trendUp ? 'rgba(16,185,129,0.25)' : 'rgba(239,68,68,0.25)'}`,
             }}
           >
-            {trendUp
-              ? <TrendingUp size={11} style={{ color: '#10b981' }} />
-              : <TrendingDown size={11} style={{ color: '#ef4444' }} />
-            }
-            <span style={{ fontSize: '10px', fontWeight: 700, color: trendUp ? '#10b981' : '#ef4444', fontFamily: 'var(--font-inter)' }}>
+            {trendUp ? (
+              <TrendingUp size={11} style={{ color: '#10b981' }} />
+            ) : (
+              <TrendingDown size={11} style={{ color: '#ef4444' }} />
+            )}
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 700,
+                color: trendUp ? '#10b981' : '#ef4444',
+                fontFamily: 'var(--font-inter)',
+              }}
+            >
               {trendUp ? 'On track' : 'Over spend'}
             </span>
           </div>
@@ -61,24 +78,48 @@ export function MobileBalanceHero({
             marginBottom: '16px',
           }}
         >
-          {hideBalances
-            ? <span style={{ letterSpacing: '4px' }}>••••••</span>
-            : `${currency}${currentBalance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
-          }
+          {hideBalances ? (
+            <span style={{ letterSpacing: '4px' }}>••••••</span>
+          ) : (
+            `${currency}${currentBalance.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+          )}
         </h2>
 
         {/* Income / Spent chips */}
         <div className="grid grid-cols-2 gap-3">
           <div
             className="rounded-2xl p-3"
-            style={{ background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)' }}
+            style={{
+              background: 'rgba(16,185,129,0.08)',
+              border: '1px solid rgba(16,185,129,0.15)',
+            }}
           >
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingUp size={11} style={{ color: '#10b981' }} />
-              <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: 'var(--font-inter)' }}>Income</span>
+              <span
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.07em',
+                  fontFamily: 'var(--font-inter)',
+                }}
+              >
+                Income
+              </span>
             </div>
-            <p style={{ fontSize: '15px', fontWeight: 700, color: hideBalances ? 'var(--text-muted)' : '#10b981', fontFamily: 'var(--font-manrope)' }}>
-              {hideBalances ? '•••' : `${currency}${monthlyIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+            <p
+              style={{
+                fontSize: '15px',
+                fontWeight: 700,
+                color: hideBalances ? 'var(--text-muted)' : '#10b981',
+                fontFamily: 'var(--font-manrope)',
+              }}
+            >
+              {hideBalances
+                ? '•••'
+                : `${currency}${monthlyIncome.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
             </p>
           </div>
           <div
@@ -87,10 +128,30 @@ export function MobileBalanceHero({
           >
             <div className="flex items-center gap-1.5 mb-1">
               <TrendingDown size={11} style={{ color: '#ef4444' }} />
-              <span style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.07em', fontFamily: 'var(--font-inter)' }}>Spent</span>
+              <span
+                style={{
+                  fontSize: '9px',
+                  fontWeight: 700,
+                  color: 'var(--text-muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.07em',
+                  fontFamily: 'var(--font-inter)',
+                }}
+              >
+                Spent
+              </span>
             </div>
-            <p style={{ fontSize: '15px', fontWeight: 700, color: hideBalances ? 'var(--text-muted)' : '#ef4444', fontFamily: 'var(--font-manrope)' }}>
-              {hideBalances ? '•••' : `${currency}${monthlyExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
+            <p
+              style={{
+                fontSize: '15px',
+                fontWeight: 700,
+                color: hideBalances ? 'var(--text-muted)' : '#ef4444',
+                fontFamily: 'var(--font-manrope)',
+              }}
+            >
+              {hideBalances
+                ? '•••'
+                : `${currency}${monthlyExpenses.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`}
             </p>
           </div>
         </div>

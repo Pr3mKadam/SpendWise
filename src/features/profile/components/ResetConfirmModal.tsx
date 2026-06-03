@@ -13,9 +13,12 @@ export function ResetConfirmModal({ onClose, onConfirm }: ResetConfirmModalProps
         <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
           <Trash2 className="text-red-500 w-6 h-6" />
         </div>
-        <h3 className="font-manrope font-bold text-xl text-center text-[var(--text-primary)] mb-2">Delete all data?</h3>
+        <h3 className="font-manrope font-bold text-xl text-center text-[var(--text-primary)] mb-2">
+          Delete all data?
+        </h3>
         <p className="font-inter text-sm text-[var(--text-secondary)] text-center mb-8">
-          This action cannot be undone. All your transactions, budgets, goals, and history will be permanently wiped.
+          This action cannot be undone. All your transactions, budgets, goals, and history will be
+          permanently wiped.
         </p>
         <div className="flex gap-3">
           <button

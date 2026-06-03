@@ -10,10 +10,14 @@ interface AddSubscriptionModalProps {
   currency?: string;
 }
 
-export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }: AddSubscriptionModalProps) {
+export default function AddSubscriptionModal({
+  isOpen,
+  onClose,
+  currency = '$',
+}: AddSubscriptionModalProps) {
   const addRecurringTransaction = useStore(s => s.addRecurringTransaction);
   const { allCategories } = useCategories();
-  
+
   const [merchant, setMerchant] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState<Category>('Subscriptions');
@@ -43,7 +47,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
       isTrial,
       trialEndsAt: isTrial ? trialEndsAt : undefined,
     });
-    
+
     // Reset and close
     setMerchant('');
     setAmount('');
@@ -62,7 +66,10 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
             <Plus size={18} className="text-teal-500" />
             Add Subscription
           </h3>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400">
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-gray-400"
+          >
             <X size={18} />
           </button>
         </div>
@@ -75,7 +82,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
             <input
               type="text"
               value={merchant}
-              onChange={(e) => setMerchant(e.target.value)}
+              onChange={e => setMerchant(e.target.value)}
               placeholder="e.g. Netflix, Gym"
               className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
               required
@@ -92,7 +99,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
                 step="0.01"
                 min="0"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
+                onChange={e => setAmount(e.target.value)}
                 placeholder="0.00"
                 className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
                 required
@@ -105,7 +112,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
               </label>
               <select
                 value={frequency}
-                onChange={(e) => setFrequency(e.target.value as RecurringFrequency)}
+                onChange={e => setFrequency(e.target.value as RecurringFrequency)}
                 className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
               >
                 <option value="daily">Daily</option>
@@ -121,10 +128,13 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
               type="checkbox"
               id="isTrial"
               checked={isTrial}
-              onChange={(e) => setIsTrial(e.target.checked)}
+              onChange={e => setIsTrial(e.target.checked)}
               className="w-4 h-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
             />
-            <label htmlFor="isTrial" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            <label
+              htmlFor="isTrial"
+              className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               This is a free trial
             </label>
           </div>
@@ -137,7 +147,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
               <input
                 type="date"
                 value={trialEndsAt}
-                onChange={(e) => setTrialEndsAt(e.target.value)}
+                onChange={e => setTrialEndsAt(e.target.value)}
                 className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
                 required={isTrial}
               />
@@ -151,11 +161,13 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
               </label>
               <select
                 value={category as string}
-                onChange={(e) => setCategory(e.target.value as Category)}
+                onChange={e => setCategory(e.target.value as Category)}
                 className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
               >
                 {allCategories.map((cat: string) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
                 ))}
               </select>
             </div>
@@ -167,7 +179,7 @@ export default function AddSubscriptionModal({ isOpen, onClose, currency = '$' }
               <input
                 type="date"
                 value={nextOccurrence}
-                onChange={(e) => setNextOccurrence(e.target.value)}
+                onChange={e => setNextOccurrence(e.target.value)}
                 className="w-full bg-gray-50 dark:bg-[#222] border-none rounded-xl px-4 py-3 text-sm font-medium text-gray-900 dark:text-white focus:ring-2 focus:ring-teal-500/50"
                 required
               />

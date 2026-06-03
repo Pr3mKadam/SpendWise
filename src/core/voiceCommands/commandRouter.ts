@@ -83,7 +83,7 @@ export async function executeCommand(
   navigate: (view: AppView) => void,
   onExport: () => void,
   toggleTheme: () => void,
-  setSearchQuery?: (q: string) => void,
+  setSearchQuery?: (q: string) => void
 ): Promise<CommandResult> {
   const handler = intentMap[command.intent];
 

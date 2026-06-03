@@ -20,8 +20,8 @@ import { joinRoom, Room } from '@trystero-p2p/mqtt';
 
 export type SyncState = 'disconnected' | 'connecting' | 'connected';
 
-type DataCallback     = (data: any) => void;
-type StateCallback    = (state: SyncState, peers: number) => void;
+type DataCallback = (data: any) => void;
+type StateCallback = (state: SyncState, peers: number) => void;
 
 class SyncEngine {
   public localPeerId: string = '';
@@ -30,7 +30,7 @@ class SyncEngine {
   private peers = new Set<string>();
   private localChannel: BroadcastChannel | null = null;
 
-  private onDataCb:  DataCallback  | null = null;
+  private onDataCb: DataCallback | null = null;
   private onStateCb: StateCallback | null = null;
   private sendSyncData: ((data: any) => void) | null = null;
 
@@ -52,7 +52,7 @@ class SyncEngine {
       this.leaveChannel();
       return;
     }
-    
+
     if (groupId === this.currentGroupId && this.room) return;
 
     this.leaveChannel();
@@ -62,7 +62,7 @@ class SyncEngine {
     // ── Local Cross-Tab Sync via BroadcastChannel ──
     try {
       this.localChannel = new BroadcastChannel(`spendwise-local-sync-${groupId}`);
-      this.localChannel.onmessage = (event) => {
+      this.localChannel.onmessage = event => {
         // Skip messages sent from ourselves
         if (event.data?.senderId === this.localPeerId) return;
         if (this.onDataCb && event.data?.payload) {
@@ -77,31 +77,28 @@ class SyncEngine {
     try {
       // Use secure WebSockets on public brokers for discovery/signaling with fallback support
       this.room = joinRoom(
-        { 
+        {
           appId: 'spendwise-p2p-sync',
           relayConfig: {
-            urls: [
-              'wss://broker.hivemq.com:8884/mqtt',
-              'wss://broker.emqx.io:8084/mqtt'
-            ]
+            urls: ['wss://broker.hivemq.com:8884/mqtt', 'wss://broker.emqx.io:8084/mqtt'],
           },
           rtcConfig: {
             iceServers: [
               { urls: 'stun:stun.l.google.com:19302' },
               { urls: 'stun:stun1.l.google.com:19302' },
-              { urls: 'stun:stun2.l.google.com:19302' }
-            ]
-          }
+              { urls: 'stun:stun2.l.google.com:19302' },
+            ],
+          },
         },
         `shared-wallet-${groupId}`,
         {
-          onJoinError: (err) => {
+          onJoinError: err => {
             console.error('[SyncEngine] Failed to connect to signaling broker:', err);
             this.notifyState('disconnected');
-          }
+          },
         }
       );
-      
+
       const syncAction = this.room.makeAction('sw-sync');
       this.sendSyncData = syncAction.send;
 
@@ -118,7 +115,7 @@ class SyncEngine {
       syncAction.onMessage = (data: any, context: any) => {
         if (this.onDataCb) this.onDataCb(data);
       };
-      
+
       this.notifyState('connected');
     } catch (e) {
       console.error('[SyncEngine] Failed to initialize MQTT room:', e);
@@ -141,7 +138,7 @@ class SyncEngine {
       try {
         this.localChannel.postMessage({
           senderId: this.localPeerId,
-          payload: data
+          payload: data,
         });
       } catch (e) {
         console.warn('[SyncEngine] BroadcastChannel send failed:', e);

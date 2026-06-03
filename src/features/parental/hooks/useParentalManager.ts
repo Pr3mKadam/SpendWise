@@ -80,6 +80,6 @@ export function useParentalManager() {
     updateSettings,
     lockSession,
     removePin,
-    completeSetup
+    completeSetup,
   };
 }

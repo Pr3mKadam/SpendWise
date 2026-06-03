@@ -66,9 +66,15 @@ export function AIInputTools({
             opacity: isListening ? 0.5 : 1,
           }}
         >
-          {isScanning
-            ? <><Loader2 size={15} className="animate-spin" /> Scanning…</>
-            : <><Camera size={15} /> Snap Receipt</>}
+          {isScanning ? (
+            <>
+              <Loader2 size={15} className="animate-spin" /> Scanning…
+            </>
+          ) : (
+            <>
+              <Camera size={15} /> Snap Receipt
+            </>
+          )}
         </button>
 
         {/* ── Magic Mic ─────────────────────────────────────────────── */}
@@ -87,9 +93,15 @@ export function AIInputTools({
             cursor: isListening ? 'default' : 'pointer',
           }}
         >
-          {isListening
-            ? <><PulsingWave /></>
-            : <><Mic size={15} /> Magic Mic</>}
+          {isListening ? (
+            <>
+              <PulsingWave />
+            </>
+          ) : (
+            <>
+              <Mic size={15} /> Magic Mic
+            </>
+          )}
         </button>
       </div>
 

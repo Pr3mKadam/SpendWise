@@ -55,7 +55,7 @@ export async function decryptData(encryptedBase64: string, password: string): Pr
   const combined = new Uint8Array(
     atob(encryptedBase64)
       .split('')
-      .map((c) => c.charCodeAt(0))
+      .map(c => c.charCodeAt(0))
   );
 
   const salt = combined.slice(0, SALT_SIZE);

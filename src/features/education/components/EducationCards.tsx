@@ -1,5 +1,15 @@
 import React, { useState } from 'react';
-import { BookOpen, Target, Shield, Zap, ArrowRight, TrendingUp, Lightbulb, ChevronRight, ChevronLeft } from 'lucide-react';
+import {
+  BookOpen,
+  Target,
+  Shield,
+  Zap,
+  ArrowRight,
+  TrendingUp,
+  Lightbulb,
+  ChevronRight,
+  ChevronLeft,
+} from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface EducationTip {
@@ -16,7 +26,8 @@ const TIPS: EducationTip[] = [
     id: 'rule-72',
     title: 'The Rule of 72',
     summary: 'Estimate how long it takes to double your money.',
-    content: 'Divide 72 by your expected annual rate of return. For example, if you earn 7% interest, your money will double in about 10.3 years (72 / 7). It\'s a powerful mental model for understanding compound interest.',
+    content:
+      "Divide 72 by your expected annual rate of return. For example, if you earn 7% interest, your money will double in about 10.3 years (72 / 7). It's a powerful mental model for understanding compound interest.",
     icon: <TrendingUp size={20} />,
     color: 'var(--teal)',
   },
@@ -24,7 +35,8 @@ const TIPS: EducationTip[] = [
     id: 'emergency-fund',
     title: 'The 3-6 Month Rule',
     summary: 'The foundation of financial security.',
-    content: 'Always aim to keep 3 to 6 months of essential living expenses in a liquid, high-yield savings account. This "Emergency Fund" prevents you from going into debt when life happens.',
+    content:
+      'Always aim to keep 3 to 6 months of essential living expenses in a liquid, high-yield savings account. This "Emergency Fund" prevents you from going into debt when life happens.',
     icon: <Shield size={20} />,
     color: 'var(--blue)',
   },
@@ -32,15 +44,17 @@ const TIPS: EducationTip[] = [
     id: '50-30-20',
     title: 'The 50/30/20 Rule',
     summary: 'A simple framework for budgeting.',
-    content: 'Allocate 50% of your income to Needs (rent, food), 30% to Wants (entertainment, dining out), and 20% to Savings and Debt Repayment. It ensures balance without over-restricting your lifestyle.',
+    content:
+      'Allocate 50% of your income to Needs (rent, food), 30% to Wants (entertainment, dining out), and 20% to Savings and Debt Repayment. It ensures balance without over-restricting your lifestyle.',
     icon: <Target size={20} />,
     color: 'var(--purple)',
   },
   {
     id: 'lifestyle-creep',
     title: 'Defeat Lifestyle Creep',
-    summary: 'Why you don\'t feel richer after a raise.',
-    content: 'Lifestyle inflation occurs when your spending increases alongside your income. The secret? When you get a raise, automate 50% of it directly into savings before you even see it in your checking account.',
+    summary: "Why you don't feel richer after a raise.",
+    content:
+      'Lifestyle inflation occurs when your spending increases alongside your income. The secret? When you get a raise, automate 50% of it directly into savings before you even see it in your checking account.',
     icon: <Zap size={20} />,
     color: 'var(--amber)',
   },
@@ -52,8 +66,8 @@ export default function EducationCards() {
 
   const activeTip = TIPS[index];
 
-  const handleNext = () => setIndex((i) => (i + 1) % TIPS.length);
-  const handlePrev = () => setIndex((i) => (i - 1 + TIPS.length) % TIPS.length);
+  const handleNext = () => setIndex(i => (i + 1) % TIPS.length);
+  const handlePrev = () => setIndex(i => (i - 1 + TIPS.length) % TIPS.length);
 
   return (
     <div className="card overflow-hidden group">
@@ -63,7 +77,7 @@ export default function EducationCards() {
           Advisor Insights
         </h3>
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={handlePrev}
             className="p-1.5 rounded-lg hover:bg-[var(--surface-input)] transition-colors text-[var(--text-muted)]"
           >
@@ -72,7 +86,7 @@ export default function EducationCards() {
           <span className="text-[length:var(--fs-overline)] font-bold font-inter text-[var(--text-muted)] uppercase tracking-widest">
             {index + 1} / {TIPS.length}
           </span>
-          <button 
+          <button
             onClick={handleNext}
             className="p-1.5 rounded-lg hover:bg-[var(--surface-input)] transition-colors text-[var(--text-muted)]"
           >
@@ -91,7 +105,7 @@ export default function EducationCards() {
             className="space-y-4"
           >
             <div className="flex items-start gap-4">
-              <div 
+              <div
                 className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-[var(--teal)]/10"
                 style={{ background: activeTip.color + '15', color: activeTip.color }}
               >
@@ -115,9 +129,7 @@ export default function EducationCards() {
           </motion.div>
         </AnimatePresence>
 
-        <button 
-          className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-inter font-bold text-xs text-[var(--teal)] border border-[var(--teal)]/20 hover:bg-[var(--teal-dim)] transition-all"
-        >
+        <button className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl font-inter font-bold text-xs text-[var(--teal)] border border-[var(--teal)]/20 hover:bg-[var(--teal-dim)] transition-all">
           <Lightbulb size={14} />
           Learn more about {activeTip.title.split(' ')[0]}
           <ArrowRight size={14} />
@@ -126,7 +138,7 @@ export default function EducationCards() {
 
       {/* Progress Bar */}
       <div className="h-1 w-full bg-[var(--surface-input)] relative">
-        <motion.div 
+        <motion.div
           className="absolute left-0 top-0 h-full bg-[var(--teal)]"
           initial={{ width: 0 }}
           animate={{ width: `${((index + 1) / TIPS.length) * 100}%` }}

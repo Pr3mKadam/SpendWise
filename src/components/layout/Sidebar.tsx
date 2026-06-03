@@ -10,20 +10,27 @@ import { DesktopSidebar } from './components/DesktopSidebar';
 import { MobileDrawer } from './components/MobileDrawer';
 
 interface SidebarProps {
-  activeView:      AppView;
-  onViewChange:    (view: AppView) => void;
+  activeView: AppView;
+  onViewChange: (view: AppView) => void;
   overBudgetCount: number;
-  showInstall?:    boolean;
-  onInstall?:      () => void;
-  config:          SpendWiseConfig | null;
-  theme?:          'light' | 'dark';
-  onToggleTheme?:  () => void;
+  showInstall?: boolean;
+  onInstall?: () => void;
+  config: SpendWiseConfig | null;
+  theme?: 'light' | 'dark';
+  onToggleTheme?: () => void;
   onOpenQuickAdd?: () => void;
 }
 
 export default function Sidebar({
-  activeView, onViewChange, overBudgetCount, config,
-  showInstall, onInstall, theme, onToggleTheme, onOpenQuickAdd,
+  activeView,
+  onViewChange,
+  overBudgetCount,
+  config,
+  showInstall,
+  onInstall,
+  theme,
+  onToggleTheme,
+  onOpenQuickAdd,
 }: SidebarProps) {
   const { signOut } = useAuth();
   const store = useStore();
@@ -33,12 +40,16 @@ export default function Sidebar({
   const userRole = config?.userRole || 'professional';
 
   // Close drawer on view change
-  useEffect(() => { setIsDrawerOpen(false); }, [activeView]);
+  useEffect(() => {
+    setIsDrawerOpen(false);
+  }, [activeView]);
 
   // Lock scroll when drawer open
   useEffect(() => {
     document.body.style.overflow = isDrawerOpen ? 'hidden' : '';
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isDrawerOpen]);
 
   // Filter nav items based on user role and mode
@@ -56,12 +67,19 @@ export default function Sidebar({
     return true;
   });
 
-  const coreItems   = navItems.filter(i => ['dashboard', 'analytics', 'budget', 'history', 'goals'].includes(i.id));
-  const wealthItems = navItems.filter(i => ['portfolio', 'subscriptions', 'shared', 'sync'].includes(i.id));
-  const toolItems   = navItems.filter(i => ['advisor', 'education', 'quests', 'parental', 'reports'].includes(i.id));
+  const coreItems = navItems.filter(i =>
+    ['dashboard', 'analytics', 'budget', 'history', 'goals'].includes(i.id)
+  );
+  const wealthItems = navItems.filter(i =>
+    ['portfolio', 'subscriptions', 'shared', 'sync'].includes(i.id)
+  );
+  const toolItems = navItems.filter(i =>
+    ['advisor', 'education', 'quests', 'parental', 'reports'].includes(i.id)
+  );
 
   // Bottom tab items (exactly 4: dashboard, budget, history, sync)
-  const mobileBottomItems = navItems.filter(i => MOBILE_BOTTOM_IDS.includes(i.id))
+  const mobileBottomItems = navItems
+    .filter(i => MOBILE_BOTTOM_IDS.includes(i.id))
     .sort((a, b) => MOBILE_BOTTOM_IDS.indexOf(a.id) - MOBILE_BOTTOM_IDS.indexOf(b.id));
 
   // Drawer items: not in bottom bar, and NOT desktop-only (those are hidden from mobile entirely)
@@ -87,7 +105,7 @@ export default function Sidebar({
         onInstall={onInstall}
         signOut={signOut}
       />
-      
+
       {/* Desktop spacer — keeps main content from sitting under sidebar */}
       <div className="hidden md:block shrink-0" style={{ width: '56px' }} />
 
@@ -122,7 +140,15 @@ export default function Sidebar({
                   style={{ background: 'var(--teal)', opacity: isActive ? 0.12 : 0 }}
                 />
                 <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1, whiteSpace: 'nowrap' }}>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    fontFamily: 'var(--font-inter)',
+                    lineHeight: 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {item.label}
                 </span>
                 {item.id === 'budget' && overBudgetCount > 0 && (
@@ -140,7 +166,10 @@ export default function Sidebar({
           {/* ── CENTRE FAB (QuickAdd) ── */}
           <div className="flex items-center justify-center shrink-0" style={{ width: '60px' }}>
             <button
-              onClick={() => { haptic.medium(); onOpenQuickAdd?.(); }}
+              onClick={() => {
+                haptic.medium();
+                onOpenQuickAdd?.();
+              }}
               aria-label="Quick add transaction"
               className="relative flex items-center justify-center rounded-full shadow-lg active:scale-95 transition-transform outline-none focus-visible:ring-2 focus-visible:ring-[var(--teal)] focus-visible:ring-offset-2"
               style={{
@@ -176,7 +205,15 @@ export default function Sidebar({
                   style={{ background: 'var(--teal)', opacity: isActive ? 0.12 : 0 }}
                 />
                 <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1, whiteSpace: 'nowrap' }}>
+                <span
+                  style={{
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    fontFamily: 'var(--font-inter)',
+                    lineHeight: 1,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
                   {item.label}
                 </span>
                 {item.id === 'budget' && overBudgetCount > 0 && (
@@ -193,14 +230,26 @@ export default function Sidebar({
 
           {/* ── More ── */}
           <button
-            onClick={() => { haptic.light(); setIsDrawerOpen(true); }}
+            onClick={() => {
+              haptic.light();
+              setIsDrawerOpen(true);
+            }}
             aria-label="More features"
             aria-expanded={isDrawerOpen}
             className="relative flex flex-col items-center justify-center gap-[3px] min-w-[48px] h-full outline-none"
             style={{ color: 'var(--sidebar-text)' }}
           >
             <MoreHorizontal size={20} strokeWidth={2} />
-            <span style={{ fontSize: '10px', fontWeight: 600, fontFamily: 'var(--font-inter)', lineHeight: 1 }}>More</span>
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 600,
+                fontFamily: 'var(--font-inter)',
+                lineHeight: 1,
+              }}
+            >
+              More
+            </span>
           </button>
         </div>
       </div>

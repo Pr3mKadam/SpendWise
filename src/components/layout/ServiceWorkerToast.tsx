@@ -44,8 +44,8 @@ export default function ServiceWorkerToast() {
                 {needRefresh ? 'Update Available' : 'Ready for Offline'}
               </h4>
               <p className="text-white/60 text-[length:var(--fs-overline)] font-inter mt-0.5">
-                {needRefresh 
-                  ? 'A new version of SpendWise is ready. Refresh to update!' 
+                {needRefresh
+                  ? 'A new version of SpendWise is ready. Refresh to update!'
                   : 'App cached successfully. You can use it offline!'}
               </p>
             </div>

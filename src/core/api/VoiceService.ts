@@ -11,12 +11,16 @@ export interface VoiceParsedTransaction {
   recurring?: string;
 }
 
-export const parseVoiceWithGemini = async (text: string, today: string): Promise<VoiceParsedTransaction> => {
+export const parseVoiceWithGemini = async (
+  text: string,
+  today: string
+): Promise<VoiceParsedTransaction> => {
   const data = await callGemini({
     contents: [
       {
         parts: [
-          { text: `Parse this voice command for a financial transaction: "${text}". 
+          {
+            text: `Parse this voice command for a financial transaction: "${text}". 
           Today's date is ${today}.
           Return a JSON object with fields: 
           - amount (number)
@@ -25,17 +29,18 @@ export const parseVoiceWithGemini = async (text: string, today: string): Promise
           - type (string, must be 'credit' or 'debit')
           - date (string, YYYY-MM-DD)
           - recurring (string, optional, e.g., month, week, year, day if specified).
-          If a field is not found, use null or omit it. Be smart about relative dates like 'yesterday' or 'last week'.` }
-        ]
-      }
+          If a field is not found, use null or omit it. Be smart about relative dates like 'yesterday' or 'last week'.`,
+          },
+        ],
+      },
     ],
     generationConfig: {
-      responseMimeType: "application/json"
-    }
+      responseMimeType: 'application/json',
+    },
   });
 
   const resultText = data.candidates[0].content.parts[0].text;
-  
+
   try {
     const result = JSON.parse(resultText);
     return {
@@ -44,7 +49,7 @@ export const parseVoiceWithGemini = async (text: string, today: string): Promise
       merchant: result.merchant || 'Unknown Merchant',
       type: result.type || 'debit',
       date: result.date || today,
-      recurring: result.recurring
+      recurring: result.recurring,
     };
   } catch (e) {
     console.error('Failed to parse Gemini response as JSON:', resultText);
@@ -52,12 +57,16 @@ export const parseVoiceWithGemini = async (text: string, today: string): Promise
   }
 };
 
-export const parseMasterVoiceWithGemini = async (text: string, today: string): Promise<VoiceCommand> => {
+export const parseMasterVoiceWithGemini = async (
+  text: string,
+  today: string
+): Promise<VoiceCommand> => {
   const data = await callGemini({
     contents: [
       {
         parts: [
-          { text: `Parse this natural language voice command into a structured JSON object for a personal finance application.
+          {
+            text: `Parse this natural language voice command into a structured JSON object for a personal finance application.
           Today's date is ${today}.
           Command: "${text}"
 
@@ -87,17 +96,18 @@ export const parseMasterVoiceWithGemini = async (text: string, today: string): P
             "rawTranscript": "${text}",
             "summary": "Short human readable summary of the action"
           }
-          Do not include any extra text or markdown formatting. Just the JSON.` }
-        ]
-      }
+          Do not include any extra text or markdown formatting. Just the JSON.`,
+          },
+        ],
+      },
     ],
     generationConfig: {
-      responseMimeType: "application/json"
-    }
+      responseMimeType: 'application/json',
+    },
   });
 
   const resultText = data.candidates[0].content.parts[0].text;
-  
+
   try {
     const result = JSON.parse(resultText);
     return result as VoiceCommand;

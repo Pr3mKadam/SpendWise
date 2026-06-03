@@ -4,7 +4,9 @@ interface WaveformVisualizerProps {
 
 export function WaveformVisualizer({ barCount = 22 }: WaveformVisualizerProps) {
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '3px', height: '30px', margin: '8px 0' }}>
+    <div
+      style={{ display: 'flex', alignItems: 'center', gap: '3px', height: '30px', margin: '8px 0' }}
+    >
       {Array.from({ length: barCount }).map((_, i) => (
         <div
           key={i}

@@ -9,7 +9,9 @@ function loadTheme(): ThemeMode {
     if (stored === 'light' || stored === 'dark') return stored;
     // Respect system preference on first visit
     if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
-  } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
   return 'dark';
 }
 
@@ -35,14 +37,16 @@ export function useTheme() {
     applyTheme(theme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, [theme]);
 
   const toggleTheme = useCallback(() => {
     setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
   }, []);
 
-  const setDark  = useCallback(() => setTheme('dark'),  []);
+  const setDark = useCallback(() => setTheme('dark'), []);
   const setLight = useCallback(() => setTheme('light'), []);
 
   return { theme, toggleTheme, setDark, setLight, isDark: theme === 'dark' };
