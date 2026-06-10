@@ -24,6 +24,8 @@ const VIEW_COLORS: Record<AppView, string> = {
   shop: '#ffffff',
   badges: '#ffffff',
   gamification: '#ffffff',
+  receipts: '#ffffff',
+  taxreport: '#ffffff',
 };
 
 export function useAppTheme(activeView: AppView) {
@@ -35,7 +37,7 @@ export function useAppTheme(activeView: AppView) {
   const toggleTheme = useCallback(() => {
     setUserPreferences(prev => ({
       ...prev,
-      darkMode: !prev.darkMode
+      darkMode: !prev.darkMode,
     }));
   }, [setUserPreferences]);
 

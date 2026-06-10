@@ -19,6 +19,7 @@ export default function LevelUpModal({ isOpen, onClose, level, rank }: LevelUpMo
 
       const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const interval: any = setInterval(() => {
         const timeLeft = animationEnd - Date.now();
 
@@ -27,8 +28,16 @@ export default function LevelUpModal({ isOpen, onClose, level, rank }: LevelUpMo
         }
 
         const particleCount = 50 * (timeLeft / duration);
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+        });
+        confetti({
+          ...defaults,
+          particleCount,
+          origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+        });
       }, 250);
 
       return () => clearInterval(interval);
@@ -72,7 +81,7 @@ export default function LevelUpModal({ isOpen, onClose, level, rank }: LevelUpMo
                 className="w-24 h-24 rounded-3xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-lg relative"
               >
                 <Trophy size={48} className="text-white" />
-                <motion.div 
+                <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
                   transition={{ repeat: Infinity, duration: 2 }}
                   className="absolute inset-0 rounded-3xl bg-amber-400/30 -z-10 blur-md"
@@ -126,12 +135,13 @@ export default function LevelUpModal({ isOpen, onClose, level, rank }: LevelUpMo
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Your WealthCity is growing! New infrastructure has been unlocked for your kingdom.
               </p>
-              
+
               <button
                 onClick={onClose}
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-600 hover:to-emerald-700 text-white font-bold transition-all flex items-center justify-center gap-2 group shadow-lg shadow-teal-500/20"
               >
-                Continue Journey <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                Continue Journey{' '}
+                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </motion.div>
           </motion.div>

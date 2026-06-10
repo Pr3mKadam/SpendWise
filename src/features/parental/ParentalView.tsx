@@ -27,7 +27,7 @@ export const ParentalView: React.FC = () => {
     updateSettings,
     lockSession,
     removePin,
-    completeSetup
+    completeSetup,
   } = useParentalManager();
 
   return (
@@ -37,7 +37,9 @@ export const ParentalView: React.FC = () => {
           <Shield className="w-6 h-6 text-white" />
         </div>
         <div>
-          <h1 className="text-3xl font-black text-[var(--text-primary)] font-manrope tracking-tight">Parental Controls</h1>
+          <h1 className="text-3xl font-black text-[var(--text-primary)] font-manrope tracking-tight">
+            Parental Controls
+          </h1>
           <p className="text-[var(--text-muted)] font-medium text-sm">Security, Limits & Chores</p>
         </div>
       </div>

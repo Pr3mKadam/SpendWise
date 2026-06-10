@@ -21,12 +21,9 @@ export function useAppEnvironment() {
         setKeyboardOffset(0);
       }
       const kbHeight = window.innerHeight - vv.height - vv.offsetTop;
-      document.documentElement.style.setProperty(
-        '--kb-inset',
-        `${Math.max(0, kbHeight)}px`
-      );
+      document.documentElement.style.setProperty('--kb-inset', `${Math.max(0, kbHeight)}px`);
     };
-    
+
     if (window.visualViewport) {
       window.visualViewport.addEventListener('resize', handleViewportResize);
       window.visualViewport.addEventListener('scroll', handleViewportResize);

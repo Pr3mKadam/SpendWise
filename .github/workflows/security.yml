@@ -1,0 +1,124 @@
+name: Security — Weekly Audit
+
+on:
+  schedule:
+    # Every Monday at 09:00 UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: 20
+
+jobs:
+  npm-audit:
+    name: npm Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - name: Run npm audit
+        id: audit
+        run: |
+          npm audit --audit-level=moderate 2>&1 | tee audit-report.txt || true
+        continue-on-error: true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: audit-report.txt
+          retention-days: 90
+
+  codeql:
+    name: CodeQL Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: +security-extended,security-and-quality
+          config-file: .github/codeql-config.yml
+      - uses: github/codeql-action/analyze@v3
+        with:
+          category: /language:javascript-typescript
+
+  osv-scanner:
+    name: OSV Dependency Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action@v1
+        with:
+          scan-args: --lockfile=package-lock.json --format=markdown --output=osv-report.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: osv-scanner-report
+          path: osv-report.md
+          retention-days: 90
+
+  secrets-scan:
+    name: Secret Detection
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: GitLeaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE || '' }}
+        continue-on-error: true
+
+  slack-notify:
+    name: Slack Notification
+    needs: [npm-audit, codeql, osv-scanner, secrets-scan]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Notify on failure
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "channel": "${{ vars.SLACK_SECURITY_CHANNEL || '#security' }}",
+              "username": "Security Bot",
+              "text": "⚠️ Security audit completed with issues for ${{ github.repository }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
+        continue-on-error: true
+      - name: Notify on success
+        if: needs.*.result == 'success'
+        uses: slackapi/slack-github-action@v1
+        with:
+          payload: |
+            {
+              "channel": "${{ vars.SLACK_SECURITY_CHANNEL || '#security' }}",
+              "username": "Security Bot",
+              "text": "✅ Weekly security audit passed for ${{ github.repository }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL || '' }}
+        continue-on-error: true

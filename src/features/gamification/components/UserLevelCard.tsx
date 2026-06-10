@@ -50,14 +50,18 @@ export function UserLevelCard({
           }}
         >
           <span className="text-white font-manrope font-black text-3xl leading-none">{level}</span>
-          <span className="text-teal-200 text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">Level</span>
+          <span className="text-teal-200 text-[length:var(--fs-overline)] font-bold uppercase tracking-wider">
+            Level
+          </span>
         </motion.div>
 
         {/* Stats */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <Trophy size={16} className="text-amber-400" />
-            <span className="text-amber-400 font-bold text-xs uppercase tracking-widest">{rank}</span>
+            <span className="text-amber-400 font-bold text-xs uppercase tracking-widest">
+              {rank}
+            </span>
           </div>
           <h1
             className="text-white font-manrope font-black text-2xl sm:text-3xl mb-3 leading-tight"

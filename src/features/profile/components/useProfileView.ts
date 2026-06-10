@@ -1,46 +1,59 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { exportCSV } from '@/utils/export';
 import { parseTransactionsJSON } from '@/utils/import';
 import { Transaction } from '@/types';
-import { encryptData, decryptData } from '@/lib/encryption';
+import { encryptData, decryptData } from '@/core/encryption';
 import { useStore } from '@/store';
 import { downloadDatabaseBackup, importDatabase } from '@/db/backup';
 import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
+import { useAuth } from '@/hooks/useAuth';
 
 const FONT_SIZES = ['text-sm', 'text-base', 'text-lg', 'text-xl'] as const;
-export type FontSizeKey = typeof FONT_SIZES[number];
+export type FontSizeKey = (typeof FONT_SIZES)[number];
 export const FONT_LABELS: Record<FontSizeKey, string> = {
-  'text-sm': 'Small', 'text-base': 'Medium', 'text-lg': 'Large', 'text-xl': 'XL',
+  'text-sm': 'Small',
+  'text-base': 'Medium',
+  'text-lg': 'Large',
+  'text-xl': 'XL',
 };
 
 export function useProfileView(
   config: SpendWiseConfig | null,
   onUpdateConfig: (cfg: SpendWiseConfig) => void,
-  addNotification?: (n: any) => void,
+  addNotification?: (n: any) => void
 ) {
   const store = useStore();
   const { setActiveCurrency } = useCurrency();
+  const { sendPhoneOtp, verifyPhoneOtp } = useAuth();
 
-  const [name,       setName]       = useState(config?.name ?? 'User');
-  const [phone,      setPhone]      = useState(config?.phone ?? '');
+  const [name, setName] = useState(config?.name ?? 'User');
+  const [phone, setPhone] = useState(config?.phone ?? '');
   const [occupation, setOccupation] = useState(config?.occupation ?? '');
-  const [location,   setLocation]   = useState(config?.location ?? '');
+  const [location, setLocation] = useState(config?.location ?? '');
+  const [phoneVerified, setPhoneVerified] = useState(
+    () => !!store.userPreferences?.phoneVerified || false
+  );
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState('');
   const [monthlyGoal, setMonthlyGoal] = useState(
     config?.monthlyGoal !== undefined ? String(config.monthlyGoal) : ''
   );
-  const [currency,   setCurrency]   = useState(config?.currency ?? '$');
-  const [showSavedMsg,         setShowSavedMsg]         = useState(false);
-  const [showResetConfirm,     setShowResetConfirm]     = useState(false);
-  const [showSecureExportModal,setShowSecureExportModal]= useState(false);
-  const [showRestoreModal,     setShowRestoreModal]     = useState(false);
-  const [isExporting,          setIsExporting]          = useState(false);
-  const [isRestoring,          setIsRestoring]          = useState(false);
+  const [currency, setCurrency] = useState(config?.currency ?? '$');
+  const [showSavedMsg, setShowSavedMsg] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showSecureExportModal, setShowSecureExportModal] = useState(false);
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isRestoring, setIsRestoring] = useState(false);
 
   // Preferences from secure store
   const prefs = store.userPreferences;
-  
+
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const avatar = prefs.avatar;
   const fontSize = prefs.fontSize as FontSizeKey;
@@ -112,9 +125,51 @@ export function useProfileView(
     };
     reader.readAsDataURL(file);
   };
+  const handleSendOtp = useCallback(async () => {
+    setOtpLoading(true);
+    setOtpError('');
+    try {
+      await sendPhoneOtp(phone);
+      setOtpSent(true);
+      haptic.success();
+    } catch (err: any) {
+      setOtpError(err.message || 'Failed to send OTP');
+      haptic.error();
+    } finally {
+      setOtpLoading(false);
+    }
+  }, [phone, sendPhoneOtp]);
+
+  const handleVerifyOtp = useCallback(async () => {
+    setOtpLoading(true);
+    setOtpError('');
+    try {
+      await verifyPhoneOtp(phone, otpValue);
+      setPhoneVerified(true);
+      setOtpSent(false);
+      setOtpValue('');
+      const prefs = store.userPreferences;
+      store.setUserPreferences({ ...prefs, phoneVerified: true });
+      haptic.success();
+    } catch (err: any) {
+      setOtpError(err.message || 'Failed to verify OTP');
+      haptic.error();
+    } finally {
+      setOtpLoading(false);
+    }
+  }, [phone, otpValue, verifyPhoneOtp, store]);
+
   const handleSave = useCallback(() => {
     if (!config) return;
-    onUpdateConfig({ ...config, name, currency, phone: phone.trim() || undefined, occupation: occupation.trim() || undefined, location: location.trim() || undefined, monthlyGoal: monthlyGoal ? parseFloat(monthlyGoal) : undefined });
+    onUpdateConfig({
+      ...config,
+      name,
+      currency,
+      phone: phone.trim() || undefined,
+      occupation: occupation.trim() || undefined,
+      location: location.trim() || undefined,
+      monthlyGoal: monthlyGoal ? parseFloat(monthlyGoal) : undefined,
+    });
     setShowSavedMsg(true);
     setTimeout(() => setShowSavedMsg(false), 3000);
   }, [config, name, currency, phone, occupation, location, monthlyGoal, onUpdateConfig]);
@@ -122,15 +177,30 @@ export function useProfileView(
   const handleSecureExport = async (password: string) => {
     setIsExporting(true);
     try {
-      const dataToExport = { transactions: store.transactions, budgets: store.budgets, quests: store.quests, parentalState: store.parentalState, assets: store.assets, liabilities: store.liabilities, subscriptions: store.subscriptions, exportDate: new Date().toISOString() };
+      const dataToExport = {
+        transactions: store.transactions,
+        budgets: store.budgets,
+        quests: store.quests,
+        parentalState: store.parentalState,
+        assets: store.assets,
+        liabilities: store.liabilities,
+        subscriptions: store.subscriptions,
+        exportDate: new Date().toISOString(),
+      };
       const encrypted = await encryptData(JSON.stringify(dataToExport), password);
       const blob = new Blob([encrypted], { type: 'text/plain' });
-      const url  = URL.createObjectURL(blob);
+      const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url; link.download = `spendwise_secure_backup_${new Date().toISOString().split('T')[0]}.swb`; link.click();
+      link.href = url;
+      link.download = `spendwise_secure_backup_${new Date().toISOString().split('T')[0]}.swb`;
+      link.click();
       URL.revokeObjectURL(url);
       setShowSecureExportModal(false);
-    } catch { alert('Export failed.'); } finally { setIsExporting(false); }
+    } catch {
+      alert('Export failed.');
+    } finally {
+      setIsExporting(false);
+    }
   };
   const handleRestore = async (file: File, password: string) => {
     setIsRestoring(true);
@@ -139,14 +209,28 @@ export function useProfileView(
       store.restoreBackup(JSON.parse(decryptedJson));
       setShowRestoreModal(false);
       alert('Backup restored successfully!');
-    } catch { alert('Restore failed. Invalid password or corrupted file.'); } finally { setIsRestoring(false); }
+    } catch {
+      alert('Restore failed. Invalid password or corrupted file.');
+    } finally {
+      setIsRestoring(false);
+    }
   };
-  const handleRawDBExport  = async () => { try { await downloadDatabaseBackup(); } catch { alert('Failed to download raw database backup.'); } };
-  const handleRawDBImport  = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRawDBExport = async () => {
+    try {
+      await downloadDatabaseBackup();
+    } catch {
+      alert('Failed to download raw database backup.');
+    }
+  };
+  const handleRawDBImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     if (window.confirm('This will OVERWRITE your current database. Are you sure?')) {
-      try { await importDatabase(file); } catch { alert('Failed to import database.'); }
+      try {
+        await importDatabase(file);
+      } catch {
+        alert('Failed to import database.');
+      }
     }
   };
   const handleImportTransactions = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -154,12 +238,27 @@ export function useProfileView(
     if (!file) return;
     try {
       const { transactions: importedTxs, errors } = await parseTransactionsJSON(file);
-      if (errors.length > 0 && importedTxs.length === 0) { alert(`Failed to import: ${errors[0]}`); return; }
-      if (importedTxs.length > 0 && window.confirm(`Found ${importedTxs.length} transactions. Import them?`)) {
-        store.addTransactions(importedTxs);
-        addNotification?.({ id: Date.now().toString(), type: 'system', title: 'Transactions Imported', message: `${importedTxs.length} transactions successfully added.`, timestamp: new Date().toISOString(), read: false });
+      if (errors.length > 0 && importedTxs.length === 0) {
+        alert(`Failed to import: ${errors[0]}`);
+        return;
       }
-    } catch { alert('Failed to read file.'); }
+      if (
+        importedTxs.length > 0 &&
+        window.confirm(`Found ${importedTxs.length} transactions. Import them?`)
+      ) {
+        store.addTransactions(importedTxs);
+        addNotification?.({
+          id: Date.now().toString(),
+          type: 'system',
+          title: 'Transactions Imported',
+          message: `${importedTxs.length} transactions successfully added.`,
+          timestamp: new Date().toISOString(),
+          read: false,
+        });
+      }
+    } catch {
+      alert('Failed to read file.');
+    }
   };
   const handleCurrencySelect = (code: CurrencyCode) => {
     setActiveCurrency(code);
@@ -171,25 +270,62 @@ export function useProfileView(
 
   return {
     // form fields
-    name, setName, phone, setPhone, occupation, setOccupation,
-    location, setLocation, monthlyGoal, setMonthlyGoal, currency,
+    name,
+    setName,
+    phone,
+    setPhone,
+    phoneVerified,
+    otpSent,
+    otpValue,
+    setOtpValue,
+    otpLoading,
+    otpError,
+    handleSendOtp,
+    handleVerifyOtp,
+    occupation,
+    setOccupation,
+    location,
+    setLocation,
+    monthlyGoal,
+    setMonthlyGoal,
+    currency,
     // modals
-    showSavedMsg, showResetConfirm, setShowResetConfirm,
-    showSecureExportModal, setShowSecureExportModal,
-    showRestoreModal, setShowRestoreModal,
-    isExporting, isRestoring,
+    showSavedMsg,
+    showResetConfirm,
+    setShowResetConfirm,
+    showSecureExportModal,
+    setShowSecureExportModal,
+    showRestoreModal,
+    setShowRestoreModal,
+    isExporting,
+    isRestoring,
     // avatar
-    avatar, avatarInputRef, handleAvatarChange,
+    avatar,
+    avatarInputRef,
+    handleAvatarChange,
     // accessibility
-    fontSize, FONT_SIZES, FONT_LABELS, handleFontSize,
-    darkMode, handleDarkMode,
-    highContrast, toggleHighContrast,
-    hapticsEnabled, toggleHaptics,
-    shakeEnabled, toggleShake,
-    notifPermission, requestNotifPermission, testNotification,
+    fontSize,
+    FONT_SIZES,
+    FONT_LABELS,
+    handleFontSize,
+    darkMode,
+    handleDarkMode,
+    highContrast,
+    toggleHighContrast,
+    hapticsEnabled,
+    toggleHaptics,
+    shakeEnabled,
+    toggleShake,
+    notifPermission,
+    requestNotifPermission,
+    testNotification,
     // handlers
-    handleSave, handleSecureExport, handleRestore,
-    handleRawDBExport, handleRawDBImport,
-    handleImportTransactions, handleCurrencySelect,
+    handleSave,
+    handleSecureExport,
+    handleRestore,
+    handleRawDBExport,
+    handleRawDBImport,
+    handleImportTransactions,
+    handleCurrencySelect,
   };
 }

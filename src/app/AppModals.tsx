@@ -1,15 +1,17 @@
 import React from 'react';
-import NotificationCenter from '@/shell/NotificationCenter';
-import CustomCategoriesModal from '@/shell/CustomCategoriesModal';
-import CommandPalette from '@/shell/CommandPalette';
+import NotificationCenter from '@/components/layout/NotificationCenter';
+import CustomCategoriesModal from '@/components/layout/CustomCategoriesModal';
+import CommandPalette from '@/components/layout/CommandPalette';
 import LevelUpModal from '@/features/gamification/components/LevelUpModal';
-import PrivacyShield from '@/shell/PrivacyShield';
-import { OfflineIndicator } from '@/shell/OfflineIndicator';
+import PrivacyShield from '@/components/layout/PrivacyShield';
+import { OfflineIndicator } from '@/components/layout/OfflineIndicator';
 import { BudgetAlertToast } from '@/features/budget/components/BudgetAlertToast';
-import { AppView, Transaction, Category } from '@/types';
+import { AppView } from '@/types';
 
 interface AppModalsProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   store: any;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   appState: any;
   userId: string | null;
   currency: string;
@@ -56,7 +58,7 @@ export const AppModals: React.FC<AppModalsProps> = ({
         onMarkRead={notifState.markRead}
         onMarkAllRead={notifState.markAllRead}
         onSnooze={notifState.snoozeNotification}
-        onNavigate={(view) => {
+        onNavigate={view => {
           handleViewChange(view);
           setShowNotifications(false);
         }}
@@ -67,7 +69,7 @@ export const AppModals: React.FC<AppModalsProps> = ({
         isOpen={showCategoriesModal}
         onClose={() => setShowCategoriesModal(false)}
         customCategories={categoryState.customCategories}
-        onAdd={(newCat) => {
+        onAdd={newCat => {
           categoryState.addCustomCategory(newCat);
         }}
         onUpdate={categoryState.updateCustomCategory}

@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { BarChart2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { BarChart2, RefreshCw } from 'lucide-react';
 import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
 import FutureWealthSimulator from '@/features/portfolio/components/FutureWealthSimulator';
 import DebtPlanner from '@/features/portfolio/components/DebtPlanner';
@@ -16,11 +16,16 @@ import { PortfolioLists } from '@/features/portfolio/components/PortfolioLists';
 
 interface PortfolioViewProps {
   currency?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   financeState: any;
   config: SpendWiseConfig | null;
 }
 
-export default function PortfolioView({ currency = '₹', financeState, config }: PortfolioViewProps) {
+export default function PortfolioView({
+  currency = '₹',
+  financeState,
+  config,
+}: PortfolioViewProps) {
   const isMobile = useIsMobile();
   const {
     assets,
@@ -29,6 +34,8 @@ export default function PortfolioView({ currency = '₹', financeState, config }
     totalLiabilities,
     netWorth,
     allocationByType,
+    lastPriceUpdate,
+    refreshPrices,
     addAsset,
     deleteAsset,
     addLiability,
@@ -37,6 +44,14 @@ export default function PortfolioView({ currency = '₹', financeState, config }
 
   const [modal, setModal] = useState<'asset' | 'liability' | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'simulation' | 'debt'>('overview');
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const isStale = !lastPriceUpdate || now - new Date(lastPriceUpdate).getTime() > 15 * 60 * 1000;
+
   const positive = netWorth >= 0;
 
   // Calculate Wealth Health Score (simplified)
@@ -132,6 +147,32 @@ export default function PortfolioView({ currency = '₹', financeState, config }
               netWorth={netWorth}
             />
 
+            <div className="card px-6 py-3 flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <RefreshCw
+                  size={16}
+                  style={{ color: isStale ? 'var(--text-tertiary)' : 'var(--teal)' }}
+                />
+                <span
+                  className="font-inter text-[12px]"
+                  style={{ color: isStale ? 'var(--text-tertiary)' : 'var(--text-secondary)' }}
+                >
+                  {lastPriceUpdate
+                    ? `Prices updated ${new Date(lastPriceUpdate).toLocaleTimeString()}`
+                    : 'No live prices yet'}
+                  {isStale && lastPriceUpdate ? ' (stale)' : ''}
+                </span>
+              </div>
+              <button
+                onClick={refreshPrices}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all duration-200 hover:scale-105 active:scale-95"
+                style={{ background: 'var(--teal-dim)', color: 'var(--teal)' }}
+              >
+                <RefreshCw size={14} />
+                Refresh Prices
+              </button>
+            </div>
+
             <PortfolioLists
               assets={assets}
               liabilities={liabilities}
@@ -152,7 +193,11 @@ export default function PortfolioView({ currency = '₹', financeState, config }
           </div>
         ) : (
           <div className="animate-fade-in">
-            <DebtPlanner liabilities={liabilities} currency={currency} userRole={config?.userRole} />
+            <DebtPlanner
+              liabilities={liabilities}
+              currency={currency}
+              userRole={config?.userRole}
+            />
           </div>
         )}
 
@@ -163,16 +208,22 @@ export default function PortfolioView({ currency = '₹', financeState, config }
           >
             <BarChart2 size={18} style={{ color: 'var(--teal)' }} />
           </div>
-          <p className="font-inter text-[13px]" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+          <p
+            className="font-inter text-[13px]"
+            style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}
+          >
             <strong style={{ color: 'var(--text-primary)' }}>Wealth Efficiency: </strong>
-            {totalAssets > 0 ? `${((totalLiabilities / totalAssets) * 100).toFixed(1)}% Debt Ratio` : 'N/A'} ·{' '}
+            {totalAssets > 0
+              ? `${((totalLiabilities / totalAssets) * 100).toFixed(1)}% Debt Ratio`
+              : 'N/A'}{' '}
+            ·{' '}
             {totalAssets === 0
               ? 'Add assets to begin portfolio tracking.'
               : positive
-              ? `Your portfolio is highly resilient with a safety margin of ${(
-                  totalAssets / Math.max(totalLiabilities, 1)
-                ).toFixed(1)}x.`
-              : 'Focus on aggressive debt repayment to flip your net worth positive.'}
+                ? `Your portfolio is highly resilient with a safety margin of ${(
+                    totalAssets / Math.max(totalLiabilities, 1)
+                  ).toFixed(1)}x.`
+                : 'Focus on aggressive debt repayment to flip your net worth positive.'}
           </p>
         </div>
       </div>

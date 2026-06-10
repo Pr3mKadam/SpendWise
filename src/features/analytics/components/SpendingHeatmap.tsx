@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CategorySpend } from '@/types';
+
 import { formatLocalYYYYMMDD } from '@/utils/date';
 import { useTheme } from '@/hooks/useTheme';
 
@@ -30,7 +30,7 @@ function getDayColorDark(amount: number, max: number): string {
 
 export default function SpendingHeatmap({ transactions, currency = '₹' }: SpendingHeatmapProps) {
   const { isDark } = useTheme();
-  
+
   const { weeks, maxAmount, selectedMonth } = useMemo(() => {
     // R3-A fix: compute isDark inside useMemo so it re-evaluates on theme changes
 
@@ -51,7 +51,7 @@ export default function SpendingHeatmap({ transactions, currency = '₹' }: Spen
 
     // Build weeks array (rows = day of week 0-6, cols = weeks)
     const firstDay = new Date(year, month, 1);
-    const lastDay  = new Date(year, month + 1, 0);
+    const lastDay = new Date(year, month + 1, 0);
     const startDow = firstDay.getDay(); // 0=Sun
 
     const days: { date: string; amount: number; label: number }[] = [];
@@ -63,7 +63,7 @@ export default function SpendingHeatmap({ transactions, currency = '₹' }: Spen
     }
 
     // Split into weeks (chunks of 7)
-    const weeks: typeof days[] = [];
+    const weeks: (typeof days)[] = [];
     for (let i = 0; i < days.length; i += 7) {
       weeks.push(days.slice(i, i + 7));
     }
@@ -82,27 +82,66 @@ export default function SpendingHeatmap({ transactions, currency = '₹' }: Spen
     <div className="card px-4 sm:px-6 py-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <h3
+            style={{
+              fontFamily: 'var(--font-manrope)',
+              fontSize: '16px',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+            }}
+          >
             Spending Heatmap
           </h3>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-inter)',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              marginTop: '2px',
+            }}
+          >
             {selectedMonth} · Daily spend intensity
           </p>
         </div>
         {/* Legend */}
         <div className="flex items-center gap-1.5">
-          <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>Less</span>
+          <span
+            style={{
+              fontSize: '10px',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-inter)',
+            }}
+          >
+            Less
+          </span>
           {['var(--surface-input)', '#86efac', '#fb923c', '#ef4444', '#b91c1c'].map((c, i) => (
             <div key={i} className="w-3 h-3 rounded-sm" style={{ background: c }} />
           ))}
-          <span style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>More</span>
+          <span
+            style={{
+              fontSize: '10px',
+              color: 'var(--text-muted)',
+              fontFamily: 'var(--font-inter)',
+            }}
+          >
+            More
+          </span>
         </div>
       </div>
 
       {/* Day of week header */}
       <div className="grid gap-1 mb-1" style={{ gridTemplateColumns: `repeat(7, minmax(0, 1fr))` }}>
         {DOW_LABELS.map((l, i) => (
-          <div key={i} className="text-center" style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-dim)', fontFamily: 'var(--font-inter)' }}>
+          <div
+            key={i}
+            className="text-center"
+            style={{
+              fontSize: '9px',
+              fontWeight: 700,
+              color: 'var(--text-dim)',
+              fontFamily: 'var(--font-inter)',
+            }}
+          >
             {l}
           </div>
         ))}
@@ -111,10 +150,20 @@ export default function SpendingHeatmap({ transactions, currency = '₹' }: Spen
       {/* Calendar grid */}
       <div className="space-y-1">
         {weeks.map((week, wi) => (
-          <div key={wi} className="grid gap-1" style={{ gridTemplateColumns: `repeat(7, minmax(0, 1fr))` }}>
+          <div
+            key={wi}
+            className="grid gap-1"
+            style={{ gridTemplateColumns: `repeat(7, minmax(0, 1fr))` }}
+          >
             {week.map((day, di) => {
               if (!day.date) {
-                return <div key={di} className="aspect-square rounded-md" style={{ background: 'transparent' }} />;
+                return (
+                  <div
+                    key={di}
+                    className="aspect-square rounded-md"
+                    style={{ background: 'transparent' }}
+                  />
+                );
               }
               const color = isDark
                 ? getDayColorDark(day.amount, maxAmount)
@@ -129,18 +178,37 @@ export default function SpendingHeatmap({ transactions, currency = '₹' }: Spen
                     outline: isToday ? '2px solid var(--teal)' : undefined,
                     outlineOffset: '1px',
                   }}
-                  title={day.amount > 0 ? `${day.date}: ${currency}${day.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}` : day.date}
+                  title={
+                    day.amount > 0
+                      ? `${day.date}: ${currency}${day.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`
+                      : day.date
+                  }
                 >
-                  <span style={{ fontSize: '9px', fontWeight: 600, color: day.amount > maxAmount * 0.4 ? '#fff' : 'var(--text-dim)', fontFamily: 'var(--font-inter)' }}>
+                  <span
+                    style={{
+                      fontSize: '9px',
+                      fontWeight: 600,
+                      color: day.amount > maxAmount * 0.4 ? '#fff' : 'var(--text-dim)',
+                      fontFamily: 'var(--font-inter)',
+                    }}
+                  >
                     {day.label}
                   </span>
                   {/* Tooltip on hover */}
                   {day.amount > 0 && (
                     <div
                       className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 whitespace-nowrap"
-                      style={{ background: 'var(--surface-card)', border: '1px solid var(--border)', fontSize: '10px', fontFamily: 'var(--font-manrope)', fontWeight: 700, color: 'var(--text-primary)' }}
+                      style={{
+                        background: 'var(--surface-card)',
+                        border: '1px solid var(--border)',
+                        fontSize: '10px',
+                        fontFamily: 'var(--font-manrope)',
+                        fontWeight: 700,
+                        color: 'var(--text-primary)',
+                      }}
                     >
-                      {currency}{day.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      {currency}
+                      {day.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </div>
                   )}
                 </div>

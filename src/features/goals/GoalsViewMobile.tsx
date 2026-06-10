@@ -1,9 +1,9 @@
 import React from 'react';
-import { Target, Plus, Award, ChevronRight, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Target, Plus, ChevronRight, TrendingUp } from 'lucide-react';
 import { SavingsGoal } from '@/types';
 import { GoalCard } from '@/features/goals/components/GoalCard';
 import { BadgeGallery } from '@/features/gamification/components/BadgeGallery';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface GoalsViewMobileProps {
   goals: SavingsGoal[];
@@ -19,6 +19,7 @@ interface GoalsViewMobileProps {
   onDelete: (id: string) => void;
   onContribute: (id: string, amount: number) => void;
   currency: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   transactions: any[];
   streak: number;
   level: number;
@@ -28,18 +29,20 @@ export default function GoalsViewMobile({
   goals,
   stats,
   onAdd,
-  onUpdate,
+  onUpdate: _onUpdate,
   onDelete,
   onContribute,
   currency,
   transactions,
   streak,
-  level
+  level,
 }: GoalsViewMobileProps) {
   // Sort: active first, then achieved
   const sorted = [...goals].sort((a, b) => {
-    const order = { 'on-track': 0, 'at-risk': 1, 'paused': 2, 'achieved': 3 };
-    return (order[a.status as keyof typeof order] ?? 0) - (order[b.status as keyof typeof order] ?? 0);
+    const order = { 'on-track': 0, 'at-risk': 1, paused: 2, achieved: 3 };
+    return (
+      (order[a.status as keyof typeof order] ?? 0) - (order[b.status as keyof typeof order] ?? 0)
+    );
   });
 
   return (
@@ -52,8 +55,11 @@ export default function GoalsViewMobile({
             {stats.activeCount} Active · {stats.achievedCount} Achieved
           </p>
         </div>
-        <button 
-          onClick={() => { haptic.medium(); onAdd(); }}
+        <button
+          onClick={() => {
+            haptic.medium();
+            onAdd();
+          }}
           className="w-10 h-10 rounded-2xl bg-[var(--teal)] text-white flex items-center justify-center shadow-lg active:scale-95 transition-transform"
         >
           <Plus size={20} />
@@ -68,17 +74,26 @@ export default function GoalsViewMobile({
               <TrendingUp size={20} />
             </div>
             <div>
-              <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">Overall Progress</p>
-              <p className="text-lg font-bold text-[var(--text-primary)]">{stats.overallPercent}%</p>
+              <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">
+                Overall Progress
+              </p>
+              <p className="text-lg font-bold text-[var(--text-primary)]">
+                {stats.overallPercent}%
+              </p>
             </div>
           </div>
           <div className="text-right">
-            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">Total Saved</p>
-            <p className="text-sm font-bold text-[var(--teal)]">{currency}{stats.totalSaved.toLocaleString()}</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase">
+              Total Saved
+            </p>
+            <p className="text-sm font-bold text-[var(--teal)]">
+              {currency}
+              {stats.totalSaved.toLocaleString()}
+            </p>
           </div>
         </div>
         <div className="h-2 w-full bg-[var(--surface-input)] rounded-full overflow-hidden">
-          <div 
+          <div
             className="h-full bg-gradient-to-r from-[var(--teal)] to-purple-500 rounded-full transition-all duration-1000"
             style={{ width: `${stats.overallPercent}%` }}
           />
@@ -88,7 +103,9 @@ export default function GoalsViewMobile({
       {/* 3. Goals List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Your Goals</h3>
+          <h3 className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+            Your Goals
+          </h3>
         </div>
 
         {goals.length === 0 ? (
@@ -97,8 +114,10 @@ export default function GoalsViewMobile({
               <Target size={28} className="text-[var(--text-muted)]" />
             </div>
             <h4 className="text-sm font-bold text-[var(--text-primary)] mb-1">No goals yet</h4>
-            <p className="text-xs text-[var(--text-muted)] mb-4">Start your savings journey today!</p>
-            <button 
+            <p className="text-xs text-[var(--text-muted)] mb-4">
+              Start your savings journey today!
+            </p>
+            <button
               onClick={onAdd}
               className="px-6 py-2 bg-[var(--teal)] text-white rounded-xl text-xs font-bold"
             >
@@ -111,7 +130,7 @@ export default function GoalsViewMobile({
               <GoalCard
                 key={goal.id}
                 goal={goal}
-                onContribute={(amt) => onContribute(goal.id, amt)}
+                onContribute={amt => onContribute(goal.id, amt)}
                 onEdit={() => {}} // Handle edit in main view
                 onDelete={() => onDelete(goal.id)}
                 currency={currency}
@@ -124,7 +143,9 @@ export default function GoalsViewMobile({
       {/* 4. Badges Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between px-1">
-          <h3 className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">Achievements</h3>
+          <h3 className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+            Achievements
+          </h3>
           <button className="text-[length:var(--fs-overline)] font-bold text-[var(--teal)] uppercase tracking-widest flex items-center gap-1">
             View All <ChevronRight size={10} />
           </button>

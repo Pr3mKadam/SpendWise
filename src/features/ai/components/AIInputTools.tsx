@@ -1,11 +1,6 @@
 import { Loader2, Camera, Mic } from 'lucide-react';
 import { RefObject } from 'react';
 // import removed
-import { useCategories } from '@/hooks/useCategories';
-import { useStore } from '@/store';
-import { parseVoiceLocally } from '@/parsers/voice';
-import { compressImage } from '@/utils/imageUtils';
-import { recognizeReceipt, parseOfflineReceipt } from '@/parsers/ocr';
 
 const PulsingWave = () => (
   <div className="flex items-center gap-[3px] h-4">
@@ -33,10 +28,10 @@ export function AIInputTools({
   isScanning,
   isListening,
   scanStatus,
-  handleFileChange,
+  handleFileChange: _handleFileChange,
   handleVoiceInput,
   onOpenScanner,
-  fileInputRef,
+  fileInputRef: _fileInputRef,
 }: {
   isScanning: boolean;
   isListening: boolean;
@@ -66,9 +61,15 @@ export function AIInputTools({
             opacity: isListening ? 0.5 : 1,
           }}
         >
-          {isScanning
-            ? <><Loader2 size={15} className="animate-spin" /> Scanning…</>
-            : <><Camera size={15} /> Snap Receipt</>}
+          {isScanning ? (
+            <>
+              <Loader2 size={15} className="animate-spin" /> Scanning…
+            </>
+          ) : (
+            <>
+              <Camera size={15} /> Snap Receipt
+            </>
+          )}
         </button>
 
         {/* ── Magic Mic ─────────────────────────────────────────────── */}
@@ -87,9 +88,15 @@ export function AIInputTools({
             cursor: isListening ? 'default' : 'pointer',
           }}
         >
-          {isListening
-            ? <><PulsingWave /></>
-            : <><Mic size={15} /> Magic Mic</>}
+          {isListening ? (
+            <>
+              <PulsingWave />
+            </>
+          ) : (
+            <>
+              <Mic size={15} /> Magic Mic
+            </>
+          )}
         </button>
       </div>
 

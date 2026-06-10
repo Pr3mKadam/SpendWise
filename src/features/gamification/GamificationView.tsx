@@ -9,39 +9,45 @@ import { BadgeGallery } from '@/features/gamification/components/BadgeGallery';
 import { SavingsChallenges } from '@/features/gamification/components/SavingsChallenges';
 import { useQuestReset } from '@/features/gamification/hooks/useQuestReset';
 import { UserLevelCard } from '@/features/gamification/components/UserLevelCard';
-import { getSpendingPersonality } from '@/insights/advisor';
+import { getSpendingPersonality } from '@/features/analytics/insights/advisor';
 
 type Tab = 'overview' | 'quests' | 'badges' | 'challenges';
 
 interface GamificationViewProps {
   transactions: Transaction[];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   goals: any[];
   currency?: string;
   onNavigate: (view: AppView) => void;
 }
 
 const TABS: { id: Tab; label: string; icon: React.ElementType }[] = [
-  { id: 'overview',    label: 'Overview',    icon: Star },
-  { id: 'quests',      label: 'Quests',      icon: Sparkles },
-  { id: 'badges',      label: 'Badges',      icon: Award },
-  { id: 'challenges',  label: 'Challenges',  icon: Target },
+  { id: 'overview', label: 'Overview', icon: Star },
+  { id: 'quests', label: 'Quests', icon: Sparkles },
+  { id: 'badges', label: 'Badges', icon: Award },
+  { id: 'challenges', label: 'Challenges', icon: Target },
 ];
 
-export default function GamificationView({ transactions, goals, currency = '₹', onNavigate }: GamificationViewProps) {
+export default function GamificationView({
+  transactions,
+  goals,
+  currency = '₹',
+  onNavigate,
+}: GamificationViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
 
-  const level  = useStore(s => s.level);
-  const rank   = useStore(s => s.rank);
+  const level = useStore(s => s.level);
+  const rank = useStore(s => s.rank);
   const totalXP = useStore(s => s.totalXP);
   const streak = useStore(s => s.streak);
   const { completedCount, totalXPToday } = useQuestReset();
 
-  const XP_PER_LEVEL   = 1000;
+  const XP_PER_LEVEL = 1000;
   const currentLevelXP = totalXP % XP_PER_LEVEL;
-  const xpProgress     = Math.round((currentLevelXP / XP_PER_LEVEL) * 100);
+  const xpProgress = Math.round((currentLevelXP / XP_PER_LEVEL) * 100);
 
-  const personality = useMemo(() =>
-    getSpendingPersonality(transactions, currency),
+  const personality = useMemo(
+    () => getSpendingPersonality(transactions, currency),
     [transactions, currency]
   );
 
@@ -97,29 +103,40 @@ export default function GamificationView({ transactions, goals, currency = '₹'
               <LevelProgress onNavigate={onNavigate} />
 
               {/* Personality Card */}
-              <div className="card border border-[var(--border)] overflow-hidden" style={{ background: 'var(--surface-card)' }}>
+              <div
+                className="card border border-[var(--border)] overflow-hidden"
+                style={{ background: 'var(--surface-card)' }}
+              >
                 <div className="bg-gradient-to-r from-[var(--teal-dim)] to-transparent p-5 border-b border-[var(--border)]">
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-3xl">{personality.emoji}</span>
                     <div>
-                      <p className="text-[length:var(--fs-overline)] text-[var(--teal)] font-bold uppercase tracking-wider">Your Spending Personality</p>
-                      <h3 className="font-bold text-lg text-[var(--text-primary)]">{personality.archetype}</h3>
+                      <p className="text-[length:var(--fs-overline)] text-[var(--teal)] font-bold uppercase tracking-wider">
+                        Your Spending Personality
+                      </p>
+                      <h3 className="font-bold text-lg text-[var(--text-primary)]">
+                        {personality.archetype}
+                      </h3>
                     </div>
                   </div>
-                  <p className="text-sm text-[var(--text-muted)] mt-2 leading-relaxed">{personality.description}</p>
+                  <p className="text-sm text-[var(--text-muted)] mt-2 leading-relaxed">
+                    {personality.description}
+                  </p>
                 </div>
-                
+
                 <div className="p-5">
                   <div className="mb-4">
                     <div className="flex items-center gap-2 mb-2">
                       <Flame size={16} className="text-orange-500" />
-                      <span className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">7-Day Challenge</span>
+                      <span className="text-xs font-bold text-[var(--text-primary)] uppercase tracking-wider">
+                        7-Day Challenge
+                      </span>
                     </div>
                     <div className="p-3 rounded-xl bg-orange-500/10 border border-orange-500/20 text-sm text-orange-700 dark:text-orange-400">
                       {personality.challenge}
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-3 items-start">
                     <Sparkles size={16} className="text-blue-500 shrink-0 mt-0.5" />
                     <p className="text-xs text-[var(--text-secondary)] leading-relaxed italic">
@@ -182,8 +199,12 @@ export default function GamificationView({ transactions, goals, currency = '₹'
                         <Icon size={18} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-bold text-[var(--text-primary)] truncate">{tile.label}</p>
-                        <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">{tile.sub}</p>
+                        <p className="text-xs font-bold text-[var(--text-primary)] truncate">
+                          {tile.label}
+                        </p>
+                        <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">
+                          {tile.sub}
+                        </p>
                       </div>
                       {tile.tab !== 'overview' && (
                         <ChevronRight size={14} className="text-[var(--text-muted)] shrink-0" />
@@ -215,9 +236,7 @@ export default function GamificationView({ transactions, goals, currency = '₹'
             />
           )}
 
-          {activeTab === 'challenges' && (
-            <SavingsChallenges onNavigate={onNavigate} />
-          )}
+          {activeTab === 'challenges' && <SavingsChallenges onNavigate={onNavigate} />}
         </motion.div>
       </AnimatePresence>
     </div>

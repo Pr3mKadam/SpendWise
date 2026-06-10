@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Target, Plus, Trash2, Edit2, Check, X, ArrowLeft, MoreVertical, TrendingUp, AlertCircle } from 'lucide-react';
+import { Target, Plus, Check, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useBudgets } from '@/hooks/useBudgets';
 import { useCategories } from '@/hooks/useCategories';
 import { Category } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 import { BudgetSummaryMobile } from '@/features/budget/components/BudgetSummaryMobile';
 import { BudgetCategoryCardMobile } from '@/features/budget/components/BudgetCategoryCardMobile';
 
@@ -13,9 +13,10 @@ interface BudgetViewMobileProps {
 }
 
 export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
-  const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent } = useBudgets();
+  const { budgetStats, setBudget, removeBudget, totalBudgeted, overallBudgetPercent } =
+    useBudgets();
   const { allCategories: categories, mergedColors, mergedIcons } = useCategories();
-  
+
   const [isAdding, setIsAdding] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [limitAmount, setLimitAmount] = useState('');
@@ -42,7 +43,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
   return (
     <div className="flex flex-col space-y-5 pb-10">
       {/* Summary Header */}
-      <BudgetSummaryMobile 
+      <BudgetSummaryMobile
         currency={currency}
         totalBudgeted={totalBudgeted}
         overallBudgetPercent={overallBudgetPercent}
@@ -50,11 +51,17 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
 
       {/* Action Bar */}
       <div className="flex items-center justify-between px-1">
-        <h3 className="font-bold text-lg text-[var(--text-primary)]" style={{ fontFamily: 'var(--font-manrope)' }}>
+        <h3
+          className="font-bold text-lg text-[var(--text-primary)]"
+          style={{ fontFamily: 'var(--font-manrope)' }}
+        >
           Categories
         </h3>
-        <button 
-          onClick={() => { haptic.medium(); setIsAdding(true); }}
+        <button
+          onClick={() => {
+            haptic.medium();
+            setIsAdding(true);
+          }}
           className="flex items-center gap-2 px-4 py-2 bg-[var(--teal)] text-white rounded-2xl shadow-lg shadow-teal-500/20 font-bold text-xs border-none cursor-pointer active:scale-95 transition-transform"
         >
           <Plus size={14} strokeWidth={3} /> SET LIMIT
@@ -64,7 +71,7 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
       {/* Add/Edit Budget Form */}
       <AnimatePresence>
         {isAdding && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
@@ -77,50 +84,63 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
                 </div>
                 {editingCategory ? 'Adjust Limit' : 'New Budget Limit'}
               </h4>
-              <button 
-                onClick={() => { setIsAdding(false); setEditingCategory(null); }}
+              <button
+                onClick={() => {
+                  setIsAdding(false);
+                  setEditingCategory(null);
+                }}
                 className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] hover:text-red-500 bg-transparent border-none cursor-pointer rounded-xl"
                 aria-label="Close budget form"
               >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
-                <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-2 uppercase tracking-widest">Select Category</label>
+                <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-2 uppercase tracking-widest">
+                  Select Category
+                </label>
                 <div className="grid grid-cols-3 gap-2 max-h-40 overflow-y-auto pr-1">
                   {categories.map(cat => (
                     <button
                       key={cat}
-                      onClick={() => { haptic.light(); setSelectedCategory(cat); }}
+                      onClick={() => {
+                        haptic.light();
+                        setSelectedCategory(cat);
+                      }}
                       className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${selectedCategory === cat ? 'bg-[var(--teal)]/10 border-[var(--teal)]' : 'bg-[var(--surface-input)] border-[var(--border)]'}`}
                     >
                       <span className="text-lg mb-1">{mergedIcons[cat] || '📦'}</span>
-                      <span className="text-[length:var(--fs-overline)] font-bold text-center truncate w-full">{cat}</span>
+                      <span className="text-[length:var(--fs-overline)] font-bold text-center truncate w-full">
+                        {cat}
+                      </span>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-2 uppercase tracking-widest">Monthly Limit ({currency})</label>
-                <input 
-                  type="number" 
+                <label className="block text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-2 uppercase tracking-widest">
+                  Monthly Limit ({currency})
+                </label>
+                <input
+                  type="number"
                   value={limitAmount}
-                  onChange={(e) => setLimitAmount(e.target.value)}
+                  onChange={e => setLimitAmount(e.target.value)}
                   placeholder="0.00"
                   className="w-full bg-[var(--surface-input)] border border-[var(--border)] rounded-2xl px-4 py-3 text-base font-bold text-[var(--text-primary)] outline-none focus:border-[var(--teal)]"
                   autoFocus
                 />
               </div>
 
-              <button 
+              <button
                 onClick={handleAdd}
                 disabled={!selectedCategory || !limitAmount}
                 className="w-full py-4 bg-[var(--teal)] disabled:opacity-50 text-white rounded-2xl shadow-lg shadow-teal-500/20 font-bold text-sm border-none cursor-pointer active:scale-[0.98] transition-transform flex items-center justify-center gap-2"
               >
-                <Check size={18} strokeWidth={3} /> {editingCategory ? 'SAVE CHANGES' : 'CONFIRM BUDGET'}
+                <Check size={18} strokeWidth={3} />{' '}
+                {editingCategory ? 'SAVE CHANGES' : 'CONFIRM BUDGET'}
               </button>
             </div>
           </motion.div>
@@ -141,10 +161,10 @@ export default function BudgetViewMobile({ currency }: BudgetViewMobileProps) {
           </div>
         )}
 
-        {budgetStats.map((b) => (
-          <BudgetCategoryCardMobile 
+        {budgetStats.map(b => (
+          <BudgetCategoryCardMobile
             key={b.category}
-            b={b as any}
+            b={b as never}
             currency={currency}
             mergedColors={mergedColors}
             mergedIcons={mergedIcons}

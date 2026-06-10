@@ -5,12 +5,15 @@ function fixFile(path) {
   let original = content;
 
   let count = 0;
-  while(true) {
-    let replaced = content.replace(/(className="[^"]*")([^>]*)className="([^"]*)"/g, (match, p1, p2, p3) => {
+  while (true) {
+    let replaced = content.replace(
+      /(className="[^"]*")([^>]*)className="([^"]*)"/g,
+      (match, p1, p2, p3) => {
         let firstClass = p1.substring(11, p1.length - 1);
         let secondClass = p3;
         return `className="${firstClass} ${secondClass}"${p2}`;
-    });
+      }
+    );
     if (replaced === content) break;
     content = replaced;
     count++;

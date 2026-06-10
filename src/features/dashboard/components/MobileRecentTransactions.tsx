@@ -1,12 +1,20 @@
 import React from 'react';
 import { ChevronRight, Plus } from 'lucide-react';
 import { Transaction, AppView } from '@/types';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 const CAT_EMOJI: Record<string, string> = {
-  Food: '🍔', Transport: '🚗', Shopping: '🛍️', Utilities: '⚡',
-  Health: '💊', Travel: '✈️', Education: '📚', Business: '💼',
-  Subscriptions: '📱', Entertainment: '🎬', Income: '💰',
+  Food: '🍔',
+  Transport: '🚗',
+  Shopping: '🛍️',
+  Utilities: '⚡',
+  Health: '💊',
+  Travel: '✈️',
+  Education: '📚',
+  Business: '💼',
+  Subscriptions: '📱',
+  Entertainment: '🎬',
+  Income: '💰',
 };
 
 interface MobileRecentTransactionsProps {
@@ -33,13 +41,28 @@ export function MobileRecentTransactions({
       >
         {/* Section header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-3">
-          <h3 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)' }}>
+          <h3
+            style={{
+              fontSize: '15px',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+              fontFamily: 'var(--font-manrope)',
+            }}
+          >
             Recent
           </h3>
           <button
-            onClick={() => { haptic.light(); onNavigate('history'); }}
+            onClick={() => {
+              haptic.light();
+              onNavigate('history');
+            }}
             className="flex items-center gap-0.5 active:opacity-70"
-            style={{ color: 'var(--teal)', fontSize: '12px', fontWeight: 700, fontFamily: 'var(--font-inter)' }}
+            style={{
+              color: 'var(--teal)',
+              fontSize: '12px',
+              fontWeight: 700,
+              fontFamily: 'var(--font-inter)',
+            }}
           >
             See all <ChevronRight size={14} />
           </button>
@@ -55,10 +78,24 @@ export function MobileRecentTransactions({
               >
                 <Plus size={24} style={{ color: 'var(--teal)' }} />
               </div>
-              <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px', fontFamily: 'var(--font-manrope)' }}>
+              <p
+                style={{
+                  fontSize: '14px',
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
+                  marginBottom: '4px',
+                  fontFamily: 'var(--font-manrope)',
+                }}
+              >
                 No transactions yet
               </p>
-              <p style={{ fontSize: '12px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+              <p
+                style={{
+                  fontSize: '12px',
+                  color: 'var(--text-muted)',
+                  fontFamily: 'var(--font-inter)',
+                }}
+              >
                 Tap + to record your first one
               </p>
             </div>
@@ -79,23 +116,47 @@ export function MobileRecentTransactions({
 
                 {/* Name + category */}
                 <div className="flex-1 min-w-0">
-                  <p style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)', fontFamily: 'var(--font-inter)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <p
+                    style={{
+                      fontSize: '13px',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                      fontFamily: 'var(--font-inter)',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
                     {tx.merchant}
                   </p>
-                  <p style={{ fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
-                    {tx.category} · {new Date(tx.date).toLocaleDateString('en-IN', { month: 'short', day: 'numeric' })}
+                  <p
+                    style={{
+                      fontSize: '11px',
+                      color: 'var(--text-muted)',
+                      fontFamily: 'var(--font-inter)',
+                    }}
+                  >
+                    {tx.category} ·{' '}
+                    {new Date(tx.date).toLocaleDateString('en-IN', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
                   </p>
                 </div>
 
                 {/* Amount */}
-                <p style={{
-                  fontSize: '14px',
-                  fontWeight: 700,
-                  fontFamily: 'var(--font-manrope)',
-                  color: tx.type === 'debit' ? '#ef4444' : '#10b981',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {tx.type === 'debit' ? '-' : '+'}{currency}{tx.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                <p
+                  style={{
+                    fontSize: '14px',
+                    fontWeight: 700,
+                    fontFamily: 'var(--font-manrope)',
+                    color: tx.type === 'debit' ? '#ef4444' : '#10b981',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {tx.type === 'debit' ? '-' : '+'}
+                  {currency}
+                  {tx.amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                 </p>
               </div>
             ))

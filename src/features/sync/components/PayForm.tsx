@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Zap, Smartphone, ChevronRight, Info, Send } from 'lucide-react';
 import { UPI_APP_INTENTS, initiateUPIPayment } from '@/utils/upiPayment';
-import { initiateRazorpayPayment } from '@/utils/razorpaySync';
 import { useStore } from '@/store';
 
 export interface PayFormProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onSetView: (view: any) => void;
   onPay: (amount: number, description: string) => void;
   currency: string;
@@ -24,12 +24,16 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
 
   const amount = parseFloat(payAmount) || 0;
 
-  const validateVPA = (v: string) => /^[\w.\-]+@[\w]+$/.test(v.trim());
+  const validateVPA = (v: string) => /^[\w.-]+@[\w]+$/.test(v.trim());
 
   const handleUPIAppPay = (appId: string) => {
-    if (!amount || amount <= 0) { setVpaError('Enter a valid amount first.'); return; }
+    if (!amount || amount <= 0) {
+      setVpaError('Enter a valid amount first.');
+      return;
+    }
     if (!payeeVPA && payMode === 'upi-id') {
-      setVpaError('Enter a valid UPI ID.'); return;
+      setVpaError('Enter a valid UPI ID.');
+      return;
     }
 
     const pa = payeeVPA.trim() || 'merchant@upi'; // fallback for generic any-app intent
@@ -46,8 +50,14 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
   };
 
   const handleQuickAnyUPI = () => {
-    if (!amount || amount <= 0) { setVpaError('Enter a valid amount first.'); return; }
-    if (!validateVPA(payeeVPA)) { setVpaError('Enter a valid UPI ID (e.g. name@upi).'); return; }
+    if (!amount || amount <= 0) {
+      setVpaError('Enter a valid amount first.');
+      return;
+    }
+    if (!validateVPA(payeeVPA)) {
+      setVpaError('Enter a valid UPI ID (e.g. name@upi).');
+      return;
+    }
     setVpaError('');
 
     initiateUPIPayment({
@@ -67,16 +77,23 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
     return (
       <div className="max-w-md mx-auto py-8 animate-scale-in text-center">
         <div className="text-6xl mb-6 animate-bounce">📱</div>
-        <h2 className="text-2xl font-manrope font-extrabold mb-3" style={{ color: 'var(--text-primary)' }}>
+        <h2
+          className="text-2xl font-manrope font-extrabold mb-3"
+          style={{ color: 'var(--text-primary)' }}
+        >
           UPI App Launched
         </h2>
         <p className="text-sm mb-6" style={{ color: 'var(--text-muted)' }}>
-          Complete your payment in the UPI app. When you return to SpendWise, the transaction will be automatically detected and added.
+          Complete your payment in the UPI app. When you return to SpendWise, the transaction will
+          be automatically detected and added.
         </p>
         <div className="card p-4 mb-6 text-left space-y-2">
           <div className="flex justify-between text-sm">
             <span style={{ color: 'var(--text-muted)' }}>Amount</span>
-            <span className="font-bold">{currency}{amount.toFixed(0)}</span>
+            <span className="font-bold">
+              {currency}
+              {amount.toFixed(0)}
+            </span>
           </div>
           {payeeVPA && (
             <div className="flex justify-between text-sm">
@@ -91,16 +108,30 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
             </div>
           )}
         </div>
-        <div className="p-3 rounded-xl text-xs font-medium mb-6 flex items-start gap-2"
-          style={{ background: 'rgba(16,185,129,0.08)', color: 'var(--teal)', border: '1px solid rgba(16,185,129,0.2)' }}>
+        <div
+          className="p-3 rounded-xl text-xs font-medium mb-6 flex items-start gap-2"
+          style={{
+            background: 'rgba(16,185,129,0.08)',
+            color: 'var(--teal)',
+            border: '1px solid rgba(16,185,129,0.2)',
+          }}
+        >
           <Info size={14} className="shrink-0 mt-0.5" />
-          When you return to SpendWise after paying, we'll automatically ask you to confirm the transaction.
+          When you return to SpendWise after paying, we'll automatically ask you to confirm the
+          transaction.
         </div>
         <div className="flex gap-3">
           <button
-            onClick={() => { setLaunched(false); setPayMode('select'); }}
+            onClick={() => {
+              setLaunched(false);
+              setPayMode('select');
+            }}
             className="flex-1 py-3 rounded-xl font-bold text-sm cursor-pointer border"
-            style={{ background: 'var(--surface-input)', color: 'var(--text-muted)', borderColor: 'var(--border)' }}
+            style={{
+              background: 'var(--surface-input)',
+              color: 'var(--text-muted)',
+              borderColor: 'var(--border)',
+            }}
           >
             Try Again
           </button>
@@ -119,7 +150,7 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
   return (
     <div className="max-w-md mx-auto py-8 animate-scale-in">
       <button
-        onClick={() => payMode === 'select' ? onSetView('dashboard') : setPayMode('select')}
+        onClick={() => (payMode === 'select' ? onSetView('dashboard') : setPayMode('select'))}
         className="flex items-center gap-2 mb-6 border-none bg-transparent cursor-pointer font-semibold"
         style={{ color: 'var(--text-muted)' }}
       >
@@ -129,17 +160,25 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
 
       {/* ── Amount Input (always visible) ───────────────────────────── */}
       <div className="card p-6 mb-5">
-        <span className="block text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
+        <span
+          className="block text-[10px] font-black uppercase tracking-widest mb-3"
+          style={{ color: 'var(--text-muted)' }}
+        >
           Amount
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-3xl font-manrope font-bold" style={{ color: 'var(--text-muted)' }}>{currency}</span>
+          <span className="text-3xl font-manrope font-bold" style={{ color: 'var(--text-muted)' }}>
+            {currency}
+          </span>
           <input
             type="number"
             step="0.01"
             min="1"
             value={payAmount}
-            onChange={e => { setPayAmount(e.target.value); setVpaError(''); }}
+            onChange={e => {
+              setPayAmount(e.target.value);
+              setVpaError('');
+            }}
             className="bg-transparent border-none text-5xl font-manrope font-extrabold w-full max-w-[200px] outline-none text-center"
             style={{ color: 'var(--text-primary)' }}
             placeholder="0"
@@ -155,19 +194,20 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
           style={{
             background: 'var(--surface-input)',
             border: '1px solid var(--border)',
-            color: 'var(--text-primary)'
+            color: 'var(--text-primary)',
           }}
         />
       </div>
 
-      {vpaError && (
-        <p className="text-xs text-red-500 font-medium mb-3 px-1">{vpaError}</p>
-      )}
+      {vpaError && <p className="text-xs text-red-500 font-medium mb-3 px-1">{vpaError}</p>}
 
       {/* ── Mode: Select ────────────────────────────────────────────── */}
       {payMode === 'select' && (
         <div className="space-y-3">
-          <h2 className="text-lg font-manrope font-bold mb-4" style={{ color: 'var(--text-primary)' }}>
+          <h2
+            className="text-lg font-manrope font-bold mb-4"
+            style={{ color: 'var(--text-primary)' }}
+          >
             Choose Payment Method
           </h2>
 
@@ -176,24 +216,32 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
             onClick={() => setPayMode('upi-id')}
             className="w-full flex items-center gap-4 p-4 rounded-2xl cursor-pointer text-left transition-all hover:scale-[1.01] active:scale-[0.99]"
             style={{
-              background: 'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(45,212,191,0.08) 100%)',
-              border: '1px solid rgba(16,185,129,0.3)'
+              background:
+                'linear-gradient(135deg, rgba(16,185,129,0.12) 0%, rgba(45,212,191,0.08) 100%)',
+              border: '1px solid rgba(16,185,129,0.3)',
             }}
           >
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-md shrink-0"
-              style={{ background: 'linear-gradient(135deg, #10b981, #14b8a6)', color: 'white' }}>
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center text-xl shadow-md shrink-0"
+              style={{ background: 'linear-gradient(135deg, #10b981, #14b8a6)', color: 'white' }}
+            >
               ₹
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-manrope font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+              <p
+                className="font-manrope font-bold text-sm"
+                style={{ color: 'var(--text-primary)' }}
+              >
                 Send to UPI ID
               </p>
               <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
                 Opens any installed UPI app (GPay, PhonePe, Paytm...)
               </p>
             </div>
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0"
-              style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}>
+            <div
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shrink-0"
+              style={{ background: 'rgba(16,185,129,0.12)', color: '#10b981' }}
+            >
               <Smartphone size={10} /> Native
             </div>
             <ChevronRight size={16} style={{ color: 'var(--text-muted)' }} />
@@ -205,7 +253,10 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
               <button
                 key={app.id}
                 onClick={() => {
-                  if (!amount || amount <= 0) { setVpaError('Enter an amount first.'); return; }
+                  if (!amount || amount <= 0) {
+                    setVpaError('Enter an amount first.');
+                    return;
+                  }
                   setVpaError('');
                   // Quick pay: no VPA needed, opens app generically
                   initiateUPIPayment({
@@ -219,18 +270,25 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
                 className="flex items-center gap-3 p-3.5 rounded-2xl cursor-pointer transition-all hover:scale-[1.02] active:scale-[0.97] text-left"
                 style={{
                   background: 'var(--surface-card)',
-                  border: '1px solid var(--border)'
+                  border: '1px solid var(--border)',
                 }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-sm"
-                  style={{ background: app.color }}>
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-black text-sm shrink-0 shadow-sm"
+                  style={{ background: app.color }}
+                >
                   {app.icon}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold leading-tight truncate" style={{ color: 'var(--text-primary)' }}>
+                  <p
+                    className="text-xs font-bold leading-tight truncate"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     {app.name}
                   </p>
-                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>Quick pay</p>
+                  <p className="text-[10px]" style={{ color: 'var(--text-muted)' }}>
+                    Quick pay
+                  </p>
                 </div>
               </button>
             ))}
@@ -243,15 +301,20 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
               className="w-full flex items-center gap-4 p-4 rounded-2xl cursor-pointer text-left transition-all"
               style={{
                 background: 'var(--surface-card)',
-                border: '1px solid var(--border)'
+                border: '1px solid var(--border)',
               }}
             >
-              <div className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl shrink-0"
-                style={{ background: '#2B6CB0' }}>
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center text-white text-xl shrink-0"
+                style={{ background: '#2B6CB0' }}
+              >
                 R
               </div>
               <div className="flex-1">
-                <p className="font-manrope font-bold text-sm" style={{ color: 'var(--text-primary)' }}>
+                <p
+                  className="font-manrope font-bold text-sm"
+                  style={{ color: 'var(--text-primary)' }}
+                >
                   Razorpay Gateway
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -271,25 +334,34 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
             Enter UPI Details
           </h2>
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
+            <label
+              className="block text-[10px] font-black uppercase tracking-widest mb-1.5"
+              style={{ color: 'var(--text-muted)' }}
+            >
               UPI ID / VPA
             </label>
             <input
               type="text"
               value={payeeVPA}
-              onChange={e => { setPayeeVPA(e.target.value); setVpaError(''); }}
+              onChange={e => {
+                setPayeeVPA(e.target.value);
+                setVpaError('');
+              }}
               placeholder="name@upi, mobile@paytm, etc."
               className="w-full p-4 rounded-xl font-mono text-sm outline-none"
               style={{
                 background: 'var(--surface-input)',
                 border: `1px solid ${vpaError ? '#ef4444' : 'var(--border)'}`,
-                color: 'var(--text-primary)'
+                color: 'var(--text-primary)',
               }}
               autoFocus
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black uppercase tracking-widest mb-1.5" style={{ color: 'var(--text-muted)' }}>
+            <label
+              className="block text-[10px] font-black uppercase tracking-widest mb-1.5"
+              style={{ color: 'var(--text-muted)' }}
+            >
               Payee Name (optional)
             </label>
             <input
@@ -301,14 +373,17 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
               style={{
                 background: 'var(--surface-input)',
                 border: '1px solid var(--border)',
-                color: 'var(--text-primary)'
+                color: 'var(--text-primary)',
               }}
             />
           </div>
 
           {/* Choose which UPI app to open */}
           <div>
-            <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>
+            <p
+              className="text-[10px] font-black uppercase tracking-widest mb-3"
+              style={{ color: 'var(--text-muted)' }}
+            >
               Open With
             </p>
             <div className="grid grid-cols-3 gap-2.5">
@@ -319,14 +394,19 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
                   className="flex flex-col items-center gap-2 p-3 rounded-2xl cursor-pointer transition-all hover:scale-[1.04] active:scale-[0.97]"
                   style={{
                     background: 'var(--surface-card)',
-                    border: '1px solid var(--border)'
+                    border: '1px solid var(--border)',
                   }}
                 >
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-base shadow-sm"
-                    style={{ background: app.color }}>
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-white font-black text-base shadow-sm"
+                    style={{ background: app.color }}
+                  >
                     {app.icon}
                   </div>
-                  <span className="text-[10px] font-bold text-center leading-tight" style={{ color: 'var(--text-primary)' }}>
+                  <span
+                    className="text-[10px] font-bold text-center leading-tight"
+                    style={{ color: 'var(--text-primary)' }}
+                  >
                     {app.name.split(' ')[0]}
                   </span>
                 </button>
@@ -340,7 +420,8 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
             style={{ background: 'var(--teal)', color: 'white' }}
           >
             <Send size={16} />
-            Send {currency}{amount > 0 ? amount.toFixed(0) : '—'}
+            Send {currency}
+            {amount > 0 ? amount.toFixed(0) : '—'}
           </button>
         </div>
       )}
@@ -351,10 +432,17 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
           <h2 className="text-lg font-manrope font-bold" style={{ color: 'var(--text-primary)' }}>
             Razorpay Checkout
           </h2>
-          <div className="p-4 rounded-xl text-xs font-medium flex items-start gap-2"
-            style={{ background: 'rgba(59,130,246,0.08)', color: '#3b82f6', border: '1px solid rgba(59,130,246,0.2)' }}>
+          <div
+            className="p-4 rounded-xl text-xs font-medium flex items-start gap-2"
+            style={{
+              background: 'rgba(59,130,246,0.08)',
+              color: '#3b82f6',
+              border: '1px solid rgba(59,130,246,0.2)',
+            }}
+          >
             <Info size={14} className="shrink-0 mt-0.5" />
-            Razorpay opens a web popup for UPI, card, and netbanking payments. The transaction will be automatically added on success.
+            Razorpay opens a web popup for UPI, card, and netbanking payments. The transaction will
+            be automatically added on success.
           </div>
           <button
             onClick={handleRazorpay}
@@ -363,7 +451,8 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
             style={{ background: '#2B6CB0', color: 'white' }}
           >
             <Zap size={16} className="inline mr-2" />
-            Open Razorpay — {currency}{amount > 0 ? amount.toFixed(0) : '—'}
+            Open Razorpay — {currency}
+            {amount > 0 ? amount.toFixed(0) : '—'}
           </button>
         </div>
       )}

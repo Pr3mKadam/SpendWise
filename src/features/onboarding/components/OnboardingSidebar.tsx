@@ -79,7 +79,6 @@ export function OnboardingSidebar() {
           </div>
         ))}
       </div>
-
     </div>
   );
 }

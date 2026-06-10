@@ -3,35 +3,56 @@
 // Secret: supabase secrets set RESEND_API_KEY=re_xxxxxxxxxxxx
 // Get free API key at: https://resend.com (3,000 emails/month free)
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://spendwise.vercel.app',
+  'https://spendwise-preview.vercel.app',
+];
 
-interface InvitePayload {
-  to:        string;   // recipient email
-  toName:    string;   // recipient display name
-  groupName: string;   // SpendWise group name
-  groupId:   string;   // group ID for the join link
-  fromName:  string;   // inviter's name
-  joinUrl:   string;   // full join URL with ?action=join-group&id=xxx
+function isOriginAllowed(origin: string): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (origin.endsWith('.vercel.app') && origin.startsWith('https://spendwise-')) return true;
+  return false;
 }
 
-serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+interface InvitePayload {
+  to: string; // recipient email
+  toName: string; // recipient display name
+  groupName: string; // SpendWise group name
+  groupId: string; // group ID for the join link
+  fromName: string; // inviter's name
+  joinUrl: string; // full join URL with ?action=join-group&id=xxx
+}
+
+function buildCorsHeaders(origin: string) {
+  const allowed = isOriginAllowed(origin);
+  return {
+    'Access-Control-Allow-Origin': allowed ? origin : 'null',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    Vary: 'Origin',
+  };
+}
+
+serve(async req => {
+  const origin = req.headers.get('Origin') ?? '';
+  const corsHeaders = buildCorsHeaders(origin);
+
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const RESEND_KEY = Deno.env.get("RESEND_API_KEY");
+    const RESEND_KEY = Deno.env.get('RESEND_API_KEY');
     if (!RESEND_KEY) {
-      return new Response(
-        JSON.stringify({ error: "RESEND_API_KEY not configured" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: 'RESEND_API_KEY not configured' }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const body: InvitePayload = await req.json();
@@ -39,12 +60,12 @@ serve(async (req) => {
 
     if (!to || !groupName || !groupId) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: to, groupName, groupId" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ error: 'Missing required fields: to, groupName, groupId' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    const firstName = toName?.split(" ")[0] || "there";
+    const firstName = toName?.split(' ')[0] || 'there';
 
     // ── Branded HTML email ──────────────────────────────────────────
     const html = `
@@ -144,15 +165,15 @@ SpendWise is a free, private finance app. Your data stays on your device.
 If you didn't expect this invitation, you can safely ignore this email.`;
 
     // ── Send via Resend ─────────────────────────────────────────────
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
       headers: {
-        "Authorization": `Bearer ${RESEND_KEY}`,
-        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_KEY}`,
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: "SpendWise <invites@spendwise.app>",  // update to your verified domain
-        to:   [to],
+        from: 'SpendWise <invites@spendwise.app>', // update to your verified domain
+        to: [to],
         subject: `${fromName} invited you to "${groupName}" on SpendWise`,
         html,
         text,
@@ -162,23 +183,22 @@ If you didn't expect this invitation, you can safely ignore this email.`;
     const result = await response.json();
 
     if (!response.ok) {
-      console.error("Resend API error:", result);
-      return new Response(
-        JSON.stringify({ error: "Failed to send email", detail: result }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      console.error('Resend API error:', result);
+      return new Response(JSON.stringify({ error: 'Failed to send email', detail: result }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
+    return new Response(JSON.stringify({ success: true, id: result.id }), {
+      status: 200,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  } catch (err: unknown) {
+    console.error('send-invite function error:', err);
     return new Response(
-      JSON.stringify({ success: true, id: result.id }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
-
-  } catch (err: any) {
-    console.error("send-invite function error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message ?? "Unexpected error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      JSON.stringify({ error: err instanceof Error ? err.message : 'Unexpected error' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

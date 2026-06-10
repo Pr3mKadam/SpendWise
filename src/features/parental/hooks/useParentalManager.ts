@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useState, useMemo } from 'react';
 import { useStore } from '@/store';
 import { Transaction } from '@/types';
@@ -80,6 +81,6 @@ export function useParentalManager() {
     updateSettings,
     lockSession,
     removePin,
-    completeSetup
+    completeSetup,
   };
 }

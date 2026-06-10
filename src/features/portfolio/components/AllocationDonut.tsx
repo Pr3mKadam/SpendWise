@@ -3,6 +3,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ASSET_TYPES } from '@/data/portfolioConfig';
 
 export interface AllocationDonutProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   allocationByType: any[];
   total: number;
   currency: string;
@@ -18,7 +19,7 @@ export function AllocationDonut({ allocationByType, total, currency }: Allocatio
   const data = allocationByType.map(a => ({
     name: ASSET_TYPES.find(t => t.value === a.type)?.label || a.type,
     value: a.value,
-    color: ASSET_TYPES.find(t => t.value === a.type)?.color || '#64748b'
+    color: ASSET_TYPES.find(t => t.value === a.type)?.color || '#64748b',
   }));
 
   return (
@@ -26,19 +27,19 @@ export function AllocationDonut({ allocationByType, total, currency }: Allocatio
       <div className="w-full sm:w-[200px] h-full">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie
-              data={data}
-              innerRadius={55}
-              outerRadius={80}
-              paddingAngle={5}
-              dataKey="value"
-            >
+            <Pie data={data} innerRadius={55} outerRadius={80} paddingAngle={5} dataKey="value">
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.color} />
               ))}
             </Pie>
-            <Tooltip 
-              contentStyle={{ background: 'var(--card)', border: '1px solid var(--border)', borderRadius: '12px', fontSize: '12px' }}
+            <Tooltip
+              contentStyle={{
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                borderRadius: '12px',
+                fontSize: '12px',
+              }}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(val: any) => fmt(Number(val), currency)}
             />
           </PieChart>
@@ -49,8 +50,16 @@ export function AllocationDonut({ allocationByType, total, currency }: Allocatio
           <div key={i} className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full shrink-0" style={{ background: d.color }} />
             <div>
-              <p className="font-inter text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{d.name}</p>
-              <p className="font-manrope text-[length:var(--fs-caption)] font-bold" style={{ color: 'var(--text-muted)' }}>
+              <p
+                className="font-inter text-[13px] font-bold"
+                style={{ color: 'var(--text-primary)' }}
+              >
+                {d.name}
+              </p>
+              <p
+                className="font-manrope text-[length:var(--fs-caption)] font-bold"
+                style={{ color: 'var(--text-muted)' }}
+              >
                 {((d.value / total) * 100).toFixed(1)}%
               </p>
             </div>

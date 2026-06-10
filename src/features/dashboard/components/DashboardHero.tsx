@@ -24,4 +24,3 @@ export default function DashboardHero(props: DashboardHeroProps) {
 
   return <DashboardHeroDesktop {...props} />;
 }
-

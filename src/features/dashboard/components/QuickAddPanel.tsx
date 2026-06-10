@@ -12,13 +12,13 @@ interface QuickAddPanelProps {
   transactions?: Transaction[];
 }
 
-export default function QuickAddPanel({ 
-  onAdd, 
-  recentMerchants = [], 
+export default function QuickAddPanel({
+  onAdd,
+  recentMerchants = [],
   onQuickInput,
   dashboardInput,
   setDashboardInput,
-  transactions
+  transactions,
 }: QuickAddPanelProps) {
   return (
     <motion.div
@@ -61,8 +61,8 @@ export default function QuickAddPanel({
       </div>
 
       {/* MagicInput handles all 3 modes internally */}
-      <MagicInput 
-        onAdd={onAdd} 
+      <MagicInput
+        onAdd={onAdd}
         externalInput={dashboardInput}
         onInputChange={setDashboardInput}
         transactions={transactions}
@@ -70,9 +70,11 @@ export default function QuickAddPanel({
 
       {recentMerchants.length > 0 && (
         <div className="mt-4">
-          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-3">Recently Added</p>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] mb-3">
+            Recently Added
+          </p>
           <div className="flex flex-wrap gap-2">
-            {recentMerchants.map((merchant) => (
+            {recentMerchants.map(merchant => (
               <button
                 key={merchant}
                 onClick={() => onQuickInput?.(`${merchant} `)}

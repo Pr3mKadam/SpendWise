@@ -7,7 +7,7 @@ interface OnboardingStep2Props {
   step: number;
   userRole: UserRole;
   setUserRole: (role: UserRole) => void;
-  setStep: (step: 1 | 2 | 3) => void;
+  setStep: (step: 1 | 2 | 3 | 4) => void;
 }
 
 export function OnboardingStep2({ step, userRole, setUserRole, setStep }: OnboardingStep2Props) {
@@ -28,7 +28,9 @@ export function OnboardingStep2({ step, userRole, setUserRole, setStep }: Onboar
         >
           Choose your Persona
         </h3>
-        <p style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}>
+        <p
+          style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', color: 'var(--text-muted)' }}
+        >
           We'll customize your tools based on your role
         </p>
       </div>
@@ -36,9 +38,19 @@ export function OnboardingStep2({ step, userRole, setUserRole, setStep }: Onboar
       <div className="space-y-3 mb-8">
         {[
           { id: 'student', title: 'Student', desc: 'Habit building & learning focus', icon: '🎓' },
-          { id: 'professional', title: 'Professional', desc: 'Net worth & goals focus', icon: '💼' },
-          { id: 'business', title: 'Business Owner', desc: 'Cash flow & analytics focus', icon: '🏢' },
-        ].map((role) => {
+          {
+            id: 'professional',
+            title: 'Professional',
+            desc: 'Net worth & goals focus',
+            icon: '💼',
+          },
+          {
+            id: 'business',
+            title: 'Business Owner',
+            desc: 'Cash flow & analytics focus',
+            icon: '🏢',
+          },
+        ].map(role => {
           const isSelected = userRole === role.id;
           return (
             <button
@@ -58,7 +70,7 @@ export function OnboardingStep2({ step, userRole, setUserRole, setStep }: Onboar
                 gap: '16px',
               }}
             >
-              <span style={{ fontSize: '24px' }}>{role.icon}</span>
+              <span /* tailwind-migration:replaced */>{role.icon}</span>
               <div>
                 <h4
                   style={{

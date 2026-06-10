@@ -6,18 +6,34 @@ interface DeleteConfirmModalProps {
   onConfirm: (id: string) => void;
 }
 
-export function DeleteConfirmModal({ deleteConfirmId, onCancel, onConfirm }: DeleteConfirmModalProps) {
+export function DeleteConfirmModal({
+  deleteConfirmId,
+  onCancel,
+  onConfirm,
+}: DeleteConfirmModalProps) {
   if (!deleteConfirmId) return null;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="card rounded-3xl p-6 shadow-2xl w-80 animate-fade-in-up" style={{ border: '1.5px solid var(--border)' }}>
-        <div className="flex items-center justify-center w-12 h-12 rounded-2xl mx-auto mb-4" style={{ background: 'var(--red-dim)' }}>
+      <div
+        className="card rounded-3xl p-6 shadow-2xl w-80 animate-fade-in-up"
+        style={{ border: '1.5px solid var(--border)' }}
+      >
+        <div
+          className="flex items-center justify-center w-12 h-12 rounded-2xl mx-auto mb-4"
+          style={{ background: 'var(--red-dim)' }}
+        >
           <AlertCircle size={22} style={{ color: 'var(--red)' }} />
         </div>
-        <h3 className="text-center font-bold text-base mb-1" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)' }}>
+        <h3
+          className="text-center font-bold text-base mb-1"
+          style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-manrope)' }}
+        >
           Delete Transaction?
         </h3>
-        <p className="text-center text-xs mb-5" style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}>
+        <p
+          className="text-center text-xs mb-5"
+          style={{ color: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
+        >
           This action cannot be undone.
         </p>
         <div className="flex gap-3">

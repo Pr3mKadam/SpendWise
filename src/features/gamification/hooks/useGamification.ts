@@ -17,7 +17,7 @@ export function useGamification(transactions: Transaction[]) {
   // 2. Calculate Health Score (0-100)
   useEffect(() => {
     if (transactions.length === 0) {
-      setHealthScore(50);
+      setHealthScore(50); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 
@@ -60,36 +60,39 @@ export function useGamification(transactions: Transaction[]) {
     const transactionXP = transactions.length * 15;
     const streakXP = streak * 100;
     const healthXP = healthScore * 10;
-    
+
     // Budget Adherence Bonus
     const currentMonthStr = new Date().toISOString().substring(0, 7);
-    const monthlyExpenses = transactions
-      .filter(t => t.type === 'debit' && t.date.startsWith(currentMonthStr));
-    
+    const monthlyExpenses = transactions.filter(
+      t => t.type === 'debit' && t.date.startsWith(currentMonthStr)
+    );
+
     const budgetAdherence = Object.entries(categoryLimits).reduce((acc, [cat, limit]) => {
       if (limit === 0) return acc;
-      const spent = monthlyExpenses.filter(t => t.category === cat).reduce((s, t) => s + t.amount, 0);
+      const spent = monthlyExpenses
+        .filter(t => t.category === cat)
+        .reduce((s, t) => s + t.amount, 0);
       return spent <= limit ? acc + 100 : acc;
     }, 0);
 
     const totalXp = transactionXP + streakXP + healthXP + budgetAdherence;
-    
+
     // Level = floor(sqrt(xp / 250)) + 1
     const currentLevel = Math.floor(Math.sqrt(totalXp / 250)) + 1;
-    
+
     // XP math for progress bar
     const currentLevelBaseXP = 250 * Math.pow(currentLevel - 1, 2);
     const nextLevelBaseXP = 250 * Math.pow(currentLevel, 2);
     const xpGainedInLevel = totalXp - currentLevelBaseXP;
     const xpNeededForLevel = nextLevelBaseXP - currentLevelBaseXP;
-    
+
     const levelProgress = Math.min(Math.max((xpGainedInLevel / xpNeededForLevel) * 100, 0), 100);
 
     return {
       xp: totalXp,
       level: currentLevel,
       xpToNextLevel: nextLevelBaseXP - totalXp,
-      progress: Math.round(levelProgress)
+      progress: Math.round(levelProgress),
     };
   }, [transactions, streak, healthScore, categoryLimits]);
 

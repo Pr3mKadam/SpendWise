@@ -20,22 +20,23 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
     // Monthly income (credits this month)
     const monthStart = formatLocalYYYYMMDD(new Date(now.getFullYear(), now.getMonth(), 1));
     const monthTx = transactions.filter(t => t.date >= monthStart);
-    const monthlyIncome = monthTx.filter(t => t.type === 'credit').reduce((a, t) => a + t.amount, 0);
+    const monthlyIncome = monthTx
+      .filter(t => t.type === 'credit')
+      .reduce((a, t) => a + t.amount, 0);
     const monthlySpent = monthTx.filter(t => t.type === 'debit').reduce((a, t) => a + t.amount, 0);
 
     // Estimate monthly fixed costs (recurring debits)
     const avgMonthlySpend = monthlySpent > 0 ? monthlySpent : currentBalance * 0.3;
 
     // Target: save 20% of income
-    const savingsTarget = monthlyIncome * 0.20;
+    const savingsTarget = monthlyIncome * 0.2;
     const essentialBuffer = avgMonthlySpend * 0.3; // 30% for fixed costs remaining
     const available = currentBalance - savingsTarget - essentialBuffer;
     const safePerDay = daysLeft > 0 ? Math.max(0, available / daysLeft) : 0;
 
     // Status
     const ratio = safePerDay / (avgMonthlySpend / daysInMonth || 1);
-    const status: 'great' | 'ok' | 'tight' =
-      ratio > 1.2 ? 'great' : ratio > 0.7 ? 'ok' : 'tight';
+    const status: 'great' | 'ok' | 'tight' = ratio > 1.2 ? 'great' : ratio > 0.7 ? 'ok' : 'tight';
 
     const todayStr = formatLocalYYYYMMDD(now);
     const todaySpent = transactions
@@ -50,26 +51,32 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
 
   const statusConfig = {
     great: { color: '#10b981', bg: '#10b98115', icon: CheckCircle, label: 'Healthy Budget' },
-    ok:    { color: '#f59e0b', bg: '#f59e0b15', icon: ShieldCheck,  label: 'Watch Spending' },
-    tight: { color: '#ef4444', bg: '#ef444415', icon: AlertCircle,  label: 'Budget Tight' },
+    ok: { color: '#f59e0b', bg: '#f59e0b15', icon: ShieldCheck, label: 'Watch Spending' },
+    tight: { color: '#ef4444', bg: '#ef444415', icon: AlertCircle, label: 'Budget Tight' },
   };
   const cfg = statusConfig[data.status];
 
   return (
     <div className="card p-4 sm:p-5 overflow-hidden relative">
       {/* Background glow */}
-      <div className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-10 pointer-events-none"
-        style={{ background: cfg.color }} />
+      <div
+        className="absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-10 pointer-events-none"
+        style={{ background: cfg.color }}
+      />
 
       <div className="flex items-start justify-between mb-4">
         <div>
           <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)]">
             Safe to Spend
           </p>
-          <p className="text-[length:var(--fs-caption)] text-[var(--text-dim)] mt-0.5 font-inter">Today's budget</p>
+          <p className="text-[length:var(--fs-caption)] text-[var(--text-dim)] mt-0.5 font-inter">
+            Today's budget
+          </p>
         </div>
-        <div className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[length:var(--fs-overline)] font-bold"
-          style={{ background: cfg.bg, color: cfg.color }}>
+        <div
+          className="flex items-center gap-1.5 px-2 py-1 rounded-full text-[length:var(--fs-overline)] font-bold"
+          style={{ background: cfg.bg, color: cfg.color }}
+        >
           <cfg.icon size={10} />
           {cfg.label}
         </div>
@@ -77,9 +84,12 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
 
       {/* Big number */}
       <div className="flex items-end gap-2 mb-4">
-        <span className="font-manrope font-black text-3xl sm:text-4xl tabular-nums"
-          style={{ color: cfg.color, letterSpacing: '-0.04em' }}>
-          {currency}{Math.round(data.remaining).toLocaleString('en-IN')}
+        <span
+          className="font-manrope font-black text-3xl sm:text-4xl tabular-nums"
+          style={{ color: cfg.color, letterSpacing: '-0.04em' }}
+        >
+          {currency}
+          {Math.round(data.remaining).toLocaleString('en-IN')}
         </span>
         <span className="text-xs text-[var(--text-muted)] font-inter mb-1.5">left today</span>
       </div>
@@ -87,8 +97,14 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
       {/* Progress bar */}
       <div className="mb-3">
         <div className="flex justify-between text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] mb-1.5">
-          <span>Spent: {currency}{Math.round(data.todaySpent).toLocaleString('en-IN')}</span>
-          <span>Budget: {currency}{Math.round(data.safePerDay).toLocaleString('en-IN')}</span>
+          <span>
+            Spent: {currency}
+            {Math.round(data.todaySpent).toLocaleString('en-IN')}
+          </span>
+          <span>
+            Budget: {currency}
+            {Math.round(data.safePerDay).toLocaleString('en-IN')}
+          </span>
         </div>
         <div className="h-2 bg-[var(--surface-input)] rounded-full overflow-hidden border border-[var(--border)]">
           <motion.div
@@ -109,7 +125,8 @@ export function SafeToSpend({ transactions, currency, currentBalance }: SafeToSp
         </div>
         <div className="w-px h-3 bg-[var(--border)]" />
         <div className="text-[length:var(--fs-overline)] text-[var(--text-muted)] font-inter">
-          Saving target: {currency}{Math.round(data.savingsTarget).toLocaleString('en-IN')}
+          Saving target: {currency}
+          {Math.round(data.savingsTarget).toLocaleString('en-IN')}
         </div>
       </div>
     </div>

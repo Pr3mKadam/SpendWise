@@ -1,11 +1,19 @@
 import React from 'react';
-import { 
-  User, ShieldCheck, DownloadCloud, CheckCircle2, Camera, 
-  ChevronRight, Globe, Bell, Smartphone, Database, Lock, 
-  Smartphone as PhoneIcon, MapPin, Briefcase, CreditCard
+import {
+  User,
+  ShieldCheck,
+  DownloadCloud,
+  CheckCircle2,
+  Camera,
+  ChevronRight,
+  Globe,
+  Bell,
+  Smartphone,
+  Database,
+  Lock,
 } from 'lucide-react';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface ProfileViewMobileProps {
   name: string;
@@ -27,7 +35,9 @@ interface ProfileViewMobileProps {
   dataManagement: React.ReactNode;
   accessibility: React.ReactNode;
   notifications: React.ReactNode;
+  pricing: React.ReactNode;
   transactionsCount: number;
+  tabs?: React.ReactNode;
 }
 
 export default function ProfileViewMobile({
@@ -49,10 +59,14 @@ export default function ProfileViewMobile({
   dataManagement,
   accessibility,
   notifications,
-  transactionsCount
+  pricing,
+  transactionsCount,
+  tabs,
 }: ProfileViewMobileProps) {
   return (
     <div className="view-enter space-y-6 pb-20">
+      {tabs && <div className="px-1 pt-2">{tabs}</div>}
+
       {/* 1. Profile Hero */}
       <div className="flex flex-col items-center py-4">
         <div className="relative mb-4">
@@ -63,8 +77,11 @@ export default function ProfileViewMobile({
               <User size={40} className="text-[var(--teal)]" />
             )}
           </div>
-          <button 
-            onClick={() => { haptic.medium(); onAvatarClick(); }}
+          <button
+            onClick={() => {
+              haptic.medium();
+              onAvatarClick();
+            }}
             className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[var(--teal)] text-white border-2 border-[var(--surface-card)] flex items-center justify-center shadow-lg active:scale-90 transition-transform"
           >
             <Camera size={14} />
@@ -82,11 +99,18 @@ export default function ProfileViewMobile({
       {/* 2. Quick Stats Grid */}
       <div className="grid grid-cols-2 gap-3 px-1">
         <div className="bg-[var(--surface-card)] p-4 rounded-3xl border border-[var(--border)] shadow-sm">
-          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">Target</p>
-          <p className="text-sm font-bold text-[var(--text-primary)]">{currency}{monthlyGoal || '0'}</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">
+            Target
+          </p>
+          <p className="text-sm font-bold text-[var(--text-primary)]">
+            {currency}
+            {monthlyGoal || '0'}
+          </p>
         </div>
         <div className="bg-[var(--surface-card)] p-4 rounded-3xl border border-[var(--border)] shadow-sm">
-          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">Logged</p>
+          <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-1">
+            Logged
+          </p>
           <p className="text-sm font-bold text-[var(--teal)]">{transactionsCount} Tx</p>
         </div>
       </div>
@@ -129,8 +153,11 @@ export default function ProfileViewMobile({
             <ShieldCheck size={12} /> Security & Family
           </div>
           <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-4 shadow-sm">
-            <button 
-              onClick={() => { haptic.light(); onNavigate('parental'); }}
+            <button
+              onClick={() => {
+                haptic.light();
+                onNavigate('parental');
+              }}
               className="w-full flex items-center justify-between p-3 rounded-2xl bg-[var(--surface-input)] active:bg-[var(--surface-card)] transition-colors"
             >
               <div className="flex items-center gap-4">
@@ -139,11 +166,35 @@ export default function ProfileViewMobile({
                 </div>
                 <div className="text-left">
                   <p className="text-xs font-bold text-[var(--text-primary)]">Parental Controls</p>
-                  <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">PIN Lock & Spend Limits</p>
+                  <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)]">
+                    PIN Lock & Spend Limits
+                  </p>
                 </div>
               </div>
               <ChevronRight size={18} className="text-[var(--text-muted)]" />
             </button>
+          </div>
+        </section>
+
+        {/* Plan & Pricing */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 px-1 text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>{' '}
+            Plan
+          </div>
+          <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-4 shadow-sm">
+            {pricing}
           </div>
         </section>
 
@@ -170,21 +221,28 @@ export default function ProfileViewMobile({
 
       {/* 4. App Info & Install */}
       <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-5 text-center shadow-sm">
-        <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">SpendWise PWA</p>
-        <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] leading-relaxed mb-6">
-          Your data is encrypted and stored locally on this device.<br/>We never upload your transactions to any server.
+        <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase mb-2">
+          SpendWise PWA
         </p>
-        
+        <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] leading-relaxed mb-6">
+          Your data is encrypted and stored locally on this device.
+          <br />
+          We never upload your transactions to any server.
+        </p>
+
         {!isAppInstalled && (isInstallable || isIOS) && (
-          <button 
-            onClick={() => { haptic.heavy(); triggerInstall(); }}
+          <button
+            onClick={() => {
+              haptic.heavy();
+              triggerInstall();
+            }}
             className="w-full h-14 bg-[var(--teal)] text-white rounded-2xl flex items-center justify-center gap-3 font-bold uppercase tracking-widest shadow-lg active:scale-95 transition-transform"
           >
             <DownloadCloud size={20} />
             Install App
           </button>
         )}
-        
+
         {isAppInstalled && (
           <div className="flex items-center justify-center gap-2 text-[var(--teal)]">
             <CheckCircle2 size={18} />

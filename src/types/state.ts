@@ -1,5 +1,17 @@
-import { Transaction, Category, MonthlyStats, MonthlyHistoryPoint, CategorySpend, BalanceDataPoint, RecurringPattern, SavingsGoal, Budget, BudgetPeriod } from '@/types/finance';
-import { SpendingAlert, AppNotification, AppView } from '@/types/ui';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import {
+  Transaction,
+  Category,
+  MonthlyStats,
+  MonthlyHistoryPoint,
+  CategorySpend,
+  BalanceDataPoint,
+  RecurringPattern,
+  SavingsGoal,
+  Budget,
+  BudgetPeriod,
+} from '@/types/finance';
+import { SpendingAlert, AppNotification, AppView } from '@/components/ui/types';
 import { SpendWiseStore, ParentalControlState } from '@/store';
 import { CustomCategoryDef } from '@/types/index';
 

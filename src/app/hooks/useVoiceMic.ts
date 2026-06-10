@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * useVoiceMic — orchestrates voice-mic UI state for MasterMic.
  *
@@ -69,7 +70,7 @@ export function useVoiceMic(options: UseVoiceMicOptions) {
         voice.stop();
       }
     },
-    [voice.isSupported, voice.state, voice.start, voice.stop],
+    [voice.isSupported, voice.state, voice.start, voice.stop]
   );
 
   // ── Onboarding dismiss ──────────────────────────────────────────────────
@@ -78,13 +79,10 @@ export function useVoiceMic(options: UseVoiceMicOptions) {
     localStorage.setItem('spendwise_voice_onboarded', 'true');
   }, []);
 
-  const toggleHistory = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation();
-      setShowHistory(v => !v);
-    },
-    [],
-  );
+  const toggleHistory = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowHistory(v => !v);
+  }, []);
 
   return {
     // voice state

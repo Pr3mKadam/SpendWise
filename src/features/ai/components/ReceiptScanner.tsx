@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { processReceipt } from '@/services/OCRService';
+import { processReceipt } from '@/core/api/OCRService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Camera, Upload, X, Loader2, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 import { formatLocalYYYYMMDD } from '@/utils/date';
@@ -18,11 +18,15 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
-  
+
   // Cropping & Resizing State (percentages)
   const [crop, setCrop] = useState({ x: 10, y: 10, width: 80, height: 80 });
   const [activeAction, setActiveAction] = useState<string | null>(null);
-  const dragRef = useRef<{ startX: number; startY: number; initCrop: typeof crop }>({ startX: 0, startY: 0, initCrop: { x: 10, y: 10, width: 80, height: 80 } });
+  const dragRef = useRef<{ startX: number; startY: number; initCrop: typeof crop }>({
+    startX: 0,
+    startY: 0,
+    initCrop: { x: 10, y: 10, width: 80, height: 80 },
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -51,7 +55,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
     dragRef.current = {
       startX: clientX,
       startY: clientY,
-      initCrop: { ...crop }
+      initCrop: { ...crop },
     };
     setActiveAction(action);
   };
@@ -141,8 +145,12 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
   }, [activeAction]);
 
   // Helper to draw cropped image to canvas and export new File
-  const cropImageToFile = async (dataUrl: string, cropArea: { x: number; y: number; width: number; height: number }, originalFile: File): Promise<File> => {
-    return new Promise((resolve, reject) => {
+  const cropImageToFile = async (
+    dataUrl: string,
+    cropArea: { x: number; y: number; width: number; height: number },
+    originalFile: File
+  ): Promise<File> => {
+    return new Promise((resolve, _reject) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
@@ -162,14 +170,20 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
 
         ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, sWidth, sHeight);
 
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            resolve(originalFile);
-            return;
-          }
-          const croppedFile = new File([blob], originalFile.name, { type: originalFile.type || 'image/jpeg' });
-          resolve(croppedFile);
-        }, originalFile.type || 'image/jpeg', 0.95);
+        canvas.toBlob(
+          blob => {
+            if (!blob) {
+              resolve(originalFile);
+              return;
+            }
+            const croppedFile = new File([blob], originalFile.name, {
+              type: originalFile.type || 'image/jpeg',
+            });
+            resolve(croppedFile);
+          },
+          originalFile.type || 'image/jpeg',
+          0.95
+        );
       };
       img.onerror = () => resolve(originalFile);
       img.src = dataUrl;
@@ -194,21 +208,23 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
       }, 300);
 
       const result = await processReceipt(file);
-      
+
       clearInterval(progressInterval);
       setProgress(100);
 
       onExtracted({
         merchant: result.merchant || 'Unknown Merchant',
         amount: result.amount || 0,
-        date: result.date || formatLocalYYYYMMDD(new Date())
+        date: result.date || formatLocalYYYYMMDD(new Date()),
       });
-      
+
       setTimeout(() => {
         onClose();
       }, 500);
-      
-    } catch (err: any) {
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      err: any
+    ) {
       console.error(err);
       setError(
         err.message?.includes('API key')
@@ -249,14 +265,17 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                   </p>
                 </div>
               </div>
-              <button onClick={onClose} className="p-2 rounded-full hover:bg-white/5 text-[var(--text-muted)]">
+              <button
+                onClick={onClose}
+                className="p-2 rounded-full hover:bg-white/5 text-[var(--text-muted)]"
+              >
                 <X size={20} />
               </button>
             </div>
 
             <div className="p-8">
               {!image ? (
-                <div 
+                <div
                   onClick={() => fileInputRef.current?.click()}
                   className="group border-2 border-dashed border-[var(--border)] rounded-2xl p-12 flex flex-col items-center justify-center gap-4 hover:border-teal-500/50 hover:bg-teal-500/5 transition-all cursor-pointer"
                 >
@@ -265,13 +284,15 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                   </div>
                   <div className="text-center">
                     <p className="font-bold text-[var(--text-primary)]">Upload Receipt</p>
-                    <p className="text-xs text-[var(--text-muted)] mt-1">PNG, JPG or JPEG up to 10MB</p>
+                    <p className="text-xs text-[var(--text-muted)] mt-1">
+                      PNG, JPG or JPEG up to 10MB
+                    </p>
                   </div>
-                  <input 
+                  <input
                     ref={fileInputRef}
-                    type="file" 
-                    accept="image/*" 
-                    className="hidden" 
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
                     onChange={handleFileChange}
                   />
                 </div>
@@ -279,11 +300,18 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                 <div className="space-y-6">
                   {isCropping ? (
                     <div className="space-y-4">
-                      <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border-2 border-dashed border-teal-500/50 bg-black/20 select-none" ref={containerRef}>
-                        <img src={image} alt="Crop Preview" className="w-full h-full object-contain opacity-50 pointer-events-none" />
-                        
+                      <div
+                        className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border-2 border-dashed border-teal-500/50 bg-black/20 select-none"
+                        ref={containerRef}
+                      >
+                        <img
+                          src={image}
+                          alt="Crop Preview"
+                          className="w-full h-full object-contain opacity-50 pointer-events-none"
+                        />
+
                         {/* Flawless Interactive Crop Box Overlay */}
-                        <div 
+                        <div
                           className="absolute border-2 border-teal-400 bg-teal-500/10 backdrop-blur-[1px] shadow-[0_0_0_9999px_rgba(0,0,0,0.6)] select-none"
                           style={{
                             left: `${crop.x}%`,
@@ -294,62 +322,77 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                           }}
                         >
                           {/* Center Drag Area */}
-                          <div 
-                            onTouchStart={(e) => handlePointerDown(e, 'move')}
-                            onMouseDown={(e) => handlePointerDown(e, 'move')}
+                          <div
+                            onTouchStart={e => handlePointerDown(e, 'move')}
+                            onMouseDown={e => handlePointerDown(e, 'move')}
                             className="absolute inset-0 w-full h-full cursor-move flex items-center justify-center group"
                           >
                             <span className="bg-black/70 text-white text-[length:var(--fs-caption)] px-3 py-1.5 rounded-lg font-bold opacity-80 group-hover:opacity-100 transition-opacity pointer-events-none shadow-lg">
-                              {activeAction === 'move' ? 'Moving...' : activeAction ? 'Resizing...' : 'Drag center to move, corners to resize'}
+                              {activeAction === 'move'
+                                ? 'Moving...'
+                                : activeAction
+                                  ? 'Resizing...'
+                                  : 'Drag center to move, corners to resize'}
                             </span>
                           </div>
 
                           {/* Top-Left Corner Handle */}
-                          <div 
-                            onTouchStart={(e) => handlePointerDown(e, 'nw')}
-                            onMouseDown={(e) => handlePointerDown(e, 'nw')}
+                          <div
+                            onTouchStart={e => handlePointerDown(e, 'nw')}
+                            onMouseDown={e => handlePointerDown(e, 'nw')}
                             className="absolute -top-6 -left-6 w-12 h-12 flex items-center justify-center cursor-nwse-resize z-50 group"
                           >
-                            <div className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'nw' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`} />
+                            <div
+                              className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'nw' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`}
+                            />
                           </div>
 
                           {/* Top-Right Corner Handle */}
-                          <div 
-                            onTouchStart={(e) => handlePointerDown(e, 'ne')}
-                            onMouseDown={(e) => handlePointerDown(e, 'ne')}
+                          <div
+                            onTouchStart={e => handlePointerDown(e, 'ne')}
+                            onMouseDown={e => handlePointerDown(e, 'ne')}
                             className="absolute -top-6 -right-6 w-12 h-12 flex items-center justify-center cursor-nesw-resize z-50 group"
                           >
-                            <div className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'ne' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`} />
+                            <div
+                              className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'ne' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`}
+                            />
                           </div>
 
                           {/* Bottom-Left Corner Handle */}
-                          <div 
-                            onTouchStart={(e) => handlePointerDown(e, 'sw')}
-                            onMouseDown={(e) => handlePointerDown(e, 'sw')}
+                          <div
+                            onTouchStart={e => handlePointerDown(e, 'sw')}
+                            onMouseDown={e => handlePointerDown(e, 'sw')}
                             className="absolute -bottom-6 -left-6 w-12 h-12 flex items-center justify-center cursor-nesw-resize z-50 group"
                           >
-                            <div className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'sw' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`} />
+                            <div
+                              className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'sw' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`}
+                            />
                           </div>
 
                           {/* Bottom-Right Corner Handle */}
-                          <div 
-                            onTouchStart={(e) => handlePointerDown(e, 'se')}
-                            onMouseDown={(e) => handlePointerDown(e, 'se')}
+                          <div
+                            onTouchStart={e => handlePointerDown(e, 'se')}
+                            onMouseDown={e => handlePointerDown(e, 'se')}
                             className="absolute -bottom-6 -right-6 w-12 h-12 flex items-center justify-center cursor-nwse-resize z-50 group"
                           >
-                            <div className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'se' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`} />
+                            <div
+                              className={`w-5 h-5 bg-teal-500 border-2 border-white rounded-full shadow-lg transition-transform ${activeAction === 'se' ? 'scale-125 bg-teal-400' : 'group-hover:scale-110'}`}
+                            />
                           </div>
                         </div>
                       </div>
 
                       <div className="flex gap-3">
-                        <button 
-                          onClick={() => { setImage(null); setIsCropping(false); }}
+                        <button
+                          onClick={() => {
+                            setImage(null);
+                            setIsCropping(false);
+                          }}
                           className="flex-1 py-3 rounded-xl bg-red-500/10 text-red-500 font-bold text-xs"
                         >
                           Retake
                         </button>
-                        <button 
+                        <button
                           onClick={async () => {
                             if (!image || !file) return;
                             setIsProcessingCrop(true);
@@ -363,7 +406,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                                 setIsProcessingCrop(false);
                               };
                               reader.readAsDataURL(croppedFile);
-                            } catch (e) {
+                            } catch (_e) {
                               setIsCropping(false);
                               setIsProcessingCrop(false);
                             }
@@ -379,8 +422,12 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                   ) : (
                     <div className="space-y-6">
                       <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden border border-[var(--border)] bg-black">
-                        <img src={image} alt="Receipt Preview" className="w-full h-full object-contain" />
-                        <button 
+                        <img
+                          src={image}
+                          alt="Receipt Preview"
+                          className="w-full h-full object-contain"
+                        />
+                        <button
                           onClick={() => setImage(null)}
                           className="absolute top-2 right-2 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-md"
                         >
@@ -398,7 +445,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                             <span>{progress}%</span>
                           </div>
                           <div className="h-2 bg-[var(--surface-input)] rounded-full overflow-hidden">
-                            <motion.div 
+                            <motion.div
                               className="h-full bg-teal-500"
                               initial={{ width: 0 }}
                               animate={{ width: `${progress}%` }}
@@ -414,7 +461,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                           <p className="text-xs font-bold">{error}</p>
                         </div>
                       ) : (
-                        <button 
+                        <button
                           onClick={processImage}
                           className="w-full py-4 rounded-2xl bg-teal-500 text-white font-bold flex items-center justify-center gap-2 hover:opacity-90 shadow-lg shadow-teal-500/20 transition-all"
                         >
@@ -427,7 +474,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
                 </div>
               )}
             </div>
-            
+
             <div className="px-8 pb-8 flex items-center gap-3 text-[length:var(--fs-overline)] text-[var(--text-muted)]">
               <CheckCircle2 size={12} className="text-teal-500" />
               <span>Processed securely via SpendWise Cloud (Gemini 1.5)</span>

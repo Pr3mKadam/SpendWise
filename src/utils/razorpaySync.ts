@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Transaction, Category } from '@/types';
-import { processNaturalLanguageExpense } from '@/parsers/nlp';
+import { processNaturalLanguageExpense } from '@/features/ai/parsers/nlp';
 import { useStore } from '@/store';
+import { RAZORPAY_PROXY_URL } from '@/config/env';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
 export type MerchantMemory = Record<string, { merchant: string; category: string }>;
@@ -14,32 +16,39 @@ export function rememberMerchant(upiVPA: string, merchant: string, category: str
   if (!upiVPA) return;
   useStore.getState().setMerchantMemory(prev => ({
     ...prev,
-    [upiVPA.toLowerCase()]: { merchant, category }
+    [upiVPA.toLowerCase()]: { merchant, category },
   }));
 }
 
-export function parseUPIDescription(description: string): { merchant: string; upiId: string; amount?: number } {
+export function parseUPIDescription(description: string): {
+  merchant: string;
+  upiId: string;
+  amount?: number;
+} {
   // PhonePe: "UPI/CR/PhonePe/MERCHANT_NAME/9876543210@ybl"
   // GPay:    "UPI-MERCHANTNAME-gpay@okaxis-AXIS..."
   // Paytm:   "PAYTM/UPI/merchant@paytm/DESCRIPTION"
   // HDFC:    "UPI-CR-MERCHANTNAME-123456@upi"
   // NEFT:    "NEFT/IMPS" (not UPI, ignore)
 
-  const vpaMatch = description.match(/[\w.\-]+@[\w]+/);         // UPI VPA: name@bank
+  const vpaMatch = description.match(/[\w.-]+@[\w]+/); // UPI VPA: name@bank
   const upiId = vpaMatch ? vpaMatch[0].toLowerCase() : '';
 
   // Extract merchant name — try multiple patterns:
   const merchantPatterns = [
-    /UPI\/(?:CR|DR)\/[^\/]+\/([^\/]+)\//i,   // PhonePe pattern
-    /UPI-([A-Z0-9\s]+)-[a-z@]/i,              // GPay/HDFC pattern
-    /PAYTM\/UPI\/([^\/]+)\//i,                // Paytm pattern
-    /TO\s+([A-Z\s]{3,30})\s+REF/i,           // Generic TO NAME REF
+    /UPI\/(?:CR|DR)\/[^/]+\/([^/]+)\//i, // PhonePe pattern
+    /UPI-([A-Z0-9\s]+)-[a-z@]/i, // GPay/HDFC pattern
+    /PAYTM\/UPI\/([^/]+)\//i, // Paytm pattern
+    /TO\s+([A-Z\s]{3,30})\s+REF/i, // Generic TO NAME REF
   ];
 
   let merchant = '';
   for (const pattern of merchantPatterns) {
     const m = description.match(pattern);
-    if (m?.[1]) { merchant = m[1].trim(); break; }
+    if (m?.[1]) {
+      merchant = m[1].trim();
+      break;
+    }
   }
   if (!merchant && upiId) merchant = upiId.split('@')[0]; // Fallback to VPA prefix
 
@@ -56,7 +65,7 @@ export function parseUPIDescription(description: string): { merchant: string; up
  */
 export async function parseUPIPayment(
   description: string,
-  upiVPA = '',
+  upiVPA = ''
 ): Promise<{ merchant: string; category: Category; confidence: number; aiParsed: boolean }> {
   const vpaKey = upiVPA.toLowerCase();
 
@@ -89,15 +98,23 @@ export async function parseUPIPayment(
 
   // 3 — Offline Heuristics Parse (Fallback)
   const desc = (description || upiVPA).toLowerCase();
-  const cat: Category =
-    /zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|pizza|burger/.test(desc) ? 'Food' :
-    /uber|ola|rapido|metro|bus|train|flight|fuel|petrol/.test(desc) ? 'Transport' :
-    /netflix|spotify|amazon|prime|youtube|hotstar|sub/.test(desc) ? 'Subscriptions' :
-    /amazon|flipkart|myntra|mall|shop|store/.test(desc) ? 'Shopping' :
-    /electricity|water|bill|recharge|mobile|broadband|wifi/.test(desc) ? 'Utilities' :
-    /doctor|hospital|pharma|med|health|clinic/.test(desc) ? 'Health' :
-    /movie|game|play|event|party|concert/.test(desc) ? 'Entertainment' :
-    'Transfer';
+  const cat: Category = /zomato|swiggy|food|cafe|restaurant|eat|lunch|dinner|pizza|burger/.test(
+    desc
+  )
+    ? 'Food'
+    : /uber|ola|rapido|metro|bus|train|flight|fuel|petrol/.test(desc)
+      ? 'Transport'
+      : /netflix|spotify|amazon|prime|youtube|hotstar|sub/.test(desc)
+        ? 'Subscriptions'
+        : /amazon|flipkart|myntra|mall|shop|store/.test(desc)
+          ? 'Shopping'
+          : /electricity|water|bill|recharge|mobile|broadband|wifi/.test(desc)
+            ? 'Utilities'
+            : /doctor|hospital|pharma|med|health|clinic/.test(desc)
+              ? 'Health'
+              : /movie|game|play|event|party|concert/.test(desc)
+                ? 'Entertainment'
+                : 'Transfer';
 
   const out = {
     merchant: description || upiVPA || 'UPI Payment',
@@ -110,7 +127,6 @@ export async function parseUPIPayment(
   return out;
 }
 
-
 export interface RazorpayAuth {
   keyId: string;
   keySecret?: string;
@@ -120,15 +136,15 @@ export interface RazorpayAuth {
  * Fetches recent captured payments from Razorpay API via secure backend proxy or mock fallback.
  */
 export async function fetchRazorpayTransactions(auth: RazorpayAuth): Promise<Transaction[]> {
-  const proxyUrl = import.meta.env.VITE_RAZORPAY_PROXY_URL;
-  
+  const proxyUrl = RAZORPAY_PROXY_URL;
+
   if (proxyUrl) {
     const response = await fetch(`${proxyUrl}/sync-payments`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ keyId: auth.keyId })
+      body: JSON.stringify({ keyId: auth.keyId }),
     });
 
     if (!response.ok) {
@@ -142,12 +158,30 @@ export async function fetchRazorpayTransactions(auth: RazorpayAuth): Promise<Tra
   }
 
   // Fallback to secure mock if no proxy URL is configured (preventing client-side secret exposure)
-  console.warn("VITE_RAZORPAY_PROXY_URL not configured. Using secure mock simulation to prevent client-side secret exposure.");
-  
+  console.warn(
+    'RAZORPAY_PROXY_URL not configured. Using secure mock simulation to prevent client-side secret exposure.'
+  );
+
   // Return simulated transactions
   const mockPayments = [
-    { id: 'pay_mock1', status: 'captured', created_at: Math.floor(Date.now()/1000) - 3600, amount: 150000, method: 'upi', email: 'client@example.com', description: 'Freelance Advance' },
-    { id: 'pay_mock2', status: 'captured', created_at: Math.floor(Date.now()/1000) - 86400, amount: 2500000, method: 'netbanking', email: 'hr@company.com', description: 'Monthly Salary' }
+    {
+      id: 'pay_mock1',
+      status: 'captured',
+      created_at: Math.floor(Date.now() / 1000) - 3600,
+      amount: 150000,
+      method: 'upi',
+      email: 'client@example.com',
+      description: 'Freelance Advance',
+    },
+    {
+      id: 'pay_mock2',
+      status: 'captured',
+      created_at: Math.floor(Date.now() / 1000) - 86400,
+      amount: 2500000,
+      method: 'netbanking',
+      email: 'hr@company.com',
+      description: 'Monthly Salary',
+    },
   ];
 
   return processPaymentsToTransactions(mockPayments);
@@ -168,12 +202,12 @@ function processPaymentsToTransactions(payments: any[]): Transaction[] {
       date: isoDate,
       amount: realAmount,
       type: 'credit',
-      category: p.method === 'upi' ? 'Transfer' as Category : 'Salary' as Category,
+      category: p.method === 'upi' ? ('Transfer' as Category) : ('Salary' as Category),
       merchant: p.email || p.contact || `Razorpay - ${p.method?.toUpperCase() || 'Gateway'}`,
       description: p.description || `Payment via ${p.method}`,
       isNew: true,
       confidence: 1.0,
-      aiParsed: false
+      aiParsed: false,
     };
 
     transactions.push(t);
@@ -186,7 +220,7 @@ function processPaymentsToTransactions(payments: any[]): Transaction[] {
 
 export interface RazorpayPaymentOptions {
   keyId: string;
-  amount: number;         // in rupees — converted to paise internally
+  amount: number; // in rupees — converted to paise internally
   description: string;
   prefillName?: string;
   prefillEmail?: string;
@@ -197,7 +231,7 @@ export interface RazorpayPaymentOptions {
 
 export interface RazorpayPaymentResult {
   razorpay_payment_id: string;
-  amount: number;         // in rupees
+  amount: number; // in rupees
   description: string;
   method: string;
 }

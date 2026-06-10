@@ -16,7 +16,12 @@ interface Suggestion {
   months: number;
 }
 
-export function SmartBudgetSuggestions({ transactions, existingBudgets, onAccept, currency = '₹' }: SmartBudgetSuggestionsProps) {
+export function SmartBudgetSuggestions({
+  transactions,
+  existingBudgets,
+  onAccept,
+  currency = '₹',
+}: SmartBudgetSuggestionsProps) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [accepted, setAccepted] = useState<Set<string>>(new Set());
 
@@ -29,7 +34,8 @@ export function SmartBudgetSuggestions({ transactions, existingBudgets, onAccept
       if (tx.type !== 'debit') return;
       const month = tx.date.substring(0, 7);
       if (!monthCategoryMap[month]) monthCategoryMap[month] = {};
-      monthCategoryMap[month][tx.category] = (monthCategoryMap[month][tx.category] || 0) + tx.amount;
+      monthCategoryMap[month][tx.category] =
+        (monthCategoryMap[month][tx.category] || 0) + tx.amount;
     });
 
     const months = Object.keys(monthCategoryMap);
@@ -70,14 +76,30 @@ export function SmartBudgetSuggestions({ transactions, existingBudgets, onAccept
   return (
     <div className="card px-4 sm:px-6 py-5">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ background: 'rgba(245,158,11,0.1)' }}>
+        <div
+          className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: 'rgba(245,158,11,0.1)' }}
+        >
           <Lightbulb size={18} style={{ color: '#f59e0b' }} />
         </div>
         <div>
-          <h3 style={{ fontFamily: 'var(--font-manrope)', fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>
+          <h3
+            style={{
+              fontFamily: 'var(--font-manrope)',
+              fontSize: '16px',
+              fontWeight: 700,
+              color: 'var(--text-primary)',
+            }}
+          >
             Smart Budget Suggestions
           </h3>
-          <p style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>
+          <p
+            style={{
+              fontFamily: 'var(--font-inter)',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+            }}
+          >
             Based on your spending history · Set limits to stay on track
           </p>
         </div>
@@ -92,28 +114,57 @@ export function SmartBudgetSuggestions({ transactions, existingBudgets, onAccept
           >
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                <span
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    color: 'var(--text-primary)',
+                  }}
+                >
                   {s.category}
                 </span>
-                <span className="px-1.5 py-0.5 rounded-full text-[length:var(--fs-overline)] font-semibold" style={{ background: 'rgba(245,158,11,0.1)', color: '#d97706' }}>
+                <span
+                  className="px-1.5 py-0.5 rounded-full text-[length:var(--fs-overline)] font-semibold"
+                  style={{ background: 'rgba(245,158,11,0.1)', color: '#d97706' }}
+                >
                   AI Suggested
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <span style={{ fontFamily: 'var(--font-inter)', fontSize: '11px', color: 'var(--text-muted)' }}>
-                  Avg: {currency}{s.avgMonthlySpend.toLocaleString('en-IN')}/mo
+                <span
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '11px',
+                    color: 'var(--text-muted)',
+                  }}
+                >
+                  Avg: {currency}
+                  {s.avgMonthlySpend.toLocaleString('en-IN')}/mo
                 </span>
                 <span style={{ color: 'var(--text-dim)', fontSize: '11px' }}>→</span>
-                <span className="flex items-center gap-1" style={{ fontFamily: 'var(--font-manrope)', fontSize: '13px', fontWeight: 800, color: 'var(--teal)' }}>
+                <span
+                  className="flex items-center gap-1"
+                  style={{
+                    fontFamily: 'var(--font-manrope)',
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    color: 'var(--teal)',
+                  }}
+                >
                   <TrendingDown size={12} />
-                  {currency}{s.suggestedLimit.toLocaleString('en-IN')} limit
+                  {currency}
+                  {s.suggestedLimit.toLocaleString('en-IN')} limit
                 </span>
               </div>
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
               <button
-                onClick={() => { onAccept(s.category, s.suggestedLimit); setAccepted(prev => new Set([...prev, s.category])); }}
+                onClick={() => {
+                  onAccept(s.category, s.suggestedLimit);
+                  setAccepted(prev => new Set([...prev, s.category]));
+                }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border-none cursor-pointer transition-all hover:opacity-90"
                 style={{ background: 'var(--teal)', color: '#fff' }}
               >

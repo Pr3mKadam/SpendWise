@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 import { Bot, User, Zap } from 'lucide-react';
 import { Message } from '../types';
@@ -46,21 +47,22 @@ export default function ChatMessageList({
   scrollRef,
 }: ChatMessageListProps) {
   return (
-    <div
-      ref={scrollRef}
-      className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide"
-    >
-      {messages.map((msg) => (
+    <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
+      {messages.map(msg => (
         <div
           key={msg.id}
           className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in-up`}
         >
-          <div className={`flex gap-3 max-w-[90%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-            <div className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center shadow-sm ${
-              msg.sender === 'user'
-                ? 'bg-[var(--teal)] text-white'
-                : 'bg-[var(--surface-input)] text-[var(--teal)] border border-[var(--border)]'
-            }`}>
+          <div
+            className={`flex gap-3 max-w-[90%] ${msg.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}
+          >
+            <div
+              className={`w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center shadow-sm ${
+                msg.sender === 'user'
+                  ? 'bg-[var(--teal)] text-white'
+                  : 'bg-[var(--surface-input)] text-[var(--teal)] border border-[var(--border)]'
+              }`}
+            >
               {msg.sender === 'user' ? <User size={16} /> : <Bot size={16} />}
             </div>
 
@@ -69,32 +71,49 @@ export default function ChatMessageList({
                 <div className="glass-card p-5 border-l-4 border-l-[var(--teal)] shadow-lg max-w-sm animate-float bg-[var(--surface-card)]">
                   <div className="flex items-center gap-2 mb-3">
                     <Zap size={16} className="text-yellow-500" />
-                    <h4 className="font-manrope font-bold text-sm text-[var(--text-primary)]">Daily Briefing</h4>
+                    <h4 className="font-manrope font-bold text-sm text-[var(--text-primary)]">
+                      Daily Briefing
+                    </h4>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">Net Balance</p>
-                      <p className="text-sm font-bold text-[var(--teal)]">{format(msg.data?.balance ?? 0)}</p>
+                      <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">
+                        Net Balance
+                      </p>
+                      <p className="text-sm font-bold text-[var(--teal)]">
+                        {format(msg.data?.balance ?? 0)}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">Savings Rate</p>
-                      <p className="text-sm font-bold text-purple-500">{msg.data?.savingsRate ?? '0'}%</p>
+                      <p className="text-[length:var(--fs-overline)] text-[var(--text-muted)] uppercase font-bold">
+                        Savings Rate
+                      </p>
+                      <p className="text-sm font-bold text-purple-500">
+                        {msg.data?.savingsRate ?? '0'}%
+                      </p>
                     </div>
                   </div>
                   <div className="mt-3 pt-3 border-t border-[var(--border)]">
                     <p className="text-[length:var(--fs-caption)] text-[var(--text-secondary)]">
-                      You've spent <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> this month.
-                      Your top category is <span className="font-bold text-[var(--teal)]">{msg.data?.topCategory ?? 'Unknown'}</span>.
+                      You've spent{' '}
+                      <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> this
+                      month. Your top category is{' '}
+                      <span className="font-bold text-[var(--teal)]">
+                        {msg.data?.topCategory ?? 'Unknown'}
+                      </span>
+                      .
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <div className={`p-4 rounded-2xl text-xs leading-relaxed shadow-sm ${
-                    msg.sender === 'user'
-                      ? 'bg-[var(--teal)] text-white'
-                      : 'bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)]'
-                  }`}>
+                  <div
+                    className={`p-4 rounded-2xl text-xs leading-relaxed shadow-sm ${
+                      msg.sender === 'user'
+                        ? 'bg-[var(--teal)] text-white'
+                        : 'bg-[var(--surface-input)] text-[var(--text-primary)] border border-[var(--border)]'
+                    }`}
+                  >
                     {msg.sender === 'ai' ? (
                       <>
                         {parseMarkdown(msg.text || '\u200b')}
@@ -141,8 +160,13 @@ export default function ChatMessageList({
                 </div>
               )}
 
-              <span className={`text-[length:var(--fs-overline)] text-[var(--text-dim)] ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <span
+                className={`text-[length:var(--fs-overline)] text-[var(--text-dim)] ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}
+              >
+                {new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </span>
             </div>
           </div>
@@ -155,9 +179,18 @@ export default function ChatMessageList({
               <Bot size={16} />
             </div>
             <div className="p-4 rounded-2xl bg-[var(--surface-input)] border border-[var(--border)] flex gap-1.5 items-center">
-              <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '160ms' }} />
-              <div className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '320ms' }} />
+              <div
+                className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce"
+                style={{ animationDelay: '0ms' }}
+              />
+              <div
+                className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce"
+                style={{ animationDelay: '160ms' }}
+              />
+              <div
+                className="w-2 h-2 rounded-full bg-[var(--teal)] animate-bounce"
+                style={{ animationDelay: '320ms' }}
+              />
             </div>
           </div>
         </div>

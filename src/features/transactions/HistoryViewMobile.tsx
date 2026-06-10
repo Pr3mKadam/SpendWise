@@ -1,19 +1,10 @@
 import React, { useState, useMemo } from 'react';
 import { Transaction, Category } from '@/types';
 import { Virtuoso } from 'react-virtuoso';
-import { 
-  Search, 
-  Filter, 
-  ArrowUpDown, 
-  Calendar, 
-  ChevronRight,
-  Plus,
-  Trash2,
-  X
-} from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useCategories } from '@/hooks/useCategories';
-import { haptic } from '@/lib/haptic';
-import EmptyState from '@/ui/EmptyState';
+import { haptic } from '@/core/haptic';
+import EmptyState from '@/components/ui/EmptyState';
 import TransactionRow from './components/TransactionRow';
 
 interface HistoryViewMobileProps {
@@ -27,18 +18,19 @@ export default function HistoryViewMobile({
   transactions,
   onDelete,
   currency = '₹',
-  onCategoryChange
+  onCategoryChange,
 }: HistoryViewMobileProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const { allCategories, mergedIcons, mergedColors } = useCategories();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState<Category | 'All'>('All');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [_isFilterOpen, _setIsFilterOpen] = useState(false);
 
   const filtered = useMemo(() => {
     return transactions.filter(tx => {
-      const matchesSearch = tx.merchant.toLowerCase().includes(search.toLowerCase()) || 
-                           tx.category.toLowerCase().includes(search.toLowerCase());
+      const matchesSearch =
+        tx.merchant.toLowerCase().includes(search.toLowerCase()) ||
+        tx.category.toLowerCase().includes(search.toLowerCase());
       const matchesCategory = activeCategory === 'All' || tx.category === activeCategory;
       return matchesSearch && matchesCategory;
     });
@@ -65,7 +57,10 @@ export default function HistoryViewMobile({
 
     sortedDates.forEach(date => {
       const list = groups[date];
-      const subtotal = list.reduce((sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount), 0);
+      const subtotal = list.reduce(
+        (sum, tx) => sum + (tx.type === 'debit' ? -tx.amount : tx.amount),
+        0
+      );
       rows.push({ type: 'header', date, subtotal });
       list.forEach(tx => {
         rows.push({ type: 'tx', tx });
@@ -75,7 +70,7 @@ export default function HistoryViewMobile({
     return rows;
   }, [filtered]);
 
-  const handleRowClick = (tx: Transaction) => {
+  const _handleRowClick = (_tx: Transaction) => {
     haptic.light();
     // Detail view or edit could go here
   };
@@ -91,9 +86,17 @@ export default function HistoryViewMobile({
               {filtered.length} TRANSACTIONS
             </p>
           </div>
-          <div className={`px-4 py-2 rounded-2xl ${total >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'} border border-current/20`}>
-            <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-center opacity-70">Net</p>
-            <p className="text-sm font-bold">{total >= 0 ? '+' : ''}{currency}{Math.abs(total).toLocaleString()}</p>
+          <div
+            className={`px-4 py-2 rounded-2xl ${total >= 0 ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'} border border-current/20`}
+          >
+            <p className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-center opacity-70">
+              Net
+            </p>
+            <p className="text-sm font-bold">
+              {total >= 0 ? '+' : ''}
+              {currency}
+              {Math.abs(total).toLocaleString()}
+            </p>
           </div>
         </div>
 
@@ -102,11 +105,11 @@ export default function HistoryViewMobile({
           <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--text-dim)]">
             <Search size={18} />
           </div>
-          <input 
-            type="text" 
+          <input
+            type="text"
             placeholder="Search merchants, categories..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             className="w-full h-12 bg-[var(--surface-card)] border border-[var(--border)] rounded-2xl pl-12 pr-4 text-sm text-[var(--text-primary)] focus:border-[var(--teal)] outline-none transition-all"
           />
         </div>
@@ -114,13 +117,19 @@ export default function HistoryViewMobile({
 
       {/* 2. Category Chips */}
       <div className="flex gap-2 overflow-x-auto px-1 pb-4 no-scrollbar">
-        {['All', ...allCategories].map((cat) => (
+        {['All', ...allCategories].map(cat => (
           <button
             key={cat}
-            onClick={() => { haptic.light(); setActiveCategory(cat as any); }}
+            onClick={() => {
+              haptic.light();
+              {
+                /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+              }
+              setActiveCategory(cat as any);
+            }}
             className={`px-4 py-2 rounded-full text-[length:var(--fs-overline)] font-bold uppercase tracking-widest whitespace-nowrap border transition-all ${
-              activeCategory === cat 
-                ? 'bg-[var(--teal)] text-white border-[var(--teal)] shadow-md' 
+              activeCategory === cat
+                ? 'bg-[var(--teal)] text-white border-[var(--teal)] shadow-md'
                 : 'bg-[var(--surface-card)] text-[var(--text-muted)] border-[var(--border)]'
             }`}
           >
@@ -133,7 +142,7 @@ export default function HistoryViewMobile({
       <div className="flex-1 min-h-0 bg-[var(--surface-card)] rounded-[var(--radius-sheet)] border border-[var(--border)] shadow-sm overflow-hidden">
         <Virtuoso
           totalCount={displayRows.length}
-          itemContent={(index) => {
+          itemContent={index => {
             const row = displayRows[index];
             if (row.type === 'header') {
               const formattedDate = new Date(row.date + 'T00:00:00').toLocaleDateString('en-US', {
@@ -144,10 +153,15 @@ export default function HistoryViewMobile({
               const sign = row.subtotal >= 0 ? '+' : '';
               const color = row.subtotal >= 0 ? 'var(--teal)' : 'var(--red)';
               return (
-                <div className="tx-date-header px-4 bg-[var(--surface-card)]" style={{ borderBottom: '1px solid var(--border)', margin: '14px 0 4px 0' }}>
+                <div
+                  className="tx-date-header px-4 bg-[var(--surface-card)]"
+                  style={{ borderBottom: '1px solid var(--border)', margin: '14px 0 4px 0' }}
+                >
                   <span>{formattedDate}</span>
                   <span className="subtotal" style={{ color }}>
-                    {sign}{currency}{row.subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                    {sign}
+                    {currency}
+                    {row.subtotal.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                   </span>
                 </div>
               );
@@ -177,11 +191,11 @@ export default function HistoryViewMobile({
           }}
           style={{ height: '100%' }}
         />
-        
+
         {filtered.length === 0 && (
-          <EmptyState 
-            message="No results found." 
-            subMessage="Try a different search term or category." 
+          <EmptyState
+            message="No results found."
+            subMessage="Try a different search term or category."
           />
         )}
       </div>

@@ -1,19 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bot, Send, User, Mic, MicOff, Trash2, Zap, Sparkles, AlertTriangle } from 'lucide-react';
-import { useTransactions } from '@/hooks/useTransactions';
+import { Bot, Send, Mic, MicOff, Trash2, Zap, AlertTriangle } from 'lucide-react';
 import { useCurrency } from '@/contexts/CurrencyContext';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 interface AdvisorViewMobileProps {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: any[];
   onSend: (text: string) => void;
   isLoading: boolean;
   isListening: boolean;
   toggleListening: () => void;
   onClearChat: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   monthlyStats: any;
   dynamicQuickActions: string[];
   hasGemini: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onNavigate?: (view: any) => void;
 }
 
@@ -31,12 +33,20 @@ const parseMarkdown = (text: string) => {
     if (isBullet) {
       return (
         <div key={lineIdx} className="flex items-start gap-1.5 my-0.5">
-          <span className="mt-1 w-1 h-1 rounded-full flex-shrink-0" style={{ background: 'var(--teal)' }} />
+          <span
+            className="mt-1 w-1 h-1 rounded-full flex-shrink-0"
+            style={{ background: 'var(--teal)' }}
+          />
           <span>{parts}</span>
         </div>
       );
     }
-    return <span key={lineIdx}>{parts}{lineIdx < lines.length - 1 && <br />}</span>;
+    return (
+      <span key={lineIdx}>
+        {parts}
+        {lineIdx < lines.length - 1 && <br />}
+      </span>
+    );
   });
 };
 
@@ -47,10 +57,10 @@ export default function AdvisorViewMobile({
   isListening,
   toggleListening,
   onClearChat,
-  monthlyStats,
+  monthlyStats: _monthlyStats,
   dynamicQuickActions,
   hasGemini,
-  onNavigate
+  onNavigate,
 }: AdvisorViewMobileProps) {
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -84,8 +94,11 @@ export default function AdvisorViewMobile({
             </p>
           </div>
         </div>
-        <button 
-          onClick={() => { haptic.medium(); onClearChat(); }}
+        <button
+          onClick={() => {
+            haptic.medium();
+            onClearChat();
+          }}
           className="p-2 text-[var(--text-muted)] active:text-red-500"
         >
           <Trash2 size={18} />
@@ -96,45 +109,61 @@ export default function AdvisorViewMobile({
         <div className="mx-1 mb-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 flex items-start gap-2">
           <AlertTriangle className="text-yellow-500 mt-0.5 flex-shrink-0" size={14} />
           <div>
-            <p className="text-[length:var(--fs-overline)] font-bold text-yellow-500 uppercase tracking-widest">Local Mode</p>
-            <p className="text-[length:var(--fs-overline)] text-yellow-500/80 mt-1 leading-snug">Gemini API key missing. Using local rule-based advisor fallback.</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-yellow-500 uppercase tracking-widest">
+              Local Mode
+            </p>
+            <p className="text-[length:var(--fs-overline)] text-yellow-500/80 mt-1 leading-snug">
+              Gemini API key missing. Using local rule-based advisor fallback.
+            </p>
           </div>
         </div>
       )}
 
       {/* 2. Chat Area */}
-      <div 
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto px-1 space-y-4 mb-4 no-scrollbar"
-      >
+      <div ref={scrollRef} className="flex-1 overflow-y-auto px-1 space-y-4 mb-4 no-scrollbar">
+        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
         {messages.map((msg: any) => (
-          <div 
+          <div
             key={msg.id}
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
-            <div className={`max-w-[85%] rounded-2xl p-4 ${
-              msg.sender === 'user' 
-                ? 'bg-[var(--teal)] text-white shadow-md' 
-                : 'bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border)] shadow-sm'
-            }`}>
+            <div
+              className={`max-w-[85%] rounded-2xl p-4 ${
+                msg.sender === 'user'
+                  ? 'bg-[var(--teal)] text-white shadow-md'
+                  : 'bg-[var(--surface-card)] text-[var(--text-primary)] border border-[var(--border)] shadow-sm'
+              }`}
+            >
               {msg.type === 'briefing' ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-[var(--teal)] mb-1">
                     <Zap size={14} className="fill-current" />
-                    <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest">Daily Briefing</span>
+                    <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest">
+                      Daily Briefing
+                    </span>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="bg-[var(--surface-input)] p-2 rounded-xl border border-[var(--border)]">
-                      <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase">Balance</p>
+                      <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase">
+                        Balance
+                      </p>
                       <p className="text-xs font-bold">{format(msg.data?.balance ?? 0)}</p>
                     </div>
                     <div className="bg-[var(--surface-input)] p-2 rounded-xl border border-[var(--border)]">
-                      <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase">Savings</p>
-                      <p className="text-xs font-bold text-purple-500">{msg.data?.savingsRate ?? '0'}%</p>
+                      <p className="text-[8px] font-bold text-[var(--text-muted)] uppercase">
+                        Savings
+                      </p>
+                      <p className="text-xs font-bold text-purple-500">
+                        {msg.data?.savingsRate ?? '0'}%
+                      </p>
                     </div>
                   </div>
                   <p className="text-[length:var(--fs-caption)] leading-relaxed opacity-90">
-                    Spent <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> on <span className="font-bold text-[var(--teal)]">{msg.data?.topCategory ?? 'Unknown'}</span>.
+                    Spent <span className="font-bold">{format(msg.data?.expenses ?? 0)}</span> on{' '}
+                    <span className="font-bold text-[var(--teal)]">
+                      {msg.data?.topCategory ?? 'Unknown'}
+                    </span>
+                    .
                   </p>
                 </div>
               ) : (
@@ -150,23 +179,34 @@ export default function AdvisorViewMobile({
                           />
                         )}
                       </>
-                    ) : msg.text}
+                    ) : (
+                      msg.text
+                    )}
                   </div>
-                  
+
                   {msg.type === 'action_card' && msg.data?.action && (
                     <div className="flex gap-2 mt-1">
                       {msg.data.action === 'CREATE_BUDGET' && (
-                        <button onClick={() => onNavigate && onNavigate('budget')} className="px-3 min-h-[38px] bg-[var(--teal)] text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
+                        <button
+                          onClick={() => onNavigate && onNavigate('budget')}
+                          className="px-3 min-h-[38px] bg-[var(--teal)] text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center"
+                        >
                           Create a Budget
                         </button>
                       )}
                       {msg.data.action === 'VIEW_ANALYTICS' && (
-                        <button onClick={() => onNavigate && onNavigate('analytics')} className="px-3 min-h-[38px] bg-[var(--purple)] text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
+                        <button
+                          onClick={() => onNavigate && onNavigate('analytics')}
+                          className="px-3 min-h-[38px] bg-[var(--purple)] text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center"
+                        >
                           View Analytics
                         </button>
                       )}
                       {msg.data.action === 'SET_GOAL' && (
-                        <button onClick={() => onNavigate && onNavigate('goals')} className="px-3 min-h-[38px] bg-yellow-500 text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center">
+                        <button
+                          onClick={() => onNavigate && onNavigate('goals')}
+                          className="px-3 min-h-[38px] bg-yellow-500 text-white rounded-xl text-[length:var(--fs-caption)] font-bold hover:opacity-90 shadow-sm border-none cursor-pointer flex items-center"
+                        >
                           Set a Goal
                         </button>
                       )}
@@ -174,8 +214,13 @@ export default function AdvisorViewMobile({
                   )}
                 </div>
               )}
-              <p className={`text-[8px] mt-2 opacity-50 font-bold ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
-                {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              <p
+                className={`text-[8px] mt-2 opacity-50 font-bold ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}
+              >
+                {new Date(msg.timestamp).toLocaleTimeString([], {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                })}
               </p>
             </div>
           </div>
@@ -184,8 +229,14 @@ export default function AdvisorViewMobile({
           <div className="flex justify-start">
             <div className="bg-[var(--surface-card)] rounded-2xl p-4 border border-[var(--border)] flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce" />
-              <div className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce"
+                style={{ animationDelay: '150ms' }}
+              />
+              <div
+                className="w-1.5 h-1.5 rounded-full bg-[var(--teal)] animate-bounce"
+                style={{ animationDelay: '300ms' }}
+              />
             </div>
           </div>
         )}
@@ -196,7 +247,10 @@ export default function AdvisorViewMobile({
         {dynamicQuickActions.map((action, idx) => (
           <button
             key={idx}
-            onClick={() => { haptic.light(); setInput(action); }}
+            onClick={() => {
+              haptic.light();
+              setInput(action);
+            }}
             className="px-4 py-2 bg-[var(--surface-card)] border border-[var(--border)] rounded-full text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-[var(--text-muted)] whitespace-nowrap active:bg-[var(--teal)] active:text-white active:border-[var(--teal)] transition-all"
           >
             {action}
@@ -211,28 +265,35 @@ export default function AdvisorViewMobile({
             <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white shadow-lg">
               <Mic size={24} />
             </div>
-            <p className="text-[length:var(--fs-overline)] font-bold text-red-500 uppercase mt-2">Listening...</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-red-500 uppercase mt-2">
+              Listening...
+            </p>
           </div>
         )}
         <div className="flex items-center gap-2">
-          <button 
-            onClick={() => { haptic.medium(); toggleListening(); }}
+          <button
+            onClick={() => {
+              haptic.medium();
+              toggleListening();
+            }}
             className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md transition-all ${
-              isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-[var(--surface-card)] text-[var(--text-muted)] border border-[var(--border)]'
+              isListening
+                ? 'bg-red-500 text-white animate-pulse'
+                : 'bg-[var(--surface-card)] text-[var(--text-muted)] border border-[var(--border)]'
             }`}
           >
             {isListening ? <MicOff size={20} /> : <Mic size={20} />}
           </button>
           <div className="flex-1 relative">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+              onChange={e => setInput(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleSend()}
               placeholder="Type your message..."
               className="w-full h-12 bg-[var(--surface-card)] border border-[var(--border)] rounded-2xl px-4 pr-12 text-sm text-[var(--text-primary)] outline-none focus:border-[var(--teal)] transition-all"
             />
-            <button 
+            <button
               onClick={handleSend}
               disabled={!input.trim() || isLoading}
               className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-xl bg-[var(--teal)] text-white flex items-center justify-center disabled:opacity-50"

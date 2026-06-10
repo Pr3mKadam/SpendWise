@@ -17,7 +17,9 @@ export function MobilePortfolioHero({
   return (
     <div
       className={`rounded-[32px] p-6 text-white relative overflow-hidden shadow-xl ${
-        positive ? 'bg-gradient-to-br from-[#0d9488] to-[#2dd4bf]' : 'bg-gradient-to-br from-[#b91c1c] to-[#ef4444]'
+        positive
+          ? 'bg-gradient-to-br from-[#0d9488] to-[#2dd4bf]'
+          : 'bg-gradient-to-br from-[#b91c1c] to-[#ef4444]'
       }`}
     >
       <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -33,14 +35,18 @@ export function MobilePortfolioHero({
       </h2>
       <div className="grid grid-cols-2 gap-4 pt-6 border-t border-white/20">
         <div>
-          <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-60 mb-1">Assets</p>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-60 mb-1">
+            Assets
+          </p>
           <p className="text-lg font-bold">
             {currency}
             {totalAssets.toLocaleString()}
           </p>
         </div>
         <div>
-          <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-60 mb-1">Liabilities</p>
+          <p className="text-[length:var(--fs-overline)] font-bold uppercase opacity-60 mb-1">
+            Liabilities
+          </p>
           <p className="text-lg font-bold">
             {currency}
             {totalLiabilities.toLocaleString()}

@@ -9,9 +9,9 @@ import { useStore } from '@/store';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface QuestProgress {
-  date: string;                   // YYYY-MM-DD — the day this applies to
+  date: string; // YYYY-MM-DD — the day this applies to
   completed: Record<string, boolean>; // questId → completed
-  claimedXP: number;              // total XP claimed today
+  claimedXP: number; // total XP claimed today
 }
 
 const KEY = 'spendwise_quest_progress_v2';
@@ -33,7 +33,11 @@ function load(): QuestProgress {
 }
 
 function save(state: QuestProgress) {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch { /* ignore */ }
+  try {
+    localStorage.setItem(KEY, JSON.stringify(state));
+  } catch {
+    /* ignore */
+  }
 }
 
 export function useQuestReset() {
@@ -71,9 +75,12 @@ export function useQuestReset() {
     useStore.getState().addXP(xpReward);
   }, []);
 
-  const isCompleted = useCallback((questId: string) => {
-    return !!progress.completed[questId];
-  }, [progress]);
+  const isCompleted = useCallback(
+    (questId: string) => {
+      return !!progress.completed[questId];
+    },
+    [progress]
+  );
 
   const totalXPToday = progress.claimedXP;
   const completedCount = useMemo(

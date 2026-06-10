@@ -1,4 +1,11 @@
-import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft, Sparkles } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Sparkles,
+} from 'lucide-react';
 import { MonthlyStats } from '@/types';
 import { useStore } from '@/store';
 
@@ -7,8 +14,8 @@ interface MetricCardsProps {
   predictedEndOfMonth: number;
   projectionMeta: {
     daysLeftInMonth: number;
-    dataQuality:     'low' | 'medium' | 'high';
-    expectedChange:  number;
+    dataQuality: 'low' | 'medium' | 'high';
+    expectedChange: number;
   };
   monthlyStats: MonthlyStats;
   currency?: string;
@@ -23,7 +30,7 @@ export default function MetricCardsMobile({
   currency = '$',
 }: MetricCardsProps) {
   const isPositive = predictedEndOfMonth >= currentBalance;
-  
+
   // Keep subtext shorter for mobile
   const projectionSub =
     projectionMeta.daysLeftInMonth > 0
@@ -86,8 +93,8 @@ export default function MetricCardsMobile({
             role="status"
             aria-label={`${card.label}: ${shouldHideBalances ? 'hidden' : card.value}`}
             className="rounded-2xl p-3 border border-[rgba(0,0,0,0.03)] dark:border-[rgba(255,255,255,0.05)] bg-[var(--surface)]"
-            style={{ 
-              boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+            style={{
+              boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
             }}
           >
             <div className="flex items-start justify-between mb-2">
@@ -98,9 +105,7 @@ export default function MetricCardsMobile({
                 {card.ai && (
                   <div className="flex items-center gap-1 mt-0.5">
                     <Sparkles size={8} style={{ color: 'var(--teal)' }} />
-                    <span className="text-[8px] font-bold text-[var(--teal)] uppercase">
-                      AI
-                    </span>
+                    <span className="text-[8px] font-bold text-[var(--teal)] uppercase">AI</span>
                   </div>
                 )}
               </div>
@@ -122,7 +127,7 @@ export default function MetricCardsMobile({
                 lineHeight: 1,
                 filter: shouldHideBalances ? 'blur(5px)' : 'none',
                 opacity: shouldHideBalances ? 0.7 : 1,
-                transition: 'filter 0.3s'
+                transition: 'filter 0.3s',
               }}
             >
               {shouldHideBalances ? '******' : card.value}

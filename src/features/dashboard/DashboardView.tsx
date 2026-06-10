@@ -1,17 +1,24 @@
 import { useState, lazy, Suspense, useMemo } from 'react';
 import { AppView } from '@/types';
 import { FinanceState } from '@/types/state';
-import { useTransactions } from '@/hooks/useTransactions';
 import { useGamification } from '@/features/gamification/hooks/useGamification';
 import { useGoals } from '@/features/goals/hooks/useGoals';
 import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
 import LevelProgress from '@/features/gamification/components/LevelProgress';
 import DashboardHero from '@/features/dashboard/components/DashboardHero';
 import MagicInput from '@/features/ai/components/MagicInput';
-import PullToRefresh from '@/shell/PullToRefresh';
-import { haptic } from '@/lib/haptic';
+import PullToRefresh from '@/components/layout/PullToRefresh';
+import { haptic } from '@/core/haptic';
 import StatCard from '@/features/dashboard/components/StatCard';
-import { Sparkles, TrendingUp, TrendingDown, Wallet, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  Target,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 
 import RecentTransactions from '@/features/dashboard/components/RecentTransactions';
 import GoalsSummary from '@/features/dashboard/components/GoalsSummary';
@@ -23,24 +30,51 @@ import DashboardViewMobile from '@/features/dashboard/DashboardViewMobile';
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
 import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
 import { AIInsights } from '@/features/dashboard/components/AIInsights';
+import { BankSyncCard } from '@/features/dashboard/components/BankSyncCard';
 import { useBudgets } from '@/hooks/useBudgets';
-import { getProactiveNudge } from '@/insights/advisor';
+import { getProactiveNudge } from '@/features/analytics/insights/advisor';
+import { useStore } from '@/store';
 
 // Lazy load non-critical/heavy components
 const FinanceChartLazy = lazy(() => import('@/features/dashboard/components/FinanceChart'));
 const WealthCity = lazy(() => import('@/features/gamification/components/WealthCity'));
-const QuestsPanel = lazy(() => import('@/features/gamification/components/QuestsPanel').then(m => ({ default: m.QuestsPanel })));
-const SavingsChallenges = lazy(() => import('@/features/gamification/components/SavingsChallenges').then(m => ({ default: m.SavingsChallenges })));
-const RoundUpVault = lazy(() => import('@/features/gamification/components/RoundUpVault').then(m => ({ default: m.RoundUpVault })));
-const SocialLeaderboard = lazy(() => import('@/features/gamification/components/SocialLeaderboard').then(m => ({ default: m.SocialLeaderboard })));
-const PredictiveForecasting = lazy(() => import('@/features/analytics/components/PredictiveForecasting').then(m => ({ default: m.PredictiveForecasting })));
-const StreakShareCard = lazy(() => import('@/features/gamification/components/StreakShareCard').then(m => ({ default: m.StreakShareCard })));
-const WeeklyDigestCard = lazy(() => import('@/features/dashboard/components/WeeklyDigestCard').then(m => ({ default: m.WeeklyDigestCard })));
+const QuestsPanel = lazy(() =>
+  import('@/features/gamification/components/QuestsPanel').then(m => ({ default: m.QuestsPanel }))
+);
+const SavingsChallenges = lazy(() =>
+  import('@/features/gamification/components/SavingsChallenges').then(m => ({
+    default: m.SavingsChallenges,
+  }))
+);
+const RoundUpVault = lazy(() =>
+  import('@/features/gamification/components/RoundUpVault').then(m => ({ default: m.RoundUpVault }))
+);
+const SocialLeaderboard = lazy(() =>
+  import('@/features/gamification/components/SocialLeaderboard').then(m => ({
+    default: m.SocialLeaderboard,
+  }))
+);
+const PredictiveForecasting = lazy(() =>
+  import('@/features/analytics/components/PredictiveForecasting').then(m => ({
+    default: m.PredictiveForecasting,
+  }))
+);
+const StreakShareCard = lazy(() =>
+  import('@/features/gamification/components/StreakShareCard').then(m => ({
+    default: m.StreakShareCard,
+  }))
+);
+const WeeklyDigestCard = lazy(() =>
+  import('@/features/dashboard/components/WeeklyDigestCard').then(m => ({
+    default: m.WeeklyDigestCard,
+  }))
+);
 const QuickAddPanel = lazy(() => import('@/features/dashboard/components/QuickAddPanel'));
 const PremiumCard = lazy(() => import('@/features/dashboard/components/PremiumCard'));
 
-const WidgetSkeleton = () => <div className="w-full h-32 rounded-2xl bg-slate-200/50 dark:bg-slate-800/50 animate-pulse" />;
-
+const WidgetSkeleton = () => (
+  <div className="w-full h-32 rounded-2xl bg-slate-200/50 dark:bg-slate-800/50 animate-pulse" />
+);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Main DashboardView
@@ -66,12 +100,27 @@ export function DashboardView({
 }) {
   const [showAllWidgets, setShowAllWidgets] = useState(false);
   const isMobile = useIsMobile();
-  
-  const { transactions, currentBalance, monthlyStats, monthlyHistory, dailySpendRate, balanceTrend, predictedEndOfMonth } = financeState;
-  const { streak, healthScore, level, levelName, savingsRate: gamificationSavingsRate } = useGamification(transactions);
+
+  const {
+    transactions,
+    currentBalance,
+    monthlyStats,
+    monthlyHistory,
+    dailySpendRate,
+    balanceTrend,
+    predictedEndOfMonth,
+  } = financeState;
+  const {
+    streak,
+    healthScore,
+    level,
+    levelName,
+    savingsRate: gamificationSavingsRate,
+  } = useGamification(transactions);
   const { goals } = useGoals();
   const { netWorth } = usePortfolio();
   const { budgetStats } = useBudgets();
+  const razorpayKeys = useStore(s => s.razorpayKeys);
   const [dashboardInput, setDashboardInput] = useState('');
 
   const budgetMap = useMemo(() => {
@@ -82,18 +131,17 @@ export function DashboardView({
     return map;
   }, [budgetStats]);
 
-  const nudge = useMemo(() =>
-    getProactiveNudge(transactions, budgetMap, goals, streak, currency),
+  const nudge = useMemo(
+    () => getProactiveNudge(transactions, budgetMap, goals, streak, currency),
     [transactions, budgetMap, goals, streak, currency]
   );
 
-  const {
-    chartData,
-    recentMerchants,
-    recentTx,
-    trendPct,
-    insights,
-  } = useDashboardData(transactions, monthlyStats, monthlyHistory, balanceTrend);
+  const { chartData, recentMerchants, recentTx, trendPct, insights } = useDashboardData(
+    transactions,
+    monthlyStats,
+    monthlyHistory,
+    balanceTrend
+  );
 
   const handleRefresh = async () => {
     haptic.medium();
@@ -103,7 +151,7 @@ export function DashboardView({
 
   if (isMobile) {
     return (
-      <DashboardViewMobile 
+      <DashboardViewMobile
         financeState={financeState}
         onAdd={onAdd}
         currency={currency}
@@ -118,30 +166,44 @@ export function DashboardView({
     <PullToRefresh onRefresh={handleRefresh}>
       <div className="min-h-screen pb-6 md:pb-2">
         <div className="max-w-[1200px] mx-auto">
-          
           {/* Header */}
           <DashboardHeader config={config} isMobile={isMobile} streak={streak} />
 
           {/* AI Insights - Hidden on mobile unless expanded to save space */}
           {(!isMobile || showAllWidgets) && (
-            <AIInsights insights={insights} transactionsCount={transactions.length} currency={currency} />
+            <AIInsights
+              insights={insights}
+              transactionsCount={transactions.length}
+              currency={currency}
+            />
           )}
 
           {/* Proactive Nudge Alert Strip */}
           {nudge && (
-            <div className={`mb-4 rounded-2xl p-4 flex items-start gap-3 border ${
-              nudge.urgency === 'high'   ? 'bg-red-500/10 border-red-500/30 text-red-500 dark:text-red-400' :
-              nudge.urgency === 'medium' ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400' :
-              'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400'
-            }`}>
+            <div
+              className={`mb-4 rounded-2xl p-4 flex items-start gap-3 border ${
+                nudge.urgency === 'high'
+                  ? 'bg-red-500/10 border-red-500/30 text-red-500 dark:text-red-400'
+                  : nudge.urgency === 'medium'
+                    ? 'bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400'
+                    : 'bg-teal-500/10 border-teal-500/30 text-teal-600 dark:text-teal-400'
+              }`}
+            >
               <span className="text-xl mt-0.5">
                 {nudge.urgency === 'high' ? '⚠️' : nudge.urgency === 'medium' ? '💡' : '🔥'}
               </span>
               <div className="flex-1">
                 <p className="text-sm font-medium">{nudge.message}</p>
               </div>
-              <button onClick={() => onNavigate(nudge.action.toLowerCase().replace('create_', '').replace('view_', '') as any)}
-                className="text-xs font-bold shrink-0 hover:underline">
+              <button
+                onClick={() =>
+                  onNavigate(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    nudge.action.toLowerCase().replace('create_', '').replace('view_', '') as any
+                  )
+                }
+                className="text-xs font-bold shrink-0 hover:underline"
+              >
                 Fix →
               </button>
             </div>
@@ -164,7 +226,6 @@ export function DashboardView({
           <div className="dashboard-cols flex flex-col lg:flex-row gap-4 lg:gap-6 items-start w-full">
             {/* ── LEFT COLUMN ─────────────────────────────────────────── */}
             <div className="flex flex-col gap-4 min-w-0 w-full lg:flex-1">
-              
               {/* Level Progress */}
               {(!isMobile || showAllWidgets) && (
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -175,7 +236,13 @@ export function DashboardView({
                       </Suspense>
                     </div>
                   )}
-                  <div className={config?.userRole === 'student' ? "col-span-full" : "col-span-full lg:col-span-5"}>
+                  <div
+                    className={
+                      config?.userRole === 'student'
+                        ? 'col-span-full'
+                        : 'col-span-full lg:col-span-5'
+                    }
+                  >
                     <LevelProgress onNavigate={onNavigate} />
                   </div>
                 </div>
@@ -247,7 +314,7 @@ export function DashboardView({
                   <QuickAddPanel
                     onAdd={onAdd}
                     recentMerchants={recentMerchants}
-                    onQuickInput={(val) => setDashboardInput(val)}
+                    onQuickInput={val => setDashboardInput(val)}
                     dashboardInput={dashboardInput}
                     setDashboardInput={setDashboardInput}
                     transactions={transactions}
@@ -256,18 +323,27 @@ export function DashboardView({
               </div>
 
               {/* Recent Transactions - Keep prominent */}
-              <RecentTransactions recentTx={recentTx} onNavigate={onNavigate} hideBalances={hideBalances} currency={currency} />
+              <RecentTransactions
+                recentTx={recentTx}
+                onNavigate={onNavigate}
+                hideBalances={hideBalances}
+                currency={currency}
+              />
 
               {/* Mobile "Show More" Button */}
               {isMobile && (
-                <button 
+                <button
                   onClick={() => setShowAllWidgets(!showAllWidgets)}
                   className="w-full py-4 mt-2 rounded-2xl bg-[var(--surface-light)] border border-[var(--border)] text-[var(--text-primary)] font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98] transition-transform"
                 >
                   {showAllWidgets ? (
-                    <>Hide extra widgets <ChevronUp size={16} /></>
+                    <>
+                      Hide extra widgets <ChevronUp size={16} />
+                    </>
                   ) : (
-                    <>Show all widgets & stats <ChevronDown size={16} /></>
+                    <>
+                      Show all widgets & stats <ChevronDown size={16} />
+                    </>
                   )}
                 </button>
               )}
@@ -280,14 +356,22 @@ export function DashboardView({
                   </Suspense>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <SafeToSpend transactions={transactions} currency={currency} currentBalance={currentBalance} />
+                    <SafeToSpend
+                      transactions={transactions}
+                      currency={currency}
+                      currentBalance={currentBalance}
+                    />
                     <Suspense fallback={<WidgetSkeleton />}>
                       <RoundUpVault transactions={transactions} currency={currency} />
                     </Suspense>
                   </div>
 
                   <Suspense fallback={<WidgetSkeleton />}>
-                    <PredictiveForecasting transactions={transactions} currency={currency} currentBalance={currentBalance} />
+                    <PredictiveForecasting
+                      transactions={transactions}
+                      currency={currency}
+                      currentBalance={currentBalance}
+                    />
                   </Suspense>
                 </div>
               )}
@@ -295,14 +379,15 @@ export function DashboardView({
 
             {/* ── RIGHT COLUMN ── */}
             <div className="flex flex-col gap-3 w-full lg:w-[300px] lg:shrink-0">
-              
               {/* Essential right-column items always shown */}
               {config?.userRole !== 'student' && !isMobile && (
                 <Suspense fallback={<WidgetSkeleton />}>
                   <PremiumCard currentBalance={currentBalance} currency={currency} />
                 </Suspense>
               )}
-              
+
+              {!razorpayKeys && <BankSyncCard onNavigate={onNavigate} />}
+
               <GoalsSummary goals={goals} onNavigate={onNavigate} />
 
               {/* Hide the rest of the right column on mobile unless expanded */}
@@ -315,7 +400,7 @@ export function DashboardView({
                     <SocialLeaderboard />
                   </Suspense>
                   {config?.userRole === 'student' && (
-                    <div 
+                    <div
                       onClick={() => onNavigate('education')}
                       className="card p-4 bg-gradient-to-br from-indigo-600 to-violet-700 text-white cursor-pointer hover:scale-[1.02] transition-transform shadow-xl shadow-indigo-500/20"
                     >
@@ -326,14 +411,20 @@ export function DashboardView({
                         <h3 className="font-bold text-sm">Learning Center</h3>
                       </div>
                       <p className="text-xs text-white/80 leading-relaxed">
-                        Master your money with our byte-sized finance lessons. Complete tasks to earn XP!
+                        Master your money with our byte-sized finance lessons. Complete tasks to
+                        earn XP!
                       </p>
                     </div>
                   )}
                   <Suspense fallback={<WidgetSkeleton />}>
                     <SavingsChallenges onNavigate={onNavigate} />
                   </Suspense>
-                  <DailyStats currency={currency} dailySpendRate={dailySpendRate} streak={streak} transactionCount={transactions.length} />
+                  <DailyStats
+                    currency={currency}
+                    dailySpendRate={dailySpendRate}
+                    streak={streak}
+                    transactionCount={transactions.length}
+                  />
                   <Suspense fallback={<WidgetSkeleton />}>
                     <StreakShareCard
                       streak={streak}

@@ -10,24 +10,49 @@ import { useStore } from '@/store';
 
 function LoadingScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg)' }}>
-      <div className="text-[var(--teal)] animate-pulse font-medium text-lg">Loading SpendWise...</div>
+    <div
+      className="min-h-screen flex items-center justify-center"
+      style={{ background: 'var(--bg)' }}
+    >
+      <div className="text-[var(--teal)] animate-pulse font-medium text-lg">
+        Loading SpendWise...
+      </div>
     </div>
   );
 }
 
 function NotFoundScreen() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: 'var(--bg)', color: 'var(--text-primary)' }}>
+    <div
+      className="min-h-screen flex flex-col items-center justify-center p-6"
+      style={{ background: 'var(--bg)', color: 'var(--text-primary)' }}
+    >
       <div className="text-[var(--teal)] mb-6">
-        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <svg
+          width="64"
+          height="64"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
       </div>
-      <h1 className="text-3xl font-black mb-2" style={{ fontFamily: 'var(--font-manrope)' }}>Page Not Found</h1>
+      <h1 className="text-3xl font-black mb-2" style={{ fontFamily: 'var(--font-manrope)' }}>
+        Page Not Found
+      </h1>
       <p className="text-[var(--text-muted)] text-center max-w-md mb-8">
         The page you are looking for doesn't exist. SpendWise is a single-page application.
       </p>
-      <button 
-        onClick={() => { window.location.href = '/'; }}
+      <button
+        onClick={() => {
+          window.location.href = '/';
+        }}
         className="px-6 py-3 bg-[var(--teal)] text-white font-bold rounded-xl hover:bg-[#0d9488] transition-colors border-none cursor-pointer"
       >
         Return to Dashboard
@@ -51,25 +76,35 @@ function parseConfig(raw: string | null): SpendWiseConfig {
   try {
     const parsed = JSON.parse(raw);
     return {
-      initialBalance: typeof parsed.initialBalance === 'number' ? parsed.initialBalance : defaultConfig.initialBalance,
-      balanceAnchorNet: typeof parsed.balanceAnchorNet === 'number' ? parsed.balanceAnchorNet : defaultConfig.balanceAnchorNet,
+      initialBalance:
+        typeof parsed.initialBalance === 'number'
+          ? parsed.initialBalance
+          : defaultConfig.initialBalance,
+      balanceAnchorNet:
+        typeof parsed.balanceAnchorNet === 'number'
+          ? parsed.balanceAnchorNet
+          : defaultConfig.balanceAnchorNet,
       currency: typeof parsed.currency === 'string' ? parsed.currency : defaultConfig.currency,
-      onboardingComplete: typeof parsed.onboardingComplete === 'boolean' ? parsed.onboardingComplete : defaultConfig.onboardingComplete,
+      onboardingComplete:
+        typeof parsed.onboardingComplete === 'boolean'
+          ? parsed.onboardingComplete
+          : defaultConfig.onboardingComplete,
       createdAt: typeof parsed.createdAt === 'string' ? parsed.createdAt : defaultConfig.createdAt,
-      userRole: (['student', 'professional', 'business'].includes(parsed.userRole)) ? parsed.userRole : defaultConfig.userRole,
+      userRole: ['student', 'professional', 'business'].includes(parsed.userRole)
+        ? parsed.userRole
+        : defaultConfig.userRole,
     };
   } catch (e) {
-    console.error("Failed to parse config from storage", e);
+    console.error('Failed to parse config from storage', e);
     return defaultConfig;
   }
 }
 
 function ThemeHydrator() {
   const prefs = useStore(s => s.userPreferences);
-  const [hydrated, setHydrated] = useState(false);
+  const [hydrated, setHydrated] = useState(() => useStore.persist.hasHydrated());
 
   useEffect(() => {
-    setHydrated(useStore.persist.hasHydrated());
     const unsub = useStore.persist.onFinishHydration(() => {
       setHydrated(true);
     });
@@ -101,17 +136,35 @@ function ThemeHydrator() {
 
 export default function App() {
   const { user, authReady } = useAuth();
-  
+
   const [path] = useState(window.location.pathname);
   const validViews: AppView[] = [
-    'dashboard', 'transactions', 'budget', 'analytics', 'history', 
-    'settings', 'goals', 'quests', 'inventory', 'shop', 'badges', 
-    'shared', 'sync', 'profile', 'parental', 'portfolio', 
-    'subscriptions', 'advisor', 'education', 'reports', 'gamification'
+    'dashboard',
+    'transactions',
+    'budget',
+    'analytics',
+    'history',
+    'settings',
+    'goals',
+    'quests',
+    'inventory',
+    'shop',
+    'badges',
+    'shared',
+    'sync',
+    'profile',
+    'parental',
+    'portfolio',
+    'subscriptions',
+    'advisor',
+    'education',
+    'reports',
+    'gamification',
+    'receipts',
   ];
   const currentPath = path.replace('/', '') as AppView;
   const initialView: AppView = validViews.includes(currentPath) ? currentPath : 'dashboard';
-  
+
   if (path !== '/' && path !== '/index.html' && !validViews.includes(currentPath)) {
     return <NotFoundScreen />;
   }
@@ -123,12 +176,8 @@ export default function App() {
   return (
     <div className="app-container">
       <ThemeHydrator />
-      {user ? (
-        <AppAuthenticated initialView={initialView} />
-      ) : (
-        <AuthView />
-      )}
-      <Toaster 
+      {user ? <AppAuthenticated initialView={initialView} /> : <AuthView />}
+      <Toaster
         position="top-center"
         toastOptions={{
           style: {
@@ -138,7 +187,7 @@ export default function App() {
             border: '1px solid var(--border)',
             fontSize: '14px',
             fontWeight: 500,
-          }
+          },
         }}
       />
     </div>
@@ -147,14 +196,11 @@ export default function App() {
 
 function AppAuthenticated({ initialView }: { initialView: AppView }) {
   const { user } = useAuth();
-  const userId = user ? user.id : "guest";
+  const userId = user ? user.id : 'guest';
 
-  const [config, setConfigState] = useState<SpendWiseConfig | null>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
-    setConfigState(parseConfig(saved));
-  }, []);
+  const [config, setConfigState] = useState<SpendWiseConfig | null>(() =>
+    parseConfig(localStorage.getItem(STORAGE_KEYS.CONFIG))
+  );
 
   const setConfig = (newConfig: SpendWiseConfig) => {
     localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(newConfig));
@@ -163,5 +209,7 @@ function AppAuthenticated({ initialView }: { initialView: AppView }) {
   };
 
   if (config === null) return <LoadingScreen />;
-  return <MainShell config={config} setConfig={setConfig} userId={userId} initialView={initialView} />;
+  return (
+    <MainShell config={config} setConfig={setConfig} userId={userId} initialView={initialView} />
+  );
 }

@@ -27,8 +27,8 @@ export function PortfolioHeader({
           {config?.userRole === 'student'
             ? 'Tracking your assets as you build your future.'
             : config?.userRole === 'business'
-            ? 'Optimizing capital and business growth.'
-            : 'Strategic overview of your global wealth.'}
+              ? 'Optimizing capital and business growth.'
+              : 'Strategic overview of your global wealth.'}
         </p>
       </div>
 
@@ -72,14 +72,24 @@ export function PortfolioHeader({
         <button
           onClick={onAddLiability}
           className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-inter font-bold text-[13px] transition-all hover:opacity-90 shadow-sm"
-          style={{ background: 'var(--card)', color: '#ef4444', border: '1.5px solid var(--border)', cursor: 'pointer' }}
+          style={{
+            background: 'var(--card)',
+            color: '#ef4444',
+            border: '1.5px solid var(--border)',
+            cursor: 'pointer',
+          }}
         >
           <Plus size={15} /> Add Liability
         </button>
         <button
           onClick={onAddAsset}
           className="flex items-center gap-2 px-5 py-2.5 rounded-xl font-inter font-bold text-[13px] text-white transition-all hover:opacity-90"
-          style={{ background: 'var(--teal)', border: 'none', cursor: 'pointer', boxShadow: '0 4px 14px rgba(20,184,166,0.35)' }}
+          style={{
+            background: 'var(--teal)',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 4px 14px rgba(20,184,166,0.35)',
+          }}
         >
           <Plus size={15} /> Add Asset
         </button>

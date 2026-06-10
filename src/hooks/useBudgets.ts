@@ -1,13 +1,16 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useStore } from '@/store';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
-import { Category } from '@/types';
+import { Category, BudgetPeriod } from '@/types';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function useBudgets() {
   const budgets = useStore(state => state.budgets);
-  const budgetSettings = useStore(state => state.budgetSettings) || { period: 'monthly', rolloverEnabled: false };
+  const budgetSettings = useStore(state => state.budgetSettings) || {
+    period: 'monthly',
+    rolloverEnabled: false,
+  };
   const setBudget = useStore(state => state.setBudget);
   const removeBudget = useStore(state => state.removeBudget);
   const updateBudgetSettings = useStore(state => state.updateBudgetSettings);
@@ -17,27 +20,26 @@ export function useBudgets() {
   const budgetStats = useMemo(() => {
     // Determine the start date of the current period
     const now = new Date();
-    let startDate = new Date();
-    let prevStartDate = new Date();
-    
+    const startDate = new Date();
+    let prevStartDate: Date;
+
     if (budgetSettings.period === 'weekly') {
-      startDate.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+      startDate.setDate(now.getDate() - now.getDay());
       prevStartDate = new Date(startDate);
       prevStartDate.setDate(prevStartDate.getDate() - 7);
     } else if (budgetSettings.period === 'biweekly') {
-      startDate.setDate(now.getDate() - 14); // Last 14 days
+      startDate.setDate(now.getDate() - 14);
       prevStartDate = new Date(startDate);
-      prevStartDate.setDate(prevStartDate.getDate() - 14);
     } else {
-      startDate.setDate(1); // Start of month
+      startDate.setDate(1);
       prevStartDate = new Date(startDate);
       prevStartDate.setMonth(prevStartDate.getMonth() - 1);
     }
     startDate.setHours(0, 0, 0, 0);
     prevStartDate.setHours(0, 0, 0, 0);
-    
-    const startDateStr    = formatLocalYYYYMMDD(startDate);
-    const endDateStr      = formatLocalYYYYMMDD(now); // today — never include future dates
+
+    const startDateStr = formatLocalYYYYMMDD(startDate);
+    const endDateStr = formatLocalYYYYMMDD(now); // today — never include future dates
     const prevStartDateStr = formatLocalYYYYMMDD(prevStartDate);
 
     // Compute period spending per category
@@ -49,11 +51,14 @@ export function useBudgets() {
         if (tx.date >= startDateStr && tx.date <= endDateStr) {
           periodSpending.set(tx.category, (periodSpending.get(tx.category) || 0) + tx.amount);
         } else if (tx.date >= prevStartDateStr && tx.date < startDateStr) {
-          prevPeriodSpending.set(tx.category, (prevPeriodSpending.get(tx.category) || 0) + tx.amount);
+          prevPeriodSpending.set(
+            tx.category,
+            (prevPeriodSpending.get(tx.category) || 0) + tx.amount
+          );
         }
       }
     });
-    
+
     // Merge explicit store budgets with implicit category limits
     const combinedBudgets: Record<string, number> = { ...categoryLimits, ...budgets };
 
@@ -61,17 +66,17 @@ export function useBudgets() {
       const spent = periodSpending.get(category) ?? 0;
       let limitWithRollover = limit;
       let rolloverAmount = 0;
-      
+
       if (budgetSettings.rolloverEnabled) {
         const prevSpent = prevPeriodSpending.get(category) ?? 0;
         const unspent = Math.max(0, limit - prevSpent);
         rolloverAmount = unspent;
         limitWithRollover = limit + rolloverAmount;
       }
-      
+
       const percent = limitWithRollover > 0 ? (spent / limitWithRollover) * 100 : 0;
       const remaining = limitWithRollover - spent;
-      
+
       let status: 'safe' | 'warning' | 'danger' = 'safe';
       if (percent >= 90) status = 'danger';
       else if (percent >= 75) status = 'warning';
@@ -84,16 +89,44 @@ export function useBudgets() {
         spent,
         percent: Math.round(percent),
         remaining,
-        status
+        status,
       };
     });
-  }, [budgets, transactions, budgetSettings.period, budgetSettings.rolloverEnabled, categoryLimits]);
-  
+  }, [
+    budgets,
+    transactions,
+    budgetSettings.period,
+    budgetSettings.rolloverEnabled,
+    categoryLimits,
+  ]);
+
   const totalBudgeted = Object.values({ ...categoryLimits, ...budgets })
     .filter((v): v is number => typeof v === 'number' && !isNaN(v))
     .reduce((a, b) => a + b, 0);
   const totalSpentInBudgeted = budgetStats.reduce((a, b) => a + b.spent, 0);
   const overallBudgetPercent = totalBudgeted > 0 ? (totalSpentInBudgeted / totalBudgeted) * 100 : 0;
+
+  const totalSpentAgainstBudget = useMemo(
+    () => budgetStats.reduce((a: number, b) => a + (b.spent || 0), 0),
+    [budgetStats]
+  );
+  const overBudgetCount = useMemo(
+    () => budgetStats.filter(b => b.status === 'danger').length,
+    [budgetStats]
+  );
+  const periodLabel = useMemo(
+    () =>
+      budgetSettings.period === 'weekly'
+        ? 'This Week'
+        : budgetSettings.period === 'biweekly'
+          ? 'Last 14 Days'
+          : 'This Month',
+    [budgetSettings.period]
+  );
+  const updatePeriod = useCallback(
+    (p: BudgetPeriod) => updateBudgetSettings({ period: p }),
+    [updateBudgetSettings]
+  );
 
   return {
     budgets,
@@ -107,6 +140,10 @@ export function useBudgets() {
     updateBudgetSettings,
     resetBudgets: useStore(state => state.resetBudgets),
     resetLimits: useStore(state => state.resetLimits),
-    toggleRollover: useStore(state => state.toggleRollover)
+    toggleRollover: useStore(state => state.toggleRollover),
+    totalSpentAgainstBudget,
+    overBudgetCount,
+    periodLabel,
+    updatePeriod,
   };
 }

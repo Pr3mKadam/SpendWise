@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect } from 'react';
 import { useStore } from '@/store';
-import { haptic } from '@/lib/haptic';
+import { haptic } from '@/core/haptic';
 
 export function useShakeFeedback(
   setShowFeedback: (show: boolean) => void,
@@ -13,13 +14,15 @@ export function useShakeFeedback(
     const enabled = store.userPreferences?.shakeEnabled ?? true;
     if (!enabled || !window.DeviceMotionEvent) return;
 
-    let lastX = 0, lastY = 0, lastZ = 0;
+    let lastX = 0,
+      lastY = 0,
+      lastZ = 0;
     let lastUpdate = 0;
     const threshold = 18; // Slightly higher threshold for fewer false positives
 
     const handleMotion = (e: DeviceMotionEvent) => {
       const curTime = Date.now();
-      if ((curTime - lastUpdate) > 100) {
+      if (curTime - lastUpdate > 100) {
         const acc = e.accelerationIncludingGravity;
         if (!acc) return;
 
@@ -30,23 +33,29 @@ export function useShakeFeedback(
         const deltaY = Math.abs(y - lastY);
         const deltaZ = Math.abs(z - lastZ);
 
-        if ((deltaX > threshold && deltaY > threshold) || (deltaX > threshold && deltaZ > threshold) || (deltaY > threshold && deltaZ > threshold)) {
+        if (
+          (deltaX > threshold && deltaY > threshold) ||
+          (deltaX > threshold && deltaZ > threshold) ||
+          (deltaY > threshold && deltaZ > threshold)
+        ) {
           // Shake detected!
           haptic.heavy();
-          
+
           // Show feedback modal instead of just switching view
           setShowFeedback(true);
-          
+
           addNotification({
             title: 'Shake to Feedback 📱',
             message: 'Got something to say? We value your feedback!',
             type: 'insight',
             icon: '📱',
-            severity: 'info'
+            severity: 'info',
           });
         }
 
-        lastX = x; lastY = y; lastZ = z;
+        lastX = x;
+        lastY = y;
+        lastZ = z;
         lastUpdate = curTime;
       }
     };
@@ -54,7 +63,8 @@ export function useShakeFeedback(
     let isSubscribed = true;
 
     if (typeof (DeviceMotionEvent as any).requestPermission === 'function') {
-      (DeviceMotionEvent as any).requestPermission()
+      (DeviceMotionEvent as any)
+        .requestPermission()
         .then((permission: string) => {
           if (permission === 'granted' && isSubscribed) {
             window.addEventListener('devicemotion', handleMotion, { passive: true });

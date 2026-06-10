@@ -3,12 +3,12 @@ const fs = require('fs');
 function walk(dir) {
   let results = [];
   const list = fs.readdirSync(dir);
-  list.forEach(function(file) {
+  list.forEach(function (file) {
     file = dir + '/' + file;
     const stat = fs.statSync(file);
-    if (stat && stat.isDirectory()) { 
+    if (stat && stat.isDirectory()) {
       results = results.concat(walk(file));
-    } else if (file.endsWith('.tsx')) { 
+    } else if (file.endsWith('.tsx')) {
       results.push(file);
     }
   });
@@ -22,12 +22,18 @@ files.forEach(file => {
   let original = content;
 
   // Typography cleanup
-  content = content.replace(/style=\{\{\s*fontFamily:\s*'var\(--font-manrope\)'\s*\}\}/g, 'className="font-manrope"');
-  content = content.replace(/style=\{\{\s*fontFamily:\s*'var\(--font-inter\)'\s*\}\}/g, 'className="font-inter"');
+  content = content.replace(
+    /style=\{\{\s*fontFamily:\s*'var\(--font-manrope\)'\s*\}\}/g,
+    'className="font-manrope"'
+  );
+  content = content.replace(
+    /style=\{\{\s*fontFamily:\s*'var\(--font-inter\)'\s*\}\}/g,
+    'className="font-inter"'
+  );
 
   // Redundant structural cleanup across various files
   // Using more targeted regex to add classNames
-  
+
   if (content !== original) {
     fs.writeFileSync(file, content);
     console.log('Optimized:', file);

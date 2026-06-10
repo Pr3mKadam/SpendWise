@@ -1,5 +1,5 @@
 import React from 'react';
-import { ClipboardList, Star, Shield, Lock, Smartphone, MoreHorizontal } from 'lucide-react';
+import { ClipboardList, Star, Smartphone, MoreHorizontal } from 'lucide-react';
 
 export const ChoreVerification: React.FC = () => {
   return (
@@ -9,7 +9,9 @@ export const ChoreVerification: React.FC = () => {
           <div className="w-10 h-10 rounded-xl bg-[var(--teal)]/10 flex items-center justify-center">
             <ClipboardList className="w-5 h-5 text-[var(--teal)]" />
           </div>
-          <h3 className="text-lg font-bold text-[var(--text-primary)] font-manrope">Chore Verification</h3>
+          <h3 className="text-lg font-bold text-[var(--text-primary)] font-manrope">
+            Chore Verification
+          </h3>
         </div>
         <button className="p-2 hover:bg-[var(--background-secondary)] rounded-lg transition-colors text-[var(--text-muted)]">
           <MoreHorizontal className="w-5 h-5" />
@@ -19,9 +21,12 @@ export const ChoreVerification: React.FC = () => {
       <div className="space-y-4">
         {[
           { id: 1, title: 'Clean the Bedroom', reward: 5, status: 'pending', date: 'Today' },
-          { id: 2, title: 'Walk the Dog', reward: 2, status: 'pending', date: 'Today' }
+          { id: 2, title: 'Walk the Dog', reward: 2, status: 'pending', date: 'Today' },
         ].map(chore => (
-          <div key={chore.id} className="p-4 rounded-2xl bg-[var(--background-secondary)] border border-[var(--border-color)] group hover:border-[var(--teal)]/20 transition-all">
+          <div
+            key={chore.id}
+            className="p-4 rounded-2xl bg-[var(--background-secondary)] border border-[var(--border-color)] group hover:border-[var(--teal)]/20 transition-all"
+          >
             <div className="flex justify-between items-center mb-4">
               <div>
                 <p className="text-xs text-[var(--text-muted)] mb-1 font-medium">{chore.date}</p>
@@ -60,8 +65,10 @@ export const DeviceLinkingCard: React.FC<DeviceLinkingCardProps> = ({ onLink }) 
         </div>
         <div>
           <h3 className="font-bold text-[var(--text-primary)] mb-1">Link Child Device</h3>
-          <p className="text-xs text-[var(--text-muted)] leading-relaxed">Install SpendWise on your child's phone and scan the QR code to link accounts.</p>
-          <button 
+          <p className="text-xs text-[var(--text-muted)] leading-relaxed">
+            Install SpendWise on your child's phone and scan the QR code to link accounts.
+          </p>
+          <button
             onClick={onLink}
             className="mt-4 text-xs font-bold text-[var(--teal)] hover:underline flex items-center gap-1"
           >

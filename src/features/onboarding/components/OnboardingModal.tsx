@@ -1,9 +1,15 @@
+/* eslint-disable react-refresh/only-export-components */
 import { useState, useRef, useEffect } from 'react';
 import { STORAGE_KEYS } from '@/constants';
 import { OnboardingSidebar } from '@/features/onboarding/components/OnboardingSidebar';
 import { OnboardingStep1, CurrencySymbol } from '@/features/onboarding/components/OnboardingStep1';
 import { OnboardingStep2, UserRole } from '@/features/onboarding/components/OnboardingStep2';
 import { OnboardingStep3 } from '@/features/onboarding/components/OnboardingStep3';
+import {
+  OnboardingStepFamily,
+  FamilyOption,
+  FamilyGoal,
+} from '@/features/onboarding/components/OnboardingStepFamily';
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -19,6 +25,10 @@ export interface SpendWiseConfig {
   monthlyGoal?: number;
   location?: string;
   userRole: UserRole;
+  isFamily?: boolean;
+  childCount?: number;
+  childAges?: string;
+  familyGoals?: FamilyGoal[];
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
@@ -45,9 +55,13 @@ interface OnboardingModalProps {
   preferredPhone?: string;
 }
 
-export default function OnboardingModal({ onComplete, preferredName, preferredPhone }: OnboardingModalProps) {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [currency, setCurrency] = useState<CurrencySymbol>('₹'); // Default to ₹ as per user audio
+export default function OnboardingModal({
+  onComplete,
+  preferredName,
+  preferredPhone,
+}: OnboardingModalProps) {
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [currency, setCurrency] = useState<CurrencySymbol>('₹');
   const [rawValue, setRawValue] = useState('');
   const [focused, setFocused] = useState(false);
 
@@ -57,6 +71,16 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
   const [occupation, setOccupation] = useState('');
   const [location, setLocation] = useState('');
   const [monthlyGoal, setMonthlyGoal] = useState('');
+
+  // Family fields
+  const [familyOption, setFamilyOption] = useState<FamilyOption>('myself');
+  const [childCount, setChildCount] = useState(1);
+  const [childAges, setChildAges] = useState('');
+  const [familyGoals, setFamilyGoals] = useState<FamilyGoal[]>([]);
+
+  const toggleFamilyGoal = (goal: FamilyGoal) => {
+    setFamilyGoals(prev => (prev.includes(goal) ? prev.filter(g => g !== goal) : [...prev, goal]));
+  };
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -73,7 +97,15 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
 
   const handleNextStep = () => {
     if (!isValid) return;
-    setStep(2);
+    setStep(4);
+  };
+
+  const handleFamilyProceed = () => {
+    if (familyOption === 'family') {
+      setStep(3);
+    } else {
+      setStep(2);
+    }
   };
 
   const handleFinalSubmit = () => {
@@ -90,6 +122,12 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
       monthlyGoal: parseFloat(monthlyGoal),
       onboardingComplete: true,
       createdAt: new Date().toISOString(),
+      ...(familyOption === 'family' && {
+        isFamily: true,
+        childCount,
+        childAges,
+        familyGoals,
+      }),
     };
     saveConfig(config);
     onComplete(config);
@@ -97,7 +135,8 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      if (step === 1 && isValid) setStep(2);
+      if (step === 1 && isValid) setStep(4);
+      else if (step === 4) handleFamilyProceed();
       else if (step === 2) setStep(3);
       else if (step === 3) handleFinalSubmit();
     }
@@ -132,7 +171,25 @@ export default function OnboardingModal({ onComplete, preferredName, preferredPh
           inputRef={inputRef}
         />
 
-        <OnboardingStep2 step={step} userRole={userRole} setUserRole={setUserRole} setStep={setStep} />
+        <OnboardingStepFamily
+          step={step}
+          familyOption={familyOption}
+          setFamilyOption={setFamilyOption}
+          childCount={childCount}
+          setChildCount={setChildCount}
+          childAges={childAges}
+          setChildAges={setChildAges}
+          familyGoals={familyGoals}
+          toggleFamilyGoal={toggleFamilyGoal}
+          handleProceed={handleFamilyProceed}
+        />
+
+        <OnboardingStep2
+          step={step}
+          userRole={userRole}
+          setUserRole={setUserRole}
+          setStep={setStep}
+        />
 
         <OnboardingStep3
           step={step}

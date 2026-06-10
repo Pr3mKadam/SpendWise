@@ -1,4 +1,11 @@
-import { TrendingUp, TrendingDown, Wallet, ArrowUpRight, ArrowDownLeft, Sparkles } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Wallet,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Sparkles,
+} from 'lucide-react';
 import { useCountUp } from '@/hooks/useCountUp';
 import { MonthlyStats } from '@/types';
 import { useStore } from '@/store';
@@ -8,8 +15,8 @@ interface MetricCardsProps {
   predictedEndOfMonth: number;
   projectionMeta: {
     daysLeftInMonth: number;
-    dataQuality:     'low' | 'medium' | 'high';
-    expectedChange:  number;
+    dataQuality: 'low' | 'medium' | 'high';
+    expectedChange: number;
   };
   monthlyStats: MonthlyStats;
   currency?: string;
@@ -108,7 +115,14 @@ export default function MetricCards({
                 {card.ai && (
                   <div className="flex items-center gap-1 mt-1">
                     <Sparkles size={10} style={{ color: 'var(--teal)' }} />
-                    <span style={{ fontSize: '10px', color: 'var(--teal)', fontWeight: 600, fontFamily: 'var(--font-inter)' }}>
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        color: 'var(--teal)',
+                        fontWeight: 600,
+                        fontFamily: 'var(--font-inter)',
+                      }}
+                    >
                       Predictive
                     </span>
                   </div>
@@ -116,12 +130,16 @@ export default function MetricCards({
               </div>
               <div
                 className="flex items-center justify-center w-11 h-11 rounded-xl shadow-sm"
-                style={{ 
-                  background: card.color === 'var(--teal)' ? 'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(20,184,166,0.05) 100%)' :
-                             card.color === 'var(--green)' ? 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%)' :
-                             card.color === 'var(--red)' ? 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 100%)' :
-                             card.dimColor,
-                  border: `1px solid ${card.dimColor}`
+                style={{
+                  background:
+                    card.color === 'var(--teal)'
+                      ? 'linear-gradient(135deg, rgba(20,184,166,0.15) 0%, rgba(20,184,166,0.05) 100%)'
+                      : card.color === 'var(--green)'
+                        ? 'linear-gradient(135deg, rgba(34,197,94,0.15) 0%, rgba(34,197,94,0.05) 100%)'
+                        : card.color === 'var(--red)'
+                          ? 'linear-gradient(135deg, rgba(239,68,68,0.15) 0%, rgba(239,68,68,0.05) 100%)'
+                          : card.dimColor,
+                  border: `1px solid ${card.dimColor}`,
                 }}
               >
                 <Icon size={20} style={{ color: card.color }} strokeWidth={2} />
@@ -139,14 +157,20 @@ export default function MetricCards({
                 marginBottom: '8px',
                 filter: shouldHideBalances ? 'blur(8px)' : 'none',
                 opacity: shouldHideBalances ? 0.7 : 1,
-                transition: 'filter 0.3s'
+                transition: 'filter 0.3s',
               }}
             >
               {shouldHideBalances ? '••••••' : card.value}
             </div>
 
             <div className="flex items-center justify-between">
-              <span style={{ fontFamily: 'var(--font-inter)', fontSize: '12px', color: 'var(--text-muted)' }}>
+              <span
+                style={{
+                  fontFamily: 'var(--font-inter)',
+                  fontSize: '12px',
+                  color: 'var(--text-muted)',
+                }}
+              >
                 {card.sub}
               </span>
               {card.trend && (

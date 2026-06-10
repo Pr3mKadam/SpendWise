@@ -29,9 +29,7 @@ export function PortfolioSummaryBanner({
         background: positive
           ? 'linear-gradient(135deg, #0d9488 0%, #14b8a6 50%, #2dd4bf 100%)'
           : 'linear-gradient(135deg, #b91c1c 0%, #ef4444 100%)',
-        boxShadow: positive
-          ? '0 8px 32px rgba(20,184,166,0.3)'
-          : '0 8px 32px rgba(239,68,68,0.3)',
+        boxShadow: positive ? '0 8px 32px rgba(20,184,166,0.3)' : '0 8px 32px rgba(239,68,68,0.3)',
       }}
     >
       <div className="absolute top-0 right-0 p-8 opacity-10">
@@ -52,12 +50,12 @@ export function PortfolioSummaryBanner({
               ? '🟢 Study fund is growing'
               : '🔴 Focus on scholarship/aid'
             : config?.userRole === 'business'
-            ? positive
-              ? '🟢 Business capital is strong'
-              : '🔴 Cash flow optimization needed'
-            : positive
-            ? '🟢 Financial health is optimal'
-            : '🔴 Focus on debt reduction'}
+              ? positive
+                ? '🟢 Business capital is strong'
+                : '🔴 Cash flow optimization needed'
+              : positive
+                ? '🟢 Financial health is optimal'
+                : '🔴 Focus on debt reduction'}
         </p>
       </div>
       <div className="flex gap-8 flex-wrap">
@@ -71,7 +69,9 @@ export function PortfolioSummaryBanner({
           <p className="font-inter text-[length:var(--fs-caption)] text-white/60 uppercase tracking-wider mb-1">
             Total Liabilities
           </p>
-          <p className="font-manrope font-bold text-2xl text-white">{fmt(totalLiabilities, currency)}</p>
+          <p className="font-manrope font-bold text-2xl text-white">
+            {fmt(totalLiabilities, currency)}
+          </p>
         </div>
       </div>
     </div>

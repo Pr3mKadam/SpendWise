@@ -1,7 +1,6 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  TrendingDown,
   TrendingUp,
   AlertTriangle,
   Flame,
@@ -26,6 +25,7 @@ interface Insight {
   description: string;
   metric?: string;
   badge?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   icon: any;
   color: string;
 }
@@ -50,7 +50,7 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
     const catThisWeek: Record<string, number> = {};
     const catPrevWeek: Record<string, number> = {};
 
-    transactions.forEach((tx) => {
+    transactions.forEach(tx => {
       if (tx.type !== 'debit') return;
       if (tx.date >= tWeekStr) {
         thisWeekSpent += tx.amount;
@@ -107,7 +107,7 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
     // ─── 2. Weekend Spike analysis ────────────────────────────────────────────
     let weekendSpent = 0;
     let weekdaySpent = 0;
-    transactions.forEach((tx) => {
+    transactions.forEach(tx => {
       if (tx.type !== 'debit' || tx.date < tWeekStr) return;
       const day = new Date(tx.date).getDay();
       if (day === 0 || day === 6) {
@@ -138,7 +138,7 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
     }).reverse();
 
     const spendPerDay = new Map<string, number>();
-    transactions.forEach((tx) => {
+    transactions.forEach(tx => {
       if (tx.type === 'debit') {
         spendPerDay.set(tx.date, (spendPerDay.get(tx.date) || 0) + tx.amount);
       }
@@ -146,7 +146,7 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
 
     let currentStreak = 0;
     let maxStreak = 0;
-    last14Days.forEach((dayStr) => {
+    last14Days.forEach(dayStr => {
       const spent = spendPerDay.get(dayStr) || 0;
       if (spent === 0) {
         currentStreak++;
@@ -174,7 +174,8 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
         id: 'default_tip',
         type: 'neutral',
         title: 'Preparing Financial Insights',
-        description: 'SpendWise is analyzing your spending trends. Keep tracking your transactions to unlock highly personalized financial insights!',
+        description:
+          'SpendWise is analyzing your spending trends. Keep tracking your transactions to unlock highly personalized financial insights!',
         icon: Sparkles,
         color: 'var(--teal)',
       });
@@ -186,14 +187,15 @@ export function WeeklyDigestCard({ transactions, currency = '₹' }: WeeklyDiges
   if (!insights.length) return null;
 
   const currentInsight = insights[currentIndex % insights.length];
-  const Icon = currentInsight.icon;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const Icon = currentInsight.icon as any;
 
   const handleNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % insights.length);
+    setCurrentIndex(prev => (prev + 1) % insights.length);
   };
 
   const handlePrev = () => {
-    setCurrentIndex((prev) => (prev - 1 + insights.length) % insights.length);
+    setCurrentIndex(prev => (prev - 1 + insights.length) % insights.length);
   };
 
   return (

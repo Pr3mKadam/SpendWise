@@ -1,43 +1,49 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Step 6, 7, 8: Budget, Goals & Analytics', () => {
-  
   test.beforeEach(async ({ page }) => {
     // Skip onboarding and disable Privacy Shield
     await page.addInitScript(() => {
       window.sessionStorage.setItem('spendwise_session_unlocked', 'true');
-      window.localStorage.setItem('spendwise_config_v1', JSON.stringify({
-        initialBalance: 5000,
-        currency: '₹',
-        name: 'Test User',
-        userRole: 'professional',
-        occupation: 'Student',
-        location: 'London',
-        monthlyGoal: 7000,
-        onboardingComplete: true,
-        createdAt: new Date().toISOString()
-      }));
+      window.localStorage.setItem(
+        'spendwise_config_v1',
+        JSON.stringify({
+          initialBalance: 5000,
+          currency: '₹',
+          name: 'Test User',
+          userRole: 'professional',
+          occupation: 'Student',
+          location: 'London',
+          monthlyGoal: 7000,
+          onboardingComplete: true,
+          createdAt: new Date().toISOString(),
+        })
+      );
     });
-    
+
     await page.goto('/');
   });
 
   test('6.1 to 6.4 - Budget Manager', async ({ page }) => {
     // Open Budget view
-    await page.getByRole('tab', { name: 'Budget' }).or(page.getByRole('button', { name: 'Budget' })).first().click();
-    
+    await page
+      .getByRole('tab', { name: 'Budget' })
+      .or(page.getByRole('button', { name: 'Budget' }))
+      .first()
+      .click();
+
     // Add budget
     const addBudgetBtn = page.getByRole('button', { name: /\+ Add Budget/i });
     if (await addBudgetBtn.isVisible()) {
       await addBudgetBtn.click();
-      
+
       // Select category (Food)
       await page.locator('select').first().selectOption({ label: 'Food' });
-      
+
       // Enter limit
       await page.getByPlaceholder(/Amount/i).fill('3000');
       await page.getByRole('button', { name: /Save/i }).click();
-      
+
       // Budget should appear
       await expect(page.getByText(/3,000/i)).toBeVisible();
     }
@@ -49,17 +55,21 @@ test.describe('Step 6, 7, 8: Budget, Goals & Analytics', () => {
     if (await moreBtn.isVisible()) {
       await moreBtn.click();
     }
-    await page.getByRole('tab', { name: 'Goals' }).or(page.getByRole('button', { name: 'Goals' })).first().click();
-    
+    await page
+      .getByRole('tab', { name: 'Goals' })
+      .or(page.getByRole('button', { name: 'Goals' }))
+      .first()
+      .click();
+
     // Create new goal
     const newGoalBtn = page.getByRole('button', { name: /\+ New Goal/i });
     if (await newGoalBtn.isVisible()) {
       await newGoalBtn.click();
-      
+
       await page.getByPlaceholder(/Name/i).fill('MacBook');
       await page.getByPlaceholder(/Target/i).fill('80000');
       await page.getByRole('button', { name: /Save/i }).click();
-      
+
       // Check goal card
       await expect(page.getByText('MacBook')).toBeVisible();
       await expect(page.getByText(/80,000/i)).toBeVisible();
@@ -68,10 +78,16 @@ test.describe('Step 6, 7, 8: Budget, Goals & Analytics', () => {
 
   test('8.1 to 8.5 - Analytics & Statistics', async ({ page }) => {
     // Open Analytics view
-    await page.getByRole('tab', { name: 'Statistics' }).or(page.getByRole('button', { name: 'Statistics' })).first().click();
-    
+    await page
+      .getByRole('tab', { name: 'Statistics' })
+      .or(page.getByRole('button', { name: 'Statistics' }))
+      .first()
+      .click();
+
     // Check if charts container is rendering
-    await expect(page.locator('.recharts-wrapper, canvas, svg').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('.recharts-wrapper, canvas, svg').first()).toBeVisible({
+      timeout: 10000,
+    });
   });
 
   test('10.1 to 10.4 - Reports Generation', async ({ page }) => {
@@ -80,17 +96,23 @@ test.describe('Step 6, 7, 8: Budget, Goals & Analytics', () => {
     if (await moreBtn.isVisible()) {
       await moreBtn.click();
     }
-    await page.getByRole('tab', { name: 'Reports' }).or(page.getByRole('button', { name: 'Reports' })).first().click();
-    
+    await page
+      .getByRole('tab', { name: 'Reports' })
+      .or(page.getByRole('button', { name: 'Reports' }))
+      .first()
+      .click();
+
     // Check report generation elements
     const generateBtn = page.getByRole('button', { name: /Generate/i }).first();
     await expect(generateBtn).toBeVisible();
-    
+
     // Click Generate to build report and display export controls
     await generateBtn.click();
-    
+
     // Expect PDF print option and Markdown download option to be visible
     await expect(page.getByRole('button', { name: /PDF/i })).toBeVisible();
-    await expect(page.getByLabel(/Markdown/i).or(page.locator('[title="Download as Markdown"]'))).toBeVisible();
+    await expect(
+      page.getByLabel(/Markdown/i).or(page.locator('[title="Download as Markdown"]'))
+    ).toBeVisible();
   });
 });

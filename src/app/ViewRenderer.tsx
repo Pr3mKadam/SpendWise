@@ -1,10 +1,10 @@
 import React, { Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppView, Transaction, Category } from '@/types';
-import { SkeletonLoader } from '@/ui/SkeletonLoader';
-import { ErrorBoundary } from '@/ui/ErrorBoundary';
-import AlertBanner from '@/shell/AlertBanner';
-import { DesktopOnlyGuard } from '@/shell/DesktopOnlyGuard';
+import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import AlertBanner from '@/components/layout/AlertBanner';
+import { DesktopOnlyGuard } from '@/components/layout/DesktopOnlyGuard';
 
 // Lazy loaded views
 const AnalyticsView = lazy(() => import('@/features/analytics/AnalyticsView'));
@@ -17,12 +17,18 @@ const ProfileView = lazy(() => import('@/features/profile/ProfileView'));
 const PortfolioView = lazy(() => import('@/features/portfolio/PortfolioView'));
 const AdvisorView = lazy(() => import('@/features/advisor/AdvisorView'));
 const ReportsView = lazy(() => import('@/features/reports/ReportsView'));
+const TaxReport = lazy(() => import('@/features/analytics/components/TaxReport'));
 const ParentalView = lazy(() => import('@/features/parental/ParentalView'));
 const BudgetManager = lazy(() => import('@/features/budget/components/BudgetManager'));
-const SubscriptionManager = lazy(() => import('@/features/subscriptions/components/SubscriptionManager'));
+const SubscriptionManager = lazy(
+  () => import('@/features/subscriptions/components/SubscriptionManager')
+);
 const EducationView = lazy(() => import('@/features/education/EducationView'));
 const GamificationView = lazy(() => import('@/features/gamification/GamificationView'));
-const DashboardView = lazy(() => import('@/features/dashboard/DashboardView').then(m => ({ default: m.DashboardView })));
+const ReceiptGallery = lazy(() => import('@/features/transactions/components/ReceiptGallery'));
+const DashboardView = lazy(() =>
+  import('@/features/dashboard/DashboardView').then(m => ({ default: m.DashboardView }))
+);
 
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { SpendWiseStore, ParentalControlState } from '@/store';
@@ -44,42 +50,28 @@ interface ViewRendererProps {
   voiceSearchQuery?: string;
 }
 
-const VIEW_ORDER: AppView[] = [
-  'dashboard',
-  'budget',
-  'analytics',
-  'subscriptions',
-  'history',
-  'goals',
-  'portfolio',
-  'advisor',
-  'education',
-  'reports',
-  'sync',
-  'shared',
-  'parental',
-  'profile'
-];
-
-const ViewWrapper: React.FC<{ children: React.ReactNode, id: string, className?: string, activeView: AppView }> = ({ children, id, className = "w-full h-full", activeView }) => {
+const ViewWrapper: React.FC<{
+  children: React.ReactNode;
+  id: string;
+  className?: string;
+  activeView: AppView;
+}> = ({ children, id, className = 'w-full h-full', activeView: _activeView }) => {
   return (
     <motion.div
       key={id}
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      transition={{ 
-        type: "spring",
+      transition={{
+        type: 'spring',
         stiffness: 400,
         damping: 40,
-        opacity: { duration: 0.15 }
+        opacity: { duration: 0.15 },
       }}
       className={className}
     >
       <ErrorBoundary>
-        <Suspense fallback={<SkeletonLoader />}>
-          {children}
-        </Suspense>
+        <Suspense fallback={<SkeletonLoader />}>{children}</Suspense>
       </ErrorBoundary>
     </motion.div>
   );
@@ -100,13 +92,13 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
   onManageCategories,
   voiceSearchQuery,
 }) => {
-  const { 
-    financeState, 
-    budgetState, 
-    goalsState, 
-    alertState, 
-    recurringData, 
-    transactions, 
+  const {
+    financeState,
+    budgetState,
+    goalsState,
+    alertState,
+    recurringData,
+    transactions,
     currency,
     notifState,
   } = appState;
@@ -129,7 +121,10 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               onAdd={onAdd}
               onOpenAdd={() => {
                 const el = document.getElementById('magic-input-textarea');
-                if (el) { el.focus(); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                if (el) {
+                  el.focus();
+                  el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
               }}
               currency={currency}
               onNavigate={onNavigate}
@@ -175,7 +170,11 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
                 onNavigate={onNavigate}
                 config={config}
               />
-              <RecurringView patterns={recurringData} currency={currency} transactions={transactions} />
+              <RecurringView
+                patterns={recurringData}
+                currency={currency}
+                transactions={transactions}
+              />
             </ViewWrapper>
           </DesktopOnlyGuard>
         )}
@@ -185,15 +184,15 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
             <GoalsView
               goals={goalsState.goals}
               stats={goalsState.stats}
-              onAdd={(data) => {
+              onAdd={data => {
                 goalsState.addGoal({
-                  name:                data.name,
-                  emoji:               data.emoji,
-                  targetAmount:        Number(data.targetAmount),
-                  savedAmount:         Number(data.savedAmount) || 0,
-                  targetDate:          data.targetDate,
+                  name: data.name,
+                  emoji: data.emoji,
+                  targetAmount: Number(data.targetAmount),
+                  savedAmount: Number(data.savedAmount) || 0,
+                  targetDate: data.targetDate,
                   monthlyContribution: Number(data.monthlyContribution),
-                  color:               data.color,
+                  color: data.color,
                 });
               }}
               onUpdate={goalsState.updateGoal}
@@ -232,11 +231,14 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         {activeView === 'sync' && (
           <ViewWrapper id="sync" activeView={activeView}>
             <BankSyncView
-              onAutoAddTransactions={(txs) => {
+              onAutoAddTransactions={txs => {
                 financeState.addTransactions(txs);
               }}
-              recentTransactions={transactions.filter((t: Transaction) =>
-                t.tags?.includes('razorpay') || t.tags?.includes('upi') || t.tags?.includes('upi-sync')
+              recentTransactions={transactions.filter(
+                (t: Transaction) =>
+                  t.tags?.includes('razorpay') ||
+                  t.tags?.includes('upi') ||
+                  t.tags?.includes('upi-sync')
               )}
               currency={currency}
               onNavigate={onNavigate}
@@ -294,7 +296,12 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         {activeView === 'education' && (
           <DesktopOnlyGuard viewLabel="Financial Education" onNavigate={onNavigate}>
             <ViewWrapper id="education" activeView={activeView}>
-              <EducationView currency={currency} financeState={financeState} addNotification={notifState.addNotification} config={config} />
+              <EducationView
+                currency={currency}
+                financeState={financeState}
+                addNotification={notifState.addNotification}
+                config={config}
+              />
             </ViewWrapper>
           </DesktopOnlyGuard>
         )}
@@ -302,12 +309,28 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
         {activeView === 'reports' && (
           <DesktopOnlyGuard viewLabel="Reports" onNavigate={onNavigate}>
             <ViewWrapper id="reports" activeView={activeView}>
-              <ReportsView transactions={transactions} currency={currency} monthlyStats={financeState.monthlyStats} />
+              <ReportsView
+                transactions={transactions}
+                currency={currency}
+                monthlyStats={financeState.monthlyStats}
+              />
             </ViewWrapper>
           </DesktopOnlyGuard>
         )}
 
-        {(activeView === 'quests' || activeView === 'badges' || activeView === 'inventory' || activeView === 'shop' || activeView === 'gamification') && (
+        {activeView === 'taxreport' && (
+          <DesktopOnlyGuard viewLabel="ITR Tax Report" onNavigate={onNavigate}>
+            <ViewWrapper id="taxreport" activeView={activeView}>
+              <TaxReport transactions={transactions} currency={currency} />
+            </ViewWrapper>
+          </DesktopOnlyGuard>
+        )}
+
+        {(activeView === 'quests' ||
+          activeView === 'badges' ||
+          activeView === 'inventory' ||
+          activeView === 'shop' ||
+          activeView === 'gamification') && (
           <ViewWrapper id={activeView} activeView={activeView}>
             <GamificationView
               transactions={transactions}
@@ -336,13 +359,21 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
           </ViewWrapper>
         )}
 
+        {activeView === 'receipts' && (
+          <ViewWrapper id="receipts" activeView={activeView}>
+            <ReceiptGallery transactions={transactions} currency={currency} />
+          </ViewWrapper>
+        )}
+
         {/* Alias: settings → ProfileView */}
         {activeView === 'settings' && (
           <ViewWrapper id="settings" activeView={activeView}>
             <ProfileView
               config={config}
               onUpdateConfig={setConfig}
-              onResetData={async () => { await resetData(); }}
+              onResetData={async () => {
+                await resetData();
+              }}
               transactions={transactions}
               onNavigate={onNavigate}
               addNotification={notifState.addNotification}

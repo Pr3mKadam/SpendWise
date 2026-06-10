@@ -1,12 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { Transaction, Category } from '@/types';
 import { db } from '@/db/db';
-import { createFinanceSlice, FinanceSlice } from '@/store/slices/financeSlice';
-import { createPortfolioSlice, PortfolioSlice } from '@/store/slices/portfolioSlice';
-import { createGamificationSlice, GamificationSlice } from '@/store/slices/gamificationSlice';
-import { createParentalSlice, ParentalSlice } from '@/store/slices/parentalSlice';
-import { createSecuredSlice, SecuredSlice } from '@/store/slices/securedSlice';
+import { createFinanceSlice, FinanceSlice } from '@/features/transactions/store/financeSlice';
+import { initMerchantMemory } from '@/core/merchantMemory';
+import { createPortfolioSlice, PortfolioSlice } from '@/features/portfolio/store/portfolioSlice';
+import {
+  createGamificationSlice,
+  GamificationSlice,
+} from '@/features/gamification/store/gamificationSlice';
+import { createParentalSlice, ParentalSlice } from '@/features/parental/store/parentalSlice';
+import { createSecuredSlice, SecuredSlice } from '@/core/store/securedSlice';
 
 // Helper functions for base64 conversion
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
@@ -33,48 +38,44 @@ const dec = new TextDecoder();
 
 // Derive Key from Password
 async function deriveKey(password: string, salt: Uint8Array<ArrayBuffer>) {
-  const baseKey = await crypto.subtle.importKey(
-    "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]
-  );
+  const baseKey = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, [
+    'deriveKey',
+  ]);
   return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: 100000, hash: "SHA-256" },
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
     baseKey,
-    { name: "AES-GCM", length: 256 },
+    { name: 'AES-GCM', length: 256 },
     false,
-    ["encrypt", "decrypt"]
+    ['encrypt', 'decrypt']
   );
 }
 
 async function encryptString(text: string, password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(16)) as Uint8Array<ArrayBuffer>;
-  const iv   = crypto.getRandomValues(new Uint8Array(12)) as Uint8Array<ArrayBuffer>;
-  const key  = await deriveKey(password, salt);
+  const iv = crypto.getRandomValues(new Uint8Array(12)) as Uint8Array<ArrayBuffer>;
+  const key = await deriveKey(password, salt);
 
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
+  const ciphertext = (await crypto.subtle.encrypt(
+    { name: 'AES-GCM', iv },
     key,
     enc.encode(text)
-  ) as ArrayBuffer;
+  )) as ArrayBuffer;
 
   return JSON.stringify({
-    salt:       arrayBufferToBase64(salt.buffer as ArrayBuffer),
-    iv:         arrayBufferToBase64(iv.buffer as ArrayBuffer),
-    ciphertext: arrayBufferToBase64(ciphertext)
+    salt: arrayBufferToBase64(salt.buffer as ArrayBuffer),
+    iv: arrayBufferToBase64(iv.buffer as ArrayBuffer),
+    ciphertext: arrayBufferToBase64(ciphertext),
   });
 }
 
 async function decryptString(encryptedJson: string, password: string): Promise<string> {
   const { salt, iv, ciphertext } = JSON.parse(encryptedJson);
   const saltArr = new Uint8Array(base64ToArrayBuffer(salt)) as Uint8Array<ArrayBuffer>;
-  const ivArr   = new Uint8Array(base64ToArrayBuffer(iv))   as Uint8Array<ArrayBuffer>;
+  const ivArr = new Uint8Array(base64ToArrayBuffer(iv)) as Uint8Array<ArrayBuffer>;
   const cipherArr = base64ToArrayBuffer(ciphertext) as ArrayBuffer;
 
   const key = await deriveKey(password, saltArr);
-  const decrypted = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: ivArr },
-    key,
-    cipherArr
-  );
+  const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: ivArr }, key, cipherArr);
   return dec.decode(decrypted);
 }
 
@@ -147,13 +148,41 @@ export interface ParentalControlState {
   notifyOnLowBalance?: boolean;
   blockAdultContent?: boolean;
   restrictLateNightSpending?: boolean;
+  allowanceAmount: number;
+  allowanceFrequency: 'weekly' | 'monthly';
+  spendingCapWeekly: number | null;
+  lastAllowancePayout: string | null;
 }
 
-export type SpendWiseStore = FinanceSlice & PortfolioSlice & GamificationSlice & ParentalSlice & SecuredSlice & {
-  resetData: () => void;
-  restoreBackup: (data: any) => void;
-  privacyEnabled: boolean;
-  togglePrivacy: () => void;
+const currentProfile = (() => {
+  try {
+    return localStorage.getItem('spendwise_active_profile') || 'personal';
+  } catch {
+    return 'personal';
+  }
+})();
+
+export type SpendWiseStore = FinanceSlice &
+  PortfolioSlice &
+  GamificationSlice &
+  ParentalSlice &
+  SecuredSlice & {
+    resetData: () => void;
+    restoreBackup: (data: any) => void;
+    privacyEnabled: boolean;
+    togglePrivacy: () => void;
+    profileId: string;
+    switchProfile: (id: string) => void;
+  };
+
+const getPersistKey = () => {
+  try {
+    const profile = localStorage.getItem('spendwise_active_profile') || 'personal';
+    if (profile === 'personal') return 'spendwise-global-store';
+    return `spendwise_store_${profile}`;
+  } catch {
+    return 'spendwise-global-store';
+  }
 };
 
 export const useStore = create<SpendWiseStore>()(
@@ -165,24 +194,36 @@ export const useStore = create<SpendWiseStore>()(
       ...createParentalSlice(set, get, api),
       ...createSecuredSlice(set, get, api),
 
+      profileId: currentProfile,
+      switchProfile: (id: string) => {
+        set({ profileId: id });
+        localStorage.setItem('spendwise_active_profile', id);
+        window.location.reload();
+      },
+
       privacyEnabled: false,
-      togglePrivacy: () => set((state) => {
-        const next = !state.privacyEnabled;
-        return {
-          privacyEnabled: next,
-          parentalState: { ...state.parentalState, hideBalances: next }
-        };
-      }),
+      togglePrivacy: () =>
+        set(state => {
+          const next = !state.privacyEnabled;
+          return {
+            privacyEnabled: next,
+            parentalState: { ...state.parentalState, hideBalances: next },
+          };
+        }),
 
       resetData: () => {
-        set({ 
-          transactions: [], 
+        set({
+          transactions: [],
           indexedData: { byCategory: {}, byMonth: {} },
-          assets: [], 
-          liabilities: [], 
+          undoStack: [],
+          assets: [],
+          liabilities: [],
+          livePrices: {},
+          lastPriceUpdate: null,
           subscriptions: [],
           recurringTransactions: [],
           razorpayKeys: null,
+          mandates: [],
           goals: [],
           sharedData: {
             groups: [],
@@ -205,24 +246,28 @@ export const useStore = create<SpendWiseStore>()(
             biometricEnabled: false,
             avatar: null,
           },
-          parentalState: { 
+          parentalState: {
             enabled: false,
-            isTeenMode: false, 
+            isTeenMode: false,
             ageGroup: 'teen',
-            parentPinHash: null, 
-            monthlyLimit: null, 
-            restrictedCategories: [], 
+            parentPinHash: null,
+            monthlyLimit: null,
+            restrictedCategories: [],
             pendingTransactions: [],
             hideBalances: false,
             hideAnalytics: false,
             blockAddTransactions: false,
             sessionUnlocked: false,
             requireApproval: false,
-          } 
+            allowanceAmount: 0,
+            allowanceFrequency: 'monthly',
+            spendingCapWeekly: null,
+            lastAllowancePayout: null,
+          },
         });
       },
 
-      restoreBackup: (data) => {
+      restoreBackup: data => {
         set({
           transactions: data.transactions || [],
           budgets: data.budgets || {},
@@ -233,6 +278,7 @@ export const useStore = create<SpendWiseStore>()(
           subscriptions: data.subscriptions || [],
           recurringTransactions: data.recurringTransactions || [],
           razorpayKeys: data.razorpayKeys || null,
+          mandates: data.mandates || [],
           goals: data.goals || [],
           sharedData: data.sharedData || {
             groups: [],
@@ -247,14 +293,25 @@ export const useStore = create<SpendWiseStore>()(
           snoozedNotifications: data.snoozedNotifications || {},
         });
         get().reindex();
-      }
+      },
     }),
     {
       name: 'spendwise-global-store',
       storage: createJSONStorage(() => dexieStorage),
+      partialize: state => {
+        const { livePrices, lastPriceUpdate, ...rest } = state as any;
+        return rest;
+      },
     }
   )
 );
+
+initMerchantMemory({
+  get merchantMemory() {
+    return useStore.getState().merchantMemory;
+  },
+  setMerchantMemory: memory => useStore.getState().setMerchantMemory(memory),
+});
 
 // ─── Automatic Legacy LocalStorage Migration ──────────────────────────────────
 function migrateLegacyLocalStorage(store: SpendWiseStore) {
@@ -330,19 +387,46 @@ function migrateLegacyLocalStorage(store: SpendWiseStore) {
     // 7. Migrate User Preferences
     const migratedPrefs = false;
     const currentPrefs = store.userPreferences || {
-      fontSize: 'text-base', darkMode: false, highContrast: false, hapticsEnabled: true, shakeEnabled: true, biometricEnabled: false, avatar: null
+      fontSize: 'text-base',
+      darkMode: false,
+      highContrast: false,
+      hapticsEnabled: true,
+      shakeEnabled: true,
+      biometricEnabled: false,
+      avatar: null,
     };
-    
-    if (localStorage.getItem('spendwise_font_size')) { currentPrefs.fontSize = localStorage.getItem('spendwise_font_size')!; localStorage.removeItem('spendwise_font_size'); }
-    if (localStorage.getItem('spendwise_dark_mode')) { currentPrefs.darkMode = localStorage.getItem('spendwise_dark_mode') === 'dark'; localStorage.removeItem('spendwise_dark_mode'); }
-    if (localStorage.getItem('spendwise_high_contrast')) { currentPrefs.highContrast = localStorage.getItem('spendwise_high_contrast') === 'true'; localStorage.removeItem('spendwise_high_contrast'); }
-    if (localStorage.getItem('spendwise_haptics_enabled')) { currentPrefs.hapticsEnabled = localStorage.getItem('spendwise_haptics_enabled') === 'true'; localStorage.removeItem('spendwise_haptics_enabled'); }
-    if (localStorage.getItem('spendwise_shake_enabled')) { currentPrefs.shakeEnabled = localStorage.getItem('spendwise_shake_enabled') === 'true'; localStorage.removeItem('spendwise_shake_enabled'); }
-    if (localStorage.getItem('spendwise_biometric_enabled')) { currentPrefs.biometricEnabled = localStorage.getItem('spendwise_biometric_enabled') === 'true'; localStorage.removeItem('spendwise_biometric_enabled'); }
-    if (localStorage.getItem('spendwise_avatar')) { currentPrefs.avatar = localStorage.getItem('spendwise_avatar'); localStorage.removeItem('spendwise_avatar'); }
-    
+
+    if (localStorage.getItem('spendwise_font_size')) {
+      currentPrefs.fontSize = localStorage.getItem('spendwise_font_size')!;
+      localStorage.removeItem('spendwise_font_size');
+    }
+    if (localStorage.getItem('spendwise_dark_mode')) {
+      currentPrefs.darkMode = localStorage.getItem('spendwise_dark_mode') === 'dark';
+      localStorage.removeItem('spendwise_dark_mode');
+    }
+    if (localStorage.getItem('spendwise_high_contrast')) {
+      currentPrefs.highContrast = localStorage.getItem('spendwise_high_contrast') === 'true';
+      localStorage.removeItem('spendwise_high_contrast');
+    }
+    if (localStorage.getItem('spendwise_haptics_enabled')) {
+      currentPrefs.hapticsEnabled = localStorage.getItem('spendwise_haptics_enabled') === 'true';
+      localStorage.removeItem('spendwise_haptics_enabled');
+    }
+    if (localStorage.getItem('spendwise_shake_enabled')) {
+      currentPrefs.shakeEnabled = localStorage.getItem('spendwise_shake_enabled') === 'true';
+      localStorage.removeItem('spendwise_shake_enabled');
+    }
+    if (localStorage.getItem('spendwise_biometric_enabled')) {
+      currentPrefs.biometricEnabled =
+        localStorage.getItem('spendwise_biometric_enabled') === 'true';
+      localStorage.removeItem('spendwise_biometric_enabled');
+    }
+    if (localStorage.getItem('spendwise_avatar')) {
+      currentPrefs.avatar = localStorage.getItem('spendwise_avatar');
+      localStorage.removeItem('spendwise_avatar');
+    }
+
     store.setUserPreferences(currentPrefs);
-    
   } catch (err) {
     console.error('[SpendWise Store] Failed to migrate legacy local storage:', err);
   }

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Trophy, Star, TrendingUp, Zap, ArrowRight } from 'lucide-react';
 import { useStore } from '@/store';
 import { useQuestReset } from '@/features/gamification/hooks/useQuestReset';
-import { AppView } from '@/types/ui';
+import { AppView } from '@/components/ui/types';
 
 export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppView) => void }) {
   const level = useStore(state => state.level);
@@ -27,7 +27,9 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
             <span className="font-manrope font-black text-lg sm:text-2xl">{level}</span>
           </div>
           <div className="min-w-0">
-            <h3 className="font-manrope font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">{rank}</h3>
+            <h3 className="font-manrope font-bold text-sm sm:text-base text-[var(--text-primary)] truncate">
+              {rank}
+            </h3>
             <p className="font-inter text-xs font-semibold text-[var(--text-muted)] uppercase tracking-widest flex items-center gap-1.5">
               <Star size={10} className="text-amber-500 fill-amber-500" />
               Level {level} Financialist
@@ -35,17 +37,21 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
           </div>
         </div>
         <div className="text-right shrink-0">
-          <p className="font-manrope font-bold text-xs sm:text-sm text-[var(--text-primary)]">{currentLevelXP} / {XP_PER_LEVEL} XP</p>
-          <p className="font-inter text-[length:var(--fs-overline)] sm:text-[length:var(--fs-overline)] font-bold text-[var(--teal)] uppercase tracking-wider">Next Rank Lvl {level < 2 ? 2 : level < 5 ? 5 : level < 10 ? 10 : 20}</p>
+          <p className="font-manrope font-bold text-xs sm:text-sm text-[var(--text-primary)]">
+            {currentLevelXP} / {XP_PER_LEVEL} XP
+          </p>
+          <p className="font-inter text-[length:var(--fs-overline)] sm:text-[length:var(--fs-overline)] font-bold text-[var(--teal)] uppercase tracking-wider">
+            Next Rank Lvl {level < 2 ? 2 : level < 5 ? 5 : level < 10 ? 10 : 20}
+          </p>
         </div>
       </div>
 
       <div className="space-y-1.5 mt-4">
         <div className="h-3 w-full bg-[var(--surface-input)] rounded-full overflow-hidden border border-[var(--border)]">
-          <motion.div 
+          <motion.div
             initial={{ width: 0 }}
             animate={{ width: `${progress}%` }}
-            transition={{ duration: 1, ease: "easeOut" }}
+            transition={{ duration: 1, ease: 'easeOut' }}
             className="h-full bg-gradient-to-r from-[var(--teal)] via-[#2dd4bf] to-[var(--teal)] bg-[length:200%_100%] animate-shimmer shadow-[0_0_12px_rgba(20,184,166,0.4)]"
           />
         </div>
@@ -63,9 +69,15 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
             <Zap size={14} className="text-amber-500" />
           </div>
           <div className="min-w-0">
-            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">Today's XP</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+              Today's XP
+            </p>
             <p className="text-xs font-manrope font-bold text-[var(--text-primary)]">
-              {totalXPToday > 0 ? `+${totalXPToday} earned` : completedCount === 0 ? 'Do a quest!' : 'Claimed'}
+              {totalXPToday > 0
+                ? `+${totalXPToday} earned`
+                : completedCount === 0
+                  ? 'Do a quest!'
+                  : 'Claimed'}
             </p>
           </div>
         </div>
@@ -75,7 +87,9 @@ export default function LevelProgress({ onNavigate }: { onNavigate?: (view: AppV
             <TrendingUp size={14} className="text-[var(--teal)]" />
           </div>
           <div className="min-w-0">
-            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">XP Multiplier</p>
+            <p className="text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-wider">
+              XP Multiplier
+            </p>
             <p className="text-xs font-manrope font-bold text-[var(--text-primary)]">1.2x Active</p>
           </div>
         </div>
