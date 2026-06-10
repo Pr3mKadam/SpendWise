@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { callGemini } from '@/core/api/gemini';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
@@ -171,7 +172,7 @@ export const processReceipt = async (imageFile: File): Promise<OCRResult> => {
       rawText: text,
     };
   } catch (tessErr) {
-    throw new Error('Could not read receipt. Please ensure the image is clear and well-lit.');
+    throw new Error('Could not read receipt. Please ensure the image is clear and well-lit.', { cause: tessErr });
   }
 };
 

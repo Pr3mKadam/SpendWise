@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { Trophy, Star, Sparkles, X, ChevronRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useStore } from '@/store';
@@ -6,13 +6,13 @@ import confetti from 'canvas-confetti';
 
 export default function QuestCompletionOverlay() {
   const { quests, completeQuest } = useStore();
-  const [completedQuest, setCompletedQuest] = useState<any>(null);
+  const completedQuest = useMemo(
+    () => quests.find(q => q.progress >= 100 && !q.completed) ?? null,
+    [quests]
+  );
 
   useEffect(() => {
-    // Find quests that are 100% but not yet "celebrated"
-    const newlyCompleted = quests.find(q => q.progress >= 100 && !q.completed);
-    if (newlyCompleted) {
-      setCompletedQuest(newlyCompleted);
+    if (completedQuest) {
       confetti({
         particleCount: 150,
         spread: 70,
@@ -20,12 +20,11 @@ export default function QuestCompletionOverlay() {
         colors: ['#2dd4bf', '#0d9488', '#ffffff'],
       });
     }
-  }, [quests]);
+  }, [completedQuest]);
 
   const handleClose = () => {
     if (completedQuest) {
       completeQuest(completedQuest.id);
-      setCompletedQuest(null);
     }
   };
 

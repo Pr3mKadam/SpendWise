@@ -18,6 +18,9 @@ import { NotificationsSection } from '@/features/profile/components/Notification
 import { useProfileView } from '@/features/profile/components/useProfileView';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { FamilySafetySection } from '@/features/profile/components/FamilySafetySection';
+import { PricingCard } from '@/features/pricing/PricingCard';
+import { BillingView } from '@/features/billing/BillingView';
+import { ReferralView } from '@/features/profile/components/ReferralView';
 
 interface ProfileViewProps {
   config: SpendWiseConfig | null;
@@ -28,6 +31,7 @@ interface ProfileViewProps {
   addNotification?: (notif: any) => void;
 }
 
+import { useState } from 'react';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import ProfileViewMobile from '@/features/profile/ProfileViewMobile';
 
@@ -39,6 +43,7 @@ export default function ProfileView({
   onNavigate,
   addNotification,
 }: ProfileViewProps) {
+  const [profileTab, setProfileTab] = useState<'profile' | 'billing' | 'referral'>('profile');
   const isMobile = useIsMobile();
   const { isInstallable, isAppInstalled, triggerInstall, isIOS, showIOSPrompt, closeIOSPrompt } =
     usePWAInstall();
@@ -123,74 +128,121 @@ export default function ProfileView({
   ];
 
   if (isMobile) {
+    const mobileTabs = (
+      <div className="flex gap-1 p-1 rounded-2xl" style={{ background: 'var(--surface-input)' }}>
+        {(['profile', 'billing', 'referral'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setProfileTab(tab)}
+            className="flex-1 py-2 rounded-xl border-none text-xs font-bold cursor-pointer transition-all capitalize"
+            style={{
+              background: profileTab === tab ? '#ffffff' : 'transparent',
+              color: profileTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
+              boxShadow: profileTab === tab ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+            }}
+          >
+            {tab === 'profile' && 'Profile'}
+            {tab === 'billing' && 'Billing'}
+            {tab === 'referral' && 'Referrals'}
+          </button>
+        ))}
+      </div>
+    );
+
     return (
       <>
-        <ProfileViewMobile
-          name={name}
-          avatar={avatar}
-          occupation={occupation}
-          location={location}
-          monthlyGoal={monthlyGoal}
-          currency={currency}
-          config={config}
-          onAvatarClick={() => avatarInputRef.current?.click()}
-          onNavigate={view => onNavigate?.(view)}
-          isAppInstalled={isAppInstalled}
-          isInstallable={isInstallable}
-          isIOS={isIOS}
-          triggerInstall={triggerInstall}
-          transactionsCount={transactions.length}
-          profileForm={
-            <ProfileForm
-              fields={profileFields}
-              currency={currency}
-              onSave={handleSave}
-              showSavedMsg={showSavedMsg}
-            />
-          }
-          currencySelector={
-            <CurrencySelector
-              activeCurrency={activeCurrency}
-              baseCurrency={baseCurrency}
-              onSelect={code => handleCurrencySelect(code as CurrencyCode)}
-            />
-          }
-          dataManagement={
-            <DataManagement
-              transactions={transactions}
-              onExportCSV={() => exportCSV(transactions)}
-              onOpenResetConfirm={() => setShowResetConfirm(true)}
-              onOpenSecureExport={() => setShowSecureExportModal(true)}
-              onOpenRestore={() => setShowRestoreModal(true)}
-              onRawDBExport={handleRawDBExport}
-              onRawDBImport={handleRawDBImport}
-              onImportTransactions={handleImportTransactions}
-            />
-          }
-          accessibility={
-            <AccessibilitySection
-              darkMode={darkMode}
-              onDarkMode={handleDarkMode}
-              highContrast={highContrast}
-              onHighContrast={toggleHighContrast}
-              hapticsEnabled={hapticsEnabled}
-              onHaptics={toggleHaptics}
-              shakeEnabled={shakeEnabled}
-              onShake={toggleShake}
-              fontSize={fontSize}
-              FONT_SIZES={FONT_SIZES}
-              FONT_LABELS={FONT_LABELS}
-              onFontSize={handleFontSize}
-            />
-          }
-          notifications={
-            <NotificationsSection
-              notifPermission={notifPermission}
-              onRequestPermission={requestNotifPermission}
-              onTestNotification={testNotification}
-            />
-          }
-        />
+        {profileTab === 'profile' && (
+          <ProfileViewMobile
+            name={name}
+            avatar={avatar}
+            occupation={occupation}
+            location={location}
+            monthlyGoal={monthlyGoal}
+            currency={currency}
+            config={config}
+            onAvatarClick={() => avatarInputRef.current?.click()}
+            onNavigate={view => onNavigate?.(view)}
+            isAppInstalled={isAppInstalled}
+            isInstallable={isInstallable}
+            isIOS={isIOS}
+            triggerInstall={triggerInstall}
+            transactionsCount={transactions.length}
+            tabs={mobileTabs}
+            profileForm={
+              <ProfileForm
+                fields={profileFields}
+                currency={currency}
+                onSave={handleSave}
+                showSavedMsg={showSavedMsg}
+              />
+            }
+            currencySelector={
+              <CurrencySelector
+                activeCurrency={activeCurrency}
+                baseCurrency={baseCurrency}
+                onSelect={code => handleCurrencySelect(code as CurrencyCode)}
+              />
+            }
+            dataManagement={
+              <DataManagement
+                transactions={transactions}
+                onExportCSV={() => exportCSV(transactions)}
+                onOpenResetConfirm={() => setShowResetConfirm(true)}
+                onOpenSecureExport={() => setShowSecureExportModal(true)}
+                onOpenRestore={() => setShowRestoreModal(true)}
+                onRawDBExport={handleRawDBExport}
+                onRawDBImport={handleRawDBImport}
+                onImportTransactions={handleImportTransactions}
+              />
+            }
+            accessibility={
+              <AccessibilitySection
+                darkMode={darkMode}
+                onDarkMode={handleDarkMode}
+                highContrast={highContrast}
+                onHighContrast={toggleHighContrast}
+                hapticsEnabled={hapticsEnabled}
+                onHaptics={toggleHaptics}
+                shakeEnabled={shakeEnabled}
+                onShake={toggleShake}
+                fontSize={fontSize}
+                FONT_SIZES={FONT_SIZES}
+                FONT_LABELS={FONT_LABELS}
+                onFontSize={handleFontSize}
+              />
+            }
+            notifications={
+              <NotificationsSection
+                notifPermission={notifPermission}
+                onRequestPermission={requestNotifPermission}
+                onTestNotification={testNotification}
+              />
+            }
+            pricing={
+              <PricingCard
+                currentPlan={config?.isFamily ? 'family' : 'individual'}
+                compact
+              />
+            }
+          />
+        )}
+
+        {profileTab === 'billing' && (
+          <div className="view-enter space-y-6 pb-20">
+            {mobileTabs}
+            <BillingView onPlanChange={(plan) => {
+              onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
+            }} />
+          </div>
+        )}
+
+        {profileTab === 'referral' && (
+          <div className="view-enter space-y-6 pb-20">
+            {mobileTabs}
+            <ReferralView />
+          </div>
+        )}
+
         <input
           ref={avatarInputRef}
           type="file"
@@ -235,71 +287,109 @@ export default function ProfileView({
         </p>
       </div>
 
-      {/* Avatar Upload */}
-      <ProfileHeader
-        avatar={avatar}
-        name={name}
-        occupation={occupation}
-        location={location}
-        config={config}
-        avatarInputRef={avatarInputRef}
-        onAvatarChange={handleAvatarChange}
-      />
-
-      {/* Profile Form */}
-      <ProfileForm
-        fields={profileFields}
-        currency={currency}
-        onSave={handleSave}
-        showSavedMsg={showSavedMsg}
-      />
-
-      {/* Currency Selector */}
-      <div className="card p-6">
-        <CurrencySelector
-          activeCurrency={activeCurrency}
-          baseCurrency={baseCurrency}
-          onSelect={code => handleCurrencySelect(code as CurrencyCode)}
-        />
+      {/* Profile Tabs */}
+      <div className="flex gap-1 p-1 rounded-2xl" style={{ background: 'var(--surface-input)' }}>
+        {(['profile', 'billing', 'referral'] as const).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setProfileTab(tab)}
+            className="flex-1 py-2.5 rounded-xl border-none text-sm font-bold cursor-pointer transition-all capitalize"
+            style={{
+              background: profileTab === tab ? '#ffffff' : 'transparent',
+              color: profileTab === tab ? 'var(--text-primary)' : 'var(--text-muted)',
+              boxShadow: profileTab === tab ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+            }}
+          >
+            {tab === 'profile' && 'Profile'}
+            {tab === 'billing' && 'Billing'}
+            {tab === 'referral' && 'Referrals'}
+          </button>
+        ))}
       </div>
 
-      {/* Data Management */}
-      <DataManagement
-        transactions={transactions}
-        onExportCSV={() => exportCSV(transactions)}
-        onOpenResetConfirm={() => setShowResetConfirm(true)}
-        onOpenSecureExport={() => setShowSecureExportModal(true)}
-        onOpenRestore={() => setShowRestoreModal(true)}
-        onRawDBExport={handleRawDBExport}
-        onRawDBImport={handleRawDBImport}
-        onImportTransactions={handleImportTransactions}
-      />
+      {profileTab === 'profile' && (
+        <>
+          {/* Avatar Upload */}
+          <ProfileHeader
+            avatar={avatar}
+            name={name}
+            occupation={occupation}
+            location={location}
+            config={config}
+            avatarInputRef={avatarInputRef}
+            onAvatarChange={handleAvatarChange}
+          />
 
-      {/* Accessibility */}
-      <AccessibilitySection
-        darkMode={darkMode}
-        onDarkMode={handleDarkMode}
-        highContrast={highContrast}
-        onHighContrast={toggleHighContrast}
-        hapticsEnabled={hapticsEnabled}
-        onHaptics={toggleHaptics}
-        shakeEnabled={shakeEnabled}
-        onShake={toggleShake}
-        fontSize={fontSize}
-        FONT_SIZES={FONT_SIZES}
-        FONT_LABELS={FONT_LABELS}
-        onFontSize={handleFontSize}
-      />
+          {/* Profile Form */}
+          <ProfileForm
+            fields={profileFields}
+            currency={currency}
+            onSave={handleSave}
+            showSavedMsg={showSavedMsg}
+          />
 
-      {/* Family & Safety */}
-      <FamilySafetySection onNavigate={onNavigate} />
+          {/* Currency Selector */}
+          <div className="card p-6">
+            <CurrencySelector
+              activeCurrency={activeCurrency}
+              baseCurrency={baseCurrency}
+              onSelect={code => handleCurrencySelect(code as CurrencyCode)}
+            />
+          </div>
 
-      {/* Notifications */}
-      <NotificationsSection
-        notifPermission={notifPermission}
-        onRequestPermission={requestNotifPermission}
-        onTestNotification={testNotification}
-      />
+          {/* Data Management */}
+          <DataManagement
+            transactions={transactions}
+            onExportCSV={() => exportCSV(transactions)}
+            onOpenResetConfirm={() => setShowResetConfirm(true)}
+            onOpenSecureExport={() => setShowSecureExportModal(true)}
+            onOpenRestore={() => setShowRestoreModal(true)}
+            onRawDBExport={handleRawDBExport}
+            onRawDBImport={handleRawDBImport}
+            onImportTransactions={handleImportTransactions}
+          />
+
+          {/* Accessibility */}
+          <AccessibilitySection
+            darkMode={darkMode}
+            onDarkMode={handleDarkMode}
+            highContrast={highContrast}
+            onHighContrast={toggleHighContrast}
+            hapticsEnabled={hapticsEnabled}
+            onHaptics={toggleHaptics}
+            shakeEnabled={shakeEnabled}
+            onShake={toggleShake}
+            fontSize={fontSize}
+            FONT_SIZES={FONT_SIZES}
+            FONT_LABELS={FONT_LABELS}
+            onFontSize={handleFontSize}
+          />
+
+          {/* Family & Safety */}
+          <FamilySafetySection onNavigate={onNavigate} />
+
+          {/* Plan & Pricing */}
+          <PricingCard
+            currentPlan={config?.isFamily ? 'family' : 'individual'}
+            compact
+          />
+
+          {/* Notifications */}
+          <NotificationsSection
+            notifPermission={notifPermission}
+            onRequestPermission={requestNotifPermission}
+            onTestNotification={testNotification}
+          />
+        </>
+      )}
+
+      {profileTab === 'billing' && (
+        <BillingView onPlanChange={(plan) => {
+          onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
+        }} />
+      )}
+
+      {profileTab === 'referral' && <ReferralView />}
 
       {/* App Footer */}
       <div className="card px-6 py-5 flex items-center justify-between flex-wrap gap-4">

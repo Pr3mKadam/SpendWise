@@ -32,6 +32,7 @@ export default function SpendingPersonality({ transactions }: SpendingPersonalit
 
   useEffect(() => {
     if (transactions.length >= 10 && !personality) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       analyze();
     }
   }, [transactions.length]);

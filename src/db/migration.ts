@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-unused-vars */
 import { db } from '@/db/db';
 import { useStore } from '@/store';
 

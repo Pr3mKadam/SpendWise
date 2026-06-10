@@ -1,0 +1,69 @@
+version: 2
+updates:
+  # npm / Node.js dependencies
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 10
+    versioning-strategy: increase
+    labels:
+      - dependencies
+      - automated
+    commit-message:
+      prefix: fix
+      prefix-development: chore
+      include: scope
+    groups:
+      react-ecosystem:
+        patterns:
+          - react*
+          - '@types/react*'
+        update-types:
+          - minor
+          - patch
+      eslint:
+        patterns:
+          - eslint*
+          - '@eslint/*'
+          - 'typescript-eslint'
+        update-types:
+          - minor
+          - patch
+      testing:
+        patterns:
+          - vitest*
+          - '@vitest/*'
+          - '@testing-library/*'
+          - '@playwright/*'
+        update-types:
+          - minor
+          - patch
+    ignore:
+      - dependency-name: react
+        versions: ['>19.0.0']
+      - dependency-name: react-dom
+        versions: ['>19.0.0']
+      - dependency-name: typescript
+        versions: ['>5.9.0']
+      - dependency-name: vite
+        versions: ['>7.2.0']
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Kolkata
+    open-pull-requests-limit: 5
+    labels:
+      - ci-cd
+      - automated
+    commit-message:
+      prefix: chore
+      include: scope

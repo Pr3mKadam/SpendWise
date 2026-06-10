@@ -56,7 +56,7 @@ export function PredictiveForecasting({
     const dayOfMonth = now.getDate();
 
     // Calculate daily spend rate from last 30 days
-    const thirtyDaysAgo = formatLocalYYYYMMDD(new Date(Date.now() - 30 * 86400000));
+    const thirtyDaysAgo = formatLocalYYYYMMDD(new Date(nowTimestamp - 30 * 86400000));
     const recentDebits = transactions.filter(t => t.type === 'debit' && t.date >= thirtyDaysAgo);
     const recentCredits = transactions.filter(t => t.type === 'credit' && t.date >= thirtyDaysAgo);
     const totalSpent30 = recentDebits.reduce((a, t) => a + t.amount, 0);
@@ -106,7 +106,7 @@ export function PredictiveForecasting({
       daysLeft: daysInMonth - dayOfMonth,
       hasRateData: dailySpendRate > 0,
     };
-  }, [transactions, currentBalance]);
+  }, [transactions, currentBalance, nowTimestamp]);
 
   const isPositive = data.projectedChange >= 0;
 

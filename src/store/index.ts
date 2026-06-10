@@ -1,8 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { create } from 'zustand';
 import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
 import { Transaction, Category } from '@/types';
 import { db } from '@/db/db';
 import { createFinanceSlice, FinanceSlice } from '@/features/transactions/store/financeSlice';
+import { initMerchantMemory } from '@/core/merchantMemory';
 import { createPortfolioSlice, PortfolioSlice } from '@/features/portfolio/store/portfolioSlice';
 import {
   createGamificationSlice,
@@ -148,6 +150,14 @@ export interface ParentalControlState {
   restrictLateNightSpending?: boolean;
 }
 
+const currentProfile = (() => {
+  try {
+    return localStorage.getItem('spendwise_active_profile') || 'personal';
+  } catch {
+    return 'personal';
+  }
+})();
+
 export type SpendWiseStore = FinanceSlice &
   PortfolioSlice &
   GamificationSlice &
@@ -157,7 +167,19 @@ export type SpendWiseStore = FinanceSlice &
     restoreBackup: (data: any) => void;
     privacyEnabled: boolean;
     togglePrivacy: () => void;
+    profileId: string;
+    switchProfile: (id: string) => void;
   };
+
+const getPersistKey = () => {
+  try {
+    const profile = localStorage.getItem('spendwise_active_profile') || 'personal';
+    if (profile === 'personal') return 'spendwise-global-store';
+    return `spendwise_store_${profile}`;
+  } catch {
+    return 'spendwise-global-store';
+  }
+};
 
 export const useStore = create<SpendWiseStore>()(
   persist(
@@ -167,6 +189,13 @@ export const useStore = create<SpendWiseStore>()(
       ...createGamificationSlice(set, get, api),
       ...createParentalSlice(set, get, api),
       ...createSecuredSlice(set, get, api),
+
+      profileId: currentProfile,
+      switchProfile: (id: string) => {
+        set({ profileId: id });
+        localStorage.setItem('spendwise_active_profile', id);
+        window.location.reload();
+      },
 
       privacyEnabled: false,
       togglePrivacy: () =>
@@ -182,8 +211,11 @@ export const useStore = create<SpendWiseStore>()(
         set({
           transactions: [],
           indexedData: { byCategory: {}, byMonth: {} },
+          undoStack: [],
           assets: [],
           liabilities: [],
+          livePrices: {},
+          lastPriceUpdate: null,
           subscriptions: [],
           recurringTransactions: [],
           razorpayKeys: null,
@@ -256,9 +288,18 @@ export const useStore = create<SpendWiseStore>()(
     {
       name: 'spendwise-global-store',
       storage: createJSONStorage(() => dexieStorage),
+      partialize: state => {
+        const { livePrices, lastPriceUpdate, ...rest } = state as any;
+        return rest;
+      },
     }
   )
 );
+
+initMerchantMemory({
+  get merchantMemory() { return useStore.getState().merchantMemory; },
+  setMerchantMemory: (memory) => useStore.getState().setMerchantMemory(memory),
+});
 
 // ─── Automatic Legacy LocalStorage Migration ──────────────────────────────────
 function migrateLegacyLocalStorage(store: SpendWiseStore) {

@@ -20,12 +20,13 @@ import { createSetuConsent, fetchSetuBankStatements } from '@/core/setuAA';
 import { predictCategory } from '@/utils/merchantMapper';
 import { useStore } from '@/store';
 import { Category as CategoryType } from '@/types';
-
 import SyncDashboard from '@/features/sync/components/SyncDashboard';
 import SelectSource from '@/features/sync/components/SelectSource';
 import UPILink from '@/features/sync/components/UPILink';
 import RazorpayLink from '@/features/sync/components/RazorpayLink';
 import PayForm from '@/features/sync/components/PayForm';
+
+let idCounter = 0;
 
 interface BankSyncViewProps {
   onAutoAddTransactions: (txs: Transaction[]) => void;
@@ -72,6 +73,7 @@ export default function BankSyncView({
   useEffect(() => {
     const key = razorpayKeys?.keyId;
     if (key) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAccounts((p: LinkedAccount[]) => {
         if (p.some(a => a.provider === 'razorpay')) return p;
         return [
@@ -94,7 +96,7 @@ export default function BankSyncView({
 
   const handleUPILinkSuccess = (provider: (typeof UPI_PROVIDERS)[0], id: string) => {
     const newAccount: LinkedAccount = {
-      id: `acc-${Date.now()}`,
+      id: `acc-${idCounter++}`,
       provider: provider.id as FinanceProvider,
       upiId: id,
       linkedAt: new Date().toISOString(),
@@ -175,7 +177,7 @@ export default function BankSyncView({
           merchant: parsed.merchant || tx.merchant,
           description: parsed.upiId ? `UPI VPA: ${parsed.upiId}` : tx.description,
           upiId: parsed.upiId,
-          id: `tx_${Date.now()}_${Math.random()}`,
+          id: `tx_${idCounter++}`,
         };
       });
 
@@ -186,7 +188,7 @@ export default function BankSyncView({
       const mem = loadMerchantMemory();
       const categorisedTxs = parsedTxs.map((tx: any) => {
         const vpaKey = tx.upiId?.toLowerCase();
-        let cat = tx.category;
+        let cat;
         if (vpaKey && mem[vpaKey]) {
           cat = mem[vpaKey].category as Category;
         } else {

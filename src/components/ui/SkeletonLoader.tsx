@@ -108,7 +108,7 @@ const GoalsSkeleton = () => (
 const BudgetSkeleton = () => (
   <div className="space-y-3 animate-pulse">
     {/* Summary bar */}
-    <Shimmer className="h-16 w-full" style={{ borderRadius: '16px' }} />
+    <Shimmer className="h-16 w-full" /* tailwind-migration:replaced */ />
     {/* Budget rows */}
     {[...Array(5)].map((_, i) => (
       <div key={i} className="card p-4 space-y-3">

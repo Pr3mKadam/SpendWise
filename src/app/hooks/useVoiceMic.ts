@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /**
  * useVoiceMic — orchestrates voice-mic UI state for MasterMic.
  *

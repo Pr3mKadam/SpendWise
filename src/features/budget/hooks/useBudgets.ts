@@ -20,8 +20,8 @@ export function useBudgets() {
   const budgetStats = useMemo(() => {
     // Determine the start date of the current period
     const now = new Date();
-    let startDate = new Date();
-    let prevStartDate = new Date();
+    const startDate = new Date();
+    let prevStartDate: Date;
 
     if (budgetSettings.period === 'weekly') {
       startDate.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)

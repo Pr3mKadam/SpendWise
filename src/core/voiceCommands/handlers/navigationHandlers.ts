@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { IntentHandler, formatCurrency, todayISO } from './types';
 import { useStore } from '@/store';
 

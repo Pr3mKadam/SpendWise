@@ -14,11 +14,12 @@ interface DesktopOnlyGuardProps {
  * children as-is.
  */
 export function DesktopOnlyGuard({ viewLabel, onNavigate, children }: DesktopOnlyGuardProps) {
-  const [isMobile, setIsMobile] = React.useState(false);
+  const [isMobile, setIsMobile] = React.useState(
+    () => window.matchMedia('(max-width: 767px)').matches
+  );
 
   React.useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
-    setIsMobile(mq.matches);
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener('change', handler);
     return () => mq.removeEventListener('change', handler);

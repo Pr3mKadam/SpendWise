@@ -1,6 +1,10 @@
 import { StateCreator } from 'zustand';
-import { Transaction, Category, RecurringPattern, RecurringTransaction } from '@/types';
+import { Transaction, Category, DefaultCategory, RecurringPattern, RecurringTransaction } from '@/types';
 import { SpendWiseStore } from '@/store/index';
+import { formatLocalYYYYMMDD } from '@/utils/date';
+import { learnMerchant } from '@/core/merchantMemory';
+
+const MAX_UNDO_STACK = 10;
 
 export interface BudgetSettings {
   period: 'weekly' | 'biweekly' | 'monthly';
@@ -18,6 +22,7 @@ export interface FinanceSlice {
   subscriptions: RecurringPattern[];
   recurringTransactions: RecurringTransaction[];
   razorpayKeys: { keyId: string; keySecret: string } | null;
+  undoStack: Transaction[][];
 
   addTransaction: (tx: Transaction) => void;
   addTransactions: (txs: Transaction[]) => void;
@@ -40,6 +45,14 @@ export interface FinanceSlice {
   removeRecurringTransaction: (id: string) => void;
   setRazorpayKeys: (keys: { keyId: string; keySecret: string } | null) => void;
   reindex: () => void;
+  addToIndex: (tx: Transaction) => void;
+  removeFromIndex: (id: string, category: string, date: string) => void;
+  updateTransaction: (id: string, data: Partial<Transaction>) => void;
+  undo: () => boolean;
+  canUndo: () => boolean;
+  processScheduledTransactions: () => void;
+  getScheduledTransactions: () => Transaction[];
+  getPostedTransactions: () => Transaction[];
 }
 
 export const createFinanceSlice: StateCreator<
@@ -55,6 +68,7 @@ export const createFinanceSlice: StateCreator<
   subscriptions: [],
   recurringTransactions: [],
   razorpayKeys: null,
+  undoStack: [],
 
   setRazorpayKeys: keys => set({ razorpayKeys: keys }),
 
@@ -64,6 +78,7 @@ export const createFinanceSlice: StateCreator<
     const byMonth: Record<string, Transaction[]> = {};
 
     transactions.forEach(tx => {
+      if (tx.deletedAt) return;
       if (!byCategory[tx.category]) byCategory[tx.category] = [];
       byCategory[tx.category].push(tx);
 
@@ -75,10 +90,38 @@ export const createFinanceSlice: StateCreator<
     set({ indexedData: { byCategory, byMonth } });
   },
 
+  addToIndex: tx => {
+    const { indexedData } = get();
+    const byCategory = { ...indexedData.byCategory };
+    const byMonth = { ...indexedData.byMonth };
+    const ym = formatLocalYYYYMMDD(new Date(tx.date)).slice(0, 7);
+    byCategory[tx.category] = [...(byCategory[tx.category] || []), tx];
+    byMonth[ym] = [...(byMonth[ym] || []), tx];
+    set({ indexedData: { byCategory, byMonth } });
+  },
+
+  removeFromIndex: (id, category, date) => {
+    const { indexedData } = get();
+    const byCategory = { ...indexedData.byCategory };
+    const byMonth = { ...indexedData.byMonth };
+    const ym = date.slice(0, 7);
+    byCategory[category] = (byCategory[category] || []).filter(t => t.id !== id);
+    if (byCategory[category].length === 0) delete byCategory[category];
+    byMonth[ym] = (byMonth[ym] || []).filter(t => t.id !== id);
+    if (byMonth[ym].length === 0) delete byMonth[ym];
+    set({ indexedData: { byCategory, byMonth } });
+  },
+
   addTransaction: tx => {
     const state = get();
-    // Parental control logic is moved to combined store or handled via actions
-    if (state.parentalState?.isTeenMode) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((state as any).parentalState?.blockAddTransactions) return;
+
+    const snapshot = [...state.transactions];
+    const newStack = [...state.undoStack.slice(-(MAX_UNDO_STACK - 1)), snapshot];
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((state as any).parentalState?.enabled || state.parentalState?.isTeenMode) {
       if (state.parentalState.restrictedCategories.includes(tx.category)) {
         state.requestTransactionApproval?.(tx);
         return;
@@ -95,25 +138,61 @@ export const createFinanceSlice: StateCreator<
         }
       }
     }
-    set(state => ({ transactions: [tx, ...state.transactions] }));
-    get().reindex();
+    set(state => ({ transactions: [tx, ...state.transactions], undoStack: newStack }));
+    get().addToIndex(tx);
   },
 
   addTransactions: txs => {
-    set(state => ({ transactions: [...txs, ...state.transactions] }));
+    const state = get();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((state as any).parentalState?.blockAddTransactions) return;
+    set({ transactions: [...txs, ...state.transactions] });
     get().reindex();
   },
 
   deleteTransaction: id => {
-    set(state => ({ transactions: state.transactions.filter(t => t.id !== id) }));
+    const state = get();
+    const tx = state.transactions.find(t => t.id === id);
+    if (!tx) return;
+
+    set(state => ({
+      transactions: state.transactions.map(t =>
+        t.id === id ? { ...t, deletedAt: new Date().toISOString() } : t
+      ),
+    }));
+    get().removeFromIndex(id, tx.category, tx.date);
     get().reindex();
   },
 
   updateTransactionCategory: (id, newCategory) => {
+    const state = get();
+    const tx = state.transactions.find(t => t.id === id);
+    const snapshot = [...state.transactions];
+    const newStack = [...state.undoStack.slice(-(MAX_UNDO_STACK - 1)), snapshot];
+
     set(state => ({
       transactions: state.transactions.map(t =>
         t.id === id ? { ...t, category: newCategory } : t
       ),
+      undoStack: newStack,
+    }));
+    get().reindex();
+
+    if (tx) {
+      learnMerchant(tx.merchant, newCategory as DefaultCategory);
+    }
+  },
+
+  updateTransaction: (id, data) => {
+    const state = get();
+    const snapshot = [...state.transactions];
+    const newStack = [...state.undoStack.slice(-(MAX_UNDO_STACK - 1)), snapshot];
+
+    set(state => ({
+      transactions: state.transactions.map(t =>
+        t.id === id ? { ...t, ...data, updatedAt: new Date().toISOString() } : t
+      ),
+      undoStack: newStack,
     }));
     get().reindex();
   },
@@ -130,19 +209,76 @@ export const createFinanceSlice: StateCreator<
 
   bulkDeleteTransactions: ids => {
     const idSet = new Set(ids);
+    const now = new Date().toISOString();
     set(state => ({
-      transactions: state.transactions.filter(t => !idSet.has(t.id)),
+      transactions: state.transactions.map(t =>
+        idSet.has(t.id) ? { ...t, deletedAt: now } : t
+      ),
     }));
     get().reindex();
   },
 
   bulkReassignCategory: (oldCategory, newCategory) => {
+    const state = get();
+    const merchants = [
+      ...new Set(
+        state.transactions
+          .filter(t => t.category === oldCategory)
+          .map(t => t.merchant.toLowerCase())
+      ),
+    ];
+
     set(state => ({
       transactions: state.transactions.map(t =>
         t.category === oldCategory ? { ...t, category: newCategory as Category } : t
       ),
     }));
     get().reindex();
+
+    merchants.forEach(merchant => {
+      learnMerchant(merchant, newCategory as DefaultCategory);
+    });
+  },
+
+  undo: () => {
+    const { undoStack } = get();
+    if (undoStack.length === 0) return false;
+    const snapshot = undoStack[undoStack.length - 1];
+    set({
+      transactions: snapshot,
+      undoStack: undoStack.slice(0, -1),
+    });
+    get().reindex();
+    return true;
+  },
+
+  canUndo: () => {
+    return get().undoStack.length > 0;
+  },
+
+  processScheduledTransactions: () => {
+    const { transactions } = get();
+    const today = formatLocalYYYYMMDD(new Date());
+    let changed = false;
+    const updated = transactions.map(t => {
+      if (t.status === 'scheduled' && t.date <= today) {
+        changed = true;
+        return { ...t, status: 'posted' as const };
+      }
+      return t;
+    });
+    if (changed) {
+      set({ transactions: updated });
+      get().reindex();
+    }
+  },
+
+  getScheduledTransactions: () => {
+    return get().transactions.filter(t => t.status === 'scheduled' && !t.deletedAt);
+  },
+
+  getPostedTransactions: () => {
+    return get().transactions.filter(t => t.status !== 'scheduled' && !t.deletedAt);
   },
 
   setBudget: (category, amount) =>

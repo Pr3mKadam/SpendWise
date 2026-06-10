@@ -57,6 +57,9 @@ export function useNotifications(
 
   const notifications = useMemo((): AppNotification[] => {
     const list: AppNotification[] = [];
+    const now = Date.now(); // eslint-disable-line react-hooks/purity
+    const today = formatLocalYYYYMMDD(new Date(now));
+    const in7 = formatLocalYYYYMMDD(new Date(now + 7 * 86_400_000));
 
     // 1. Spending alerts
     alerts.forEach(a => {
@@ -74,9 +77,6 @@ export function useNotifications(
     });
 
     // 2. Upcoming recurring charges (due in next 7 days)
-    const today = formatLocalYYYYMMDD(new Date());
-    const in7 = formatLocalYYYYMMDD(new Date(Date.now() + 7 * 86_400_000));
-
     recurring.forEach(r => {
       if (r.nextExpected >= today && r.nextExpected <= in7) {
         const id = `recurring-${r.merchant}-${r.nextExpected}`;
@@ -88,7 +88,7 @@ export function useNotifications(
           icon: freqIcon(r.frequency),
           severity: 'info',
           read: readIds.has(id),
-          timestamp: Date.now(),
+          timestamp: now,
           link: 'history',
         });
       }
@@ -112,7 +112,7 @@ export function useNotifications(
             icon: pct >= 100 ? '🎉' : g.emoji,
             severity: pct >= 100 ? 'info' : 'info',
             read: readIds.has(id),
-            timestamp: Date.now() - milestones.indexOf(m) * 1000,
+            timestamp: now - milestones.indexOf(m) * 1000,
             link: 'goals',
           });
         }
@@ -128,7 +128,6 @@ export function useNotifications(
     });
 
     // Filter out currently snoozed
-    const now = Date.now();
     const active = list.filter(
       n => !snoozedNotifications[n.id] || snoozedNotifications[n.id] <= now
     );

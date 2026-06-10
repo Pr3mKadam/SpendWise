@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Transaction, Category } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { Virtuoso } from 'react-virtuoso';
@@ -10,6 +11,7 @@ import { TransactionFilters } from '@/features/transactions/components/Transacti
 import { TransactionList } from '@/features/transactions/components/TransactionList';
 import BulkActionHeader from '@/features/transactions/components/BulkActionHeader';
 import { HistoryToolbar } from '@/features/transactions/components/HistoryToolbar';
+import { FilterChips } from '@/features/transactions/components/FilterChips';
 import { DeleteConfirmModal } from '@/features/transactions/components/DeleteConfirmModal';
 import { useTransactionHistory } from '@/features/transactions/hooks/useTransactionHistory';
 import { useIsMobile } from '@/hooks/useMediaQuery';
@@ -79,6 +81,44 @@ export default function HistoryView({
     clearFilters,
     handleSort,
   } = useTransactionHistory(visibleTransactions, initialSearchQuery);
+
+  // URL persistence
+  const [searchParams, setSearchParams] = useSearchParams();
+  const hasInitialized = useRef(false);
+
+  // Read filters from URL on mount
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q) setSearch(q);
+    const from = searchParams.get('from');
+    if (from) setDateFrom(from);
+    const to = searchParams.get('to');
+    if (to) setDateTo(to);
+    const min = searchParams.get('min');
+    if (min) setAmountMin(min);
+    const max = searchParams.get('max');
+    if (max) setAmountMax(max);
+    const type = searchParams.get('type');
+    if (type === 'credit' || type === 'debit') setTypeFilter(type);
+    const cat = searchParams.get('cat');
+    if (cat && cat !== 'All') setCategoryFilter(cat as Category | 'All');
+    hasInitialized.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sync filters to URL on change (skip the initial read-back)
+  useEffect(() => {
+    if (!hasInitialized.current) return;
+    const params = new URLSearchParams();
+    if (search) params.set('q', search);
+    if (dateFrom) params.set('from', dateFrom);
+    if (dateTo) params.set('to', dateTo);
+    if (amountMin) params.set('min', amountMin);
+    if (amountMax) params.set('max', amountMax);
+    if (typeFilter !== 'all') params.set('type', typeFilter);
+    if (categoryFilter !== 'All') params.set('cat', categoryFilter);
+    setSearchParams(params, { replace: true });
+  }, [search, dateFrom, dateTo, amountMin, amountMax, typeFilter, categoryFilter, setSearchParams]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [importToast, setImportToast] = useState<string | null>(null);
@@ -226,6 +266,25 @@ export default function HistoryView({
           showAmountFilter={showAmountFilter}
           setShowAmountFilter={setShowAmountFilter}
         />
+
+        {hasFilters && (
+          <FilterChips
+            search={search}
+            onClearSearch={() => setSearch('')}
+            dateFrom={dateFrom}
+            dateTo={dateTo}
+            onClearDateFrom={() => setDateFrom('')}
+            onClearDateTo={() => setDateTo('')}
+            amountMin={amountMin}
+            amountMax={amountMax}
+            onClearAmountMin={() => setAmountMin('')}
+            onClearAmountMax={() => setAmountMax('')}
+            typeFilter={typeFilter}
+            onClearTypeFilter={() => setTypeFilter('all')}
+            categoryFilter={categoryFilter}
+            onClearCategoryFilter={() => setCategoryFilter('All')}
+          />
+        )}
 
         {/* Table Card */}
         <div

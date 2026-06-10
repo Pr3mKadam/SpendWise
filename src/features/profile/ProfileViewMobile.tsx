@@ -39,7 +39,9 @@ interface ProfileViewMobileProps {
   dataManagement: React.ReactNode;
   accessibility: React.ReactNode;
   notifications: React.ReactNode;
+  pricing: React.ReactNode;
   transactionsCount: number;
+  tabs?: React.ReactNode;
 }
 
 export default function ProfileViewMobile({
@@ -61,10 +63,14 @@ export default function ProfileViewMobile({
   dataManagement,
   accessibility,
   notifications,
+  pricing,
   transactionsCount,
+  tabs,
 }: ProfileViewMobileProps) {
   return (
     <div className="view-enter space-y-6 pb-20">
+      {tabs && <div className="px-1 pt-2">{tabs}</div>}
+
       {/* 1. Profile Hero */}
       <div className="flex flex-col items-center py-4">
         <div className="relative mb-4">
@@ -171,6 +177,16 @@ export default function ProfileViewMobile({
               </div>
               <ChevronRight size={18} className="text-[var(--text-muted)]" />
             </button>
+          </div>
+        </section>
+
+        {/* Plan & Pricing */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2 px-1 text-[length:var(--fs-overline)] font-bold text-[var(--text-muted)] uppercase tracking-widest">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> Plan
+          </div>
+          <div className="bg-[var(--surface-card)] rounded-3xl border border-[var(--border)] p-4 shadow-sm">
+            {pricing}
           </div>
         </section>
 

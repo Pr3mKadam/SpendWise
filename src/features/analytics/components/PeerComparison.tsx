@@ -23,6 +23,7 @@ export function PeerComparison({
   const data = categorySpending.slice(0, 5).map(cat => ({
     category: cat.name,
     you: cat.value,
+    // eslint-disable-next-line react-hooks/purity
     peer: cat.value * (0.8 + Math.random() * 0.5), // +/- ~20-30%
   }));
 

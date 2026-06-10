@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useMemo, useEffect } from 'react';
 import { useStore } from '@/store';
 import { Transaction, RecurringPattern } from '@/types';

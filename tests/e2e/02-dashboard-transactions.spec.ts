@@ -25,7 +25,7 @@ test.describe('Step 3, 4, 5: Dashboard & Transactions', () => {
       const postData = request.postDataJSON();
       const prompt = postData?.contents?.[0]?.parts?.[0]?.text || '';
       
-      let mockResponse = {};
+      let mockResponse: Record<string, unknown>;
       if (prompt.toLowerCase().includes('json array') || prompt.toLowerCase().includes('analyze this transaction')) {
         mockResponse = {
           candidates: [

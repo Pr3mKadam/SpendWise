@@ -6,12 +6,15 @@ import { formatLocalYYYYMMDD } from '@/utils/date';
 export interface PortfolioSlice {
   assets: AssetEntry[];
   liabilities: LiabilityEntry[];
+  livePrices: Record<string, number>;
+  lastPriceUpdate: string | null;
   addAsset: (asset: Omit<AssetEntry, 'id' | 'lastUpdated'>) => void;
   updateAsset: (id: string, data: Partial<AssetEntry>) => void;
   deleteAsset: (id: string) => void;
   addLiability: (liability: Omit<LiabilityEntry, 'id' | 'lastUpdated'>) => void;
   updateLiability: (id: string, data: Partial<LiabilityEntry>) => void;
   deleteLiability: (id: string) => void;
+  setLivePrices: (prices: Record<string, number>) => void;
 }
 
 export const createPortfolioSlice: StateCreator<
@@ -22,6 +25,8 @@ export const createPortfolioSlice: StateCreator<
 > = set => ({
   assets: [],
   liabilities: [],
+  livePrices: {},
+  lastPriceUpdate: null,
   addAsset: asset =>
     set(state => ({
       assets: [
@@ -56,4 +61,6 @@ export const createPortfolioSlice: StateCreator<
     set(state => ({
       liabilities: state.liabilities.filter(l => l.id !== id),
     })),
+  setLivePrices: prices =>
+    set({ livePrices: prices, lastPriceUpdate: new Date().toISOString() }),
 });

@@ -41,6 +41,7 @@ export default function Sidebar({
 
   // Close drawer on view change
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setIsDrawerOpen(false);
   }, [activeView]);
 
@@ -59,7 +60,7 @@ export default function Sidebar({
       if (item.id === 'analytics' && settings.hideAnalytics) return false;
     }
     if (userRole === 'student') {
-      if (['portfolio', 'sync', 'reports'].includes(item.id)) return false;
+      if (['portfolio', 'sync', 'reports', 'taxreport'].includes(item.id)) return false;
     }
     if (userRole === 'business' || userRole === 'professional') {
       if (item.id === 'education') return false;
@@ -74,7 +75,7 @@ export default function Sidebar({
     ['portfolio', 'subscriptions', 'shared', 'sync'].includes(i.id)
   );
   const toolItems = navItems.filter(i =>
-    ['advisor', 'education', 'quests', 'parental', 'reports'].includes(i.id)
+    ['advisor', 'education', 'quests', 'parental', 'reports', 'taxreport'].includes(i.id)
   );
 
   // Bottom tab items (exactly 4: dashboard, budget, history, sync)

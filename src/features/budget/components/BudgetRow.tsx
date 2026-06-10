@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { AlertTriangle, CheckCircle2, Edit3, RefreshCw, Link } from 'lucide-react';
 import { Budget } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
@@ -122,7 +122,7 @@ function BudgetEditRow({
   );
 }
 
-export function BudgetRow({
+export const BudgetRow = memo(function BudgetRow({
   budget,
   onUpdate,
   onDelete,
@@ -298,4 +298,5 @@ export function BudgetRow({
       )}
     </div>
   );
-}
+});
+BudgetRow.displayName = 'BudgetRow';

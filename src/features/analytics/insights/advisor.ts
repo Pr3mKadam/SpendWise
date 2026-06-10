@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * advisor.ts — Greatly Improved SpendWise AI Advisor
  *

@@ -17,7 +17,7 @@ export function useGamification(transactions: Transaction[]) {
   // 2. Calculate Health Score (0-100)
   useEffect(() => {
     if (transactions.length === 0) {
-      setHealthScore(50);
+      setHealthScore(50); // eslint-disable-line react-hooks/set-state-in-effect
       return;
     }
 

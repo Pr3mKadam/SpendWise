@@ -10,7 +10,7 @@
  *  - Enforces 800ms cooldown between activations
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   parseVoiceCommand,
   getMissingEntityPrompt,
@@ -102,7 +102,9 @@ export function useMasterVoice({
   setSearchQuery,
 }: UseMasterVoiceOptions): UseMasterVoiceReturn {
   const optionsRef = useRef({ navigate, onExport, toggleTheme, setSearchQuery });
-  optionsRef.current = { navigate, onExport, toggleTheme, setSearchQuery };
+  useEffect(() => {
+    optionsRef.current = { navigate, onExport, toggleTheme, setSearchQuery };
+  }, [navigate, onExport, toggleTheme, setSearchQuery]);
 
   const [state, setState] = useState<MicState>('idle');
   const [transcript, setTranscript] = useState('');
@@ -119,7 +121,7 @@ export function useMasterVoice({
 
   const SpeechRecognitionClass: SpeechRecognitionStatic | null =
     typeof window !== 'undefined'
-      ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+      ? (window as unknown as Record<string, SpeechRecognitionStatic | undefined>).SpeechRecognition || (window as unknown as Record<string, SpeechRecognitionStatic | undefined>).webkitSpeechRecognition
       : null;
 
   const isSupported = !!SpeechRecognitionClass;

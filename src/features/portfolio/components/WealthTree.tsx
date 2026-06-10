@@ -78,7 +78,9 @@ export function WealthTree({ score, savingsRate, role }: WealthTreeProps) {
                 style={{
                   backgroundColor:
                     i % 3 === 0 ? 'var(--teal)' : i % 3 === 1 ? 'var(--green)' : '#0d9488',
+                  // eslint-disable-next-line react-hooks/purity
                   marginTop: Math.random() * 10 - 5,
+                  // eslint-disable-next-line react-hooks/purity
                   marginLeft: Math.random() * 10 - 5,
                 }}
               />

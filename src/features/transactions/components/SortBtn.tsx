@@ -39,7 +39,7 @@ export function SortBtn({ label, field, sortKey, sortDir, onSort }: SortBtnProps
           <ChevronUp size={12} />
         )
       ) : (
-        <ChevronDown size={12} style={{ opacity: 0.3 }} />
+        <ChevronDown size={12} /* tailwind-migration:replaced */ />
       )}
     </button>
   );

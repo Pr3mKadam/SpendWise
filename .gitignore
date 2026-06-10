@@ -35,3 +35,11 @@ test-results/
 /qa_test.png
 /qa_test_error.png
 /qa_test.py
+
+# Large binaries / generated files
+eng.traineddata
+repomix-output.md
+
+# One-off migration scripts
+restructure.cjs
+fix-hooks.cjs

@@ -5,11 +5,19 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'http://localhost:4173',
+  'https://spendwise.vercel.app',
+  'https://spendwise-preview.vercel.app',
+];
+
+function isOriginAllowed(origin: string): boolean {
+  if (!origin) return false;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (origin.endsWith('.vercel.app') && origin.startsWith('https://spendwise-')) return true;
+  return false;
+}
 
 interface InvitePayload {
   to:        string;   // recipient email
@@ -20,7 +28,20 @@ interface InvitePayload {
   joinUrl:   string;   // full join URL with ?action=join-group&id=xxx
 }
 
+function buildCorsHeaders(origin: string) {
+  const allowed = isOriginAllowed(origin);
+  return {
+    'Access-Control-Allow-Origin': allowed ? origin : 'null',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Vary': 'Origin',
+  };
+}
+
 serve(async (req) => {
+  const origin = req.headers.get('Origin') ?? '';
+  const corsHeaders = buildCorsHeaders(origin);
+
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
@@ -174,10 +195,10 @@ If you didn't expect this invitation, you can safely ignore this email.`;
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("send-invite function error:", err);
     return new Response(
-      JSON.stringify({ error: err.message ?? "Unexpected error" }),
+      JSON.stringify({ error: err instanceof Error ? err.message : "Unexpected error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }

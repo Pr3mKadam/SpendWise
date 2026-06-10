@@ -14,7 +14,9 @@ const INTENT_LABELS: Record<string, string> = {
 };
 
 function HistoryRow({ entry }: { entry: HistoryEntry }) {
-  const age = Math.round((Date.now() - entry.timestamp) / 60000);
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
+  const age = Math.round((now - entry.timestamp) / 60000);
   return (
     <div
       style={{

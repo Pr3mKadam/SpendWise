@@ -25,7 +25,7 @@ export function useTransactionHistory(
   const [showAmountFilter, setShowAmountFilter] = useState(false);
 
   useEffect(() => {
-    if (initialSearchQuery) setSearch(initialSearchQuery);
+    if (initialSearchQuery) setSearch(initialSearchQuery); // eslint-disable-line react-hooks/set-state-in-effect
   }, [initialSearchQuery]);
 
   const handleSort = (key: SortKey) => {

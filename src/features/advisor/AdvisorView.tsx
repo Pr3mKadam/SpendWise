@@ -183,6 +183,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               : '0',
         },
       };
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessages(prev => [prev[0], briefingMsg, ...prev.slice(1)]);
     }
   }, [transactions, monthlyStats]);

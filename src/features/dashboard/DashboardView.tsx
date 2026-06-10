@@ -31,8 +31,10 @@ import DashboardViewMobile from '@/features/dashboard/DashboardViewMobile';
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
 import { DashboardHeader } from '@/features/dashboard/components/DashboardHeader';
 import { AIInsights } from '@/features/dashboard/components/AIInsights';
+import { BankSyncCard } from '@/features/dashboard/components/BankSyncCard';
 import { useBudgets } from '@/hooks/useBudgets';
 import { getProactiveNudge } from '@/features/analytics/insights/advisor';
+import { useStore } from '@/store';
 
 // Lazy load non-critical/heavy components
 const FinanceChartLazy = lazy(() => import('@/features/dashboard/components/FinanceChart'));
@@ -119,6 +121,7 @@ export function DashboardView({
   const { goals } = useGoals();
   const { netWorth } = usePortfolio();
   const { budgetStats } = useBudgets();
+  const razorpayKeys = useStore(s => s.razorpayKeys);
   const [dashboardInput, setDashboardInput] = useState('');
 
   const budgetMap = useMemo(() => {
@@ -381,6 +384,10 @@ export function DashboardView({
                 <Suspense fallback={<WidgetSkeleton />}>
                   <PremiumCard currentBalance={currentBalance} currency={currency} />
                 </Suspense>
+              )}
+
+              {!razorpayKeys && (
+                <BankSyncCard onNavigate={onNavigate} />
               )}
 
               <GoalsSummary goals={goals} onNavigate={onNavigate} />

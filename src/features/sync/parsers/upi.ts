@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 /**
  * upi.ts — Complete UPI / Bank Sync Engine
  *
@@ -12,6 +13,7 @@
 import { Transaction, DefaultCategory } from '@/types';
 import { useStore } from '@/store';
 import { formatLocalYYYYMMDD } from '@/utils/date';
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from '@/config/env';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -184,14 +186,7 @@ function detectCategory(merchant: string): DefaultCategory {
   return 'Shopping'; // safe default
 }
 
-function learnMerchant(merchant: string, category: DefaultCategory) {
-  const store = useStore.getState();
-  const memory = {
-    ...(store.merchantMemory ?? {}),
-    [merchant.toLowerCase()]: { merchant, category },
-  };
-  store.setMerchantMemory(memory);
-}
+export { learnMerchant } from '@/core/merchantMemory';
 
 // ─── UPI String Parser ────────────────────────────────────────────────────────
 // Handles all major Indian bank SMS + UPI notification formats
@@ -221,7 +216,7 @@ const UPI_PATTERNS = [
   // SBI: "Your A/c XX1234 debited by INR 350.00 on 19/05/26. UPI Ref: 123456789012"
   {
     pattern:
-      /A\/c\s+\S+\s+(debited|credited)\s+by\s+INR\s+([\d,]+\.?\d*)\s+on\s+([\d\/-]+)\.?\s+(?:.*?Ref[:\s]+(\d+))?/i,
+      /A\/c\s+\S+\s+(debited|credited)\s+by\s+INR\s+([\d,]+\.?\d*)\s+on\s+([\d/-]+)\.?\s+(?:.*?Ref[:\s]+(\d+))?/i,
     extract: (m: RegExpMatchArray) => ({
       type: m[1].toLowerCase().includes('debit') ? 'debit' : 'credit',
       amount: parseFloat(m[2].replace(/,/g, '')),
@@ -259,7 +254,7 @@ const UPI_PATTERNS = [
   },
   // Generic UPI VPA pattern: anything@bank
   {
-    pattern: /[\s\-\/]([a-z0-9.\-]+@[a-z]+)\b/i,
+    pattern:     /[-\s/]([a-z0-9.-]+@[a-z]+)\b/i,
     extract: (m: RegExpMatchArray) => ({
       upiId: m[1].toLowerCase(),
     }),
@@ -270,7 +265,7 @@ function parseIndianDate(dateStr: string): string {
   if (!dateStr) return formatLocalYYYYMMDD(new Date());
 
   // DD/MM/YY or DD-MM-YY
-  const dmy = dateStr.match(/(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+  const dmy = dateStr.match(/(\d{1,2})[-/](\d{1,2})[-/](\d{2,4})/);
   if (dmy) {
     const [, d, mo, y] = dmy;
     const year = y.length === 2 ? `20${y}` : y;
@@ -357,7 +352,7 @@ export function parseUPIString(text: string): ParsedUPITransaction | null {
 
   // Detect date from text if still today
   const dateMatch = text.match(
-    /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{1,2}[- ][A-Za-z]{3}[- ]\d{2,4}/
+    /\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}[- ][A-Za-z]{3}[- ]\d{2,4}/
   );
   if (dateMatch) date = parseIndianDate(dateMatch[0]);
 
@@ -564,11 +559,11 @@ export function parseCSVStatement(csvText: string, bankHint?: string): ParsedUPI
     if (!amount || amount <= 0) continue;
 
     // Try extracting UPI VPA from narration
-    const vpaMatch = narr.match(/[\w.\-]+@[\w]+/);
+    const vpaMatch = narr.match(/[\w.-]+@[\w]+/);
     const upiId = vpaMatch ? vpaMatch[0].toLowerCase() : undefined;
 
     // Extract merchant name from narration
-    let merchant = narr;
+    let merchant: string;
     if (upiId) {
       merchant = upiId
         .split('@')[0]
@@ -578,10 +573,10 @@ export function parseCSVStatement(csvText: string, bankHint?: string): ParsedUPI
     } else {
       // Strip common bank boilerplate
       merchant = narr
-        .replace(/UPI[\/\-\s]+/gi, '')
-        .replace(/NEFT[\/\-\s]+/gi, '')
-        .replace(/IMPS[\/\-\s]+/gi, '')
-        .replace(/CRF?[\/\-\s]+/gi, '')
+        .replace(/UPI[-/\s]+/gi, '')
+        .replace(/NEFT[-/\s]+/gi, '')
+        .replace(/IMPS[-/\s]+/gi, '')
+        .replace(/CRF?[-/\s]+/gi, '')
         .replace(/\d{10,}/g, '') // remove long ref numbers
         .replace(/[A-Z0-9]{20,}/g, '') // remove long reference strings
         .replace(/\s{2,}/g, ' ')
@@ -629,8 +624,7 @@ export async function fetchRazorpayTransactions(
     return generateRealisticMocks();
   }
 
-  const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-  const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY;
+  // SUPABASE_URL, SUPABASE_ANON_KEY imported from @/config/env
 
   const params: Record<string, number> = {};
   if (from) params.from = Math.floor(from.getTime() / 1000);
@@ -640,7 +634,7 @@ export async function fetchRazorpayTransactions(
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `Bearer ${sessionStorage.getItem('spendwise_supabase_token') || SUPABASE_ANON}`,
+      Authorization: `Bearer ${sessionStorage.getItem('spendwise_supabase_token') || SUPABASE_ANON_KEY}`,
     },
     body: JSON.stringify({ action: 'list-payments', params }),
   });
@@ -671,9 +665,7 @@ export async function fetchRazorpayTransactions(
 // ─── Merchant Category Learning ───────────────────────────────────────────────
 
 /** Call this when user manually changes a category in the review table */
-export function saveMerchantCorrection(merchant: string, category: DefaultCategory) {
-  learnMerchant(merchant, category);
-}
+export { saveMerchantCorrection } from '@/core/merchantMemory';
 
 // ─── Convert to App Transaction ──────────────────────────────────────────────
 

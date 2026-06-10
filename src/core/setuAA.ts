@@ -1,3 +1,4 @@
+/* eslint-disable no-console, @typescript-eslint/no-unused-vars */
 /**
  * Setu Account Aggregator (AA) Sandbox Mock
  *
@@ -15,9 +16,12 @@
 import { Transaction } from '@/types';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
-// These would normally be stored in .env and only accessed by the backend
-const SETU_CLIENT_ID = 'mock_setu_client_id';
-const SETU_SECRET = 'mock_setu_secret';
+import { SETU_CLIENT_ID, SETU_SECRET } from '@/config/env';
+
+// Log a warning if env vars are missing (they're optional for the mock/sandbox flow)
+if (!SETU_CLIENT_ID || !SETU_SECRET) {
+  console.warn('[Setu AA] VITE_SETU_CLIENT_ID / VITE_SETU_SECRET not set — using sandbox mock defaults');
+}
 
 export interface SetuConsentResponse {
   id: string;

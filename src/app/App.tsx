@@ -102,10 +102,9 @@ function parseConfig(raw: string | null): SpendWiseConfig {
 
 function ThemeHydrator() {
   const prefs = useStore(s => s.userPreferences);
-  const [hydrated, setHydrated] = useState(false);
+  const [hydrated, setHydrated] = useState(() => useStore.persist.hasHydrated());
 
   useEffect(() => {
-    setHydrated(useStore.persist.hasHydrated());
     const unsub = useStore.persist.onFinishHydration(() => {
       setHydrated(true);
     });
@@ -161,6 +160,7 @@ export default function App() {
     'education',
     'reports',
     'gamification',
+    'receipts',
   ];
   const currentPath = path.replace('/', '') as AppView;
   const initialView: AppView = validViews.includes(currentPath) ? currentPath : 'dashboard';
@@ -198,12 +198,9 @@ function AppAuthenticated({ initialView }: { initialView: AppView }) {
   const { user } = useAuth();
   const userId = user ? user.id : 'guest';
 
-  const [config, setConfigState] = useState<SpendWiseConfig | null>(null);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.CONFIG);
-    setConfigState(parseConfig(saved));
-  }, []);
+  const [config, setConfigState] = useState<SpendWiseConfig | null>(
+    () => parseConfig(localStorage.getItem(STORAGE_KEYS.CONFIG))
+  );
 
   const setConfig = (newConfig: SpendWiseConfig) => {
     localStorage.setItem(STORAGE_KEYS.CONFIG, JSON.stringify(newConfig));

@@ -56,7 +56,8 @@ export type AppView =
   | 'sync'
   | 'profile'
   | 'portfolio'
-  | 'subscriptions';
+  | 'subscriptions'
+  | 'receipts';
 
 export interface VoiceEntities {
   category?: string; // "food", "transport", "fuel"

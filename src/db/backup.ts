@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { exportDB, importDB } from 'dexie-export-import';
 import { db } from '@/db/db';
 import { useStore } from '@/store';

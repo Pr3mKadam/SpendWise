@@ -22,7 +22,7 @@ export default function PrivacyShield({
       return false;
     }
   });
-  const [lastActivity, setLastActivity] = useState(Date.now());
+  const [lastActivity, setLastActivity] = useState(() => Date.now());
   const INACTIVITY_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
   const lock = useCallback(() => {

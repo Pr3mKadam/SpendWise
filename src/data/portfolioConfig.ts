@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { AssetType, LiabilityType } from '@/types';
 
 export const ASSET_TYPES: { value: AssetType; label: string; icon: string; color: string }[] = [

@@ -180,7 +180,7 @@ export default function MagicInput({
   };
 
   const handleVoiceInput = () => {
-    // @ts-ignore
+    // @ts-expect-error SpeechRecognition types not in DOM lib
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setScanStatus('🚫 Voice not supported in this browser.');

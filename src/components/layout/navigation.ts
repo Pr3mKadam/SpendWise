@@ -13,6 +13,7 @@ import {
   Trophy,
   Shield,
   FileText,
+  Receipt,
 } from 'lucide-react';
 import { AppView } from '@/types';
 
@@ -31,10 +32,12 @@ export const ALL_NAV_ITEMS = [
   { id: 'quests' as AppView, label: 'Quests', icon: Trophy },
   { id: 'parental' as AppView, label: 'Family', icon: Shield },
   { id: 'reports' as AppView, label: 'Reports', icon: FileText },
+  { id: 'receipts' as AppView, label: 'Receipts', icon: Receipt },
+  { id: 'taxreport' as AppView, label: 'ITR Report', icon: Receipt },
 ];
 
 /** Views shown in the mobile bottom tab bar (2 left + FAB + 2 right) */
 export const MOBILE_BOTTOM_IDS = ['dashboard', 'budget', 'history', 'sync'];
 
 /** Views that are too data-heavy for mobile — only navigable from the desktop sidebar */
-export const DESKTOP_ONLY_IDS = ['analytics', 'portfolio', 'reports', 'education'];
+export const DESKTOP_ONLY_IDS = ['analytics', 'portfolio', 'reports', 'education', 'taxreport'];

@@ -1,6 +1,5 @@
 import { Transaction, Category } from '@/types';
 import {
-  VALID_CATEGORIES,
   inferCategory,
   inferType,
   toTitleCase,
@@ -67,7 +66,7 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
     const cleaned = rawDate.replace(/['"]/g, '').trim();
     if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) date = cleaned;
     else {
-      const m = cleaned.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+      const m = cleaned.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
       if (m) date = `${m[3]}-${m[1].padStart(2, '0')}-${m[2].padStart(2, '0')}`;
       else {
         const d = new Date(cleaned);
@@ -75,17 +74,17 @@ export function parseCSVLocally(csvContent: string): Transaction[] {
       }
     }
 
-    const amount = Math.abs(parseFloat(rawAmount.replace(/[^0-9.\-]/g, '')) || 0);
+    const amount = Math.abs(parseFloat(rawAmount.replace(/[^0-9.-]/g, '')) || 0);
     if (amount === 0) continue;
 
     const typeStr = rawType.toLowerCase();
-    let type: 'credit' | 'debit' = 'debit';
+    let type: 'credit' | 'debit';
     if (typeStr.includes('cr') || typeStr.includes('credit')) type = 'credit';
     else if (typeStr.includes('dr') || typeStr.includes('debit')) type = 'debit';
-    else type = inferType(rawMerchant, parseFloat(rawAmount.replace(/[^0-9.\-]/g, '')));
+    else type = inferType(rawMerchant, parseFloat(rawAmount.replace(/[^0-9.-]/g, '')));
 
     const category: Category = rawCategory
-      ? (toTitleCase(rawCategory) as Category)
+      ? toTitleCase(rawCategory) as Category
       : type === 'credit'
         ? 'Income'
         : inferCategory(rawMerchant);

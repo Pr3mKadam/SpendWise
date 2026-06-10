@@ -3,7 +3,7 @@
     "filePath": "repomix-output.md",
     "style": "markdown",
     "compress": true,
-    "headerText": "SpendWise Codebase - AI Context File\nTech: React 18 + TypeScript + Vite + Tailwind v4 + Zustand + Dexie + Supabase\nTheme: CSS variables via :root.dark class. Date util: formatLocalYYYYMMDD from src/utils/date.ts",
+    "headerText": "SpendWise Codebase - AI Context File\nTech: React 18 + TypeScript + Vite + Tailwind v4 + Zustand + Dexie + Supabase + i18next\nTheme: CSS variables via :root.dark class. Date util: formatLocalYYYYMMDD from src/utils/date.ts\nHi-IN i18n: src/core/i18n.ts, translations in public/locales/{en,hi}/translation.json\nMarket data: src/utils/marketData.ts (Yahoo Finance + fallback quotes)\nAllowance system: src/features/parental/store/parentalSlice.ts + AllowanceCard.tsx\nDemo mode: gated behind VITE_DEMO_MODE env var, DemoBanner.tsx\nVirtual scrolling: react-virtuoso in NotificationCenter, ChatMessageList\nRouting: react-router-dom v7 BrowserRouter in main.tsx, <Routes> in ViewRenderer",
     "showLineNumbers": false,
     "removeComments": false,
     "removeEmptyLines": false,
@@ -16,6 +16,7 @@
     "src/**/*.tsx",
     "src/**/*.ts",
     "src/index.css",
+    "public/locales/**/*.json",
     "CODEBASE_MAP.md"
   ],
   "ignore": {

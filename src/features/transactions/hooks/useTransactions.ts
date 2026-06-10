@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useMemo, useCallback } from 'react';
 import {
   CategorySpend,

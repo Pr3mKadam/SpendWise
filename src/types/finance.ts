@@ -27,7 +27,17 @@ export interface Transaction {
   aiParsed?: boolean;
   tags?: string[];
   originalCategory?: string;
-  status?: 'completed' | 'pending_approval';
+  splits?: TransactionSplit[];
+  receiptUrl?: string;
+  status?: 'posted' | 'scheduled' | 'completed' | 'pending_approval';
+  deletedAt?: string;
+  updatedAt?: string;
+}
+
+export interface TransactionSplit {
+  label: string;
+  category: Category;
+  amount: number;
 }
 
 export type BudgetPeriod = 'weekly' | 'biweekly' | 'monthly';

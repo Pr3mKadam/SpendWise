@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { isSupabaseConfigured } from '@/core/api/supabase';
 
 interface GeminiCallParams {

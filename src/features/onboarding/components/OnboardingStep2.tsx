@@ -7,7 +7,7 @@ interface OnboardingStep2Props {
   step: number;
   userRole: UserRole;
   setUserRole: (role: UserRole) => void;
-  setStep: (step: 1 | 2 | 3) => void;
+  setStep: (step: 1 | 2 | 3 | 4) => void;
 }
 
 export function OnboardingStep2({ step, userRole, setUserRole, setStep }: OnboardingStep2Props) {
@@ -70,7 +70,7 @@ export function OnboardingStep2({ step, userRole, setUserRole, setStep }: Onboar
                 gap: '16px',
               }}
             >
-              <span style={{ fontSize: '24px' }}>{role.icon}</span>
+              <span /* tailwind-migration:replaced */>{role.icon}</span>
               <div>
                 <h4
                   style={{

@@ -53,7 +53,7 @@ export const parseVoiceWithGemini = async (
     };
   } catch (e) {
     console.error('Failed to parse Gemini response as JSON:', resultText);
-    throw new Error('Invalid response from Gemini');
+    throw new Error('Invalid response from Gemini', { cause: e });
   }
 };
 
@@ -113,6 +113,6 @@ export const parseMasterVoiceWithGemini = async (
     return result as VoiceCommand;
   } catch (e) {
     console.error('Failed to parse Gemini response as JSON:', resultText);
-    throw new Error('Invalid response from Gemini');
+    throw new Error('Invalid response from Gemini', { cause: e });
   }
 };

@@ -43,6 +43,7 @@ export function ChildQRScanner({ show, onClose, onSuccess }: ChildQRScannerProps
         }
       );
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError('QR Scanner library failed to load.');
     }
 

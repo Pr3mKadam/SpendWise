@@ -24,7 +24,7 @@ export function PayForm({ onSetView, onPay, currency }: PayFormProps) {
 
   const amount = parseFloat(payAmount) || 0;
 
-  const validateVPA = (v: string) => /^[\w.\-]+@[\w]+$/.test(v.trim());
+  const validateVPA = (v: string) => /^[\w.-]+@[\w]+$/.test(v.trim());
 
   const handleUPIAppPay = (appId: string) => {
     if (!amount || amount <= 0) {

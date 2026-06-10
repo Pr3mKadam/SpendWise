@@ -2,12 +2,10 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
   ReactNode,
 } from 'react';
-import { STORAGE_KEYS } from '@/constants';
 import { useStore } from '@/store';
 import { isSupabaseConfigured, signInWithEmail, signUpWithEmail } from '@/core/api/supabase';
 
@@ -42,29 +40,25 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [authReady, setAuthReady] = useState(false);
-
-  useEffect(() => {
+  const [user, setUser] = useState<User | null>(() => {
     const storedUser = localStorage.getItem('spendwise_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    } else {
-      // Use a STABLE guest ID tied to the device, not random each time
-      const stableId =
-        localStorage.getItem('spendwise_device_id') ||
-        'device_' + Math.random().toString(36).substr(2, 12);
-      localStorage.setItem('spendwise_device_id', stableId);
+    if (storedUser) return JSON.parse(storedUser);
 
-      const guestUser = { id: stableId, email: 'guest@local' };
-      localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
-      setUser(guestUser);
+    // Use a STABLE guest ID tied to the device, not random each time
+    const stableId =
+      localStorage.getItem('spendwise_device_id') ||
+      'device_' + Math.random().toString(36).substr(2, 12);
+    localStorage.setItem('spendwise_device_id', stableId);
 
-      // Reset gamification for new guest so streak starts at 0
-      useStore.getState().checkStreak();
-    }
-    setAuthReady(true);
-  }, []);
+    const guestUser = { id: stableId, email: 'guest@local' };
+    localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
+
+    // Reset gamification for new guest so streak starts at 0
+    useStore.getState().checkStreak();
+    return guestUser;
+  });
+
+  const [authReady] = useState(true);
 
   const signOut = useCallback(async () => {
     localStorage.removeItem('spendwise_user');

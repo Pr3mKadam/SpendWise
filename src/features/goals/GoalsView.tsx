@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Target, Plus, ChevronDown, ChevronUp, Trophy } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { SavingsGoal, GoalStatus } from '@/types';
@@ -7,6 +7,7 @@ import { GoalCard } from '@/features/goals/components/GoalCard';
 import { GoalsSummary } from '@/features/goals/components/GoalsSummary';
 import { BadgeGallery } from '@/features/gamification/components/BadgeGallery';
 import { useGamification } from '@/features/gamification/hooks/useGamification';
+import { suggestGoals, GoalSuggestion } from '@/features/goals/utils/suggestGoals';
 
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import GoalsViewMobile from '@/features/goals/GoalsViewMobile';
@@ -49,6 +50,11 @@ export default function GoalsView({
   const [editGoal, setEditGoal] = useState<SavingsGoal | null>(null);
   const [hofOpen, setHofOpen] = useState(false);
   const { streak, level } = useGamification(transactions);
+
+  const suggestions = useMemo(
+    () => suggestGoals(transactions, goals),
+    [transactions, goals]
+  );
 
   useEffect(() => {
     const handleOpenAdd = () => setShowAdd(true);
@@ -231,6 +237,97 @@ export default function GoalsView({
               currency={currency}
             />
           ))}
+        </div>
+      )}
+
+      {/* ── AI-Suggested Goals ── */}
+      {suggestions.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">✨</span>
+            <h3
+              style={{
+                fontFamily: 'var(--font-inter)',
+                fontSize: '14px',
+                fontWeight: 700,
+                color: 'var(--text-primary)',
+              }}
+            >
+              Suggested for you
+            </h3>
+          </div>
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+            {suggestions.map(s => (
+              <div
+                key={s.title}
+                className="card flex flex-col gap-2 p-4"
+                style={{
+                  background: 'var(--surface-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: '14px',
+                }}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">{s.emoji}</span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-inter)',
+                      fontSize: '14px',
+                      fontWeight: 600,
+                      color: 'var(--text-primary)',
+                    }}
+                  >
+                    {s.title}
+                  </span>
+                </div>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '20px',
+                    fontWeight: 700,
+                    color: 'var(--teal)',
+                  }}
+                >
+                  ₹{Math.round(s.targetAmount).toLocaleString('en-IN')}
+                </p>
+                <p
+                  style={{
+                    fontFamily: 'var(--font-inter)',
+                    fontSize: '12px',
+                    color: 'var(--text-muted)',
+                    lineHeight: 1.4,
+                  }}
+                >
+                  {s.reason}
+                </p>
+                <button
+                  onClick={() => {
+                    onAdd({
+                      name: s.title,
+                      emoji: s.emoji,
+                      targetAmount: Math.round(s.targetAmount),
+                      savedAmount: 0,
+                      targetDate: new Date(
+                        Date.now() + 365 * 24 * 60 * 60 * 1000
+                      )
+                        .toISOString()
+                        .split('T')[0],
+                      monthlyContribution: Math.round(s.targetAmount / 12),
+                      color: '#14b8a6',
+                    });
+                  }}
+                  className="mt-1 w-full rounded-xl py-2 text-xs font-bold text-white"
+                  style={{
+                    background: 'var(--teal)',
+                    border: 'none',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Create this goal
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

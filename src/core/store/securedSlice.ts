@@ -18,6 +18,7 @@ export interface UserPreferences {
   shakeEnabled: boolean;
   biometricEnabled: boolean;
   avatar: string | null;
+  phoneVerified?: boolean;
 }
 
 export interface SecuredSlice {

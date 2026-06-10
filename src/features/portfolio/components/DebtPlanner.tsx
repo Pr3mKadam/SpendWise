@@ -46,12 +46,12 @@ export default function DebtPlanner({
     const simulate = (strat: PayoffStrategy) => {
       let months = 0;
       let totalInterest = 0;
-      let currentDebts = debts.map(d => ({ ...d }));
+      const currentDebts = debts.map(d => ({ ...d }));
       const MAX_MONTHS = 600; // 50 years limit
 
       while (currentDebts.some(d => d.balance > 0) && months < MAX_MONTHS) {
         months++;
-        let availableExtra = extraPayment;
+        const availableExtra = extraPayment;
 
         // 1. Pay minimums and apply interest
         currentDebts.forEach(d => {

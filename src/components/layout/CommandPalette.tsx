@@ -37,6 +37,7 @@ export default function CommandPalette({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setQuery('');
       setSelectedIndex(0);
       setTimeout(() => inputRef.current?.focus(), 50);
@@ -263,7 +264,7 @@ export default function CommandPalette({
                             border: '1px solid var(--border)',
                           }}
                         >
-                          <span style={{ fontSize: '14px' }}>
+                          <span /* tailwind-migration:replaced */>
                             {tx.type === 'credit' ? '💵' : '🛒'}
                           </span>
                         </div>

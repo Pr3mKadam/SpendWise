@@ -294,6 +294,8 @@ export function GoalsTab({
     );
   }
 
+  // eslint-disable-next-line react-hooks/purity
+  const now = Date.now();
   return (
     <div>
       <h3 className="m-0 mb-4 text-sm font-bold text-[var(--text-primary)] uppercase tracking-wider flex items-center gap-2">
@@ -306,7 +308,7 @@ export function GoalsTab({
           const pct = Math.min(100, Math.round((saved / g.target_amount) * 100));
           const days = Math.max(
             0,
-            Math.ceil((new Date(g.target_date).getTime() - Date.now()) / 86400000)
+            Math.ceil((new Date(g.target_date).getTime() - now) / 86400000)
           );
           return (
             <motion.div

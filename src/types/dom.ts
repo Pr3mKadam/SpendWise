@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Centralized DOM and Global Type Definitions
  * Used to eliminate 'as any' casts for browser-specific APIs

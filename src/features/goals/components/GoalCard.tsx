@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { Calendar, DollarSign, Plus, Edit3, Trash2, Coins, Clock, Target } from 'lucide-react';
 import { SavingsGoal } from '@/types';
 import { ProgressRing } from '@/features/goals/components/ProgressRing';
@@ -10,7 +10,7 @@ import confetti from 'canvas-confetti';
 const ROUNDUP_KEY = (id: string) => `spendwise_roundup_${id}`;
 const MILESTONE_KEY = (id: string) => `spendwise_milestone_${id}`;
 
-export function GoalCard({
+export const GoalCard = memo(function GoalCard({
   goal,
   onContribute,
   onEdit,
@@ -318,4 +318,5 @@ export function GoalCard({
       )}
     </>
   );
-}
+});
+GoalCard.displayName = 'GoalCard';

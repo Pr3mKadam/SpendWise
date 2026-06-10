@@ -17,6 +17,7 @@ const ProfileView = lazy(() => import('@/features/profile/ProfileView'));
 const PortfolioView = lazy(() => import('@/features/portfolio/PortfolioView'));
 const AdvisorView = lazy(() => import('@/features/advisor/AdvisorView'));
 const ReportsView = lazy(() => import('@/features/reports/ReportsView'));
+const TaxReport = lazy(() => import('@/features/analytics/components/TaxReport'));
 const ParentalView = lazy(() => import('@/features/parental/ParentalView'));
 const BudgetManager = lazy(() => import('@/features/budget/components/BudgetManager'));
 const SubscriptionManager = lazy(
@@ -24,6 +25,7 @@ const SubscriptionManager = lazy(
 );
 const EducationView = lazy(() => import('@/features/education/EducationView'));
 const GamificationView = lazy(() => import('@/features/gamification/GamificationView'));
+const ReceiptGallery = lazy(() => import('@/features/transactions/components/ReceiptGallery'));
 const DashboardView = lazy(() =>
   import('@/features/dashboard/DashboardView').then(m => ({ default: m.DashboardView }))
 );
@@ -333,6 +335,17 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
           </DesktopOnlyGuard>
         )}
 
+        {activeView === 'taxreport' && (
+          <DesktopOnlyGuard viewLabel="ITR Tax Report" onNavigate={onNavigate}>
+            <ViewWrapper id="taxreport" activeView={activeView}>
+              <TaxReport
+                transactions={transactions}
+                currency={currency}
+              />
+            </ViewWrapper>
+          </DesktopOnlyGuard>
+        )}
+
         {(activeView === 'quests' ||
           activeView === 'badges' ||
           activeView === 'inventory' ||
@@ -361,6 +374,15 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               onBulkCategoryChange={financeState.bulkUpdateTransactionsCategory}
               onImportClick={() => onNavigate('sync')}
               onPDFReport={onPDFReport}
+              currency={currency}
+            />
+          </ViewWrapper>
+        )}
+
+        {activeView === 'receipts' && (
+          <ViewWrapper id="receipts" activeView={activeView}>
+            <ReceiptGallery
+              transactions={transactions}
               currency={currency}
             />
           </ViewWrapper>

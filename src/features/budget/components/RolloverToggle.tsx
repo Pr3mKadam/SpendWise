@@ -17,7 +17,7 @@ export function RolloverToggle({ enabled, onToggle }: { enabled: boolean; onTogg
       }}
       title="Carry unspent budget forward to the next period"
     >
-      <RefreshCw size={14} style={{ flexShrink: 0 }} />
+      <RefreshCw size={14} /* tailwind-migration:replaced */ />
       <span>Rollover</span>
       {/* iOS-style pill */}
       <span

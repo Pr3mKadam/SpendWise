@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * SpendWise — Supabase Integration Layer
  *
@@ -49,7 +50,7 @@ const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefin
 export const isSupabaseConfigured = !!SUPABASE_URL && !!SUPABASE_ANON;
 
 // ─── Lightweight REST client (no npm package required) ───────────────────────
-async function supabaseRequest(
+export async function supabaseRequest(
   path: string,
   options: RequestInit = {},
   token?: string
@@ -104,6 +105,44 @@ export async function signInWithEmail(email: string, password: string): Promise<
   const data = await res.json();
   if (!res.ok) throw new Error(data.msg ?? data.error_description ?? 'Sign in failed');
   return { id: data.user.id, email: data.user.email, access_token: data.access_token };
+}
+
+export async function sendOtpToPhone(phone: string, token: string): Promise<void> {
+  if (!isSupabaseConfigured) return;
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON!,
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ phone }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: res.statusText }));
+    throw new Error(err.message ?? 'Failed to send OTP');
+  }
+}
+
+export async function verifyPhoneOtp(
+  phone: string,
+  token: string,
+  authToken: string
+): Promise<void> {
+  if (!isSupabaseConfigured) return;
+  const res = await fetch(`${SUPABASE_URL}/auth/v1/verify`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: SUPABASE_ANON!,
+      Authorization: `Bearer ${authToken}`,
+    },
+    body: JSON.stringify({ phone, token, type: 'phone_change' }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ message: res.statusText }));
+    throw new Error(err.message ?? 'Failed to verify OTP');
+  }
 }
 
 export async function signOut(token: string): Promise<void> {

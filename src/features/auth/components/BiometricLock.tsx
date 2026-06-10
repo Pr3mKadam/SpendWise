@@ -15,35 +15,23 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
   const [status, setStatus] = useState<'idle' | 'scanning' | 'success' | 'error'>('idle');
   const [attempts, setAttempts] = useState(0);
 
-  useEffect(() => {
-    // Auto-start scanning on mount
-    const timer = setTimeout(() => {
-      startScan();
-    }, 800);
-    return () => clearTimeout(timer);
-  }, []);
-
   const startScan = async () => {
     setStatus('scanning');
     haptic.medium();
 
     try {
-      // Check if WebAuthn is available
       if (!window.PublicKeyCredential) {
         throw new Error('WebAuthn not supported on this device');
       }
 
-      // Check if platform authenticator is available (e.g., FaceID/Fingerprint)
       const hasPlatform = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
       if (!hasPlatform) {
         throw new Error('Platform authenticator not available');
       }
 
-      // Get the stored credential ID (set during biometric enrollment)
       const credentialId = localStorage.getItem('sw_biometric_credential_id');
 
       if (!credentialId) {
-        // First time — enroll the biometric credential
         const challenge = crypto.getRandomValues(new Uint8Array(32));
         const userId = crypto.getRandomValues(new Uint8Array(16));
         const cred = (await navigator.credentials.create({
@@ -60,7 +48,7 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
               { type: 'public-key', alg: -257 },
             ],
             authenticatorSelection: {
-              authenticatorAttachment: 'platform', // device biometric only
+              authenticatorAttachment: 'platform',
               userVerification: 'required',
             },
             timeout: 60000,
@@ -79,7 +67,6 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
           throw new Error('Credential creation failed');
         }
       } else {
-        // Subsequent logins — verify with stored credential
         const credIdBytes = Uint8Array.from(atob(credentialId), c => c.charCodeAt(0));
         const challenge = crypto.getRandomValues(new Uint8Array(32));
         await navigator.credentials.get({
@@ -105,7 +92,6 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
         haptic.error();
         setTimeout(() => setStatus('idle'), 2000);
       } else {
-        // Fallback simulation:
         setTimeout(() => {
           setStatus('success');
           haptic.success();
@@ -114,6 +100,13 @@ export const BiometricLock: React.FC<BiometricLockProps> = ({
       }
     }
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      startScan();
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <motion.div

@@ -1,0 +1,14 @@
+name: SpendWise CodeQL Configuration
+
+paths:
+  - src
+paths-ignore:
+  - src/**/*.test.*
+  - src/**/*.spec.*
+  - src/**/__tests__/**
+  - dist
+  - node_modules
+
+queries:
+  - uses: security-and-quality
+  - uses: security-extended

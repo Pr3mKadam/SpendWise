@@ -149,7 +149,7 @@ export function forecastNextMonth(
 
   // Run-rate: if we continue spending at current pace (with minimum telemetry guard of 5 days)
   const MIN_DAYS = 5;
-  let runRate = 0;
+  let runRate: number;
   let finalConfidence = confidence;
   let finalConfidenceReason = confidenceReason;
 

@@ -243,6 +243,17 @@ export default function AnalyticsView({
           categorySpending={categorySpending}
           currency={currency}
         />
+        {onNavigate && (
+          <div className="mt-4 pt-4 border-t border-[var(--border)]">
+            <button
+              onClick={() => onNavigate('taxreport' as AppView)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-amber-500/10 text-amber-600 border border-amber-500/20 rounded-xl cursor-pointer font-bold text-sm hover:bg-amber-500/20 active:scale-95 transition-all"
+            >
+              <Receipt size={16} />
+              View Full ITR Report
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Anomaly Detection */}

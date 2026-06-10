@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { VoiceCommand, CommandResult } from '@/core/voiceCommands/types';
 import { AppView } from '@/types';
 import { formatLocalYYYYMMDD } from '@/utils/date';

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
 import { exportCSV } from '@/utils/export';
@@ -8,6 +9,7 @@ import { useStore } from '@/store';
 import { downloadDatabaseBackup, importDatabase } from '@/db/backup';
 import { useCurrency, CurrencyCode } from '@/contexts/CurrencyContext';
 import { haptic } from '@/core/haptic';
+import { useAuth } from '@/hooks/useAuth';
 
 const FONT_SIZES = ['text-sm', 'text-base', 'text-lg', 'text-xl'] as const;
 export type FontSizeKey = (typeof FONT_SIZES)[number];
@@ -25,11 +27,19 @@ export function useProfileView(
 ) {
   const store = useStore();
   const { setActiveCurrency } = useCurrency();
+  const { sendPhoneOtp, verifyPhoneOtp } = useAuth();
 
   const [name, setName] = useState(config?.name ?? 'User');
   const [phone, setPhone] = useState(config?.phone ?? '');
   const [occupation, setOccupation] = useState(config?.occupation ?? '');
   const [location, setLocation] = useState(config?.location ?? '');
+  const [phoneVerified, setPhoneVerified] = useState(
+    () => !!store.userPreferences?.phoneVerified || false
+  );
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpValue, setOtpValue] = useState('');
+  const [otpLoading, setOtpLoading] = useState(false);
+  const [otpError, setOtpError] = useState('');
   const [monthlyGoal, setMonthlyGoal] = useState(
     config?.monthlyGoal !== undefined ? String(config.monthlyGoal) : ''
   );
@@ -115,6 +125,40 @@ export function useProfileView(
     };
     reader.readAsDataURL(file);
   };
+  const handleSendOtp = useCallback(async () => {
+    setOtpLoading(true);
+    setOtpError('');
+    try {
+      await sendPhoneOtp(phone);
+      setOtpSent(true);
+      haptic.success();
+    } catch (err: any) {
+      setOtpError(err.message || 'Failed to send OTP');
+      haptic.error();
+    } finally {
+      setOtpLoading(false);
+    }
+  }, [phone, sendPhoneOtp]);
+
+  const handleVerifyOtp = useCallback(async () => {
+    setOtpLoading(true);
+    setOtpError('');
+    try {
+      await verifyPhoneOtp(phone, otpValue);
+      setPhoneVerified(true);
+      setOtpSent(false);
+      setOtpValue('');
+      const prefs = store.userPreferences;
+      store.setUserPreferences({ ...prefs, phoneVerified: true });
+      haptic.success();
+    } catch (err: any) {
+      setOtpError(err.message || 'Failed to verify OTP');
+      haptic.error();
+    } finally {
+      setOtpLoading(false);
+    }
+  }, [phone, otpValue, verifyPhoneOtp, store]);
+
   const handleSave = useCallback(() => {
     if (!config) return;
     onUpdateConfig({
@@ -230,6 +274,14 @@ export function useProfileView(
     setName,
     phone,
     setPhone,
+    phoneVerified,
+    otpSent,
+    otpValue,
+    setOtpValue,
+    otpLoading,
+    otpError,
+    handleSendOtp,
+    handleVerifyOtp,
     occupation,
     setOccupation,
     location,

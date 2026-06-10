@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useMemo, useCallback } from 'react';
 import {
   CategorySpend,
@@ -25,7 +26,10 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
   const bulkUpdateTransactionsCategory = useStore(state => state.bulkUpdateTransactionsCategory);
   const bulkDeleteTransactions = useStore(state => state.bulkDeleteTransactions);
   const bulkReassignCategory = useStore(state => state.bulkReassignCategory);
+  const updateTransaction = useStore(state => state.updateTransaction);
   const resetData = useStore(state => state.resetData);
+  const undo = useStore(state => state.undo);
+  const indexedData = useStore(state => state.indexedData);
 
   const currentBalance = useMemo(() => {
     return (
@@ -216,7 +220,10 @@ export function useTransactions(initialBalance: number = DEFAULT_BALANCE) {
     bulkUpdateTransactionsCategory,
     bulkDeleteTransactions,
     bulkReassignCategory,
+    updateTransaction,
     resetData,
+    undo,
+    indexedData,
     currentBalance,
     predictedEndOfMonth,
     categorySpending,

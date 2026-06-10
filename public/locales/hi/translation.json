@@ -1,0 +1,85 @@
+{
+  "app": {
+    "name": "स्पेंडवाइज़",
+    "tagline": "स्मार्ट वित्तीय साथी"
+  },
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "transactions": "लेन-देन",
+    "budget": "बजट",
+    "analytics": "विश्लेषण",
+    "history": "इतिहास",
+    "goals": "लक्ष्य",
+    "profile": "प्रोफ़ाइल",
+    "settings": "सेटिंग्स",
+    "advisor": "सलाहकार",
+    "sync": "बैंक सिंक"
+  },
+  "common": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "edit": "संपादित करें",
+    "add": "जोड़ें",
+    "loading": "लोड हो रहा है...",
+    "search": "खोजें",
+    "noData": "कोई डेटा उपलब्ध नहीं",
+    "currency": "₹"
+  },
+  "dashboard": {
+    "balance": "शेष राशि",
+    "income": "आय",
+    "expenses": "व्यय",
+    "netWorth": "कुल संपत्ति",
+    "healthScore": "स्वास्थ्य स्कोर",
+    "recentTransactions": "हाल के लेन-देन",
+    "quickAdd": "त्वरित जोड़ें",
+    "safeToSpend": "खर्च करने योग्य"
+  },
+  "budget": {
+    "title": "बजट",
+    "overBudget": "बजट से अधिक",
+    "onTrack": "सही रास्ते पर",
+    "remaining": "शेष",
+    "setBudget": "बजट सेट करें",
+    "categoryLimit": "श्रेणी सीमा"
+  },
+  "goals": {
+    "title": "लक्ष्य",
+    "createGoal": "लक्ष्य बनाएं",
+    "contribute": "योगदान करें",
+    "achieved": "प्राप्त हुआ",
+    "targetAmount": "लक्ष्य राशि",
+    "savedAmount": "बचत राशि",
+    "daysLeft": "दिन शेष"
+  },
+  "parental": {
+    "title": "अभिभावक नियंत्रण",
+    "kidMode": "बाल मोड",
+    "allowance": "भत्ता",
+    "setPin": "पिन सेट करें",
+    "restrictedCategories": "प्रतिबंधित श्रेणियाँ",
+    "monthlyLimit": "मासिक सीमा",
+    "pendingApprovals": "लंबित स्वीकृतियाँ",
+    "approve": "स्वीकृत करें",
+    "deny": "अस्वीकृत करें",
+    "lockSession": "सत्र लॉक करें"
+  },
+  "portfolio": {
+    "title": "पोर्टफोलियो",
+    "totalAssets": "कुल संपत्तियाँ",
+    "totalLiabilities": "कुल देनदारियाँ",
+    "netWorth": "कुल संपत्ति",
+    "addAsset": "संपत्ति जोड़ें",
+    "addLiability": "देनदारी जोड़ें",
+    "investments": "निवेश",
+    "marketPrice": "बाज़ार मूल्य"
+  },
+  "advisor": {
+    "title": "AI सलाहकार",
+    "placeholder": "मुझसे अपने वित्त के बारे में पूछें...",
+    "analyzePersonality": "व्यक्तित्व विश्लेषण",
+    "clearChat": "चैट साफ़ करें",
+    "localMode": "स्थानीय सलाहकार मोड सक्रिय"
+  }
+}

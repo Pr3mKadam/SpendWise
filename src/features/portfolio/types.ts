@@ -32,6 +32,8 @@ export interface AssetEntry {
   currency?: string;
   icon?: string;
   color?: string;
+  symbol?: string;
+  assetClass?: 'mutual_fund' | 'equity' | 'etf';
   lastUpdated: string;
 }
 

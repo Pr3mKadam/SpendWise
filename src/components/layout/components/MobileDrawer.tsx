@@ -2,6 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sun, Moon, DownloadCloud, Settings, LogOut } from 'lucide-react';
 import { AppView } from '@/types';
 import { haptic } from '@/core/haptic';
+import { ProfileSwitcher } from '@/components/profile/ProfileSwitcher';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -156,6 +157,10 @@ export function MobileDrawer({
                     />
                   </div>
                 </button>
+
+                <div className="mt-1 mb-1">
+                  <ProfileSwitcher />
+                </div>
 
                 {showInstall && (
                   <button

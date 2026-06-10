@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowUpRight, ArrowDownLeft, Trash2, X, Tag } from 'lucide-react';
+import { ArrowUpRight, ArrowDownLeft, Trash2, X, Tag, Receipt } from 'lucide-react';
 import { motion, useMotionValue, useTransform } from 'framer-motion';
 import { Transaction, Category } from '@/types';
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
@@ -54,6 +54,7 @@ export function TransactionRow({
   const opacityDelete = useTransform(x, [-80, -40, 0], [1, 0.5, 0]);
   const opacityCategory = useTransform(x, [0, 40, 80], [0, 0.5, 1]);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showReceipt, setShowReceipt] = useState(false);
 
   if (showCategorySwapper) {
     return (
@@ -104,6 +105,7 @@ export function TransactionRow({
   }
 
   return (
+    <>
     <div
       className="relative overflow-hidden bg-[var(--surface-card)]"
       style={{ borderBottom: '1px solid var(--border)' }}
@@ -238,6 +240,13 @@ export function TransactionRow({
           ) : (
             <ArrowUpRight size={11} className="hidden sm:block" style={{ color: 'var(--red)' }} />
           )}
+          {tx.receiptUrl && (
+            <button onClick={() => setShowReceipt(true)}
+              className="p-1.5 rounded-lg bg-[var(--surface-input)] text-[var(--text-muted)] hover:text-[var(--teal)] hover:bg-[var(--teal)]/10 transition-all border-none cursor-pointer ml-1"
+              aria-label="View receipt">
+              <Receipt size={14} />
+            </button>
+          )}
         </div>
         {onCategoryChange && (
           <div className="hidden md:block opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity w-32 shrink-0">
@@ -249,6 +258,21 @@ export function TransactionRow({
         )}
       </motion.div>
     </div>
+      {showReceipt && tx.receiptUrl && (
+        <div className="fixed inset-0 z-[300] flex items-center justify-center p-4"
+          onClick={() => setShowReceipt(false)} role="dialog" aria-modal="true" aria-label="Receipt image">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="relative max-w-2xl max-h-[85vh] rounded-2xl overflow-hidden shadow-2xl"
+            onClick={e => e.stopPropagation()}>
+            <button onClick={() => setShowReceipt(false)}
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 backdrop-blur-md border-none cursor-pointer">
+              <X size={18} />
+            </button>
+            <img src={tx.receiptUrl} alt="Receipt" className="w-full h-full object-contain" />
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

@@ -9,10 +9,12 @@ import { useGoals } from '@/features/goals/hooks/useGoals';
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
 import { getProactiveNudge } from '@/features/analytics/insights/advisor';
 import { useGamification } from '@/features/gamification/hooks/useGamification';
+import { useStore } from '@/store';
 
 import { MobileBalanceHero } from './components/MobileBalanceHero';
 import { SnapCardRow } from './components/SnapCardRow';
 import { MobileRecentTransactions } from './components/MobileRecentTransactions';
+import { BankSyncCard } from './components/BankSyncCard';
 
 // Lazy-load heavy components so they don't block initial paint
 const QuickAddPanel = lazy(() => import('@/features/dashboard/components/QuickAddPanel'));
@@ -59,6 +61,8 @@ export default function DashboardViewMobile({
     () => getProactiveNudge(transactions, budgetMap, goals, streak, currency),
     [transactions, budgetMap, goals, streak, currency]
   );
+
+  const razorpayKeys = useStore(s => s.razorpayKeys);
 
   const { recentTransactionsMobile, trendUp, savingsRate, subSpend } = useDashboardData(
     transactions,
@@ -111,6 +115,13 @@ export default function DashboardViewMobile({
           >
             Fix →
           </button>
+        </div>
+      )}
+
+      {/* ── 1.75. Bank sync onboarding card ────────────────────────────── */}
+      {!razorpayKeys && (
+        <div style={{ padding: '0 16px' }}>
+          <BankSyncCard onNavigate={onNavigate} />
         </div>
       )}
 

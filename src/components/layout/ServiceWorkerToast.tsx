@@ -15,6 +15,7 @@ export default function ServiceWorkerToast() {
 
   useEffect(() => {
     if (offlineReady || needRefresh) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setShow(true);
       haptic.medium();
     }

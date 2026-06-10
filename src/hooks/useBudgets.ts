@@ -1,8 +1,8 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useStore } from '@/store';
 import { useTransactions } from '@/hooks/useTransactions';
 import { useCategories } from '@/hooks/useCategories';
-import { Category } from '@/types';
+import { Category, BudgetPeriod } from '@/types';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
 export function useBudgets() {
@@ -20,19 +20,18 @@ export function useBudgets() {
   const budgetStats = useMemo(() => {
     // Determine the start date of the current period
     const now = new Date();
-    let startDate = new Date();
-    let prevStartDate = new Date();
+    const startDate = new Date();
+    let prevStartDate: Date;
 
     if (budgetSettings.period === 'weekly') {
-      startDate.setDate(now.getDate() - now.getDay()); // Start of week (Sunday)
+      startDate.setDate(now.getDate() - now.getDay());
       prevStartDate = new Date(startDate);
       prevStartDate.setDate(prevStartDate.getDate() - 7);
     } else if (budgetSettings.period === 'biweekly') {
-      startDate.setDate(now.getDate() - 14); // Last 14 days
+      startDate.setDate(now.getDate() - 14);
       prevStartDate = new Date(startDate);
-      prevStartDate.setDate(prevStartDate.getDate() - 14);
     } else {
-      startDate.setDate(1); // Start of month
+      startDate.setDate(1);
       prevStartDate = new Date(startDate);
       prevStartDate.setMonth(prevStartDate.getMonth() - 1);
     }
@@ -107,6 +106,28 @@ export function useBudgets() {
   const totalSpentInBudgeted = budgetStats.reduce((a, b) => a + b.spent, 0);
   const overallBudgetPercent = totalBudgeted > 0 ? (totalSpentInBudgeted / totalBudgeted) * 100 : 0;
 
+  const totalSpentAgainstBudget = useMemo(
+    () => budgetStats.reduce((a: number, b) => a + (b.spent || 0), 0),
+    [budgetStats]
+  );
+  const overBudgetCount = useMemo(
+    () => budgetStats.filter(b => b.status === 'danger').length,
+    [budgetStats]
+  );
+  const periodLabel = useMemo(
+    () =>
+      budgetSettings.period === 'weekly'
+        ? 'This Week'
+        : budgetSettings.period === 'biweekly'
+          ? 'Last 14 Days'
+          : 'This Month',
+    [budgetSettings.period]
+  );
+  const updatePeriod = useCallback(
+    (p: BudgetPeriod) => updateBudgetSettings({ period: p }),
+    [updateBudgetSettings]
+  );
+
   return {
     budgets,
     budgetStats,
@@ -120,5 +141,9 @@ export function useBudgets() {
     resetBudgets: useStore(state => state.resetBudgets),
     resetLimits: useStore(state => state.resetLimits),
     toggleRollover: useStore(state => state.toggleRollover),
+    totalSpentAgainstBudget,
+    overBudgetCount,
+    periodLabel,
+    updatePeriod,
   };
 }

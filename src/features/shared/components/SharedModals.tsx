@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { Copy, Share2, Check, Info, Users } from 'lucide-react';
 import { Modal } from '@/components/ui/Modal';
 import { Btn } from '@/components/ui/Button';
@@ -150,7 +150,7 @@ export function GroupQRModal({
     ref.current.innerHTML = '';
 
     try {
-      // @ts-ignore
+      // @ts-expect-error QRCode types not installed
       new window.QRCode(ref.current, { text: groupData, width: 180, height: 180 });
     } catch (e) {
       console.error('Failed to generate QR:', e);
@@ -293,7 +293,7 @@ export function InviteModal({
                 type="button"
                 onClick={() => {
                   if (!window.location) return;
-                  let inviteLink = `https://spendwise.app/join?group=${groupId || ''}`;
+                  const inviteLink = `https://spendwise.app/join?group=${groupId || ''}`;
                   navigator.clipboard.writeText(inviteLink);
                   setOk('Invite link copied!');
                   setTimeout(() => setOk(''), 2000);
@@ -326,15 +326,13 @@ export function WalletModal({
   const active = members.filter(m => m.status === 'active');
   const [kind, setKind] = useState<string>('contribution');
   const [mid, setMid] = useState('');
+  const defaultMid = useMemo(() => (active.length > 0 ? active[0].id : ''), [active]);
+  const effectiveMid = mid || defaultMid;
   const [amount, setAmount] = useState('');
   const [label, setLabel] = useState('');
   const [date, setDate] = useState(formatLocalYYYYMMDD(new Date()));
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-
-  useEffect(() => {
-    if (active.length > 0 && !mid) setMid(active[0].id);
-  }, [active.length, mid]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -343,7 +341,7 @@ export function WalletModal({
       setErr('Enter a valid amount.');
       return;
     }
-    if (!mid) {
+    if (!effectiveMid) {
       setErr('Select a member.');
       return;
     }
@@ -352,7 +350,7 @@ export function WalletModal({
     try {
       await onSubmit({
         kind,
-        memberId: mid,
+        memberId: effectiveMid,
         amount: a,
         label:
           label.trim() ||
@@ -385,7 +383,7 @@ export function WalletModal({
           </Sel>
         </Field>
         <Field label="Member">
-          <Sel value={mid} onChange={e => setMid(e.target.value)}>
+          <Sel value={effectiveMid} onChange={e => setMid(e.target.value)}>
             {active.length === 0 && <option value="">No active members</option>}
             {active.map(m => (
               <option key={m.id} value={m.id}>
@@ -414,7 +412,7 @@ export function WalletModal({
         <Field label="Date">
           <Inp type="date" value={date} onChange={e => setDate(e.target.value)} />
         </Field>
-        <Btn full v="primary" type="submit" disabled={busy || !amount || !mid}>
+        <Btn full v="primary" type="submit" disabled={busy || !amount || !effectiveMid}>
           {busy ? (
             <>
               <Ico.Spin /> Saving…
@@ -453,6 +451,8 @@ export function ExpenseModal({
   const active = members.filter(m => m.status === 'active');
   const [label, setLabel] = useState('');
   const [paidBy, setPaidBy] = useState('');
+  const defaultPaidBy = useMemo(() => (active.length > 0 ? active[0].id : ''), [active]);
+  const effectivePaidBy = paidBy || defaultPaidBy;
   const [cat, setCat] = useState('General');
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(formatLocalYYYYMMDD(new Date()));
@@ -464,10 +464,6 @@ export function ExpenseModal({
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    if (active.length > 0 && !paidBy) setPaidBy(active[0].id);
-  }, [active.length, paidBy]);
-
-  useEffect(() => {
     if (active.length > 0) {
       const initial: Record<string, number> = {};
       const p = Math.floor(10000 / active.length) / 100;
@@ -475,6 +471,7 @@ export function ExpenseModal({
         initial[m.id] =
           i === active.length - 1 ? Math.round((100 - p * (active.length - 1)) * 100) / 100 : p;
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCustomSplits(initial);
     }
   }, [active.length]);
@@ -490,12 +487,12 @@ export function ExpenseModal({
       setErr('Enter a valid amount.');
       return;
     }
-    if (!paidBy) {
+    if (!effectivePaidBy) {
       setErr('Select who paid.');
       return;
     }
 
-    let splitsToSave = [];
+    let splitsToSave;
     if (splitMode === 'equal') {
       splitsToSave = eq(active.map(m => m.id));
     } else {
@@ -511,7 +508,7 @@ export function ExpenseModal({
     setErr('');
     try {
       await onSubmit({
-        paidByMemberId: paidBy,
+        paidByMemberId: effectivePaidBy,
         label: label.trim(),
         category: cat,
         amount: a,
@@ -546,7 +543,7 @@ export function ExpenseModal({
 
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Field label="Paid By">
-            <Sel value={paidBy} onChange={e => setPaidBy(e.target.value)}>
+            <Sel value={effectivePaidBy} onChange={e => setPaidBy(e.target.value)}>
               {active.length === 0 && <option value="">No members</option>}
               {active.map(m => (
                 <option key={m.id} value={m.id}>
@@ -827,15 +824,13 @@ export function ContribModal({
 }) {
   const active = members.filter(m => m.status === 'active');
   const [mid, setMid] = useState('');
+  const defaultMid = useMemo(() => (active.length > 0 ? active[0].id : ''), [active]);
+  const effectiveMid = mid || defaultMid;
   const [amount, setAmt] = useState('');
   const [date, setDate] = useState(formatLocalYYYYMMDD(new Date()));
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-
-  useEffect(() => {
-    if (active.length > 0 && !mid) setMid(active[0].id);
-  }, [active.length, mid]);
 
   if (!goal) return null;
   const saved = (goal.contributions ?? []).reduce((s: number, c: any) => s + c.amount, 0);
@@ -851,14 +846,14 @@ export function ContribModal({
       setErr('Enter a valid amount.');
       return;
     }
-    if (!mid) {
+    if (!effectiveMid) {
       setErr('Select a member.');
       return;
     }
     setBusy(true);
     setErr('');
     try {
-      await onSubmit(goal.id, mid, a, date, note || undefined);
+      await onSubmit(goal.id, effectiveMid, a, date, note || undefined);
       setAmt('');
       setNote('');
       onClose();
@@ -888,7 +883,7 @@ export function ContribModal({
       <form onSubmit={submit}>
         <Err msg={err} />
         <Field label="Contributing As">
-          <Sel value={mid} onChange={e => setMid(e.target.value)}>
+          <Sel value={effectiveMid} onChange={e => setMid(e.target.value)}>
             {active.map(m => (
               <option key={m.id} value={m.id}>
                 {m.emoji} {m.display_name}
@@ -920,7 +915,7 @@ export function ContribModal({
             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNote(e.target.value)}
           />
         </Field>
-        <Btn full v="primary" type="submit" disabled={busy || !amount || !mid}>
+        <Btn full v="primary" type="submit" disabled={busy || !amount || !effectiveMid}>
           {busy ? (
             <>
               <Ico.Spin /> Saving…

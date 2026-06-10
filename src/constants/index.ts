@@ -1,3 +1,5 @@
+import { SUPABASE_URL, PLAID_CLIENT_ID } from '@/config/env';
+
 /**
  * SpendWise — Global Constants
  * Single source of truth for all magic strings, numbers, and feature flags.
@@ -42,8 +44,8 @@ const _hasSpeechRecognition =
   ('speechRecognition' in window || 'webkitSpeechRecognition' in window);
 
 export const FEATURES = {
-  CLOUD_SYNC: !!import.meta.env.VITE_SUPABASE_URL,
-  PLAID_LIVE: !!import.meta.env.VITE_PLAID_CLIENT_ID,
+  CLOUD_SYNC: !!SUPABASE_URL,
+  PLAID_LIVE: !!PLAID_CLIENT_ID,
   VOICE_INPUT: _hasSpeechRecognition,
 } as const;
 

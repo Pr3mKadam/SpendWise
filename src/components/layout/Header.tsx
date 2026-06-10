@@ -32,6 +32,7 @@ const VIEW_TITLES: Partial<Record<AppView, string>> = {
   profile: 'Profile & Settings',
   portfolio: 'Net worth',
   subscriptions: 'Subscriptions',
+  taxreport: 'ITR Tax Report',
 };
 
 function getGreeting() {

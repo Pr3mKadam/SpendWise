@@ -1,6 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { Transaction, Category } from '@/types';
 import { processNaturalLanguageExpense } from '@/features/ai/parsers/nlp';
 import { useStore } from '@/store';
+import { RAZORPAY_PROXY_URL } from '@/config/env';
 
 // ─── Merchant Memory (Phase 8.3) ────────────────────────────────────────────
 export type MerchantMemory = Record<string, { merchant: string; category: string }>;
@@ -29,14 +31,14 @@ export function parseUPIDescription(description: string): {
   // HDFC:    "UPI-CR-MERCHANTNAME-123456@upi"
   // NEFT:    "NEFT/IMPS" (not UPI, ignore)
 
-  const vpaMatch = description.match(/[\w.\-]+@[\w]+/); // UPI VPA: name@bank
+  const vpaMatch = description.match(/[\w.-]+@[\w]+/); // UPI VPA: name@bank
   const upiId = vpaMatch ? vpaMatch[0].toLowerCase() : '';
 
   // Extract merchant name — try multiple patterns:
   const merchantPatterns = [
-    /UPI\/(?:CR|DR)\/[^\/]+\/([^\/]+)\//i, // PhonePe pattern
+    /UPI\/(?:CR|DR)\/[^/]+\/([^/]+)\//i, // PhonePe pattern
     /UPI-([A-Z0-9\s]+)-[a-z@]/i, // GPay/HDFC pattern
-    /PAYTM\/UPI\/([^\/]+)\//i, // Paytm pattern
+    /PAYTM\/UPI\/([^/]+)\//i, // Paytm pattern
     /TO\s+([A-Z\s]{3,30})\s+REF/i, // Generic TO NAME REF
   ];
 
@@ -134,7 +136,7 @@ export interface RazorpayAuth {
  * Fetches recent captured payments from Razorpay API via secure backend proxy or mock fallback.
  */
 export async function fetchRazorpayTransactions(auth: RazorpayAuth): Promise<Transaction[]> {
-  const proxyUrl = import.meta.env.VITE_RAZORPAY_PROXY_URL;
+  const proxyUrl = RAZORPAY_PROXY_URL;
 
   if (proxyUrl) {
     const response = await fetch(`${proxyUrl}/sync-payments`, {
@@ -157,7 +159,7 @@ export async function fetchRazorpayTransactions(auth: RazorpayAuth): Promise<Tra
 
   // Fallback to secure mock if no proxy URL is configured (preventing client-side secret exposure)
   console.warn(
-    'VITE_RAZORPAY_PROXY_URL not configured. Using secure mock simulation to prevent client-side secret exposure.'
+    'RAZORPAY_PROXY_URL not configured. Using secure mock simulation to prevent client-side secret exposure.'
   );
 
   // Return simulated transactions

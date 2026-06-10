@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Tesseract from 'tesseract.js';
 import { Transaction } from '@/types';
 import { MERCHANT_CATEGORY_MAP } from '@/features/ai/parsers/common';
@@ -17,7 +18,7 @@ export async function recognizeReceipt(imageBase64: string): Promise<string> {
     return text;
   } catch (error) {
     console.error('Tesseract OCR error:', error);
-    throw new Error('Failed to extract text locally');
+    throw new Error('Failed to extract text locally', { cause: error });
   }
 }
 

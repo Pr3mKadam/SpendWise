@@ -157,9 +157,8 @@ export default defineConfig(({ mode }) => ({
         manualChunks: {
           'vendor-motion': ['framer-motion'],
           'vendor-charts': ['recharts'],
-          'vendor-lucide': ['lucide-react'],
+          'vendor-core': ['lucide-react', 'dexie', 'dexie-export-import'],
           'vendor-ocr': ['tesseract.js'],
-          'vendor-db': ['dexie', 'dexie-react-hooks', 'dexie-export-import'],
         }
       },
     },
@@ -170,10 +169,35 @@ export default defineConfig(({ mode }) => ({
     environment: 'happy-dom',
     globals: true,
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
+    setupFiles: ['src/test-setup.ts'],
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json-summary'],
-      include: ['src/utils/insights/**'],
+      reporter: ['text', 'json-summary', 'html', 'lcov'],
+      include: [
+        'src/features/analytics/insights/',
+        'src/features/budget/insights/',
+        'src/features/ai/parsers/',
+        'src/features/transactions/store/',
+        'src/features/goals/',
+        'src/features/sync/parsers/',
+        'src/hooks/',
+        'src/core/api/',
+        'src/core/reliability/',
+        'src/core/crdt.ts',
+        'src/utils/',
+        'src/auth/',
+      ],
+      exclude: [
+        'src/**/*.test.*',
+        'src/**/*.spec.*',
+        'src/**/__tests__/**',
+      ],
+      threshold: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80,
+      },
     },
   },
   esbuild: {

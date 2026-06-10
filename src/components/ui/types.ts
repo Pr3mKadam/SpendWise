@@ -21,7 +21,9 @@ export type AppView =
   | 'advisor'
   | 'education'
   | 'reports'
-  | 'gamification';
+  | 'taxreport'
+  | 'gamification'
+  | 'receipts';
 
 export type AlertSeverity = 'info' | 'warning' | 'danger';
 

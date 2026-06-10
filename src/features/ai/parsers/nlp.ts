@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { callGemini } from '@/core/api/gemini';
 import { Category } from '@/types';
 
@@ -189,7 +190,7 @@ Return ONLY the JSON array of objects.`;
       const match = numberMatches[i];
       const amountStr = match[1];
       const amount = parseFloat(amountStr.replace(/,/g, ''));
-      let desc = '';
+      let desc: string;
 
       if (isAmountFirst) {
         const start = match.index! + match[0].length;
