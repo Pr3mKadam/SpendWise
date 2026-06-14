@@ -89,7 +89,7 @@
     "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
     "i18next-scanner": "^4.6.0",
-    "lint-staged": "^17.0.5",
+    "lint-staged": "^17.0.7",
     "prettier": "^3.8.3",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
