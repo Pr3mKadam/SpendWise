@@ -86,7 +86,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "focus-trap-react": "^12.0.2",
     "globals": "^17.6.0",
-    "happy-dom": "^20.9.0",
+    "happy-dom": "^20.10.3",
     "husky": "^9.1.7",
     "i18next-scanner": "^4.6.0",
     "lint-staged": "^17.0.5",
