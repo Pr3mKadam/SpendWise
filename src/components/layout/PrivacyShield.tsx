@@ -19,6 +19,7 @@ export default function PrivacyShield({
     try {
       return sessionStorage.getItem(SESSION_UNLOCKED_KEY) !== 'true';
     } catch {
+      // silently ignore — non-critical
       return false;
     }
   });
@@ -30,7 +31,7 @@ export default function PrivacyShield({
     try {
       sessionStorage.removeItem(SESSION_UNLOCKED_KEY);
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
   }, []);
 
@@ -39,7 +40,7 @@ export default function PrivacyShield({
     try {
       sessionStorage.setItem(SESSION_UNLOCKED_KEY, 'true');
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
     onUnlock?.();
   }, [onUnlock]);

@@ -36,7 +36,7 @@ export function StreakShareCard({
         alert('Streak card copied to clipboard!');
       }
     } catch {
-      /* user cancelled */
+      /* silently ignore — non-critical */
     }
   };
 

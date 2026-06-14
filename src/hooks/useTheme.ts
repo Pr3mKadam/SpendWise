@@ -10,7 +10,7 @@ function loadTheme(): ThemeMode {
     // Respect system preference on first visit
     if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
   } catch {
-    /* ignore */
+    /* silently ignore — non-critical */
   }
   return 'dark';
 }
@@ -38,7 +38,7 @@ export function useTheme() {
     try {
       localStorage.setItem(STORAGE_KEY, theme);
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
   }, [theme]);
 

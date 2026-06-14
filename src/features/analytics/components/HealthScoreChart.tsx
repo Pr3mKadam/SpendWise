@@ -14,6 +14,8 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { ShieldCheck } from 'lucide-react';
+
+const AXIS_STYLE = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
 import { useHealthHistory } from '@/features/analytics/hooks/useHealthHistory';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 
@@ -53,7 +55,6 @@ export function HealthScoreChart({ currentScore }: Props) {
   }, [rawHistory, currentScore]);
 
   const scoreColor = currentScore >= 80 ? '#14b8a6' : currentScore >= 60 ? '#f59e0b' : '#ef4444';
-  const axisStyle = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
 
   return (
     <div className="card px-4 sm:px-6 py-5">
@@ -110,12 +111,12 @@ export function HealthScoreChart({ currentScore }: Props) {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={data}>
               <CartesianGrid stroke="#f0f2f5" vertical={false} />
-              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={axisStyle} dy={10} />
+              <XAxis dataKey="date" axisLine={false} tickLine={false} tick={AXIS_STYLE} dy={10} />
               <YAxis
                 domain={[0, 100]}
                 axisLine={false}
                 tickLine={false}
-                tick={axisStyle}
+                tick={AXIS_STYLE}
                 width={32}
               />
               <Tooltip content={<CustomTooltip />} />

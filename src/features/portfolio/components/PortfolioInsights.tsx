@@ -2,7 +2,7 @@ import { BrainCircuit, TrendingUp, Sparkles } from 'lucide-react';
 import AllocationDonut from '@/features/portfolio/components/AllocationDonut';
 import NetWorthEvolution from '@/features/portfolio/components/NetWorthEvolution';
 import { WealthTree } from '@/features/portfolio/components/WealthTree';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 
 interface PortfolioInsightsProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

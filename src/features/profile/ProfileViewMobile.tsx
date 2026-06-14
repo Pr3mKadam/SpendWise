@@ -12,7 +12,7 @@ import {
   Database,
   Lock,
 } from 'lucide-react';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { haptic } from '@/core/haptic';
 
 interface ProfileViewMobileProps {

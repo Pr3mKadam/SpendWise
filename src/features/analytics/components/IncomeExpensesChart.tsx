@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import {
   BarChart,
   Bar,
@@ -11,13 +12,20 @@ import {
 import { MonthlyHistoryPoint } from '@/types';
 import { ChartTooltip } from '@/features/analytics/components/AnalyticsPrimitives';
 
+const AXIS_STYLE = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
+
 interface IncomeExpensesChartProps {
   monthlyHistory: MonthlyHistoryPoint[];
   currency: string;
 }
 
 export function IncomeExpensesChart({ monthlyHistory, currency }: IncomeExpensesChartProps) {
-  const axisStyle = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
+  const tickFormatter = useCallback(
+    (v: number) => `${currency}${(v / 1000).toFixed(0)}k`,
+    [currency]
+  );
+
+  const tooltipContent = useMemo(() => <ChartTooltip currency={currency} />, [currency]);
 
   return (
     <div className="card px-4 sm:px-6 py-5">
@@ -68,15 +76,15 @@ export function IncomeExpensesChart({ monthlyHistory, currency }: IncomeExpenses
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={monthlyHistory} barGap={4} barCategoryGap="30%">
             <CartesianGrid stroke="#f0f2f5" vertical={false} />
-            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={axisStyle} dy={10} />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={AXIS_STYLE} dy={10} />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={axisStyle}
-              tickFormatter={v => `${currency}${(v / 1000).toFixed(0)}k`}
+              tick={AXIS_STYLE}
+              tickFormatter={tickFormatter}
               width={44}
             />
-            <Tooltip content={<ChartTooltip currency={currency} />} cursor={{ fill: '#f8fafc' }} />
+            <Tooltip content={tooltipContent} cursor={{ fill: '#f8fafc' }} />
             <Legend
               formatter={value => (
                 <span

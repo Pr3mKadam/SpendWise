@@ -37,6 +37,7 @@ function loadSession(): SupabaseUser | null {
   try {
     return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
   } catch {
+    // silently ignore — non-critical
     return null;
   }
 }
@@ -78,6 +79,7 @@ function formatSyncTime(dateStr: string | null): string {
     hours = hours ? hours : 12;
     return `${day} ${month}, ${hours}:${minutes} ${ampm}`;
   } catch {
+    // silently ignore — non-critical
     return 'Never';
   }
 }
@@ -157,7 +159,7 @@ export function CloudSync({ transactions, onPullTransactions }: CloudSyncProps) 
       try {
         await signOut(user.access_token);
       } catch {
-        /**/
+        /* silently ignore — non-critical */
       }
     }
     setUser(null);

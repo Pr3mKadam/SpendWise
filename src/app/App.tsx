@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { useAuth } from '@/hooks/useAuth';
 import AuthView from '@/features/auth/AuthView';
 import { MainShell } from '@/app/MainShell';
 import { AppView } from '@/types';
 import { STORAGE_KEYS, FINANCE_DEFAULTS } from '@/constants';
 import { useStore } from '@/store';
+import { TransactionProvider } from '@/features/transactions/context/TransactionContext';
+import { BudgetProvider } from '@/features/budget/context/BudgetContext';
+import { GoalProvider } from '@/features/goals/context/GoalContext';
 
 function LoadingScreen() {
   return (
@@ -210,6 +213,17 @@ function AppAuthenticated({ initialView }: { initialView: AppView }) {
 
   if (config === null) return <LoadingScreen />;
   return (
-    <MainShell config={config} setConfig={setConfig} userId={userId} initialView={initialView} />
+    <TransactionProvider>
+      <BudgetProvider>
+        <GoalProvider>
+          <MainShell
+            config={config}
+            setConfig={setConfig}
+            userId={userId}
+            initialView={initialView}
+          />
+        </GoalProvider>
+      </BudgetProvider>
+    </TransactionProvider>
   );
 }

@@ -35,7 +35,7 @@ export function BudgetSummaryMobile({
         </div>
 
         <div className="mt-5">
-          <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+          <div className="h-2 w-full bg-[var(--surface-card)]/10 rounded-full overflow-hidden">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min(overallBudgetPercent, 100)}%` }}

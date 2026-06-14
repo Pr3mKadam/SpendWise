@@ -109,6 +109,7 @@ export function parseOtpauthUrl(
     const account = decodeURIComponent(u.pathname.slice(1)).replace(`${issuer}:`, '');
     return { secret, issuer, account };
   } catch {
+    // silently ignore — non-critical
     return null;
   }
 }

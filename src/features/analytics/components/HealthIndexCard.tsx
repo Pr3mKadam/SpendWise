@@ -50,7 +50,7 @@ export function HealthIndexCard({ health }: { health: HealthResult }) {
 
         <div className="flex-1 space-y-4">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[var(--surface-card)]/5 flex items-center justify-center">
               <ShieldCheck className="text-teal-400" size={20} />
             </div>
             <div>
@@ -68,7 +68,7 @@ export function HealthIndexCard({ health }: { health: HealthResult }) {
                   <span>{key}</span>
                   <span>{val}%</span>
                 </div>
-                <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                <div className="h-1 bg-[var(--surface-card)]/5 rounded-full overflow-hidden">
                   <div
                     className="h-full bg-teal-500/50 transition-all duration-1000"
                     style={{ width: `${val}%` }}

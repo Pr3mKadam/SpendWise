@@ -26,7 +26,7 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) return JSON.parse(stored);
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
     return [];
   });
@@ -53,7 +53,9 @@ export function CategoryProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem('spendwise_config');
       if (saved) return JSON.parse(saved).userRole || 'professional';
-    } catch {}
+    } catch {
+      /* silently ignore — non-critical */
+    }
     return 'professional';
   }, []);
 

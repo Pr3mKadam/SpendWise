@@ -19,6 +19,14 @@ test.describe('Step 16-22: Gamification, Profile, Privacy & Settings', () => {
           createdAt: new Date().toISOString(),
         })
       );
+      window.localStorage.setItem(
+        'spendwise_transactions',
+        JSON.stringify([
+          { id: '1', type: 'debit', amount: 50, category: 'Food', label: 'Lunch', date: new Date().toISOString() },
+          { id: '2', type: 'debit', amount: 20, category: 'Transport', label: 'Bus', date: new Date().toISOString() },
+          { id: '3', type: 'credit', amount: 500, category: 'Salary', label: 'Freelance', date: new Date().toISOString() },
+        ])
+      );
     });
 
     await page.goto('/');

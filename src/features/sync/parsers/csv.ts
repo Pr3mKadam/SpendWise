@@ -1,4 +1,5 @@
 import { Transaction, Category } from '@/types';
+// FSD VIOLATION: importing utility functions from ai feature — move to @/utils/ instead
 import { inferCategory, inferType, toTitleCase } from '@/features/ai/parsers/common';
 import { formatLocalYYYYMMDD } from '@/utils/date';
 

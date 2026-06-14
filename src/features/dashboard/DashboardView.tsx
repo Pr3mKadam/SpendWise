@@ -1,6 +1,8 @@
 import { useState, lazy, Suspense, useMemo } from 'react';
 import { AppView } from '@/types';
 import { FinanceState } from '@/types/state';
+// FSD VIOLATION: DashboardView acts as a page composer importing from multiple features
+// TODO: extract to a pages/ layer or inject feature components via props
 import { useGamification } from '@/features/gamification/hooks/useGamification';
 import { useGoals } from '@/features/goals/hooks/useGoals';
 import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
@@ -24,7 +26,7 @@ import RecentTransactions from '@/features/dashboard/components/RecentTransactio
 import GoalsSummary from '@/features/dashboard/components/GoalsSummary';
 import DailyStats from '@/features/dashboard/components/DailyStats';
 import { SafeToSpend } from '@/features/dashboard/components/SafeToSpend';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import DashboardViewMobile from '@/features/dashboard/DashboardViewMobile';
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
@@ -35,6 +37,7 @@ import { useBudgets } from '@/hooks/useBudgets';
 import { getProactiveNudge } from '@/features/analytics/insights/advisor';
 import { useStore } from '@/store';
 
+// FSD VIOLATION: lazy-loaded cross-feature components (gamification, etc.)
 // Lazy load non-critical/heavy components
 const FinanceChartLazy = lazy(() => import('@/features/dashboard/components/FinanceChart'));
 const WealthCity = lazy(() => import('@/features/gamification/components/WealthCity'));
@@ -405,7 +408,7 @@ export function DashboardView({
                       className="card p-4 bg-gradient-to-br from-indigo-600 to-violet-700 text-white cursor-pointer hover:scale-[1.02] transition-transform shadow-xl shadow-indigo-500/20"
                     >
                       <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                        <div className="w-10 h-10 rounded-xl bg-[var(--surface-card)]/20 flex items-center justify-center">
                           <Sparkles size={20} />
                         </div>
                         <h3 className="font-bold text-sm">Learning Center</h3>

@@ -16,12 +16,16 @@ import AddSubscriptionModal from '@/features/subscriptions/components/AddSubscri
 import { useCurrency } from '@/contexts/CurrencyContext';
 import { SubscriptionCalendar } from '@/features/subscriptions/components/SubscriptionCalendar';
 import { useSubscriptionManager } from '@/features/subscriptions/hooks/useSubscriptionManager';
+// FSD VIOLATION: importing from sync feature — inject via mandateManager prop instead
+// TODO: remove direct import once all consumers pass mandateManager prop
 import MandateManager from '@/features/sync/components/MandateManager';
 import { useStore } from '@/store';
 
 interface SubscriptionManagerProps {
   patterns: RecurringPattern[];
   currency?: string;
+  // FSD: inject MandateManager from the app/page layer instead of importing from sync feature
+  mandateManager?: React.ReactNode;
 }
 
 function getServiceColor(name: string): string {
@@ -58,6 +62,7 @@ function getServiceInitials(name: string): string {
 export default function SubscriptionManager({
   patterns,
   currency = '₹',
+  mandateManager: mandateManagerProp,
 }: SubscriptionManagerProps) {
   const { mergedIcons } = useCategories();
   const { format } = useCurrency();
@@ -150,7 +155,7 @@ export default function SubscriptionManager({
       </div>
 
       {activeView === 'mandates' ? (
-        <MandateManager mandates={mandates} currency={currency} />
+        (mandateManagerProp ?? <MandateManager mandates={mandates} currency={currency} />)
       ) : (
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

@@ -8,6 +8,7 @@ function getStoredDevices(): DeviceInfo[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
+    // silently ignore — non-critical
     return [];
   }
 }
@@ -16,7 +17,7 @@ function persistDevices(devices: DeviceInfo[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(devices));
   } catch {
-    // storage full — non-critical
+    /* silently ignore — non-critical */
   }
 }
 

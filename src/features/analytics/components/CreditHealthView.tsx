@@ -335,7 +335,8 @@ export default function CreditHealthView() {
         setCreditScore(score);
         setScoreTrend(trend);
       }
-    } catch {
+    } catch (e) {
+      console.warn('[CreditHealth] Failed to fetch credit data:', e);
       setConsentError('Failed to fetch credit data. Please try again.');
     } finally {
       setConsentLoading(false);

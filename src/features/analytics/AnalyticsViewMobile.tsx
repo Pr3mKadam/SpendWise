@@ -41,7 +41,7 @@ export default function AnalyticsViewMobile({
             <span className="text-[length:var(--fs-overline)] font-bold uppercase tracking-widest text-teal-400/80">
               Month Progress
             </span>
-            <div className="h-[2px] flex-1 bg-white/10 rounded-full">
+            <div className="h-[2px] flex-1 bg-[var(--surface-card)]/10 rounded-full">
               <div
                 className="h-full bg-teal-400 rounded-full"
                 style={{ width: `${monthProgress}%` }}
@@ -61,7 +61,7 @@ export default function AnalyticsViewMobile({
           </p>
 
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+            <div className="p-4 bg-[var(--surface-card)]/5 rounded-2xl border border-white/5">
               <p className="text-[length:var(--fs-overline)] font-bold text-white/40 uppercase tracking-wider mb-1">
                 Income
               </p>
@@ -73,7 +73,7 @@ export default function AnalyticsViewMobile({
                 </span>
               </div>
             </div>
-            <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
+            <div className="p-4 bg-[var(--surface-card)]/5 rounded-2xl border border-white/5">
               <p className="text-[length:var(--fs-overline)] font-bold text-white/40 uppercase tracking-wider mb-1">
                 Spent
               </p>

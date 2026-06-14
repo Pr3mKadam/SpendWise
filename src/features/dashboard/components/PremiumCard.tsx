@@ -78,7 +78,7 @@ export default function PremiumCard({ currentBalance, currency }: PremiumCardPro
               <p className="text-xs font-bold uppercase tracking-wider">SpendWise Pro</p>
             </div>
           </div>
-          <div className="w-12 h-8 rounded-md bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/10">
+          <div className="w-12 h-8 rounded-md bg-[var(--surface-card)]/10 backdrop-blur-md flex items-center justify-center border border-white/10">
             <div className="flex -space-x-2">
               <div className="w-5 h-5 rounded-full bg-red-500/80" />
               <div className="w-5 h-5 rounded-full bg-yellow-500/80" />

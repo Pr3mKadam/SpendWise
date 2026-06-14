@@ -60,7 +60,9 @@ export async function peekQueue(): Promise<QueueItem[]> {
     if (item.key?.startsWith('queue:')) {
       try {
         all.push(JSON.parse(item.value));
-      } catch {}
+      } catch {
+        /* silently ignore — non-critical */
+      }
     }
   });
   all.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());

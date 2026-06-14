@@ -2,34 +2,17 @@
 import { useState, useRef, useEffect } from 'react';
 import { STORAGE_KEYS } from '@/constants';
 import { OnboardingSidebar } from '@/features/onboarding/components/OnboardingSidebar';
-import { OnboardingStep1, CurrencySymbol } from '@/features/onboarding/components/OnboardingStep1';
-import { OnboardingStep2, UserRole } from '@/features/onboarding/components/OnboardingStep2';
+import { OnboardingStep1 } from '@/features/onboarding/components/OnboardingStep1';
+import { OnboardingStep2 } from '@/features/onboarding/components/OnboardingStep2';
 import { OnboardingStep3 } from '@/features/onboarding/components/OnboardingStep3';
+import { OnboardingStepFamily } from '@/features/onboarding/components/OnboardingStepFamily';
 import {
-  OnboardingStepFamily,
+  SpendWiseConfig,
+  UserRole,
+  CurrencySymbol,
   FamilyOption,
   FamilyGoal,
-} from '@/features/onboarding/components/OnboardingStepFamily';
-
-// ─── Types ─────────────────────────────────────────────────────────────────────
-
-export interface SpendWiseConfig {
-  initialBalance: number;
-  currency: string;
-  name?: string;
-  balanceAnchorNet?: number;
-  onboardingComplete: boolean;
-  createdAt: string;
-  phone?: string;
-  occupation?: string;
-  monthlyGoal?: number;
-  location?: string;
-  userRole: UserRole;
-  isFamily?: boolean;
-  childCount?: number;
-  childAges?: string;
-  familyGoals?: FamilyGoal[];
-}
+} from '@/types/config';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -39,6 +22,7 @@ export function loadConfig(): SpendWiseConfig | null {
     if (!raw) return null;
     return JSON.parse(raw) as SpendWiseConfig;
   } catch {
+    // silently ignore — non-critical
     return null;
   }
 }

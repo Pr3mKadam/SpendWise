@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { FINANCE_DEFAULTS } from '@/constants';
+import EmptyState from '@/components/ui/EmptyState';
 
 import { TrendingUp, Wallet, PiggyBank, ArrowUpRight, Receipt } from 'lucide-react';
 import { MonthlyHistoryPoint, MonthlyStats, CategorySpend, Transaction, AppView } from '@/types';
@@ -76,6 +77,16 @@ export default function AnalyticsView({
       : 0;
   const bestMonth =
     monthlyHistory.length > 0 ? [...monthlyHistory].sort((a, b) => b.savings - a.savings)[0] : null;
+
+  if (transactions.length === 0) {
+    return (
+      <EmptyState
+        title="No analytics yet"
+        subtitle="Record your first transaction to unlock deep AI insights"
+        onAction={() => onNavigate?.('transactions' as AppView)}
+      />
+    );
+  }
 
   if (isMobile) {
     return (

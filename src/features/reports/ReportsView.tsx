@@ -3,8 +3,10 @@ import { FileText, Sparkles, Download, Share2, Calendar, Loader2, Printer } from
 import { generateMonthlyReport } from '@/features/reports/insights/reporting';
 
 import ReactMarkdown from 'react-markdown';
+import rehypeSanitize from 'rehype-sanitize';
 import { motion } from 'framer-motion';
 import { Transaction, MonthlyStats } from '@/types';
+import EmptyState from '@/components/ui/EmptyState';
 
 interface ReportsViewProps {
   transactions: Transaction[];
@@ -21,6 +23,15 @@ export default function ReportsView({
   const [loading, setLoading] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
   const currentMonth = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+
+  if (transactions.length === 0) {
+    return (
+      <EmptyState
+        title="No transactions yet"
+        subtitle="Record your first transaction to generate AI monthly reports."
+      />
+    );
+  }
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -213,7 +224,7 @@ export default function ReportsView({
             ref={printRef}
             className="p-8 prose prose-slate max-w-none prose-p:text-[var(--text-primary)] prose-headings:text-[var(--text-primary)] prose-strong:text-[var(--teal)] prose-li:text-[var(--text-primary)]"
           >
-            <ReactMarkdown>{report}</ReactMarkdown>
+            <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{report}</ReactMarkdown>
           </div>
         </motion.div>
       )}

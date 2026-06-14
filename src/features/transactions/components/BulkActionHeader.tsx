@@ -31,7 +31,7 @@ export function BulkActionHeader({
       <div className="flex items-center gap-3">
         <button
           onClick={onClearSelection}
-          className="p-1.5 rounded-full hover:bg-white/50 transition-colors"
+          className="p-1.5 rounded-full hover:bg-[var(--surface-card)]/50 transition-colors"
           aria-label="Clear selection"
           style={{ color: 'var(--teal)', border: 'none', background: 'none', cursor: 'pointer' }}
         >

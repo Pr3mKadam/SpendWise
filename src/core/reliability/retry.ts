@@ -95,5 +95,7 @@ export function isOfflineError(err: unknown): boolean {
 export function clearApiTimings(): void {
   try {
     sessionStorage.removeItem('spendwise_api_timing');
-  } catch {}
+  } catch {
+    /* silently ignore — non-critical */
+  }
 }

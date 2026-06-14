@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from 'react';
 import {
   ResponsiveContainer,
   AreaChart,
@@ -13,6 +14,8 @@ import ChartTooltip from '@/features/dashboard/components/ChartTooltip';
 const TEXT_PRIMARY = '#0f1117';
 const TEXT_MUTED = '#9197a6';
 
+const AXIS_TICK = { fontSize: 11, fill: '#9197a6' };
+
 interface FinanceChartProps {
   chartData: Array<{
     month: string;
@@ -23,6 +26,12 @@ interface FinanceChartProps {
 }
 
 export default function FinanceChart({ chartData, currency }: FinanceChartProps) {
+  const tickFormatter = useCallback(
+    (v: number) => `${currency}${(v / 1000).toFixed(0)}k`,
+    [currency]
+  );
+
+  const tooltipContent = useMemo(() => <ChartTooltip currency={currency} />, [currency]);
   return (
     <Card>
       <div
@@ -83,19 +92,14 @@ export default function FinanceChart({ chartData, currency }: FinanceChartProps)
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.04)" vertical={false} />
-            <XAxis
-              dataKey="month"
-              tick={{ fontSize: 11, fill: '#9197a6' }}
-              axisLine={false}
-              tickLine={false}
-            />
+            <XAxis dataKey="month" tick={AXIS_TICK} axisLine={false} tickLine={false} />
             <YAxis
-              tick={{ fontSize: 11, fill: '#9197a6' }}
+              tick={AXIS_TICK}
               axisLine={false}
               tickLine={false}
-              tickFormatter={v => `${currency}${(v / 1000).toFixed(0)}k`}
+              tickFormatter={tickFormatter}
             />
-            <Tooltip content={<ChartTooltip currency={currency} />} />
+            <Tooltip content={tooltipContent} />
             <Area
               type="monotone"
               dataKey="Income"

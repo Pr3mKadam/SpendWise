@@ -116,7 +116,7 @@ export function QuestsPanel({ transactions }: QuestsPanelProps) {
                     {q.title}
                   </h4>
                   <span
-                    className={`text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${q.completed ? 'bg-white/5 text-[var(--text-muted)]' : 'bg-[var(--teal)]/10 text-[var(--teal)]'}`}
+                    className={`text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded-full whitespace-nowrap ${q.completed ? 'bg-[var(--surface-card)]/5 text-[var(--text-muted)]' : 'bg-[var(--teal)]/10 text-[var(--teal)]'}`}
                   >
                     {q.completed ? 'Done' : q.reward}
                   </span>

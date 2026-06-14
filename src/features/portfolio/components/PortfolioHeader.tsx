@@ -1,5 +1,5 @@
 import { TrendingUp, BarChart2, BrainCircuit, Zap, Plus } from 'lucide-react';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 
 interface PortfolioHeaderProps {
   config: SpendWiseConfig | null;
@@ -32,7 +32,7 @@ export function PortfolioHeader({
         </p>
       </div>
 
-      <div className="flex items-center gap-4 bg-white/50 p-1 rounded-xl border border-[var(--border)] shadow-sm">
+      <div className="flex items-center gap-4 bg-[var(--surface-card)]/50 p-1 rounded-xl border border-[var(--border)] shadow-sm">
         <button
           onClick={() => setActiveTab('overview')}
           className="flex items-center gap-2 px-4 py-2 rounded-lg font-inter font-bold text-[12px] transition-all"

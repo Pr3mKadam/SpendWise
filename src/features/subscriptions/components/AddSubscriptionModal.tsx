@@ -60,7 +60,7 @@ export default function AddSubscriptionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white dark:bg-[#1a1a1a] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
+      <div className="bg-[var(--surface-card)] dark:bg-[#1a1a1a] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden animate-slide-up">
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-800">
           <h3 className="font-manrope font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
             <Plus size={18} className="text-teal-500" />

@@ -25,6 +25,7 @@ export class SessionManager {
         sessionStorage.removeItem(SESSION_KEY);
       }
     } catch {
+      // silently ignore — non-critical
       sessionStorage.removeItem(SESSION_KEY);
     }
     this.session = null;
@@ -35,7 +36,7 @@ export class SessionManager {
       try {
         sessionStorage.setItem(SESSION_KEY, JSON.stringify(this.session));
       } catch {
-        // non-critical
+        /* silently ignore — non-critical */
       }
     }
   }
@@ -45,7 +46,7 @@ export class SessionManager {
     try {
       sessionStorage.removeItem(SESSION_KEY);
     } catch {
-      // non-critical
+      /* silently ignore — non-critical */
     }
   }
 

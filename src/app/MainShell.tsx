@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 import Sidebar from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
-import type { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import type { SpendWiseConfig } from '@/types/config';
 import { ViewRenderer } from '@/app/ViewRenderer';
 import { useAppState } from '@/hooks/useAppState';
 import { useAutomations } from '@/features/recurring/hooks/useAutomations';

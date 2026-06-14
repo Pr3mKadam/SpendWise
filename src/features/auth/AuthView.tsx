@@ -16,6 +16,7 @@ import {
   Star,
   ChevronRight,
 } from 'lucide-react';
+// FSD VIOLATION: importing from parental feature
 import { ChildQRScanner } from '@/features/parental/components/ChildQRScanner';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -101,7 +102,7 @@ export default function AuthView() {
       cfg.parentId = parentId;
       localStorage.setItem('spendwise_config_v1', JSON.stringify(cfg));
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
     window.location.reload();
   };
@@ -160,7 +161,7 @@ export default function AuthView() {
             <div className="space-y-4">
               {features.map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="flex items-start gap-4 group">
-                  <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500/10 group-hover:border-teal-500/30 transition-all duration-200">
+                  <div className="w-10 h-10 rounded-xl bg-[var(--surface-card)]/5 border border-white/10 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-500/10 group-hover:border-teal-500/30 transition-all duration-200">
                     <Icon className="w-5 h-5 text-teal-400" />
                   </div>
                   <div>

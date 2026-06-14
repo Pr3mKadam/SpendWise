@@ -35,6 +35,7 @@ export function SocialLeaderboard() {
     try {
       return JSON.parse(localStorage.getItem(LS_REFERRALS_KEY) || '[]');
     } catch {
+      // silently ignore — non-critical
       return [];
     }
   });
@@ -134,6 +135,7 @@ export function SocialLeaderboard() {
         setFriendsData(friends);
         setDataLoaded(true);
       } catch {
+        // silently ignore — non-critical
         if (!cancelled) setDataLoaded(true);
       }
     })();
@@ -161,6 +163,7 @@ export function SocialLeaderboard() {
       toast.success('Invite link copied to clipboard!', { icon: '🔗' });
       useStore.getState().addXP(10);
     } catch {
+      // silently ignore — non-critical
       toast.error('Could not copy link');
     }
   }, [inviteLink]);

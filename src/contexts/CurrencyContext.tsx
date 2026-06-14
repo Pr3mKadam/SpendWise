@@ -90,7 +90,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (config.currency) return config.currency as CurrencyCode;
       }
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
     return '₹';
   });
@@ -103,7 +103,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         if (c.currency) return c.currency as CurrencyCode;
       }
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
     return '₹';
   });
@@ -118,7 +118,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
       }
     } catch {
-      /* ignore */
+      /* silently ignore — non-critical */
     }
     return { ...FALLBACK_RATES };
   });
@@ -168,7 +168,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
           }
         }
       } catch {
-        /* ignore */
+        /* silently ignore — non-critical */
       }
     };
     window.addEventListener('spendwise-config-updated', handleConfigChange);

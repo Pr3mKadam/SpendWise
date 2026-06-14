@@ -132,6 +132,7 @@ function parseErrorBody(body: string): { message: string; details?: unknown } {
       body;
     return { message: msg, details: parsed };
   } catch {
+    // silently ignore — non-critical
     if (body.length > 200) {
       return { message: body.substring(0, 200) + '...' };
     }

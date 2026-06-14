@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GraduationCap, Trophy, Sparkles } from 'lucide-react';
 import { useStore } from '@/store';
 import { Transaction } from '@/types';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 
 import { LESSONS, Lesson } from '@/data/lessons';
 import { CATEGORY_CONFIG } from '@/features/education/components/categoryConfig';
 import LessonModal from '@/features/education/components/LessonModal';
 import LessonCard from '@/features/education/components/LessonCard';
+import EmptyState from '@/components/ui/EmptyState';
+import { AppView } from '@/types';
 
 // ─── Lesson Data ─────────────────────────────────────────────────────────────
 
@@ -23,6 +25,7 @@ export default function EducationView({
   financeState,
   addNotification,
   config,
+  onNavigate,
 }: {
   currency: string;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,6 +33,7 @@ export default function EducationView({
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addNotification?: (notif: any) => void;
   config: SpendWiseConfig | null;
+  onNavigate?: (view: AppView) => void;
 }) {
   const level = useStore(state => state.level);
   const addXP = useStore(state => state.addXP);
@@ -37,6 +41,7 @@ export default function EducationView({
     try {
       return new Set(JSON.parse(localStorage.getItem('sw_completed_lessons') || '[]'));
     } catch {
+      // silently ignore — non-critical
       return new Set();
     }
   });
@@ -105,6 +110,16 @@ export default function EducationView({
     return Object.entries(cats).sort(([, a], [, b]) => b - a)[0]?.[0] || 'Food';
   }, [transactions]);
 
+  if (transactions.length === 0) {
+    return (
+      <EmptyState
+        title="No data yet"
+        subtitle="Record your first transaction to unlock Personalized Education."
+        onAction={() => onNavigate?.('transactions' as AppView)}
+      />
+    );
+  }
+
   return (
     <>
       <AnimatePresence>
@@ -164,7 +179,7 @@ export default function EducationView({
                   {completedRoleLessonsCount} of {roleLessons.length} lessons
                 </p>
               </div>
-              <div className="h-14 w-px bg-white/10 hidden sm:block" />
+              <div className="h-14 w-px bg-[var(--surface-card)]/10 hidden sm:block" />
               <div>
                 <p className="font-inter text-[length:var(--fs-caption)] font-bold uppercase tracking-widest text-white/60 mb-1">
                   XP Earned
@@ -176,7 +191,7 @@ export default function EducationView({
                   of {totalXPAvailable.toLocaleString()} available
                 </p>
               </div>
-              <div className="h-14 w-px bg-white/10 hidden sm:block" />
+              <div className="h-14 w-px bg-[var(--surface-card)]/10 hidden sm:block" />
               <div>
                 <p className="font-inter text-[length:var(--fs-caption)] font-bold uppercase tracking-widest text-white/60 mb-1">
                   Current Level
@@ -185,7 +200,7 @@ export default function EducationView({
                 <p className="font-inter text-sm text-white/60 mt-1">Keep learning to level up</p>
               </div>
             </div>
-            <div className="h-2 w-full bg-white/10 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-[var(--surface-card)]/10 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${completionPct}%` }}

@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import {
   LineChart,
   Line,
@@ -11,6 +12,8 @@ import {
 import { MonthlyHistoryPoint } from '@/types';
 import { SavingsTooltip } from '@/features/analytics/components/AnalyticsPrimitives';
 
+const AXIS_STYLE = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
+
 interface SavingsTrendChartProps {
   monthlyHistory: MonthlyHistoryPoint[];
   currency: string;
@@ -22,7 +25,10 @@ export function SavingsTrendChart({
   currency,
   latestMonth,
 }: SavingsTrendChartProps) {
-  const axisStyle = { fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' };
+  const tickFormatter = useCallback(
+    (v: number) => `${currency}${v >= 0 ? '' : '-'}${Math.abs(v / 1000).toFixed(1)}k`,
+    [currency]
+  );
 
   return (
     <div className="card px-4 sm:px-6 py-5">
@@ -81,14 +87,12 @@ export function SavingsTrendChart({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={monthlyHistory}>
             <CartesianGrid stroke="#f0f2f5" vertical={false} />
-            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={axisStyle} dy={10} />
+            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={AXIS_STYLE} dy={10} />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={axisStyle}
-              tickFormatter={v =>
-                `${currency}${v >= 0 ? '' : '-'}${Math.abs(v / 1000).toFixed(1)}k`
-              }
+              tick={AXIS_STYLE}
+              tickFormatter={tickFormatter}
               width={48}
             />
             <Tooltip content={<SavingsTooltip currency={currency} />} />

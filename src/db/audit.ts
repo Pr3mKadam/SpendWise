@@ -28,7 +28,7 @@ export async function writeAuditLog(
     if (entries.length > 500) entries.splice(0, entries.length - 500);
     localStorage.setItem(AUDIT_KEY, JSON.stringify(entries));
   } catch {
-    // non-critical
+    /* silently ignore — non-critical */
   }
 }
 
@@ -44,6 +44,7 @@ export function getAuditLog(): Array<{
     const raw = localStorage.getItem(AUDIT_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
+    // silently ignore — non-critical
     return [];
   }
 }

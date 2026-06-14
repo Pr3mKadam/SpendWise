@@ -26,7 +26,7 @@ export class RateLimiter {
         return parsed;
       }
     } catch {
-      // ignore
+      /* silently ignore — non-critical */
     }
     return { attempts: [], lockedUntil: null };
   }
@@ -35,7 +35,7 @@ export class RateLimiter {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
     } catch {
-      // non-critical
+      /* silently ignore — non-critical */
     }
   }
 
@@ -93,7 +93,7 @@ export class RateLimiter {
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
-      // non-critical
+      /* silently ignore — non-critical */
     }
   }
 }

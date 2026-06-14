@@ -205,12 +205,12 @@ export const createFinanceSlice: StateCreator<
       ),
     }));
     get().removeFromIndex(id, tx.category, tx.date);
-    get().reindex();
   },
 
   updateTransactionCategory: (id, newCategory) => {
     const state = get();
     const tx = state.transactions.find(t => t.id === id);
+    if (!tx) return;
     const snapshot = [...state.transactions];
     const newStack = [...state.undoStack.slice(-(MAX_UNDO_STACK - 1)), snapshot];
 
@@ -220,7 +220,8 @@ export const createFinanceSlice: StateCreator<
       ),
       undoStack: newStack,
     }));
-    get().reindex();
+    get().removeFromIndex(id, tx.category, tx.date);
+    get().addToIndex({ ...tx, category: newCategory });
 
     if (tx) {
       learnMerchant(tx.merchant, newCategory as DefaultCategory);
@@ -229,16 +230,19 @@ export const createFinanceSlice: StateCreator<
 
   updateTransaction: (id, data) => {
     const state = get();
+    const tx = state.transactions.find(t => t.id === id);
+    if (!tx) return;
     const snapshot = [...state.transactions];
     const newStack = [...state.undoStack.slice(-(MAX_UNDO_STACK - 1)), snapshot];
 
+    const updatedTx = { ...tx, ...data, updatedAt: new Date().toISOString() };
+
     set(state => ({
-      transactions: state.transactions.map(t =>
-        t.id === id ? { ...t, ...data, updatedAt: new Date().toISOString() } : t
-      ),
+      transactions: state.transactions.map(t => (t.id === id ? updatedTx : t)),
       undoStack: newStack,
     }));
-    get().reindex();
+    get().removeFromIndex(id, tx.category, tx.date);
+    get().addToIndex(updatedTx);
   },
 
   bulkUpdateTransactionsCategory: (ids, newCategory) => {

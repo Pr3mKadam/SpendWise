@@ -60,7 +60,8 @@ async function addUPITransaction(
         duration: 6000,
       }
     );
-  } catch {
+  } catch (e) {
+    console.warn('[UPI] Payment categorisation failed:', e);
     toast.error('Could not categorise payment. Please add manually.', { id: loadId });
   }
 }

@@ -6,7 +6,6 @@ import { Transaction } from '@/types';
 import { AIInputTools } from '@/features/ai/components/AIInputTools';
 import { compressImage } from '@/utils/imageUtils';
 import { recognizeReceipt, parseOfflineReceipt } from '@/features/ai/parsers/ocr';
-import { parseVoiceLocally } from '@/features/ai/parsers/voice';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import ReceiptScanner from '@/features/ai/components/ReceiptScanner';
 import { haptic } from '@/core/haptic';
@@ -16,6 +15,8 @@ import { formatLocalYYYYMMDD } from '@/utils/date';
 
 interface MagicInputProps {
   onAdd: (transaction: Transaction) => void;
+  /** Called once after ALL transactions in a batch have been added. Use this to close modals etc. */
+  onAllAdded?: () => void;
   externalInput?: string;
   onInputChange?: (val: string) => void;
   transactions?: Transaction[];
@@ -25,6 +26,7 @@ interface MagicInputProps {
 
 export default function MagicInput({
   onAdd,
+  onAllAdded,
   externalInput,
   onInputChange,
   transactions,
@@ -132,10 +134,11 @@ export default function MagicInput({
         setTimeout(() => setScanStatus(undefined), 2000);
         return;
       }
+      const now = Date.now();
       prediction.forEach((p, index) => {
         onAdd({
           ...(p as Transaction),
-          id: `magic-${Date.now()}-${index}`,
+          id: `magic-${now}-${index}`,
           date: p.date || formatLocalYYYYMMDD(new Date()),
           type: p.type || 'debit',
         });
@@ -143,6 +146,8 @@ export default function MagicInput({
       haptic.success();
       setPrediction(null);
       setInput('');
+      // Notify parent that the entire batch is done (e.g. to close a modal)
+      onAllAdded?.();
     }
   };
 
@@ -180,8 +185,8 @@ export default function MagicInput({
   };
 
   const handleVoiceInput = () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognition =
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       setScanStatus('🚫 Voice not supported in this browser.');
@@ -203,12 +208,25 @@ export default function MagicInput({
       setIsProcessing(true);
 
       try {
+        // processNaturalLanguageExpense handles AI + local heuristic fallback internally.
+        // It never re-throws — always returns an array (possibly empty).
         const results = await processNaturalLanguageExpense(transcript, activeCurrency);
-        if (!results || results.length === 0) {
-          throw new Error('No results from NLP');
-        }
 
-        const enrichedResults = results.map(res => {
+        // If still nothing came back, build a minimal single-entry fallback
+        const safeResults =
+          results && results.length > 0
+            ? results
+            : [
+                {
+                  merchant: transcript,
+                  category: 'Shopping' as const,
+                  amount: parseFloat(transcript.replace(/[^0-9.]/g, '')) || 0,
+                  type: 'debit' as const,
+                  confidence: 0.3,
+                },
+              ];
+
+        const enrichedResults = safeResults.map(res => {
           if (res && res.merchant) {
             if (transactions) {
               const match = transactions.find(
@@ -227,10 +245,9 @@ export default function MagicInput({
         });
         setPrediction(enrichedResults);
       } catch (err) {
-        console.error('Voice NLP parsing failed, falling back to local:', err);
-        const today = formatLocalYYYYMMDD(new Date());
-        const res = parseVoiceLocally(transcript, today);
-        setPrediction([res]);
+        // Genuine unexpected error (e.g. runtime exception) — surface a readable message
+        console.error('Voice processing failed unexpectedly:', err);
+        setScanStatus('❌ Could not parse voice input. Please type it manually.');
       }
 
       setIsProcessing(false);

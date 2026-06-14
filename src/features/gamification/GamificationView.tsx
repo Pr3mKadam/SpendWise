@@ -10,6 +10,7 @@ import { SavingsChallenges } from '@/features/gamification/components/SavingsCha
 import { useQuestReset } from '@/features/gamification/hooks/useQuestReset';
 import { UserLevelCard } from '@/features/gamification/components/UserLevelCard';
 import { getSpendingPersonality } from '@/features/analytics/insights/advisor';
+import EmptyState from '@/components/ui/EmptyState';
 
 type Tab = 'overview' | 'quests' | 'badges' | 'challenges';
 
@@ -50,6 +51,16 @@ export default function GamificationView({
     () => getSpendingPersonality(transactions, currency),
     [transactions, currency]
   );
+
+  if (transactions.length === 0) {
+    return (
+      <EmptyState
+        title="No data yet"
+        subtitle="Record your first transaction to unlock gamification features."
+        onAction={() => onNavigate('transactions' as AppView)}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 pb-8">

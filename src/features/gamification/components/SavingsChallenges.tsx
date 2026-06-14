@@ -76,7 +76,7 @@ export function SavingsChallenges({ onNavigate }: { onNavigate?: (view: any) => 
                   <h4 className="text-[length:var(--fs-caption)] font-bold text-[var(--text-primary)] truncate">
                     {c.title}
                   </h4>
-                  <span className="text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded-full bg-white/5 text-[var(--text-muted)] whitespace-nowrap">
+                  <span className="text-[length:var(--fs-overline)] font-bold px-1.5 py-0.5 rounded-full bg-[var(--surface-card)]/5 text-[var(--text-muted)] whitespace-nowrap">
                     {c.reward}
                   </span>
                 </div>

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { CategorySpend } from '@/types';
 import { usePrefersReducedMotion } from '@/hooks/usePrefersReducedMotion';
@@ -22,6 +22,53 @@ const PALETTE = [
 
 export default function SpendingDonut({ data, totalSpent, currency = '$' }: SpendingDonutProps) {
   const prefersReducedMotion = usePrefersReducedMotion();
+
+  const tooltipContent = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ active, payload }: any) => {
+      if (!active || !payload?.length) return null;
+      const d = payload[0].payload;
+      const pct = totalSpent > 0 ? ((d.value / totalSpent) * 100).toFixed(1) : '0';
+      return (
+        <div className="card px-4 py-3 shadow-lg">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.fill }} />
+            <p
+              style={{
+                fontFamily: 'var(--font-inter)',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: 'var(--text-primary)',
+              }}
+            >
+              {d.name}
+            </p>
+          </div>
+          <p
+            style={{
+              fontFamily: 'var(--font-manrope)',
+              fontSize: '16px',
+              fontWeight: 800,
+              color: 'var(--text-primary)',
+            }}
+          >
+            {currency}
+            {d.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </p>
+          <p
+            style={{
+              fontFamily: 'var(--font-inter)',
+              fontSize: '11px',
+              color: 'var(--text-muted)',
+            }}
+          >
+            {pct}% of total
+          </p>
+        </div>
+      );
+    },
+    [totalSpent, currency]
+  );
   const chartData = useMemo(() => {
     return data
       .map((d, i) => ({ ...d, fill: d.color || PALETTE[i % PALETTE.length] }))
@@ -102,53 +149,7 @@ export default function SpendingDonut({ data, totalSpent, currency = '$' }: Spen
                 <Cell key={`cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>
-            <Tooltip
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                const d = payload[0].payload;
-                const pct = totalSpent > 0 ? ((d.value / totalSpent) * 100).toFixed(1) : '0';
-                return (
-                  <div className="card px-4 py-3 shadow-lg">
-                    <div className="flex items-center gap-2 mb-1">
-                      <div
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: d.fill }}
-                      />
-                      <p
-                        style={{
-                          fontFamily: 'var(--font-inter)',
-                          fontSize: '13px',
-                          fontWeight: 600,
-                          color: 'var(--text-primary)',
-                        }}
-                      >
-                        {d.name}
-                      </p>
-                    </div>
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-manrope)',
-                        fontSize: '16px',
-                        fontWeight: 800,
-                        color: 'var(--text-primary)',
-                      }}
-                    >
-                      {currency}
-                      {d.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-inter)',
-                        fontSize: '11px',
-                        color: 'var(--text-muted)',
-                      }}
-                    >
-                      {pct}% of total
-                    </p>
-                  </div>
-                );
-              }}
-            />
+            <Tooltip content={tooltipContent} />
           </PieChart>
         </ResponsiveContainer>
 

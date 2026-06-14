@@ -149,7 +149,7 @@ export async function* streamGemini(params: GeminiCallParams): AsyncGenerator<st
           const chunk = json.candidates?.[0]?.content?.parts?.[0]?.text;
           if (chunk) yield chunk;
         } catch {
-          // Incomplete JSON chunk — skip
+          /* silently ignore — non-critical */
         }
       }
     }

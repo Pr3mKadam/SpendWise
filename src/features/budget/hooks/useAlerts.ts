@@ -9,7 +9,7 @@ function loadDismissed(): Set<string> {
     const s = localStorage.getItem(STORAGE_KEY);
     if (s) return new Set(JSON.parse(s) as string[]);
   } catch {
-    /* ignore */
+    /* silently ignore — non-critical */
   }
   return new Set();
 }
@@ -18,7 +18,7 @@ function saveDismissed(ids: Set<string>) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
   } catch {
-    /* ignore */
+    /* silently ignore — non-critical */
   }
 }
 

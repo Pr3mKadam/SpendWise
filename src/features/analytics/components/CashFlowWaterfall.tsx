@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -20,15 +20,42 @@ export function CashFlowWaterfall({
   totalExpenses: number;
   currency?: string;
 }) {
-  const data = [
-    { name: 'Income', value: totalIncome, fill: 'var(--teal)' },
-    { name: 'Expenses', value: -totalExpenses, fill: 'var(--red)' },
-    {
-      name: 'Net Savings',
-      value: totalIncome - totalExpenses,
-      fill: totalIncome - totalExpenses >= 0 ? '#3b82f6' : 'var(--red)',
+  const data = useMemo(
+    () => [
+      { name: 'Income', value: totalIncome, fill: 'var(--teal)' },
+      { name: 'Expenses', value: -totalExpenses, fill: 'var(--red)' },
+      {
+        name: 'Net Savings',
+        value: totalIncome - totalExpenses,
+        fill: totalIncome - totalExpenses >= 0 ? '#3b82f6' : 'var(--red)',
+      },
+    ],
+    [totalIncome, totalExpenses]
+  );
+
+  const yTickFormatter = useCallback(
+    (v: number) => `${currency}${Math.abs(v / 1000).toFixed(1)}k`,
+    [currency]
+  );
+
+  const tooltipContent = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ active, payload }: any) => {
+      if (!active || !payload?.length) return null;
+      const p = payload[0].payload;
+      return (
+        <div className="card px-4 py-3 shadow-lg">
+          <p className="font-inter text-xs text-[var(--text-muted)] font-semibold mb-2">{p.name}</p>
+          <p className="font-manrope font-bold text-[var(--text-primary)] text-sm">
+            {p.value < 0 ? '-' : ''}
+            {currency}
+            {Math.abs(p.value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
+          </p>
+        </div>
+      );
     },
-  ];
+    [currency]
+  );
 
   if (totalIncome === 0 && totalExpenses === 0) return null;
 
@@ -62,28 +89,10 @@ export function CashFlowWaterfall({
             <YAxis
               axisLine={false}
               tickLine={false}
-              tickFormatter={v => `${currency}${Math.abs(v / 1000).toFixed(1)}k`}
+              tickFormatter={yTickFormatter}
               tick={{ fontSize: 12, fill: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
             />
-            <Tooltip
-              cursor={{ fill: '#f8fafc' }}
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                const p = payload[0].payload;
-                return (
-                  <div className="card px-4 py-3 shadow-lg">
-                    <p className="font-inter text-xs text-[var(--text-muted)] font-semibold mb-2">
-                      {p.name}
-                    </p>
-                    <p className="font-manrope font-bold text-[var(--text-primary)] text-sm">
-                      {p.value < 0 ? '-' : ''}
-                      {currency}
-                      {Math.abs(p.value).toLocaleString('en-US', { maximumFractionDigits: 0 })}
-                    </p>
-                  </div>
-                );
-              }}
-            />
+            <Tooltip cursor={{ fill: '#f8fafc' }} content={tooltipContent} />
             <Bar dataKey="value" radius={[4, 4, 4, 4]}>
               {data.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={entry.fill} />

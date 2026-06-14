@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { exportCSV } from '@/utils/export';
 import { parseTransactionsJSON } from '@/utils/import';
 import { Transaction } from '@/types';
@@ -196,7 +196,8 @@ export function useProfileView(
       link.click();
       URL.revokeObjectURL(url);
       setShowSecureExportModal(false);
-    } catch {
+    } catch (e) {
+      console.warn('[Profile] Secure export failed:', e);
       alert('Export failed.');
     } finally {
       setIsExporting(false);
@@ -209,7 +210,8 @@ export function useProfileView(
       store.restoreBackup(JSON.parse(decryptedJson));
       setShowRestoreModal(false);
       alert('Backup restored successfully!');
-    } catch {
+    } catch (e) {
+      console.warn('[Profile] Restore failed:', e);
       alert('Restore failed. Invalid password or corrupted file.');
     } finally {
       setIsRestoring(false);
@@ -218,7 +220,8 @@ export function useProfileView(
   const handleRawDBExport = async () => {
     try {
       await downloadDatabaseBackup();
-    } catch {
+    } catch (e) {
+      console.warn('[Profile] Raw DB export failed:', e);
       alert('Failed to download raw database backup.');
     }
   };
@@ -228,7 +231,8 @@ export function useProfileView(
     if (window.confirm('This will OVERWRITE your current database. Are you sure?')) {
       try {
         await importDatabase(file);
-      } catch {
+      } catch (e) {
+        console.warn('[Profile] Raw DB import failed:', e);
         alert('Failed to import database.');
       }
     }
@@ -256,7 +260,8 @@ export function useProfileView(
           read: false,
         });
       }
-    } catch {
+    } catch (e) {
+      console.warn('[Profile] Transaction import failed:', e);
       alert('Failed to read file.');
     }
   };

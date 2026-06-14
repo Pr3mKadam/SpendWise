@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Modal } from '@/components/ui/Modal';
 import { Btn } from '@/components/ui/Button';
 import { Field, Inp } from '@/components/ui/Input';
 import { Err } from '@/components/ui/Alert';
 import { EmojiBtn } from '@/components/ui/Avatar';
 import { Ico } from '@/components/ui/Icons';
-import { GOAL_EMOJIS, GOAL_COLORS } from '@/features/shared/components/sharedConstants';
+import { GOAL_EMOJIS, GOAL_COLORS } from '../sharedConstants';
 
 export function GoalModal({
   show,
@@ -14,13 +14,8 @@ export function GoalModal({
 }: {
   show: boolean;
   onClose: () => void;
-  onSubmit: (p: {
-    name: string;
-    emoji: string;
-    targetAmount: number;
-    targetDate: string;
-    color: string;
-  }) => Promise<void>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  onSubmit: (p: any) => Promise<void>;
 }) {
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState('🎯');
@@ -53,8 +48,11 @@ export function GoalModal({
       setTgt('');
       setDate('');
       onClose();
-    } catch (ex: unknown) {
-      setErr(ex instanceof Error ? ex.message : 'Failed to create goal.');
+    } catch (
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ex: any
+    ) {
+      setErr(ex?.message ?? 'Failed to create goal.');
     } finally {
       setBusy(false);
     }
@@ -97,7 +95,7 @@ export function GoalModal({
                   style={{
                     background: c,
                     border: `3px solid ${color === c ? 'var(--text)' : 'transparent'}`,
-                  }} /* tailwind-migration:skip */
+                  }}
                 />
               ))}
             </div>

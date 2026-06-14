@@ -1,5 +1,5 @@
 import { User, DownloadCloud, CheckCircle2 } from 'lucide-react';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { exportCSV } from '@/utils/export';
 import { Transaction } from '@/types';
 import { usePWAInstall } from '@/hooks/usePWAInstall';
@@ -18,6 +18,8 @@ import { NotificationsSection } from '@/features/profile/components/Notification
 import { useProfileView } from '@/features/profile/components/useProfileView';
 import { ProfileHeader } from '@/features/profile/components/ProfileHeader';
 import { FamilySafetySection } from '@/features/profile/components/FamilySafetySection';
+// FSD VIOLATION: importing from pricing and billing features — inject via props instead
+// TODO: remove direct imports once all consumers pass these as props
 import { PricingCard } from '@/features/pricing/PricingCard';
 import { BillingView } from '@/features/billing/BillingView';
 import { ReferralView } from '@/features/profile/components/ReferralView';
@@ -31,6 +33,8 @@ interface ProfileViewProps {
   onNavigate?: (view: any) => void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addNotification?: (notif: any) => void;
+  pricingCard?: React.ReactNode;
+  billingView?: React.ReactNode;
 }
 
 import { useState } from 'react';
@@ -44,6 +48,8 @@ export default function ProfileView({
   transactions,
   onNavigate,
   addNotification,
+  pricingCard: pricingCardProp,
+  billingView: billingViewProp,
 }: ProfileViewProps) {
   const [profileTab, setProfileTab] = useState<'profile' | 'billing' | 'referral'>('profile');
   const isMobile = useIsMobile();
@@ -221,7 +227,9 @@ export default function ProfileView({
               />
             }
             pricing={
-              <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
+              pricingCardProp ?? (
+                <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
+              )
             }
           />
         )}
@@ -229,11 +237,13 @@ export default function ProfileView({
         {profileTab === 'billing' && (
           <div className="view-enter space-y-6 pb-20">
             {mobileTabs}
-            <BillingView
-              onPlanChange={plan => {
-                onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
-              }}
-            />
+            {billingViewProp ?? (
+              <BillingView
+                onPlanChange={plan => {
+                  onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -370,7 +380,9 @@ export default function ProfileView({
           <FamilySafetySection onNavigate={onNavigate} />
 
           {/* Plan & Pricing */}
-          <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
+          {pricingCardProp ?? (
+            <PricingCard currentPlan={config?.isFamily ? 'family' : 'individual'} compact />
+          )}
 
           {/* Notifications */}
           <NotificationsSection
@@ -381,13 +393,14 @@ export default function ProfileView({
         </>
       )}
 
-      {profileTab === 'billing' && (
-        <BillingView
-          onPlanChange={plan => {
-            onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
-          }}
-        />
-      )}
+      {profileTab === 'billing' &&
+        (billingViewProp ?? (
+          <BillingView
+            onPlanChange={plan => {
+              onUpdateConfig({ ...config, isFamily: plan === 'family' } as SpendWiseConfig);
+            }}
+          />
+        ))}
 
       {profileTab === 'referral' && <ReferralView />}
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
   AreaChart,
   Area,
@@ -12,12 +12,24 @@ import {
 import { Transaction } from '@/types';
 import { Wallet, TrendingUp, TrendingDown } from 'lucide-react';
 
+const AXIS_TICK = { fill: 'var(--text-muted)', fontSize: 10 };
+
 interface NetWorthEvolutionProps {
   transactions: Transaction[];
   currency: string;
 }
 
 export default function NetWorthEvolution({ transactions, currency }: NetWorthEvolutionProps) {
+  const tickFormatter = useCallback(
+    (v: number) => `${currency}${Math.abs(v) >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`,
+    [currency]
+  );
+
+  const tooltipFormatter = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (value: any) => [`${currency}${Number(value).toLocaleString()}`, 'Net Worth'],
+    [currency]
+  );
   const chartData = useMemo(() => {
     if (transactions.length === 0) return [];
 
@@ -114,16 +126,14 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
               dataKey="date"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+              tick={AXIS_TICK}
               minTickGap={30}
             />
             <YAxis
               axisLine={false}
               tickLine={false}
-              tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
-              tickFormatter={v =>
-                `${currency}${Math.abs(v) >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`
-              }
+              tick={AXIS_TICK}
+              tickFormatter={tickFormatter}
             />
             <Tooltip
               contentStyle={{
@@ -133,11 +143,7 @@ export default function NetWorthEvolution({ transactions, currency }: NetWorthEv
                 boxShadow: '0 8px 24px rgba(0,0,0,0.1)',
               }}
               itemStyle={{ fontSize: '12px', fontFamily: 'var(--font-inter)' }}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              formatter={(value: any) => [
-                `${currency}${Number(value).toLocaleString()}`,
-                'Net Worth',
-              ]}
+              formatter={tooltipFormatter}
             />
             <ReferenceLine y={0} stroke="var(--border)" strokeWidth={1} />
             <Area

@@ -46,7 +46,7 @@ export function observeWebVitals(): () => void {
     clsObserver.observe({ type: 'layout-shift', buffered: true } as PerformanceObserverInit);
     cleanupFns.push(() => clsObserver.disconnect());
   } catch {
-    /* not supported */
+    /* silently ignore — non-critical */
   }
 
   try {
@@ -62,7 +62,7 @@ export function observeWebVitals(): () => void {
     } as PerformanceObserverInit);
     cleanupFns.push(() => lcpObserver.disconnect());
   } catch {
-    /* not supported */
+    /* silently ignore — non-critical */
   }
 
   try {
@@ -75,7 +75,7 @@ export function observeWebVitals(): () => void {
     fidObserver.observe({ type: 'first-input', buffered: true } as PerformanceObserverInit);
     cleanupFns.push(() => fidObserver.disconnect());
   } catch {
-    /* not supported */
+    /* silently ignore — non-critical */
   }
 
   try {
@@ -89,7 +89,7 @@ export function observeWebVitals(): () => void {
     paintObserver.observe({ type: 'paint', buffered: true } as PerformanceObserverInit);
     cleanupFns.push(() => paintObserver.disconnect());
   } catch {
-    /* not supported */
+    /* silently ignore — non-critical */
   }
 
   try {
@@ -102,7 +102,7 @@ export function observeWebVitals(): () => void {
     navObserver.observe({ type: 'navigation', buffered: true } as PerformanceObserverInit);
     cleanupFns.push(() => navObserver.disconnect());
   } catch {
-    /* not supported */
+    /* silently ignore — non-critical */
   }
 
   if ('PerformanceObserver' in window) {
@@ -122,7 +122,7 @@ export function observeWebVitals(): () => void {
       } as PerformanceObserverInit);
       cleanupFns.push(() => inpObserver.disconnect());
     } catch {
-      /* not supported */
+      /* silently ignore — non-critical */
     }
   }
 

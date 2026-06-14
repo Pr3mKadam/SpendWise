@@ -64,7 +64,7 @@ export function BudgetCategoryCardMobile({
         <div className="flex items-center gap-1">
           <button
             onClick={() => onEdit(b.category, b.limit)}
-            className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-[var(--teal)] bg-white/5 rounded-xl border-none cursor-pointer"
+            className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-[var(--teal)] bg-[var(--surface-card)]/5 rounded-xl border-none cursor-pointer"
             aria-label={`Edit ${b.category} budget`}
           >
             <Edit2 size={18} />
@@ -74,7 +74,7 @@ export function BudgetCategoryCardMobile({
               haptic.medium();
               onRemove(b.category);
             }}
-            className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-red-500 bg-white/5 rounded-xl border-none cursor-pointer"
+            className="w-11 h-11 flex items-center justify-center text-[var(--text-muted)] active:text-red-500 bg-[var(--surface-card)]/5 rounded-xl border-none cursor-pointer"
             aria-label={`Delete ${b.category} budget`}
           >
             <Trash2 size={18} />

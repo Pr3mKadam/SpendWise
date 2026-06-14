@@ -104,7 +104,7 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
           if (sessionStorage.getItem(key100)) return;
           sessionStorage.setItem(key100, 'true');
         } catch {
-          /* ignore */
+          /* silently ignore — non-critical */
         }
         firedRef.current.add(key100);
         showToast(
@@ -117,7 +117,7 @@ export function BudgetAlertToast({ currency = '₹' }: BudgetAlertToastProps) {
           if (sessionStorage.getItem(key80)) return;
           sessionStorage.setItem(key80, 'true');
         } catch {
-          /* ignore */
+          /* silently ignore — non-critical */
         }
         firedRef.current.add(key80);
         showToast(

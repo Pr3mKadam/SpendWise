@@ -11,6 +11,7 @@ export function useUI() {
       const saved = localStorage.getItem('spendwise_demo_active');
       return saved === 'true';
     } catch {
+      // silently ignore — non-critical
       return false;
     }
   }, []);

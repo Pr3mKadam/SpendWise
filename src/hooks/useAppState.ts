@@ -7,7 +7,7 @@ import { useRecurring } from '@/hooks/useRecurring';
 import { useNotifications } from '@/hooks/useNotifications';
 import { useCategories } from '@/hooks/useCategories';
 import { useUI } from '@/hooks/useUI';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 
 export function useAppState(config: SpendWiseConfig | null) {
   const currency = config?.currency ?? '$';
