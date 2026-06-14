@@ -30,7 +30,7 @@ const DashboardView = lazy(() =>
   import('@/features/dashboard/DashboardView').then(m => ({ default: m.DashboardView }))
 );
 
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { SpendWiseStore, ParentalControlState } from '@/store';
 import { AppState } from '@/types/state';
 

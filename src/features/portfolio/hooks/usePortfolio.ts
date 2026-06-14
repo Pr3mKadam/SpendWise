@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useMemo } from 'react';
 import { AssetType, AssetEntry } from '@/types';
 import { useStore } from '@/store';
 import { refreshAllPrices } from '@/core/prices/fetchPrices';
@@ -20,27 +20,33 @@ export function usePortfolio() {
   const fetchingRef = useRef(false);
 
   // ── Computed ─────────────────────────────────────────────────────────────────
-  const totalAssets = assets.reduce((s, a) => s + a.balance, 0);
-  const totalLiabilities = liabilities.reduce((s, l) => s + l.balance, 0);
+  const totalAssets = useMemo(() => assets.reduce((s, a) => s + a.balance, 0), [assets]);
+  const totalLiabilities = useMemo(() => liabilities.reduce((s, l) => s + l.balance, 0), [liabilities]);
   const netWorth = totalAssets - totalLiabilities;
 
   // Allocation by type
-  const allocationByType = Object.entries(
-    assets.reduce(
-      (acc, a) => {
-        acc[a.type] = (acc[a.type] || 0) + a.balance;
-        return acc;
-      },
-      {} as Record<AssetType, number>
-    )
-  ).map(([type, value]) => ({
-    type: type as AssetType,
-    value,
-    pct: totalAssets > 0 ? (value / totalAssets) * 100 : 0,
-  }));
+  const allocationByType = useMemo(() =>
+    Object.entries(
+      assets.reduce(
+        (acc, a) => {
+          acc[a.type] = (acc[a.type] || 0) + a.balance;
+          return acc;
+        },
+        {} as Record<AssetType, number>
+      )
+    ).map(([type, value]) => ({
+      type: type as AssetType,
+      value,
+      pct: totalAssets > 0 ? (value / totalAssets) * 100 : 0,
+    })),
+    [assets, totalAssets]
+  );
 
   // ── Price fetching ───────────────────────────────────────────────────────────
-  const priceableAssets = assets.filter((a): a is AssetEntry & { symbol: string } => !!a.symbol);
+  const priceableAssets = useMemo(
+    () => assets.filter((a): a is AssetEntry & { symbol: string } => !!a.symbol),
+    [assets]
+  );
 
   const refreshPrices = useCallback(async () => {
     if (priceableAssets.length === 0 || fetchingRef.current) return;
@@ -63,11 +69,12 @@ export function usePortfolio() {
   }, [refreshPrices]);
 
   // ── Assets with live prices merged in ────────────────────────────────────────
-  const assetsWithPrices = useStore(state =>
-    state.assets.map(a => ({
+  const assetsWithPrices = useMemo(
+    () => assets.map(a => ({
       ...a,
-      livePrice: state.livePrices[a.id] ?? null,
-    }))
+      livePrice: livePrices[a.id] ?? null,
+    })),
+    [assets, livePrices]
   );
 
   return {

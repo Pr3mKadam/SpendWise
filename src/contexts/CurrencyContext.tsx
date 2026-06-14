@@ -89,9 +89,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         const config = JSON.parse(raw);
         if (config.currency) return config.currency as CurrencyCode;
       }
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
     return '₹';
   });
 
@@ -102,9 +100,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
         const c = JSON.parse(raw);
         if (c.currency) return c.currency as CurrencyCode;
       }
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
     return '₹';
   });
 
@@ -117,9 +113,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
           return { ...FALLBACK_RATES, ...parsed.rates };
         }
       }
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
     return { ...FALLBACK_RATES };
   });
 
@@ -167,9 +161,7 @@ export const CurrencyProvider: React.FC<{ children: ReactNode }> = ({ children }
             setActiveCurrency(config.currency as CurrencyCode);
           }
         }
-      } catch {
-        /* ignore */
-      }
+      } catch { /* silently ignore — non-critical */ }
     };
     window.addEventListener('spendwise-config-updated', handleConfigChange);
     window.addEventListener('storage', handleConfigChange);

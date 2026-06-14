@@ -89,7 +89,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                   <button
                     type="button"
                     onClick={onClose}
-                    className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white/40 hover:text-white transition-colors"
+                    className="w-10 h-10 rounded-full bg-[var(--surface-card)]/5 flex items-center justify-center text-white/40 hover:text-white transition-colors"
                   >
                     <X size={20} />
                   </button>
@@ -107,7 +107,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                       className={`flex flex-col items-center p-4 rounded-2xl border-2 transition-all ${
                         type === t.id
                           ? 'border-[var(--teal)] bg-[var(--teal)]/10 text-[var(--teal)]'
-                          : 'border-white/5 bg-white/5 text-white/40'
+                          : 'border-white/5 bg-[var(--surface-card)]/5 text-white/40'
                       }`}
                     >
                       <t.icon size={24} className="mb-2" />
@@ -122,7 +122,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                   <label className="block text-xs font-bold text-white/40 uppercase tracking-widest mb-3">
                     Rating
                   </label>
-                  <div className="flex items-center gap-2 justify-center py-4 bg-white/5 rounded-2xl">
+                  <div className="flex items-center gap-2 justify-center py-4 bg-[var(--surface-card)]/5 rounded-2xl">
                     {[1, 2, 3, 4, 5].map(s => (
                       <button
                         key={s}
@@ -148,7 +148,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
                     onChange={e => setMessage(e.target.value)}
                     placeholder="Tell us more..."
                     rows={4}
-                    className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[var(--teal)]/50 transition-all resize-none"
+                    className="w-full bg-[var(--surface-card)]/5 border border-white/10 rounded-2xl p-4 text-white placeholder:text-white/20 focus:outline-none focus:border-[var(--teal)]/50 transition-all resize-none"
                   />
                 </div>
 
@@ -178,3 +178,4 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ isOpen, onClose, o
     </AnimatePresence>
   );
 };
+

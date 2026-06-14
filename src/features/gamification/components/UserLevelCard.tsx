@@ -76,7 +76,7 @@ export function UserLevelCard({
               <span>{currentLevelXP} XP</span>
               <span>{XP_PER_LEVEL} XP needed</span>
             </div>
-            <div className="h-2.5 bg-white/10 rounded-full overflow-hidden">
+            <div className="h-2.5 bg-[var(--surface-card)]/10 rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${xpProgress}%` }}
@@ -111,3 +111,4 @@ export function UserLevelCard({
     </div>
   );
 }
+

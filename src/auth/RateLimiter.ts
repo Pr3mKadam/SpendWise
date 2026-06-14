@@ -25,18 +25,14 @@ export class RateLimiter {
         parsed.attempts = parsed.attempts.filter(a => Date.now() - a.timestamp < WINDOW_MS);
         return parsed;
       }
-    } catch {
-      // ignore
-    }
+    } catch { /* silently ignore — non-critical */ }
     return { attempts: [], lockedUntil: null };
   }
 
   private persist(): void {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state));
-    } catch {
-      // non-critical
-    }
+    } catch { /* silently ignore — non-critical */ }
   }
 
   isLocked(): boolean {
@@ -92,9 +88,7 @@ export class RateLimiter {
   static clearAll(): void {
     try {
       localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      // non-critical
-    }
+    } catch { /* silently ignore — non-critical */ }
   }
 }
 

@@ -267,7 +267,7 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-full hover:bg-white/5 text-[var(--text-muted)]"
+                className="p-2 rounded-full hover:bg-[var(--surface-card)]/5 text-[var(--text-muted)]"
               >
                 <X size={20} />
               </button>
@@ -485,3 +485,4 @@ export default function ReceiptScanner({ isOpen, onClose, onExtracted }: Receipt
     </AnimatePresence>
   );
 }
+

@@ -9,9 +9,7 @@ function loadTheme(): ThemeMode {
     if (stored === 'light' || stored === 'dark') return stored;
     // Respect system preference on first visit
     if (window.matchMedia('(prefers-color-scheme: light)').matches) return 'light';
-  } catch {
-    /* ignore */
-  }
+  } catch { /* silently ignore — non-critical */ }
   return 'dark';
 }
 
@@ -37,9 +35,7 @@ export function useTheme() {
     applyTheme(theme);
     try {
       localStorage.setItem(STORAGE_KEY, theme);
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
   }, [theme]);
 
   const toggleTheme = useCallback(() => {

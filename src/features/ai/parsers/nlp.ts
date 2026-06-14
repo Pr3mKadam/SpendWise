@@ -198,16 +198,16 @@ Return ONLY the JSON array of objects.`;
           i < numberMatches.length - 1 ? numberMatches[i + 1].index! : expandedText.length;
         desc = expandedText.slice(start, end).trim();
         desc = desc
-          .replace(/^(?:on|and|&|,|;|\+|for)\s+/i, '')
-          .replace(/\s+(?:and|&|,|;|\+|for|on)$/i, '')
+          .replace(/^(?:on|of|and|&|,|;|\+|for)\s+/i, '')
+          .replace(/\s+(?:and|&|,|;|\+|for|on|of)$/i, '')
           .trim();
       } else {
         const start = i === 0 ? 0 : numberMatches[i - 1].index! + numberMatches[i - 1][0].length;
         const end = match.index!;
         desc = expandedText.slice(start, end).trim();
         desc = desc
-          .replace(/^(?:on|and|&|,|;|\+|for)\s+/i, '')
-          .replace(/\s+(?:and|&|,|;|\+|for|on)$/i, '')
+          .replace(/^(?:on|of|and|&|,|;|\+|for)\s+/i, '')
+          .replace(/\s+(?:and|&|,|;|\+|for|on|of)$/i, '')
           .trim();
       }
 
@@ -215,7 +215,7 @@ Return ONLY the JSON array of objects.`;
       let cleanMerchant = rawMerchant
         .replace(/\b(\d+[\d,]*\.?\d*)\b/g, '')
         .replace(new RegExp(`\\b(?:${CURRENCIES})\\b`, 'ig'), '')
-        .replace(/\b(spent|spend|paid|pay|got|received|on|for|at|to|from)\b/gi, '')
+        .replace(/\b(spent|spend|paid|pay|got|received|on|of|for|at|to|from)\b/gi, '')
         .trim()
         .replace(/\s+/g, ' ');
 
@@ -252,7 +252,7 @@ Return ONLY the JSON array of objects.`;
         let cleanMerchant = rawMerchant
           .replace(/\b(\d+[\d,]*\.?\d*)\b/g, '')
           .replace(new RegExp(`\\b(?:${CURRENCIES})\\b`, 'ig'), '')
-          .replace(/\b(spent|spend|paid|pay|got|received|on|for|at|to|from)\b/gi, '')
+          .replace(/\b(spent|spend|paid|pay|got|received|on|of|for|at|to|from)\b/gi, '')
           .trim()
           .replace(/\s+/g, ' ');
 

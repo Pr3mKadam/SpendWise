@@ -3,7 +3,7 @@ import { Virtuoso } from 'react-virtuoso';
 import { AlertCircle } from 'lucide-react';
 import { SortBtn } from './SortBtn';
 import TransactionRow from './TransactionRow';
-import { DisplayRow } from '../hooks/useTransactionHistory';
+import { DisplayRow } from '@/features/transactions/hooks/useTransactionHistory';
 import { Transaction, Category } from '@/types';
 import type { SortKey, SortDir } from './historyTypes';
 

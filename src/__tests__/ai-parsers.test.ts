@@ -175,6 +175,38 @@ describe('processNaturalLanguageExpense', () => {
     expect(result![0].type).toBe('credit');
     expect(result![0].category).toBe('Income');
   });
+
+  it('parses multiple transactions from one sentence', async () => {
+    const fn = await testProcessNL();
+    const result = await fn('1000 on food 700 on transport 8000 of income');
+    expect(Array.isArray(result)).toBe(true);
+    expect(result!.length).toBe(3);
+
+    const food = result!.find(r => r.category === 'Food');
+    expect(food).toBeDefined();
+    expect(food!.amount).toBe(1000);
+    expect(food!.type).toBe('debit');
+
+    const transport = result!.find(r => r.category === 'Transport');
+    expect(transport).toBeDefined();
+    expect(transport!.amount).toBe(700);
+    expect(transport!.type).toBe('debit');
+
+    const income = result!.find(r => r.category === 'Income');
+    expect(income).toBeDefined();
+    expect(income!.amount).toBe(8000);
+    expect(income!.type).toBe('credit');
+  });
+
+  it('merchant name for "of income" is cleaned to "Income" not "Of Income"', async () => {
+    const fn = await testProcessNL();
+    const result = await fn('8000 of income');
+    expect(result!.length).toBeGreaterThanOrEqual(1);
+    const item = result!.find(r => r.category === 'Income');
+    expect(item).toBeDefined();
+    // merchant should not start with "Of"
+    expect(item!.merchant.toLowerCase()).not.toMatch(/^of\b/);
+  });
 });
 
 // ─── parseVoiceLocally ────────────────────────────────────────────────────────

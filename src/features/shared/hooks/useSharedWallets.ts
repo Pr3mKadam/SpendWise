@@ -475,6 +475,7 @@ export function useSharedWallets(
       try {
         return btoa(encodeURIComponent(JSON.stringify(exportData)));
       } catch {
+        // silently ignore — non-critical
         return btoa(JSON.stringify(exportData));
       }
     },
@@ -487,7 +488,8 @@ export function useSharedWallets(
         let decoded: any;
         try {
           decoded = JSON.parse(decodeURIComponent(atob(encodedData)));
-        } catch {
+        } catch (e) {
+          console.warn('[SharedWallets] Base64 decode fallback triggered:', e);
           decoded = JSON.parse(atob(encodedData));
         }
         if (decoded.type !== 'spendwise-shared-group') throw new Error('Invalid group data');
@@ -508,7 +510,8 @@ export function useSharedWallets(
         });
         setSelectedGroupIdRaw(decoded.group.id);
         return true;
-      } catch {
+      } catch (e) {
+        console.warn('[SharedWallets] Group import failed:', e);
         setError('Failed to import group — invalid or corrupted QR data.');
         return false;
       }

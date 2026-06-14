@@ -117,8 +117,8 @@ export const QuickAddModal: React.FC<QuickAddModalProps> = ({
                 onAdd={tx => {
                   haptic.success();
                   onAdd(tx);
-                  onClose();
                 }}
+                onAllAdded={onClose}
                 transactions={transactions}
               />
 

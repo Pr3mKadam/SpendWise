@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import React from 'react';
 import { Bot, User, Zap } from 'lucide-react';
-import { Message } from '../types';
+import { Message } from '@/features/advisor/types';
 
 export const parseMarkdown = (text: string) => {
   const lines = text.split('\n');

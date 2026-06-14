@@ -18,6 +18,7 @@ export async function fetchMutualFundNAV(schemeCode: string): Promise<PriceResul
     if (isNaN(nav)) return null;
     return { symbol: schemeCode, price: nav, currency: 'INR', updatedAt: new Date().toISOString() };
   } catch {
+    // silently ignore — non-critical
     return null;
   }
 }
@@ -30,6 +31,7 @@ export async function fetchEquityPrice(symbol: string): Promise<PriceResult | nu
       return { symbol, price: data.price, currency: 'INR', updatedAt: new Date().toISOString() };
     return null;
   } catch {
+    // silently ignore — non-critical
     return null;
   }
 }

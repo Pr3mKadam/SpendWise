@@ -35,9 +35,7 @@ export function StreakShareCard({
         await navigator.clipboard.writeText(text);
         alert('Streak card copied to clipboard!');
       }
-    } catch {
-      /* user cancelled */
-    }
+    } catch { /* silently ignore — non-critical */ }
   };
 
   const streakColor = streak >= 30 ? '#8b5cf6' : streak >= 7 ? '#f59e0b' : '#ef4444';

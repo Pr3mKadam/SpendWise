@@ -8,6 +8,7 @@ function getStoredDevices(): DeviceInfo[] {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
+    // silently ignore — non-critical
     return [];
   }
 }
@@ -15,9 +16,7 @@ function getStoredDevices(): DeviceInfo[] {
 function persistDevices(devices: DeviceInfo[]): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(devices));
-  } catch {
-    // storage full — non-critical
-  }
+  } catch { /* silently ignore — non-critical */ }
 }
 
 function getDeviceFingerprint(): string {

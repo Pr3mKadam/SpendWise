@@ -42,7 +42,7 @@ const AuthContext = createContext<AuthContextType>({
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
-    const storedUser = localStorage.getItem('spendwise_user');
+    const storedUser = sessionStorage.getItem('spendwise_user');
     if (storedUser) return JSON.parse(storedUser);
 
     // Use a STABLE guest ID tied to the device, not random each time
@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('spendwise_device_id', stableId);
 
     const guestUser = { id: stableId, email: 'guest@local' };
-    localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
+    sessionStorage.setItem('spendwise_user', JSON.stringify(guestUser));
 
     // Reset gamification for new guest so streak starts at 0
     useStore.getState().checkStreak();
@@ -62,7 +62,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [authReady] = useState(true);
 
   const signOut = useCallback(async () => {
-    localStorage.removeItem('spendwise_user');
+    sessionStorage.removeItem('spendwise_user');
     sessionStorage.removeItem('spendwise_supabase_token');
     // Do NOT remove spendwise_device_id — keeps data stable
     // Do NOT remove transactions — they're in IDB and tied to device
@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('spendwise_device_id', stableId);
 
     const guestUser = { id: stableId, email: 'guest@local' };
-    localStorage.setItem('spendwise_user', JSON.stringify(guestUser));
+    sessionStorage.setItem('spendwise_user', JSON.stringify(guestUser));
     setUser(guestUser);
   }, []);
 
@@ -94,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         user_metadata: { first_name: 'Guest', last_name: 'User' },
       };
-      localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+      sessionStorage.setItem('spendwise_user', JSON.stringify(userObj));
       setUser(userObj);
 
       const { db } = await import('@/db/db');
@@ -114,7 +114,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email: res.email,
       user_metadata: {},
     };
-    localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+    sessionStorage.setItem('spendwise_user', JSON.stringify(userObj));
     sessionStorage.setItem('spendwise_supabase_token', res.access_token);
     setUser(userObj);
   }, []);
@@ -133,7 +133,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         email,
         user_metadata: metadata || {},
       };
-      localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+      sessionStorage.setItem('spendwise_user', JSON.stringify(userObj));
       setUser(userObj);
       return;
     }
@@ -143,7 +143,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       email: res.email,
       user_metadata: metadata || {},
     };
-    localStorage.setItem('spendwise_user', JSON.stringify(userObj));
+    sessionStorage.setItem('spendwise_user', JSON.stringify(userObj));
     sessionStorage.setItem('spendwise_supabase_token', res.access_token);
     setUser(userObj);
   }, []);

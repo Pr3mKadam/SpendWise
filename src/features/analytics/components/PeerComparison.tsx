@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   ResponsiveContainer,
   BarChart,
@@ -20,12 +20,53 @@ export function PeerComparison({
   currency?: string;
 }) {
   // Generate mock peer data based on user spending
-  const data = categorySpending.slice(0, 5).map(cat => ({
-    category: cat.name,
-    you: cat.value,
-    // eslint-disable-next-line react-hooks/purity
-    peer: cat.value * (0.8 + Math.random() * 0.5), // +/- ~20-30%
-  }));
+  const data = useMemo(
+    () =>
+      categorySpending.slice(0, 5).map(cat => {
+        // A deterministic pseudo-random multiplier between 0.8 and 1.3 based on category name length
+        const nameLength = cat.name.length;
+        const multiplier = 0.8 + ((nameLength * 7) % 50) / 100;
+        return {
+          category: cat.name,
+          you: cat.value,
+          peer: cat.value * multiplier,
+        };
+      }),
+    [categorySpending]
+  );
+
+  const tooltipContent = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ active, payload }: any) => {
+      if (!active || !payload?.length) return null;
+      return (
+        <div className="card px-4 py-3 shadow-lg">
+          <p className="font-inter text-xs text-[var(--text-muted)] font-semibold mb-2">
+            {payload[0].payload.category}
+          </p>
+          <div className="flex justify-between gap-6 mb-1">
+            <span className="text-xs font-inter text-[var(--teal)] font-bold">You</span>
+            <span className="text-sm font-manrope font-bold text-[var(--text-primary)]">
+              {currency}
+              {Number(payload[0]?.value || 0).toLocaleString('en-US', {
+                maximumFractionDigits: 0,
+              })}
+            </span>
+          </div>
+          <div className="flex justify-between gap-6">
+            <span className="text-xs font-inter text-blue-500 font-bold">Peers</span>
+            <span className="text-sm font-manrope font-bold text-[var(--text-primary)]">
+              {currency}
+              {Number(payload[1]?.value || 0).toLocaleString('en-US', {
+                maximumFractionDigits: 0,
+              })}
+            </span>
+          </div>
+        </div>
+      );
+    },
+    [currency]
+  );
 
   if (data.length === 0) {
     return null;
@@ -65,37 +106,7 @@ export function PeerComparison({
               tick={{ fontSize: 12, fill: 'var(--text-muted)', fontFamily: 'var(--font-inter)' }}
               width={80}
             />
-            <Tooltip
-              cursor={{ fill: '#f8fafc' }}
-              content={({ active, payload }) => {
-                if (!active || !payload?.length) return null;
-                return (
-                  <div className="card px-4 py-3 shadow-lg">
-                    <p className="font-inter text-xs text-[var(--text-muted)] font-semibold mb-2">
-                      {payload[0].payload.category}
-                    </p>
-                    <div className="flex justify-between gap-6 mb-1">
-                      <span className="text-xs font-inter text-[var(--teal)] font-bold">You</span>
-                      <span className="text-sm font-manrope font-bold text-[var(--text-primary)]">
-                        {currency}
-                        {Number(payload[0]?.value || 0).toLocaleString('en-US', {
-                          maximumFractionDigits: 0,
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between gap-6">
-                      <span className="text-xs font-inter text-blue-500 font-bold">Peers</span>
-                      <span className="text-sm font-manrope font-bold text-[var(--text-primary)]">
-                        {currency}
-                        {Number(payload[1]?.value || 0).toLocaleString('en-US', {
-                          maximumFractionDigits: 0,
-                        })}
-                      </span>
-                    </div>
-                  </div>
-                );
-              }}
-            />
+            <Tooltip cursor={{ fill: '#f8fafc' }} content={tooltipContent} />
             <Legend wrapperStyle={{ fontSize: '12px', fontFamily: 'var(--font-inter)' }} />
             <Bar dataKey="you" name="You" fill="var(--teal)" radius={[0, 4, 4, 0]} />
             <Bar dataKey="peer" name="Similar Users" fill="#3b82f6" radius={[0, 4, 4, 0]} />

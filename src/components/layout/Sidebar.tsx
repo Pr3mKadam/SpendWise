@@ -4,7 +4,7 @@ import { AppView } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { haptic } from '@/core/haptic';
 import { useStore } from '@/store';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { ALL_NAV_ITEMS, MOBILE_BOTTOM_IDS, DESKTOP_ONLY_IDS } from './navigation';
 import { DesktopSidebar } from './components/DesktopSidebar';
 import { MobileDrawer } from './components/MobileDrawer';

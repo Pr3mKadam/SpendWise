@@ -8,18 +8,14 @@ function loadDismissed(): Set<string> {
   try {
     const s = localStorage.getItem(STORAGE_KEY);
     if (s) return new Set(JSON.parse(s) as string[]);
-  } catch {
-    /* ignore */
-  }
+  } catch { /* silently ignore — non-critical */ }
   return new Set();
 }
 
 function saveDismissed(ids: Set<string>) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([...ids]));
-  } catch {
-    /* ignore */
-  }
+  } catch { /* silently ignore — non-critical */ }
 }
 
 // ─── Alert generators ─────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { QRCodeSVG } from 'qrcode.react';
 
 interface LinkingQRModalProps {
   show: boolean;
@@ -8,46 +9,46 @@ interface LinkingQRModalProps {
 
 export function LinkingQRModal({ show, onClose }: LinkingQRModalProps) {
   const { user } = useAuth();
-  const qrRef = useRef<HTMLDivElement>(null);
+  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes
+  const [timestamp, setTimestamp] = useState(() => Date.now());
 
   useEffect(() => {
-    if (!show || !qrRef.current || !user) return;
-    qrRef.current.innerHTML = ''; // Clear previous
-    const linkData = JSON.stringify({
-      type: 'spendwise_child_link',
-      parentId: user.id,
-      timestamp: Date.now(),
-    });
+    if (!show) return;
+    
+    // Defer the state updates to avoid synchronous cascading renders
+    const timeoutId = setTimeout(() => {
+      setTimestamp(Date.now());
+      setTimeLeft(300);
+    }, 0);
 
-    const tryRender = (attempts = 0) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (typeof window !== 'undefined' && (window as any).QRCode) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        new (window as any).QRCode(qrRef.current, {
-          text: linkData,
-          width: 200,
-          height: 200,
-          colorDark: '#0f172a',
-          colorLight: '#ffffff',
-        });
-      } else if (attempts < 15) {
-        setTimeout(() => tryRender(attempts + 1), 200); // retry every 200ms, up to 3s
-      } else {
-        // Fallback: show the raw data as text the child can type
-        if (qrRef.current) {
-          qrRef.current.innerHTML = `
-            <div style="padding:16px;background:#f1f5f9;border-radius:12px;font-size:11px;word-break:break-all;color:#0f172a">
-              <p style="font-weight:700;margin-bottom:8px">QR unavailable offline</p>
-              <p>Share this code manually:</p>
-              <code>${btoa(linkData).substring(0, 24)}...</code>
-            </div>`;
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 1) {
+          // Regenerate QR
+          setTimestamp(Date.now());
+          return 300;
         }
-      }
-    };
-    setTimeout(() => tryRender(), 150);
-  }, [show, user]);
+        return prev - 1;
+      });
+    }, 1000);
 
-  if (!show) return null;
+    return () => {
+      clearInterval(timer);
+      clearTimeout(timeoutId);
+    };
+  }, [show]);
+
+  if (!show || !user) return null;
+
+  const linkData = JSON.stringify({
+    type: 'spendwise_child_link',
+    parentId: user.id,
+    timestamp: timestamp,
+  });
+
+  const mins = Math.floor(timeLeft / 60);
+  const secs = timeLeft % 60;
+  const formattedTime = `${mins}:${secs.toString().padStart(2, '0')}`;
 
   return (
     <div
@@ -62,11 +63,13 @@ export function LinkingQRModal({ show, onClose }: LinkingQRModalProps) {
         <p className="text-sm text-[var(--text-muted)] mb-6">
           Open SpendWise on your child's phone and scan this QR
         </p>
-        <div ref={qrRef} className="mx-auto mb-6 flex justify-center" />
-        <p className="text-xs text-[var(--text-muted)]">QR expires in 5 minutes</p>
+        <div className="mx-auto mb-6 flex justify-center bg-white p-4 rounded-xl inline-block">
+          <QRCodeSVG value={linkData} size={200} />
+        </div>
+        <p className="text-xs text-[var(--text-muted)]">QR expires in {formattedTime}</p>
         <button
           onClick={onClose}
-          className="mt-4 px-6 py-2 rounded-xl bg-[var(--teal)] text-white font-bold text-sm"
+          className="mt-4 px-6 py-2 rounded-xl bg-[var(--teal)] text-white font-bold text-sm hover:opacity-90"
         >
           Close
         </button>

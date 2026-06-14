@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { X } from 'lucide-react';
 import Portal from '@/components/ui/Portal';
 import { ASSET_TYPES, LIABILITY_TYPES } from '@/data/portfolioConfig';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 
 export interface AddModalProps {
   mode: 'asset' | 'liability';

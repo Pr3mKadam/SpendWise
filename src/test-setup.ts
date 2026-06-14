@@ -23,6 +23,7 @@ if (typeof localStorage === 'undefined') {
 }
 
 // Stub IndexedDB for environments that don't provide it
+// Uses queueMicrotask instead of setTimeout so Dexie init works with vi.useFakeTimers()
 if (typeof indexedDB === 'undefined') {
   class FakeIDBRequest extends EventTarget {
     result: unknown = null;
@@ -35,13 +36,25 @@ if (typeof indexedDB === 'undefined') {
       super();
     }
   }
+
+  const fakeDBResult = {
+    name: '',
+    version: 1,
+    objectStoreNames: [] as string[],
+    close: () => {},
+    createObjectStore: () => ({}),
+    transaction: () => ({}),
+    deleteObjectStore: () => {},
+  };
+
   class FakeIDBFactory {
-    open() {
+    open(_name?: string) {
       const req = new FakeIDBRequest();
-      setTimeout(() => {
-        req.result = {};
+      const db = { ...fakeDBResult, name: _name ?? '' };
+      queueMicrotask(() => {
+        req.result = db;
         if (req.onsuccess) req.onsuccess({ target: req } as unknown);
-      }, 0);
+      });
       return req as unknown as IDBRequest<undefined>;
     }
   }

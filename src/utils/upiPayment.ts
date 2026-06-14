@@ -102,6 +102,7 @@ export function getPendingUPIPayment(): PendingUPIPayment | null {
     }
     return p;
   } catch {
+    // silently ignore — non-critical
     return null;
   }
 }
@@ -190,7 +191,7 @@ export function openUPIIntent(upiUrl: string): void {
     setTimeout(() => {
       try {
         document.body.removeChild(iframe);
-      } catch {}
+      } catch { /* silently ignore — non-critical */ }
     }, 2000);
 
     // Fallback if iframe didn't prompt anything

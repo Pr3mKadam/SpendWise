@@ -14,7 +14,7 @@ import {
   GoalModal,
   ContribModal,
   GroupQRModal,
-} from '@/features/shared/components/SharedModals';
+} from '@/features/shared/components/modals';
 import {
   WalletTab,
   ExpensesTab,

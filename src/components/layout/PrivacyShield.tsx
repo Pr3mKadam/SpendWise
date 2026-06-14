@@ -19,6 +19,7 @@ export default function PrivacyShield({
     try {
       return sessionStorage.getItem(SESSION_UNLOCKED_KEY) !== 'true';
     } catch {
+      // silently ignore — non-critical
       return false;
     }
   });
@@ -29,18 +30,14 @@ export default function PrivacyShield({
     setIsLocked(true);
     try {
       sessionStorage.removeItem(SESSION_UNLOCKED_KEY);
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
   }, []);
 
   const unlock = useCallback(() => {
     setIsLocked(false);
     try {
       sessionStorage.setItem(SESSION_UNLOCKED_KEY, 'true');
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
     onUnlock?.();
   }, [onUnlock]);
 

@@ -2,9 +2,10 @@ import React, { useState, Suspense, lazy } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AppView } from '@/types';
 import { FinanceState } from '@/types/state';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { haptic } from '@/core/haptic';
 import { useBudgets } from '@/hooks/useBudgets';
+// FSD VIOLATION: composing goals, analytics, and gamification features in dashboard
 import { useGoals } from '@/features/goals/hooks/useGoals';
 import { useDashboardData } from '@/features/dashboard/hooks/useDashboardData';
 import { getProactiveNudge } from '@/features/analytics/insights/advisor';

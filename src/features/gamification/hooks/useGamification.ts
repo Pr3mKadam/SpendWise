@@ -4,15 +4,14 @@ import { useStore } from '@/store';
 import { useCategories } from '@/hooks/useCategories';
 
 export function useGamification(transactions: Transaction[]) {
-  const store = useStore();
+  const streak = useStore(s => s.streak);
   const { categoryLimits } = useCategories();
-  const streak = store.streak;
   const [healthScore, setHealthScore] = useState(0);
 
-  // 1. Calculate Daily Streak (delegated to store)
+  // 1. Calculate Daily Streak (delegated to store — runs once on mount)
   useEffect(() => {
-    store.checkStreak();
-  }, [store]);
+    useStore.getState().checkStreak();
+  }, []);
 
   // 2. Calculate Health Score (0-100)
   useEffect(() => {

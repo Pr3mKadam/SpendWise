@@ -21,6 +21,7 @@ import { VoiceCommand, CommandResult } from '@/core/voiceCommands/types';
 import { speak } from '@/core/voiceCommands/tts';
 import { haptic } from '@/core/haptic';
 import { formatLocalYYYYMMDD } from '@/utils/date';
+import { useStore } from '@/store';
 
 interface SpeechRecognitionEvent extends Event {
   readonly results: SpeechRecognitionResultList;
@@ -174,27 +175,31 @@ export function useMasterVoice({
 
       // Handle undo via special NAVIGATE view='UNDO'
       if (cmd.intent === 'NAVIGATE' && (cmd.entities.view as string) === 'UNDO') {
-        setHistory(h => {
-          if (h.length === 0) {
-            const res: CommandResult = { success: false, message: 'No commands to undo.' };
-            setResult(res);
-            setState('error');
-            speak('No commands to undo.');
-            scheduleReset();
-            return h;
-          }
-          // Pop the last entry (visual only — store undo is TODO Phase 3)
-          const [last, ...rest] = h;
-          const res: CommandResult = {
-            success: true,
-            message: `↩ Undone: ${last.command.summary}`,
-          };
+        const store = useStore.getState();
+        if (!store.canUndo()) {
+          const res: CommandResult = { success: false, message: 'No commands to undo.' };
           setResult(res);
-          setState('success');
-          speak('Done, last command undone.');
+          setState('error');
+          speak('No commands to undo.');
           scheduleReset();
-          return rest;
-        });
+          return;
+        }
+
+        const success = store.undo();
+        if (success) {
+          setHistory(h => {
+            const [last, ...rest] = h;
+            const res: CommandResult = {
+              success: true,
+              message: last ? `↩ Undone: ${last.command.summary}` : '↩ Undone last command.',
+            };
+            setResult(res);
+            setState('success');
+            speak('Done, last command undone.');
+            scheduleReset();
+            return rest;
+          });
+        }
         return;
       }
 
@@ -221,7 +226,8 @@ export function useMasterVoice({
         speak(ttsText);
 
         scheduleReset();
-      } catch {
+      } catch (e) {
+        console.warn('[MasterVoice] Command execution failed:', e);
         const err: CommandResult = {
           success: false,
           message: 'Something went wrong. Please try again.',
@@ -253,11 +259,14 @@ export function useMasterVoice({
 
   /** Undo the most recent successful command (exposed for UI button too). */
   const undo = useCallback(() => {
-    setHistory(h => {
-      if (h.length === 0) return h;
-      const [, ...rest] = h;
-      return rest;
-    });
+    const success = useStore.getState().undo();
+    if (success) {
+      setHistory(h => {
+        if (h.length === 0) return h;
+        const [, ...rest] = h;
+        return rest;
+      });
+    }
   }, []);
 
   const start = useCallback(async () => {
@@ -277,9 +286,7 @@ export function useMasterVoice({
         scheduleReset(4000);
         return;
       }
-    } catch {
-      /* permissions API not supported, proceed anyway */
-    }
+    } catch { /* silently ignore — non-critical */ }
 
     // Cooldown guard
     const now = Date.now();
@@ -325,9 +332,7 @@ export function useMasterVoice({
         try {
           recognition.start();
           return;
-        } catch {
-          /* already stopped */
-        }
+        } catch { /* silently ignore — non-critical */ }
       }
 
       if (!finalTranscript.trim()) {

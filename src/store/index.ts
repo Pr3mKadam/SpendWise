@@ -158,6 +158,7 @@ const currentProfile = (() => {
   try {
     return localStorage.getItem('spendwise_active_profile') || 'personal';
   } catch {
+    // silently ignore — non-critical
     return 'personal';
   }
 })();
@@ -181,6 +182,7 @@ const getPersistKey = () => {
     if (profile === 'personal') return 'spendwise-global-store';
     return `spendwise_store_${profile}`;
   } catch {
+    // silently ignore — non-critical
     return 'spendwise-global-store';
   }
 };

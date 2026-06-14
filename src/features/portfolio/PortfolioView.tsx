@@ -4,7 +4,7 @@ import { usePortfolio } from '@/features/portfolio/hooks/usePortfolio';
 import FutureWealthSimulator from '@/features/portfolio/components/FutureWealthSimulator';
 import DebtPlanner from '@/features/portfolio/components/DebtPlanner';
 import AddModal from '@/features/portfolio/components/AddModal';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import PortfolioViewMobile from '@/features/portfolio/PortfolioViewMobile';
 import { PortfolioHeader } from '@/features/portfolio/components/PortfolioHeader';

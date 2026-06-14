@@ -9,6 +9,7 @@ import {
 } from '@/features/analytics/insights/advisor';
 import { useCurrency } from '@/contexts/CurrencyContext';
 import EducationCards from '@/features/education/components/EducationCards';
+import EmptyState from '@/components/ui/EmptyState';
 import { SpeechRecognition, SpeechRecognitionEvent } from '@/types/dom';
 import { useIsMobile } from '@/hooks/useMediaQuery';
 import AdvisorViewMobile from '@/features/advisor/AdvisorViewMobile';
@@ -45,11 +46,10 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     try {
       const saved = localStorage.getItem(ADVISOR_HISTORY_KEY);
       if (saved) return JSON.parse(saved);
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
     return [INITIAL_MESSAGE];
   });
+
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [personality, setPersonality] = useState<SpendingPersonality | null>(null);
@@ -63,9 +63,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     try {
       const toSave = messages.slice(-MAX_HISTORY);
       localStorage.setItem(ADVISOR_HISTORY_KEY, JSON.stringify(toSave));
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
   }, [messages]);
 
   const handleSend = useCallback(
@@ -280,7 +278,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         {/* Quick Stats Mini-Card */}
         <div className="card p-5 bg-gradient-to-br from-[var(--purple)] to-[#818cf8] border-none text-white">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[var(--surface-card)]/20 flex items-center justify-center">
               <Sparkles size={20} />
             </div>
             <div>
@@ -304,9 +302,9 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
                 %
               </span>
             </div>
-            <div className="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-[var(--surface-card)]/20 rounded-full overflow-hidden">
               <div
-                className="h-full bg-white"
+                className="h-full bg-[var(--surface-card)]"
                 style={{
                   width: `${Math.min(100, Math.max(0, monthlyStats.totalIncome > 0 ? ((monthlyStats.totalIncome - monthlyStats.totalExpenses) / monthlyStats.totalIncome) * 100 : 0))}%`,
                 }}
@@ -414,7 +412,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               {personality.traits.map((trait: string, i: number) => (
                 <span
                   key={i}
-                  className="px-2 py-1 rounded-md bg-white/5 border border-white/10 text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]"
+                  className="px-2 py-1 rounded-md bg-[var(--surface-card)]/5 border border-white/10 text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]"
                 >
                   {trait}
                 </span>
@@ -431,13 +429,11 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
 
         {/* Empty state for new users */}
         {transactions.length === 0 && messages.length <= 1 && (
-          <div className="mx-6 mt-4 p-4 rounded-2xl bg-[var(--teal)]/5 border border-[var(--teal)]/20">
-            <p className="text-xs font-bold text-[var(--teal)] mb-1">👋 Getting Started</p>
-            <p className="text-[length:var(--fs-caption)] text-[var(--text-muted)] leading-relaxed">
-              Add your first transaction to unlock AI-powered financial insights. Try asking:{' '}
-              <span className="text-[var(--teal)] font-semibold">"How can I save more?"</span>
-            </p>
-          </div>
+          <EmptyState
+            title="No data yet"
+            subtitle="Add your first transaction to unlock AI-powered financial insights."
+            onAction={() => onNavigate?.('transactions')}
+          />
         )}
 
         {/* Messages */}
@@ -452,7 +448,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
         {/* Insights Bar */}
         {transactions.length > 0 && (
           <div className="px-6 py-3 bg-[var(--surface-input)] border-t border-[var(--border)] flex gap-4 overflow-x-auto scrollbar-hide">
-            <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
+            <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--surface-card)]/5 border border-[var(--border)]">
               <TrendingUp size={12} className="text-[var(--teal)]" />
               <span className="text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">
                 Saved{' '}
@@ -465,7 +461,7 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
               </span>
             </div>
             {monthlyStats.topCategory && (
-              <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-[var(--border)]">
+              <div className="flex-shrink-0 flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--surface-card)]/5 border border-[var(--border)]">
                 <TrendingDown size={12} className="text-red-500" />
                 <span className="text-[length:var(--fs-overline)] font-medium text-[var(--text-muted)]">
                   Most spent on {monthlyStats.topCategory}
@@ -489,3 +485,4 @@ export default function AdvisorView({ onNavigate }: AdvisorViewProps) {
     </div>
   );
 }
+

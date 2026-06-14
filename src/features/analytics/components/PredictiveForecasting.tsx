@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import {
   AreaChart,
   Area,
@@ -107,6 +107,11 @@ export function PredictiveForecasting({
 
   const isPositive = data.projectedChange >= 0;
 
+  const yTickFormatter = useCallback(
+    (v: number) => `${currency}${(v / 1000).toFixed(0)}k`,
+    [currency]
+  );
+
   return (
     <div className="card p-4 sm:p-6 overflow-hidden">
       <div className="flex items-start justify-between mb-5">
@@ -197,7 +202,7 @@ export function PredictiveForecasting({
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 10, fill: 'var(--text-dim)', fontFamily: 'var(--font-inter)' }}
-              tickFormatter={v => `${currency}${(v / 1000).toFixed(0)}k`}
+              tickFormatter={yTickFormatter}
               width={44}
             />
             <Tooltip content={<ForecastTooltip currency={currency} />} />

@@ -91,7 +91,7 @@ export default function DashboardHeroDesktop({
       />
 
       {/* Glossy overlay */}
-      <div className="absolute inset-0 bg-white/5 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 bg-[var(--surface-card)]/5 backdrop-blur-[1px]" />
 
       {/* Animated mesh overlay - Keep on desktop */}
       <div
@@ -192,7 +192,7 @@ export default function DashboardHeroDesktop({
 
           {/* Sparkline & Privacy Toggle */}
           <div className="flex flex-col gap-2 shrink-0">
-            <div className="w-[160px] h-[80px] bg-white/5 rounded-2xl p-2 border border-white/10 backdrop-blur-sm">
+            <div className="w-[160px] h-[80px] bg-[var(--surface-card)]/5 rounded-2xl p-2 border border-white/10 backdrop-blur-sm">
               {sparkData.length > 1 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={sparkData}>
@@ -470,3 +470,4 @@ export default function DashboardHeroDesktop({
     </motion.div>
   );
 }
+

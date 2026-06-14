@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { RefreshCw, Calendar, TrendingUp, Clock, Zap, LayoutGrid } from 'lucide-react';
 import { RecurringPattern, Transaction } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
+// FSD VIOLATION: importing from subscriptions feature — inject via props instead
+// TODO: remove direct imports once all consumers pass these as props
 import { SubscriptionCalendar } from '@/features/subscriptions/components/SubscriptionCalendar';
 import { PriceHikeDetector } from '@/features/subscriptions/components/PriceHikeDetector';
 
@@ -9,6 +11,8 @@ interface RecurringViewProps {
   patterns: RecurringPattern[];
   currency?: string;
   transactions?: Transaction[];
+  subscriptionCalendar?: React.ReactNode;
+  priceHikeDetector?: React.ReactNode;
 }
 
 // ─── Frequency badge ──────────────────────────────────────────────────────────
@@ -254,10 +258,12 @@ function SummaryBar({ patterns, currency }: { patterns: RecurringPattern[]; curr
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function RecurringView({
-  patterns = [],
-  currency = '$',
-  transactions = [],
-}: RecurringViewProps) {
+    patterns = [],
+    currency = '$',
+    transactions = [],
+    subscriptionCalendar: subscriptionCalendarProp,
+    priceHikeDetector: priceHikeDetectorProp,
+  }: RecurringViewProps) {
   const [view, setView] = useState<'list' | 'calendar'>('list');
 
   // Build calendar-friendly subscription list from recurring patterns
@@ -322,7 +328,7 @@ export default function RecurringView({
           {/* Price Hike Detection */}
           {transactions.length > 0 && (
             <div className="card p-4 sm:p-5 mb-5">
-              <PriceHikeDetector transactions={transactions} currency={currency} />
+              {priceHikeDetectorProp ?? <PriceHikeDetector transactions={transactions} currency={currency} />}
             </div>
           )}
 
@@ -338,7 +344,7 @@ export default function RecurringView({
             </div>
           )}
         </>
-      ) : (
+      ) : subscriptionCalendarProp ?? (
         <SubscriptionCalendar subscriptions={calendarSubs} currency={currency} />
       )}
     </div>

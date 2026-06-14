@@ -120,7 +120,7 @@ export function GoalModal({
                       <button
                         key={e}
                         onClick={() => setForm(p => ({ ...p, emoji: e }))}
-                        className="h-7 w-7 rounded-lg text-sm transition-all hover:bg-white"
+                        className="h-7 w-7 rounded-lg text-sm transition-all hover:bg-[var(--surface-card)]"
                         style={{
                           background: form.emoji === e ? 'var(--surface-card)' : 'transparent',
                           boxShadow: form.emoji === e ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
@@ -369,3 +369,4 @@ export function GoalModal({
     </Portal>
   );
 }
+

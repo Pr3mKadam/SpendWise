@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { TrendingUp, Landmark, Info } from 'lucide-react';
 import {
   Line,
@@ -17,11 +17,17 @@ interface FutureWealthSimulatorProps {
   currency?: string;
 }
 
+const AXIS_TICK = { fill: 'var(--text-muted)', fontSize: 10 };
+
 export default function FutureWealthSimulator({
   currentBalance,
   monthlySavings,
   currency = '$',
 }: FutureWealthSimulatorProps) {
+  const tickFormatter = useCallback(
+    (v: number) => `${currency}${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`,
+    [currency]
+  );
   const [years, setYears] = useState(10);
   const [expectedROI, setExpectedROI] = useState(7); // 7% annual return
   const [initialInvestment, setInitialInvestment] = useState(currentBalance);
@@ -189,7 +195,7 @@ export default function FutureWealthSimulator({
                   dataKey="year"
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
+                  tick={AXIS_TICK}
                   label={{
                     value: 'Years',
                     position: 'insideBottom',
@@ -202,8 +208,8 @@ export default function FutureWealthSimulator({
                   axisLine={false}
                   tickLine={false}
                   width={65}
-                  tick={{ fill: 'var(--text-muted)', fontSize: 10 }}
-                  tickFormatter={v => `${currency}${v >= 1000 ? (v / 1000).toFixed(0) + 'k' : v}`}
+                  tick={AXIS_TICK}
+                  tickFormatter={tickFormatter}
                 />
                 <Tooltip
                   contentStyle={{

@@ -5,7 +5,6 @@ import App from '@/app/App';
 import { AuthProvider } from '@/hooks/useAuth';
 import { CategoryProvider } from '@/hooks/useCategories';
 import { CurrencyProvider } from '@/contexts/CurrencyContext';
-import '@/core/accessibility/axeSetup';
 
 import { validateEnv } from '@/config/env';
 import { registerSW } from 'virtual:pwa-register';

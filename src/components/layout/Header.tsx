@@ -1,7 +1,7 @@
 import React from 'react';
 import { Bell, ChevronRight, Moon, Sun, User, Search, Eye, EyeOff } from 'lucide-react';
 import { AppView } from '@/types';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 import { MasterMic } from '@/components/layout/MasterMic';
 
 interface HeaderProps {

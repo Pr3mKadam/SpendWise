@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Camera, X } from 'lucide-react';
+import { Html5QrcodeScanner } from 'html5-qrcode';
 
 interface ChildQRScannerProps {
   show: boolean;
@@ -9,50 +10,47 @@ interface ChildQRScannerProps {
 
 export function ChildQRScanner({ show, onClose, onSuccess }: ChildQRScannerProps) {
   const [error, setError] = useState<string | null>(null);
-  const scannerRef = useRef<HTMLDivElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const html5QrcodeScannerRef = useRef<any>(null);
+  const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   useEffect(() => {
-    if (!show || !scannerRef.current) return;
+    if (!show) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (typeof window !== 'undefined' && (window as any).Html5QrcodeScanner) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const scanner = new (window as any).Html5QrcodeScanner(
-        'child-qr-reader',
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        /* verbose= */ false
-      );
+    // Use imported Html5QrcodeScanner
+    const scanner = new Html5QrcodeScanner(
+      'child-qr-reader',
+      { fps: 10, qrbox: { width: 250, height: 250 } },
+      /* verbose= */ false
+    );
 
-      html5QrcodeScannerRef.current = scanner;
+    scannerRef.current = scanner;
 
-      scanner.render(
-        (decodedText: string) => {
-          try {
-            const data = JSON.parse(decodedText);
-            if (data.type === 'spendwise_child_link' && data.parentId) {
-              scanner.clear();
-              onSuccess(data.parentId);
-            } else {
-              setError('Invalid QR code format. Please scan a SpendWise Parent QR.');
+    scanner.render(
+      (decodedText: string) => {
+        try {
+          const data = JSON.parse(decodedText);
+          if (data.type === 'spendwise_child_link' && data.parentId) {
+            const now = Date.now();
+            if (now - data.timestamp > 5 * 60 * 1000) {
+              setError('QR Code expired. Please ask your parent to show a new one.');
+              return;
             }
-          } catch (_e) {
-            setError('Could not read QR code. Please try again.');
+            scanner.clear();
+            onSuccess(data.parentId);
+          } else {
+            setError('Invalid QR code format. Please scan a SpendWise Parent QR.');
           }
-        },
-        (_errorMessage: string) => {
-          // ignore scan errors (they happen every frame)
+        } catch (_e) {
+          setError('Could not read QR code. Please try again.');
         }
-      );
-    } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setError('QR Scanner library failed to load.');
-    }
+      },
+      (_errorMessage: string) => {
+        // ignore scan errors (they happen every frame)
+      }
+    );
 
     return () => {
-      if (html5QrcodeScannerRef.current) {
-        html5QrcodeScannerRef.current.clear().catch(console.error);
+      if (scannerRef.current) {
+        scannerRef.current.clear().catch(console.error);
       }
     };
   }, [show, onSuccess]);
@@ -69,8 +67,8 @@ export function ChildQRScanner({ show, onClose, onSuccess }: ChildQRScannerProps
           </div>
           <button
             onClick={() => {
-              if (html5QrcodeScannerRef.current) {
-                html5QrcodeScannerRef.current.clear().catch(console.error);
+              if (scannerRef.current) {
+                scannerRef.current.clear().catch(console.error);
               }
               onClose();
             }}
@@ -89,8 +87,7 @@ export function ChildQRScanner({ show, onClose, onSuccess }: ChildQRScannerProps
 
           <div
             id="child-qr-reader"
-            ref={scannerRef}
-            className="w-full rounded-xl overflow-hidden border-2 border-[var(--border)]"
+            className="w-full rounded-xl overflow-hidden border-2 border-[var(--border)] bg-black"
           />
 
           <p className="text-center text-xs text-[var(--text-muted)] mt-4">

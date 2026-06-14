@@ -66,7 +66,7 @@ export default function LevelUpModal({ isOpen, onClose, level, rank }: LevelUpMo
             initial={{ scale: 0.8, opacity: 0, y: 40 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.8, opacity: 0, y: 40 }}
-            className="relative w-full max-w-md bg-white/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-[32px] p-8 text-center shadow-2xl border border-white/20 dark:border-gray-800/50 overflow-hidden"
+            className="relative w-full max-w-md bg-[var(--surface-card)]/90 dark:bg-gray-900/90 backdrop-blur-xl rounded-[32px] p-8 text-center shadow-2xl border border-white/20 dark:border-gray-800/50 overflow-hidden"
             style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}
           >
             {/* Glowing background orbs */}
@@ -150,3 +150,4 @@ export default function LevelUpModal({ isOpen, onClose, level, rank }: LevelUpMo
     </AnimatePresence>
   );
 }
+

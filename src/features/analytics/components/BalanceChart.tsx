@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import {
   AreaChart,
   Area,
@@ -48,6 +48,56 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
   const settings = store.parentalState;
   const isKidMode = settings.isTeenMode;
   const shouldHideBalances = isKidMode && settings.hideBalances;
+
+  const yTickFormatter = useCallback(
+    (v: number) => `${currency}${(v / 1000).toFixed(1)}k`,
+    [currency]
+  );
+
+  const tooltipContent = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ({ active, payload, label }: any) => {
+      if (!active || !payload?.length) return null;
+      const point = payload[0]?.payload;
+      const isProj = point?.isProjected;
+      const value = point?.balance;
+      return (
+        <div className="card px-4 py-3 shadow-lg">
+          <p
+            style={{
+              fontFamily: 'var(--font-inter)',
+              fontSize: '12px',
+              color: 'var(--text-muted)',
+              marginBottom: '4px',
+            }}
+          >
+            {label}
+          </p>
+          <p
+            style={{
+              fontFamily: 'var(--font-manrope)',
+              fontSize: '18px',
+              fontWeight: 800,
+              color: isProj ? 'var(--text-muted)' : 'var(--teal)',
+            }}
+          >
+            {currency}
+            {Number(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+          </p>
+          <p
+            style={{
+              fontFamily: 'var(--font-inter)',
+              fontSize: '11px',
+              color: 'var(--text-muted)',
+            }}
+          >
+            {isProj ? 'AI Projected' : 'Actual Balance'}
+          </p>
+        </div>
+      );
+    },
+    [currency]
+  );
 
   const screenReaderSummary = useMemo(() => {
     if (data.length === 0) return 'No data available';
@@ -166,7 +216,7 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
               axisLine={false}
               tickLine={false}
               tick={{ fontSize: 11, fill: '#a0aec0', fontFamily: 'var(--font-inter)' }}
-              tickFormatter={v => `${currency}${(v / 1000).toFixed(1)}k`}
+              tickFormatter={yTickFormatter}
               width={52}
             />
 
@@ -187,48 +237,7 @@ export default function BalanceChart({ data, currency = '$' }: BalanceChartProps
               />
             )}
 
-            <Tooltip
-              content={({ active, payload, label }) => {
-                if (!active || !payload?.length) return null;
-                const point = payload[0]?.payload;
-                const isProj = point?.isProjected;
-                const value = point?.balance;
-                return (
-                  <div className="card px-4 py-3 shadow-lg">
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-inter)',
-                        fontSize: '12px',
-                        color: 'var(--text-muted)',
-                        marginBottom: '4px',
-                      }}
-                    >
-                      {label}
-                    </p>
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-manrope)',
-                        fontSize: '18px',
-                        fontWeight: 800,
-                        color: isProj ? 'var(--text-muted)' : 'var(--teal)',
-                      }}
-                    >
-                      {currency}
-                      {Number(value).toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                    </p>
-                    <p
-                      style={{
-                        fontFamily: 'var(--font-inter)',
-                        fontSize: '11px',
-                        color: 'var(--text-muted)',
-                      }}
-                    >
-                      {isProj ? 'AI Projected' : 'Actual Balance'}
-                    </p>
-                  </div>
-                );
-              }}
-            />
+            <Tooltip content={tooltipContent} />
 
             <Area
               type="monotone"

@@ -19,7 +19,7 @@ export function getCrashInfo(): CrashInfo {
   try {
     count = parseInt(localStorage.getItem(CRASH_COUNT_KEY) || '0', 10);
     lastCrashTime = parseInt(localStorage.getItem(LAST_CRASH_KEY) || '0', 10);
-  } catch {}
+  } catch { /* silently ignore — non-critical */ }
 
   const withinWindow = Date.now() - lastCrashTime < CRASH_WINDOW_MS;
   const exceededThreshold = withinWindow && count >= MAX_CRASH_THRESHOLD;
@@ -45,14 +45,14 @@ export function recordCrash(): void {
     if (newCount >= MAX_CRASH_THRESHOLD && withinWindow) {
       logger.system.warn('Crash threshold exceeded, recovery mode activated');
     }
-  } catch {}
+  } catch { /* silently ignore — non-critical */ }
 }
 
 export function clearCrashCount(): void {
   try {
     localStorage.removeItem(CRASH_COUNT_KEY);
     localStorage.removeItem(LAST_CRASH_KEY);
-  } catch {}
+  } catch { /* silently ignore — non-critical */ }
 }
 
 export function isInRecoveryMode(): boolean {
@@ -85,7 +85,9 @@ export async function performRecovery(): Promise<boolean> {
         for (const db of dbs) {
           if (db.name) indexedDB.deleteDatabase(db.name);
         }
-      } catch {}
+      } catch (e) {
+        console.warn('[CrashRecovery] Failed to delete IndexedDB databases:', e);
+      }
       localStorage.clear();
       clearCrashCount();
       window.location.reload();

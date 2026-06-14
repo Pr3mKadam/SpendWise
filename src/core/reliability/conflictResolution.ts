@@ -108,6 +108,7 @@ export function getStoredConflicts(): ConflictRecord[] {
   try {
     return JSON.parse(sessionStorage.getItem('spendwise_conflicts') || '[]');
   } catch {
+    // silently ignore — non-critical
     return [];
   }
 }
@@ -115,7 +116,7 @@ export function getStoredConflicts(): ConflictRecord[] {
 function setStoredConflicts(records: ConflictRecord[]): void {
   try {
     sessionStorage.setItem('spendwise_conflicts', JSON.stringify(records));
-  } catch {}
+  } catch { /* silently ignore — non-critical */ }
 }
 
 export function clearStoredConflicts(): void {

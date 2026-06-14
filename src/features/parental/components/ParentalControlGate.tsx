@@ -76,10 +76,11 @@ export function KidModeBanner({ onParentLogin }: { onParentLogin: () => void }) 
       </div>
       <button
         onClick={onParentLogin}
-        className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
+        className="px-3 py-1 bg-[var(--surface-card)]/20 hover:bg-[var(--surface-card)]/30 rounded-lg text-xs font-semibold transition-colors flex items-center gap-1"
       >
         Parent Login <ChevronRight className="w-3 h-3" />
       </button>
     </div>
   );
 }
+

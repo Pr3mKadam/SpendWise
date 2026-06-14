@@ -48,6 +48,7 @@ async function fetchFromYahooFinance(symbol: string): Promise<MarketQuote | null
 
     return marketQuoteSchema.parse(quote);
   } catch {
+    // silently ignore — non-critical
     return null;
   }
 }

@@ -28,6 +28,7 @@ function load(): QuestProgress {
     }
     return saved;
   } catch {
+    // silently ignore — non-critical
     return { date: TODAY(), completed: {}, claimedXP: 0 };
   }
 }
@@ -35,9 +36,7 @@ function load(): QuestProgress {
 function save(state: QuestProgress) {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
-  } catch {
-    /* ignore */
-  }
+  } catch { /* silently ignore — non-critical */ }
 }
 
 export function useQuestReset() {

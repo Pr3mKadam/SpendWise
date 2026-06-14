@@ -1,5 +1,4 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { Transaction, Category } from '@/types';
 import { useCategories } from '@/hooks/useCategories';
 import { Virtuoso } from 'react-virtuoso';
@@ -83,24 +82,24 @@ export default function HistoryView({
   } = useTransactionHistory(visibleTransactions, initialSearchQuery);
 
   // URL persistence
-  const [searchParams, setSearchParams] = useSearchParams();
   const hasInitialized = useRef(false);
 
   // Read filters from URL on mount
   useEffect(() => {
-    const q = searchParams.get('q');
+    const params = new URLSearchParams(window.location.search);
+    const q = params.get('q');
     if (q) setSearch(q);
-    const from = searchParams.get('from');
+    const from = params.get('from');
     if (from) setDateFrom(from);
-    const to = searchParams.get('to');
+    const to = params.get('to');
     if (to) setDateTo(to);
-    const min = searchParams.get('min');
+    const min = params.get('min');
     if (min) setAmountMin(min);
-    const max = searchParams.get('max');
+    const max = params.get('max');
     if (max) setAmountMax(max);
-    const type = searchParams.get('type');
+    const type = params.get('type');
     if (type === 'credit' || type === 'debit') setTypeFilter(type);
-    const cat = searchParams.get('cat');
+    const cat = params.get('cat');
     if (cat && cat !== 'All') setCategoryFilter(cat as Category | 'All');
     hasInitialized.current = true;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,8 +116,10 @@ export default function HistoryView({
     if (amountMax) params.set('max', amountMax);
     if (typeFilter !== 'all') params.set('type', typeFilter);
     if (categoryFilter !== 'All') params.set('cat', categoryFilter);
-    setSearchParams(params, { replace: true });
-  }, [search, dateFrom, dateTo, amountMin, amountMax, typeFilter, categoryFilter, setSearchParams]);
+    const qs = params.toString();
+    const newUrl = qs ? `${window.location.pathname}?${qs}` : window.location.pathname;
+    window.history.replaceState(null, '', newUrl);
+  }, [search, dateFrom, dateTo, amountMin, amountMax, typeFilter, categoryFilter]);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [importToast, setImportToast] = useState<string | null>(null);
@@ -195,7 +196,8 @@ export default function HistoryView({
         addTransactions(imported);
         setImportToast(`✅ Imported ${imported.length} transactions successfully!`);
         setTimeout(() => setImportToast(null), 4000);
-      } catch {
+      } catch (e) {
+        console.warn('[History] JSON import parsing failed:', e);
         setImportToast('❌ Invalid JSON file. Please try again.');
         setTimeout(() => setImportToast(null), 3000);
       }

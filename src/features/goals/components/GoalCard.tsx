@@ -30,6 +30,7 @@ export const GoalCard = memo(function GoalCard({
     try {
       return localStorage.getItem(ROUNDUP_KEY(goal.id)) === 'true';
     } catch {
+      // silently ignore — non-critical
       return false;
     }
   });
@@ -39,9 +40,7 @@ export const GoalCard = memo(function GoalCard({
     setRoundUpsEnabled(next);
     try {
       localStorage.setItem(ROUNDUP_KEY(goal.id), String(next));
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
   };
 
   const handleContribute = (amount: number) => {
@@ -70,6 +69,7 @@ export const GoalCard = memo(function GoalCard({
       try {
         return JSON.parse(localStorage.getItem(MILESTONE_KEY(goal.id)) || '[]');
       } catch {
+        // silently ignore — non-critical
         return [];
       }
     })();
@@ -79,9 +79,7 @@ export const GoalCard = memo(function GoalCard({
         fired.push(m);
         try {
           localStorage.setItem(MILESTONE_KEY(goal.id), JSON.stringify(fired));
-        } catch {
-          /* ignore */
-        }
+        } catch { /* silently ignore — non-critical */ }
         confetti({
           particleCount: 60,
           spread: 55,
@@ -179,7 +177,7 @@ export const GoalCard = memo(function GoalCard({
           <div className="flex flex-shrink-0 items-center gap-1.5 opacity-100 md:opacity-0 transition-opacity md:group-hover:opacity-100">
             <button
               onClick={onEdit}
-              className="flex items-center justify-center w-11 h-11 rounded-xl transition-colors bg-[var(--surface-input)] border-none cursor-pointer text-[var(--text-muted)] active:text-[var(--teal)] active:bg-white/5"
+              className="flex items-center justify-center w-11 h-11 rounded-xl transition-colors bg-[var(--surface-input)] border-none cursor-pointer text-[var(--text-muted)] active:text-[var(--teal)] active:bg-[var(--surface-card)]/5"
               aria-label={`Edit ${goal.name} goal`}
             >
               <Edit3 size={16} />
@@ -320,3 +318,4 @@ export const GoalCard = memo(function GoalCard({
   );
 });
 GoalCard.displayName = 'GoalCard';
+

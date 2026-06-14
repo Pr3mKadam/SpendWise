@@ -21,6 +21,7 @@ export function useHealthHistory(currentScore: number): HealthHistoryPoint[] {
       const raw = localStorage.getItem(KEY);
       return raw ? JSON.parse(raw) : [];
     } catch {
+      // silently ignore — non-critical
       return [];
     }
   }, []);
@@ -35,9 +36,7 @@ export function useHealthHistory(currentScore: number): HealthHistoryPoint[] {
       const filtered = existing.filter(p => p.date !== today);
       const updated = [...filtered, { date: today, score: currentScore }].slice(-MAX_DAYS);
       localStorage.setItem(KEY, JSON.stringify(updated));
-    } catch {
-      /* ignore */
-    }
+    } catch { /* silently ignore — non-critical */ }
   }, [currentScore]);
 
   return history;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { ASSET_TYPES } from '@/data/portfolioConfig';
 
@@ -14,13 +14,23 @@ function fmt(n: number, currency: string) {
 }
 
 export function AllocationDonut({ allocationByType, total, currency }: AllocationDonutProps) {
-  if (total === 0 || allocationByType.length === 0) return null;
+  const data = useMemo(
+    () =>
+      allocationByType.map(a => ({
+        name: ASSET_TYPES.find(t => t.value === a.type)?.label || a.type,
+        value: a.value,
+        color: ASSET_TYPES.find(t => t.value === a.type)?.color || '#64748b',
+      })),
+    [allocationByType]
+  );
 
-  const data = allocationByType.map(a => ({
-    name: ASSET_TYPES.find(t => t.value === a.type)?.label || a.type,
-    value: a.value,
-    color: ASSET_TYPES.find(t => t.value === a.type)?.color || '#64748b',
-  }));
+  const tooltipFormatter = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (val: any) => fmt(Number(val), currency),
+    [currency]
+  );
+
+  if (total === 0 || allocationByType.length === 0) return null;
 
   return (
     <div className="flex flex-col sm:flex-row items-center gap-6 h-[180px]">
@@ -39,8 +49,7 @@ export function AllocationDonut({ allocationByType, total, currency }: Allocatio
                 borderRadius: '12px',
                 fontSize: '12px',
               }}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              formatter={(val: any) => fmt(Number(val), currency)}
+              formatter={tooltipFormatter}
             />
           </PieChart>
         </ResponsiveContainer>

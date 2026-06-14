@@ -1,4 +1,4 @@
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 
 interface DashboardHeaderProps {
   config: SpendWiseConfig | null;

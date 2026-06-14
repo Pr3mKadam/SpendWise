@@ -1,6 +1,6 @@
 import React, { RefObject } from 'react';
 import { User, Camera } from 'lucide-react';
-import { SpendWiseConfig } from '@/features/onboarding/components/OnboardingModal';
+import { SpendWiseConfig } from '@/types/config';
 
 interface ProfileHeaderProps {
   avatar: string | null;
